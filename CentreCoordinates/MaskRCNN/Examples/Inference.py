@@ -33,7 +33,11 @@ def getLatestWeight(path, name='cell'):
 config = cellConfig()
 config.UseRotation = False  
 config.UseMirror   = False 
-# config.CCoor_STD_DEV = 0.10
+# Return mini mask (all mask are 28 by 28 pixels). One can use CreateFullMask
+# from the utils to resize the mask to the same shape as the image. This is not
+# recommended as it is time consuming and many operations can be done using the
+# small mask and it bounding box coordinates 
+config.RETURN_MINI_MASK = True
 config.ValidLabels = ['Square','Circle','Else']
 config.NUM_CLASSES = 1+3
 config.LogDir = r'C:\MaskRCNN\MaskRCNNGit\CentreCoordinates\FinalVersion\Data\Examples'

@@ -17,12 +17,13 @@ import colorsys
 
 from MaskRCNN.Engine.MaskRCNN import MaskRCNN as modellib
 from MaskRCNN.Miscellaneous.utils import ConvertImage2RGB
-from  MaskRCNN.Miscellaneous.utils import resize
-
+from MaskRCNN.Miscellaneous.utils import resize, ReshapeMask2BBox
+from MaskRCNN.Miscellaneous.utils import CreateFullMask as CreateFullMask_ut
+from MaskRCNN.Miscellaneous.DrawnUI import DrawPolygons
 
 class CellGuiFigureHandle(object):
     
-    def __init__(self,config, fig, ax):
+    def __init__(self,config, fig, ax, enableDrawing=False):
         """This class creates the figure handle to display the results of a detection
         It uses Matplotlib as its backend for the figure, so input should be 
         matplotlib figrue and axis
@@ -38,7 +39,9 @@ class CellGuiFigureHandle(object):
         # used for fast computation, use ReshapeMask2BBox to reshape to box
         # coordiantes, or use CreateFullMask to reshape to image size
         self.config.RETURN_MINI_MASK = True 
-        self.fig.canvas.mpl_connect('button_press_event', self.on_Mouse_Click)
+        self.fig.canvas.mpl_connect('button_press_event', self.on_click)
+        self.fig.canvas.mpl_connect('button_release_event', self.on_release)
+        self.xy = (0,0)
         
         
         # Create MaskRCNN model
@@ -58,13 +61,157 @@ class CellGuiFigureHandle(object):
         self.UsePartial       = [False, 2,2] # Split image in x parts y,x       
         self.UseRandomColor   = True # otherwise color class dependend
         self.CellTypeColor    = []
+        self.CreatePolygons   = DrawPolygons(self.fig, self.ax, enableDrawing)
+        self.CreatePolygons.On_PolygonCreation(self.On_PolygonCreation_Fcn)
+        self.CreatePolygons.MovePolygonPoint.On_moved_Polygon(self.On_MovePolygonPoints)
+        self.EnbaleSelectCell = not enableDrawing
+        self.MovePolygonIndex = -1
+        
         
         # Show default image
         try:
             self.ShowImage(skimage.io.imread(r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Martijn\JSF_Example.jpg'))
         except:
             pass
+     
+    def resetDrawing(self,All=False):
+        self.CreatePolygons.Reset(All)
+    
+    def nonfunc(self):
+        pass
+    
+    def on_click(self,event):
+        """Stores the x and y positon of the mouse when a mouse button is pressed"""
+        self.xy = (event.xdata,event.ydata)
+
+    def on_release(self,event):
+        """Verifys, when a mouse button is released if the mouse is at the same 
+        location as when the mouse button was pressed"""
+        if not self.CreatePolygons.enable:
+            if event.xdata == None or event.ydata == None:
+                return
+            if self.CreatePolygons.Compare_points(self.xy, (event.xdata,event.ydata)):
+                self.on_Mouse_Click(event)
+    
+    def On_MovePolygonPoints(self):
+        if self.MovePolygonIndex > -1:
+            bbox, mask = self.CreatePolygons.CreateMaskFromPolygon(self.CreatePolygons.MovePolygonPoint.points)
+            shapeMask  = np.shape(self.Results['masks'][:,:,0])
+            mask = resize(mask, (shapeMask[0], shapeMask[1]))
+            self.Results['masks'][:,:,self.MovePolygonIndex] = mask
+            self.Results['rois'][self.MovePolygonIndex,:]    = bbox
+            self.patches[self.MovePolygonIndex] =  self._CreateImageAtributes(self.MovePolygonIndex, self.HighlightColor)
+            self.DisplayImage()
+            self.CreatePolygons.MovePolygonPoint.Addpacthes()
+
+    
+    def MovePolygonPoints(self,index):
+        self.MovePolygonIndex = index
+        mask = self.Results['masks'][:,:,index]
+        bbox = self.Results['rois'][index,:]
+        mask = ReshapeMask2BBox(mask, bbox)
+        padded_mask  = np.zeros((mask.shape[0] + 2, mask.shape[1] + 2), dtype=np.uint8)
+        padded_mask[1:-1, 1:-1] = mask.astype(np.uint8)
+        y1, x1, _, _ = bbox
+        # find contours, flip from (y,x) to (x,y),  reduce number of points by filtering
+        contours = find_contours(padded_mask, 0.5)
+        # Find the polygon with the most number of points (tjis is propably the polygon of interest)
+        find_polygon_index = 0
+        num_elements = 0
+        for ii in range(len(contours)):
+            if contours[ii].shape[0] > num_elements:
+                num_elements = contours[ii].shape[0]
+                find_polygon_index = ii +0
+            
+        contours =  self.filter_contour_points(contours[find_polygon_index][:,::-1] )
+        # transform from mask coordinates to image coordinates
+        contours += (x1-1,y1-1)
+        self.CreatePolygons.MovePolygonPoint.ChangePoints(contours)
+        self.CreatePolygons.toggle_enable_MovePolygonPoint(True)
         
+    def filter_contour_points(self,points):
+        """This filter reduces the number of points from a selection of points
+        The filter verifies if how close each point is to the next point in the array.
+        If two  points are too close, then one of the points is remove:
+            Input: array of points shape (N,2)
+            Return: array of points shape (M,2)"""
+        pointsout = np.zeros(np.shape(points),dtype=points.dtype)
+        pointsout[0,:] = points[0,:]
+        idx = 1
+        for point in points[1:,:]:
+            xdelta = abs(point[0] - pointsout[idx-1,0])
+            ydelta = abs(point[1] - pointsout[idx-1,1])
+            if xdelta > 4.0 or ydelta > 4.0:
+                pointsout[idx,:] = point
+                idx += 1
+        return pointsout[:idx,:]
+    
+    def On_PolygonCreation_Fcn(self):
+        bbox     = self.CreatePolygons.Bbox[-1]
+        mask     = self.CreatePolygons.Mask[-1]
+        labelOut = self.CreatePolygons.Names[-1]
+        for idx, labels in enumerate(self.config.ValidLabels):
+            label = idx+1
+            if labelOut == labels:
+                break
+        color = (0.0, 0.0, 1.0) # RGB
+        self.NumCells += 1
+        try: 
+            ResultsExist = True
+            shapeMask  = np.shape(self.Results['masks'][:,:,0])
+        except:
+            ResultsExist = False
+            shapeMask    = (28,28) 
+            
+        bboxArray  = np.zeros((self.NumCells,4),dtype=np.int32)
+        maskArray  = np.zeros(shapeMask+(self.NumCells,),dtype=np.float32)
+        labelArray = np.zeros(self.NumCells,dtype=np.int32)
+        scoreArray = np.zeros(self.NumCells,np.float32)
+        Centre_coorArray = np.zeros((self.NumCells,2),np.int32)
+        
+        # assign new values
+        mask = resize(mask, (shapeMask[0], shapeMask[1]))
+        bboxArray[-1,:]   = bbox
+        maskArray[:,:,-1] = mask
+        labelArray[-1]    = label
+        scoreArray[-1]    =  1.0
+        y1, x1, y2, x2 = bbox
+        Centre_coorArray[-1,:] = (int((y2-y1)/2+y1), int((x2-x1)/2+x1))
+        
+        # copy old values
+        if ResultsExist:         
+            bboxArray[:-1,:]        = self.Results['rois']
+            maskArray[:, :, :-1]    = self.Results['masks']
+            labelArray[:-1]         = self.Results['class_ids']
+            scoreArray[:-1]         = self.Results['scores']
+            Centre_coorArray[:-1,:] = self.Results['Centre_coor']
+            maskshape               = self.Results['maskshape']
+            self.Colors.append(color)
+        else:
+            maskshape  = np.shape(self.Image)[0:2]
+        self.AllSelectedIndex.append(self.NumCells-1)
+        self.SelectedCellIndex = self.NumCells-1
+        self.Results = {'rois':        bboxArray,
+                        'class_ids':   labelArray,
+                        'Centre_coor': Centre_coorArray,
+                        'masks':       maskArray,
+                        'scores':      scoreArray,
+                        'maskshape': maskshape}
+        if ResultsExist:
+            self.patches.append(self._CreateImageAtributes(self.NumCells-1, self.HighlightColor))
+        else:
+            self.CreateImage()
+        self.resetDrawing(True)
+        self.DisplayImage()
+        
+    def Toggle_drawing(self,value=None):
+        self.CreatePolygons.toggle_enable(value)
+        self.CreatePolygons.toggle_enable_MovePolygonPoint(self.CreatePolygons.enable)
+        self.EnbaleSelectCell = not self.CreatePolygons.enable
+        if self.CreatePolygons.enable and self.MovePolygonIndex > -1:
+            self.MovePolygonPoints(self.MovePolygonIndex)
+        
+     
     def getSelectedCellAtributes(self):
         if self.NumCells == 0:
             raise Exception('No cell instances, thus no selected cell results')
@@ -169,7 +316,7 @@ class CellGuiFigureHandle(object):
             self.Results['masks'][0,0,0]
         except:
             return
-        if self.NumCells > 0:
+        if self.NumCells > 0 and self.EnbaleSelectCell:
             if event.xdata == None or event.ydata == None:
                 # ensure click is inside figure
                 return
@@ -184,6 +331,7 @@ class CellGuiFigureHandle(object):
             Found, index = self.FindCellIndex(xcoor, ycoor)
             if Found:
                 self.SelectedCellIndex = index
+                self.MovePolygonIndex  = index+0
                 # Check if a cell is selected
                 if self.EnableMultiCellSelection:
                     if self.SelectedCellIndex in self.AllSelectedIndex:
@@ -260,9 +408,12 @@ class CellGuiFigureHandle(object):
         self.indexPrev         = None
         self.AllSelectedIndex = []
         # Create and display figure
+        height, width = self.Image.shape[:2]
+        self.ax.set_xlim(-10, width + 10)
+        self.ax.set_ylim(height + 10, -10)
         self.CreateImage()
         self.DisplayImage()
-        
+        self.MovePolygonIndex = -1
 
         
             
@@ -310,7 +461,7 @@ class CellGuiFigureHandle(object):
         caption = "{} {:.3f}".format(label, score) if score else label
 
         # padded image to create nice contour 
-        Mask = self.ReshapeMask2BBox(Mask,Box)
+        Mask = ReshapeMask2BBox(Mask,Box)
         padded_mask = np.zeros(
                 (Mask.shape[0] + 2, Mask.shape[1] + 2), dtype=np.uint8)
         padded_mask[1:-1, 1:-1] = Mask
@@ -319,11 +470,7 @@ class CellGuiFigureHandle(object):
         for verts in contours:
             # Subtract the padding and flip (y, x) to (x, y) and add the
             # coordinate shift due to use of mini mask
-            shiftx = x1-1
-            shifty = y1-1
-            verts[:,0] += shifty
-            verts[:,1] += shiftx
-            verts = np.fliplr(verts) 
+            verts[:,:] = verts[:,::-1]  + (x1-1, y1-1)
             p     = Polygon(verts, facecolor="none", edgecolor=color)
             vertsPatch.append(p)
         return [BoxPatches, caption, vertsPatch, Box, CCoorPatches, True]
@@ -334,12 +481,21 @@ class CellGuiFigureHandle(object):
         self.ax.clear()
         self.ax.axis('off')
         self.ax.imshow(Image)
+        self.Image = Image
+        self.Results = {}
+        self.NumCells = 0
+        self.MovePolygonIndex = -1
+        self.SelectedCellIndex = None
+        self.indexPrev         = None
+        self.AllSelectedIndex  = []
         self.Text_ChangeStatus('Display, no detection')
+        height, width = Image.shape[:2]
         self.UpdateFigure()
         
     
     def DisplayImage(self):
         """Displays the main image in the figure"""
+        ax_limits = [self.ax.get_xlim(), self.ax.get_ylim()]
         Masked_Image = self.Image.copy()
         if self.NumCells == 0:
             self.ax.imshow(Masked_Image.astype(self.Image.dtype))
@@ -354,7 +510,9 @@ class CellGuiFigureHandle(object):
         self.ax.set_xlim(-10, width + 10)
         self.ax.axis('off')
         for index, atribute in enumerate(self.patches):
-            
+            if not atribute[-1]:
+                # no patches, go to next item
+                continue          
             if index in self.AllSelectedIndex:
                 CheckBoxSatus = self.Display_High_State
                 color = self.HighlightColor
@@ -380,6 +538,8 @@ class CellGuiFigureHandle(object):
         self.ax.imshow(Masked_Image.astype(self.Image.dtype)) 
         self.CreateTitle()
         self.Text_ChangeStatus('Display image done')
+        self.ax.set_xlim(ax_limits[0])
+        self.ax.set_ylim(ax_limits[1])
         self.UpdateFigure()
         
     def Text_ChangeStatus(self,msg):
@@ -414,15 +574,6 @@ class CellGuiFigureHandle(object):
                 colors.append(self.CellTypeColor[self.Results['class_ids'][ii]])
         self.Colors = colors
     
-    def apply_mask(self,image, mask, color, alpha=0.5):
-        """Apply the given mask to the image.
-        """
-        for c in range(3):
-            image[:, :, c] = np.where(mask,
-                                      image[:, :, c] *
-                                      (1 - alpha) + alpha * color[c] * 255,
-                                      image[:, :, c])
-        return image
         
     def apply_mask_Fast(self,image, mask, bbox, color, alpha=0.5):
         """Apply the given mask to the image.
@@ -431,7 +582,7 @@ class CellGuiFigureHandle(object):
         Specially powerful for large images with small cells
         """
         # Get bbox indices and padded it one pixel to ensure proper mask generation
-        mask = self.ReshapeMask2BBox(mask, bbox)
+        mask = ReshapeMask2BBox(mask, bbox)
         y1, x1, y2, x2 = bbox
 
         # Apply mask
@@ -464,6 +615,7 @@ class CellGuiFigureHandle(object):
                 count += 1
         self.CreateResultsTransform(Results, np.shape(Image)[0:2])
         self.Text_ChangeStatus('Run detection done')
+        self.DisplayImage()
     
     def transformResults(self, Results, transfrom):
         """Transfrom the coorinates from a partial detection back to the orginal
@@ -474,15 +626,7 @@ class CellGuiFigureHandle(object):
         Results['Centre_coor'][:,(1)] += transfrom[1]
         return Results
 
-    def ReshapeMask2BBox(self, mask , bbox):
-        """Method to reshape the MaskRCNN mask output to its bounding box format
-        An output should always be shaped to the bounding box format before any
-        displaying or operation. The MaskRCNN mask output is saved as an 28x28xN
-        array for memory and computation effiency only"""
-        threshold = 0.5
-        y1, x1, y2, x2 = bbox
-        mask = resize(mask, (y2 - y1, x2 - x1))
-        return np.where(mask >= threshold, 1, 0).astype(np.bool)
+
 
     def CreateFullMask(self, mask, bbox, maskshape=None):
         """Creates the full mask at image size from an input mask
@@ -490,16 +634,7 @@ class CellGuiFigureHandle(object):
         already resized to boxed sized mask"""
         if maskshape == None:
             maskshape = self.Results['maskshape']
-        shapemask = np.shape(mask) 
-        if shapemask[0] == maskshape[0] and shapemask[1] == maskshape[1] :
-            return mask
-        else:
-            y1, x1, y2, x2 = bbox
-            if np.shape(mask) != (y2-y1,x2-x1):
-                mask = self.ReshapeMask2BBox(mask, bbox)
-            maskout = np.zeros(maskshape,dtype=bool)
-            maskout[y1:y2,x1:x2] = mask
-            return maskout
+        return CreateFullMask_ut(mask, bbox, maskshape)
         
 
     def CreateResultsTransform(self, Results, maskshape):

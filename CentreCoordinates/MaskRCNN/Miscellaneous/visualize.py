@@ -83,8 +83,9 @@ def display_instances(image, boxes, masks, class_ids, class_names,
                       scores=None, centre_coors=[], title="",
                       figsize=(16, 16), ax=None,
                       show_mask=True, show_bbox=True,
-                      colors=None, captions=None,
-                      Centre_coor_radius=5):
+                      colors=None, captions=None, TextSize=11,
+                      Centre_coor_radius=5,
+                      WhiteSpace = (10,10)):
     """
     boxes: [num_instance, (y1, x1, y2, x2, class_id)] in image coordinates.
     masks: [height, width, num_instances]
@@ -117,8 +118,8 @@ def display_instances(image, boxes, masks, class_ids, class_names,
 
     # Show area outside image boundaries.
     height, width = image.shape[:2]
-    ax.set_ylim(height + 10, -10)
-    ax.set_xlim(-10, width + 10)
+    ax.set_ylim(height + WhiteSpace[1], -WhiteSpace[1])
+    ax.set_xlim(-WhiteSpace[0], width + WhiteSpace[0])
     ax.axis('off')
     ax.set_title(title)
 
@@ -146,12 +147,14 @@ def display_instances(image, boxes, masks, class_ids, class_names,
         else:
             caption = captions[i]
         ax.text(x1, y1 + 8, caption,
-                color='w', size=11, backgroundcolor="none")
+                color='w', size=TextSize, backgroundcolor="none")
 
-        # Mask
-        mask = masks[:, :, i]
+        # Get mask and shape to bounding box size
+        if np.shape(image)[0:2] == np.shape(masks[:, :, i])[0:2]:
+            mask = masks[y1:y2, x1:x2, i]
+        else:
+            mask = ut.ReshapeMask2BBox(masks[:, :, i],boxes[i]) 
         if show_mask:
-            masked_image = apply_mask(masked_image, mask, color)
             masked_image = apply_mask_Fast(masked_image, mask, boxes[i], color)
 
         # Mask Polygon
@@ -161,8 +164,9 @@ def display_instances(image, boxes, masks, class_ids, class_names,
         padded_mask[1:-1, 1:-1] = mask
         contours = find_contours(padded_mask, 0.5)
         for verts in contours:
-            # Subtract the padding and flip (y, x) to (x, y)
-            verts = np.fliplr(verts) - 1
+            # Subtract the padding and flip (y, x) to (x, y) and add the
+            # coordinate shift due to use of mini mask
+            verts[:,:] = verts[:,::-1]  + (x1-1, y1-1)
             p = Polygon(verts, facecolor="none", edgecolor=color)
             ax.add_patch(p)
     for centre_coor in centre_coors:
@@ -505,16 +509,26 @@ def display_weight_stats(model):
     
 def apply_mask_Fast(image, mask, bbox, color, alpha=0.5):
     """Apply the given mask to the image.
+    This method is a speed up of the apply_mask method
+    By using the bounding boxes one can filter out many zero calculations
+    Specially powerful for large images with small cells
     """
-    shape = np.shape(image)
+    # Create a mask of excetly the same shape as its bounding box
     y1, x1, y2, x2 = bbox
-    y1 = int(max(0,y1-1))
-    x1 = int(max(0,x1-1))
-    y2 = int(min(shape[0],y2+1))
-    x2 = int(min(shape[1],x2+1))
-    mask = mask[y1:y2, x1:x2]
+    if np.shape(image)[0:2] == np.shape(mask)[0:2]:
+        # Mask is same shape as image, get only the relevant part
+        mask = mask[y1:y2, x1:x2]
+    elif np.shape(mask) != (y2-y1, x2-x1):
+        # Mask is a raw output (propably 28 by 28 pixels), resize to bounding
+        # box size
+        mask = ut.ReshapeMask2BBox(mask, bbox)
+
+    # Apply mask
     for c in range(3):
         temp = image[y1:y2, x1:x2, c]
         temp[mask] = (temp[mask] * (1 - alpha) + alpha * color[c] * 255).astype(image.dtype)
         image[y1:y2, x1:x2, c] = temp
     return image
+    
+
+

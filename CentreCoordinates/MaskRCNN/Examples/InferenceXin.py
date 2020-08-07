@@ -14,9 +14,15 @@ import matplotlib.pyplot as plt
 
 # Setup config file
 config = cellConfig()
-config.LogDir = ''
-config.CCoor_STD_DEV = 0.1
-config.WeigthPath = r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Martijn\FinalResults\ModelWeights.h5'
+config.CCoor_STD_DEV   = 0.1
+config.IMAGE_MIN_SCALE = 2.0
+config.WeigthPath      = r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Martijn\FinalResults\ModelWeights.h5'
+# Return mini mask (all mask are 28 by 28 pixels). One can use CreateFullMask
+# from the utils to resize the mask to the same shape as the image. This is not
+# recommended as it is time consuming and many operations can be done using the
+# small mask and it bounding box coordinates and the ReshapeMask2BBox function
+# from the utils.
+config.RETURN_MINI_MASK = True
 
 # These four setting use the old configurations. The results are slightly different due to scaling.
 # However the new version will prevent any OOM erros from occuring
@@ -50,4 +56,4 @@ fig, ax = plt.subplots(1,num='Example inference')
 ax.clear()
 visualize.display_instances(Image, Result['rois'], Result['masks'], Result['class_ids'],
                             ['BG'] + config.ValidLabels, Result['scores'], ax=ax,
-                            centre_coors=Result['Centre_coor'], Centre_coor_radius = 2 )
+                            centre_coors=Result['Centre_coor'], Centre_coor_radius = 2,TextSize=5)

@@ -40,7 +40,7 @@ class CellGui(object):
         # Create buttons
         self.Button_All         = CheckButtons(self.Ax_Button_All,   self.FigureHandle.Button_All_Label)
         self.Button_High        = CheckButtons(self.Ax_Button_High,  self.FigureHandle.Button_High_Label)
-        self.Button_MultiSelect = CheckButtons(self.Ax_Button_MultiSelect, ['Enable multi select'])
+        self.Button_MultiSelect = CheckButtons(self.Ax_Button_MultiSelect, ['Enable multi select','Enable Drawing'])
         self.Button_File        = Button(self.Ax_Button_File,'Change file')
 
         
@@ -71,7 +71,8 @@ class CellGui(object):
 
 
     def on_click_MultiSelect(self, label):
-        self.FigureHandle.EnableMultiCellSelection = self.Button_MultiSelect.get_status()[0]
+        self.FigureHandle.EnableMultiCellSelection = self.Button_MultiSelect.get_status()[0]      
+        self.FigureHandle.Toggle_drawing(self.Button_MultiSelect.get_status()[1])
         
 
     def on_click_All(self, label):

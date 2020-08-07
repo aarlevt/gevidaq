@@ -273,7 +273,8 @@ class ProcessImageML():
                     # Set class_names = [None,None,None,None] to mute class name display.
                     visualize.display_instances(image, MLresults['rois'], MLresults['masks'], MLresults['class_ids'],
                                                     class_names = [None,None,None,None], ax=ax,
-                                                    centre_coors = MLresults['Centre_coor'], Centre_coor_radius = 2 )#MLresults['class_ids'],MLresults['scores'], 
+                                                    centre_coors = MLresults['Centre_coor'], Centre_coor_radius = 2, 
+                                                    WhiteSpace = (0, 0))#MLresults['class_ids'],MLresults['scores'], 
                     # ax.imshow(fig)
                     fig.tight_layout()
                     # Save the detection image

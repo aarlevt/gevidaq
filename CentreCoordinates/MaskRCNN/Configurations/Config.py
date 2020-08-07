@@ -31,6 +31,14 @@ class Config(object):
     MIRROR_CACHE   = os.path.join(CreatePaths(), 'Data\\Cache\\Mirror')
     LogDir         = os.path.join(CreatePaths(), 'Data')
     
+    # Returns mini maks instead of image size mask, which is faster and more
+    # memory efficient
+    # A mini mask has tympically the shape of 28 by 28 pixels, one can reszie the
+    # mini mask to the bounding box size using the ReshapeMask2BBox function from
+    # utils. 
+    # One can resize the minimask to image size using the CreateFullMask function
+    # from utils (not reccomended, is quite memory intensif and one can do most
+    # operations uisng the CreateFullMask function and the bounding box coordinates)
     RETURN_MINI_MASK = False
     
     # NUMBER OF GPUs to use. When using only a CPU, this needs to be set to 1.

@@ -18,7 +18,6 @@ import urllib.request
 import shutil
 import warnings
 from distutils.version import LooseVersion
-
 # URL from which to download the latest COCO trained weights
 COCO_MODEL_URL = "https://github.com/matterport/Mask_RCNN/releases/download/v2.0/mask_rcnn_coco.h5"
 
@@ -1067,7 +1066,7 @@ def unmold_detections( detections, mrcnn_mask, original_image_shape,
     masks: [height, width, num_instances] Instance masks
     """
     # How many detections do we have?
-    # Detections array is padded with zeros. Find the first class_id == 0.
+    # Detections array is padded with zeros. Find the first class_id == 0.        
     zero_ix = np.where(detections[:, 4] == 0)[0]
     N = zero_ix[0] if zero_ix.shape[0] > 0 else detections.shape[0]
 
@@ -1121,15 +1120,51 @@ def unmold_detections( detections, mrcnn_mask, original_image_shape,
         full_masks.append(full_mask)
     full_masks = np.stack(full_masks, axis=-1)\
         if full_masks else np.empty(original_image_shape[:2] + (0,))
-    
     return boxes, class_ids, scores, full_masks, Centre_coor
 
 
 
 
+def CreateFullMask(mask, bbox, ImageShape):
+    """Creates the full mask at image size from an input mask
+    This can be either a raw output of the maskRCNN algorithm or a
+    already resized to boxed sized mask
+    Input:
+        mask: array dtype=boolean of shape (n by m), Masks retruend from the MaskRCNN
+            This can be either a mask of full image shape, a mask of the bounding 
+            box shape or  a raw output mask of 28 by 28 pixels 
+            (config.RETURN_MINI_MASK = True)
+        bbox: array of shape 1 by 4, dtype = int32, the coordiantes of the
+            bounding boxes
+        ImageShape: tuple dtype = int: the shape of the input image used for the 
+            MaskRCNN algorithm"""
+    MaskShape = np.shape(mask) 
+    if MaskShape[0] == ImageShape[0] and MaskShape[1] == ImageShape[1] :
+        return mask
+    else:
+        y1, x1, y2, x2 = bbox
+        if np.shape(mask) != (y2-y1,x2-x1):
+            mask = ReshapeMask2BBox(mask, bbox)
+        maskout = np.zeros(ImageShape[0:2],dtype=bool)
+        maskout[y1:y2,x1:x2] = mask
+        return maskout
 
-
-
+def ReshapeMask2BBox(mask, bbox):
+    """Method to reshape the MaskRCNN mask output to its bounding box format
+    An output should always be shaped to the bounding box format before any
+    displaying or operation. The MaskRCNN mask output is saved as an 28x28xN
+    array for memory and computation effiency only
+    Input:
+        mask: array of (n by m) dtype=float32, raw output of the maskRCNN algirthm 
+            when config.RETURN_MINI_MASK = True
+        bbox: array of 1 by 4 dtype=int32, coordianets of the bounding box
+            coresponding to the mask
+    Return:
+        Mask: array of shape bounding box dtype=bool"""
+    threshold = 0.5
+    y1, x1, y2, x2 = bbox
+    mask = resize(mask, (y2 - y1, x2 - x1))
+    return np.where(mask >= threshold, 1, 0).astype(np.bool)
 
 
 

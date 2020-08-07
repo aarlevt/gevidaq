@@ -43,6 +43,8 @@ class MaskRCNN(object):
         self.set_log_dir()
         self.TF_Version = tf.__version__
         
+
+        
     
     def build_Model(self):
         config = self.config
@@ -175,6 +177,7 @@ class MaskRCNN(object):
                                  mrcnn_mask, rpn_rois, rpn_class, rpn_bbox, mrcnn_centre_coor]
         return inputs, outputs
  
+
         
         
         
@@ -246,7 +249,6 @@ class MaskRCNN(object):
             self._anchor_cache[tuple(image_shape)] = ut.norm_boxes(a, image_shape[:2])
         return self._anchor_cache[tuple(image_shape)]
       
-        
 
 
     def detect(self,images,verbose=0):
@@ -261,8 +263,7 @@ class MaskRCNN(object):
         # logging.info('Init detection')
         config  = self.config
         assert self.mode == "inference", "Create model in inference mode."
-        assert len(
-            images) == config.BATCH_SIZE, "len(images) must be equal to BATCH_SIZE"
+        # assert len(images) == config.BATCH_SIZE, "len(images) must be equal to BATCH_SIZE"
 
         # Convert images to RGB
         # Replace this line if you want to use different kind of images
@@ -288,15 +289,26 @@ class MaskRCNN(object):
         anchors = np.broadcast_to(anchors, (self.config.BATCH_SIZE,) + anchors.shape)
 
         # logging.info('Run detection on %03d images' %(len(images)))
-        detections, _,mrcnn_bbox, mrcnn_mask, _, _, _ , center_coor =\
-            self.model.predict([molded_images, image_metas, anchors], verbose=0) #[molded_images, image_metas, anchors]
+        if len(images) <= config.BATCH_SIZE:
+            # This method should be faster if all input images fit within one batch
+            detections, _, _, mrcnn_mask, _, _, _ , center_coor =\
+                self.model([molded_images, image_metas, anchors], training=False)
+        else:
+            detections, _, _, mrcnn_mask, _, _, _ , center_coor =\
+                self.model.predict([molded_images, image_metas, anchors], verbose=0) #[molded_images, image_metas, anchors]
         # Process detections
         results = []
         for i, image in enumerate(images):
-            final_rois, final_class_ids, final_scores, final_masks, Centre_coor =\
-                ut.unmold_detections(detections[i], mrcnn_mask[i],
-                                       image.shape, molded_images[i].shape,
-                                       windows[i],ReturnMiniMask=config.RETURN_MINI_MASK)
+            if len(images) <= config.BATCH_SIZE:
+                final_rois, final_class_ids, final_scores, final_masks, Centre_coor =\
+                    ut.unmold_detections(detections[i].numpy(), mrcnn_mask[i].numpy(),
+                                           image.shape, molded_images[i].shape,
+                                           windows[i],ReturnMiniMask=config.RETURN_MINI_MASK)
+            else:
+                final_rois, final_class_ids, final_scores, final_masks, Centre_coor =\
+                    ut.unmold_detections(detections[i], mrcnn_mask[i],
+                                           image.shape, molded_images[i].shape,
+                                           windows[i],ReturnMiniMask=config.RETURN_MINI_MASK)
             results.append({
                 "rois": final_rois,
                 "class_ids": final_class_ids,
@@ -440,7 +452,6 @@ class LossLogger(tf.keras.callbacks.Callback):
 
         
         
-
 
 
 
