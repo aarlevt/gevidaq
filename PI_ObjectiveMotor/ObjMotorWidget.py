@@ -7,7 +7,7 @@ Created on Wed Mar  4 14:03:52 2020
 
 from __future__ import division
 import sys
-sys.path.append('../')
+
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt, pyqtSignal, QRectF, QPoint, QRect, QObject
 from PyQt5.QtGui import QColor, QPen, QPixmap, QIcon, QTextCursor, QFont
@@ -20,6 +20,12 @@ import pyqtgraph as pg
 import numpy as np
 import sys
 import threading
+import os
+# Ensure that the Widget can be run either independently or as part of Tupolev.
+if __name__ == "__main__":
+    abspath = os.path.abspath(__file__)
+    dname = os.path.dirname(abspath)
+    os.chdir(dname+'/../')
 import StylishQT
 from PI_ObjectiveMotor.focuser import PIMotor
 

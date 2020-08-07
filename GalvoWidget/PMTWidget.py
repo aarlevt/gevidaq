@@ -15,7 +15,6 @@ from PyQt5.QtWidgets import (QWidget, QButtonGroup, QLabel, QSlider, QSpinBox, Q
 
 import pyqtgraph as pg
 import sys
-sys.path.append('../')
 import numpy as np
 
 from GalvoWidget.pmt_thread import pmtimagingTest, pmtimagingTest_contour
@@ -23,6 +22,11 @@ from PIL import Image
 
 from pyqtgraph import PlotDataItem
 import os
+# Ensure that the Widget can be run either independently or as part of Tupolev.
+if __name__ == "__main__":
+    abspath = os.path.abspath(__file__)
+    dname = os.path.dirname(abspath)
+    os.chdir(dname+'/../')
 from datetime import datetime
 import matplotlib.pyplot as plt
 from NIDAQ.constants import HardwareConstants
@@ -635,7 +639,6 @@ class PMTWidgetUI(QWidget):
     '''
 if __name__ == "__main__":
     
-    os.chdir(os.path.dirname(sys.argv[0]))# Set directory to current folder.
     def run_app():
         app = QtWidgets.QApplication(sys.argv)
         pg.setConfigOptions(imageAxisOrder='row-major')

@@ -9,8 +9,9 @@ Deprecated
 
 # Large files:
 *.tif
-*.json
 *.png
+!Icons/*.png
+*.json
 *.log
 
 # jupyternotebook cache

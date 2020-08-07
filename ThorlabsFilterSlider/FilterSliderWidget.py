@@ -19,6 +19,12 @@ from PyQt5.QtWidgets import (QWidget, QButtonGroup, QLabel, QSlider, QSpinBox, Q
 import pyqtgraph as pg
 import time
 import sys
+import os
+# Ensure that the Widget can be run either independently or as part of Tupolev.
+if __name__ == "__main__":
+    abspath = os.path.abspath(__file__)
+    dname = os.path.dirname(abspath)
+    os.chdir(dname+'/../')
 import StylishQT
 
 from ThorlabsFilterSlider.Filtermovement_Thread import FiltermovementThread

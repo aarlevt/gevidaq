@@ -24,12 +24,13 @@ import ctypes.util
 import skimage.external.tifffile as skimtiff
 from skimage.measure import block_reduce
 from PIL import Image
-try:
-    from HamamatsuDCAM import *
-except:
-    from HamamatsuCam.HamamatsuDCAM import *
-# Append parent folder to system path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
+# Ensure that the Widget can be run either independently or as part of Tupolev.
+if __name__ == "__main__":
+    abspath = os.path.abspath(__file__)
+    dname = os.path.dirname(abspath)
+    os.chdir(dname+'/../')
+from HamamatsuCam.HamamatsuDCAM import *
 import StylishQT
 
 '''

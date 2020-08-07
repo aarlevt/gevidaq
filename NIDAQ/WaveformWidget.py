@@ -13,7 +13,6 @@ Created on Fri Dec 13 23:04:00 2019
 
 from __future__ import division
 import sys
-sys.path.append('../')
 import numpy as np
 from matplotlib import pyplot as plt
 from IPython import get_ipython
@@ -29,6 +28,12 @@ from PyQt5.QtWidgets import (QWidget,QLineEdit, QLabel, QGridLayout, QPushButton
 import pyqtgraph as pg
 from pyqtgraph import PlotDataItem, TextItem
 import os
+# Ensure that the Widget can be run either independently or as part of Tupolev.
+if __name__ == "__main__":
+    abspath = os.path.abspath(__file__)
+    dname = os.path.dirname(abspath)
+    os.chdir(dname+'/../')
+    
 from PIL import Image
 
 import threading
