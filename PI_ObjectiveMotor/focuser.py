@@ -5,8 +5,8 @@ Created on Thu Mar 21 14:41:41 2019
 @author: xinmeng
 """
 import sys
-sys.path.append(r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\People\Xin Meng\Code\PIPython\PIPython\PIPython-1.3.4.17')
-sys.path.append(r'.\Linearstage')
+# sys.path.append(r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\People\Xin Meng\Code\PIPython\PIPython\PIPython-1.3.4.17')
+# sys.path.append(r'.\Linearstage')
 
 try:
     from pipython import GCSDevice
