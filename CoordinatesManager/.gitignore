@@ -1,0 +1,10 @@
+# Files which will be ignored when uploading
+
+# Image files
+*.tiff
+
+
+# Compiled code
+*.exe
+__pycache__
+*.pyc

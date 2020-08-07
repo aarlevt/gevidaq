@@ -1,0 +1,7 @@
+create new enviroment
+conda install pip
+pip install tensorflow==2.2.0
+pip install matplotlib
+pip install scikit-image
+
+https://github.com/matterport/Mask_RCNN/pull/1817/files
