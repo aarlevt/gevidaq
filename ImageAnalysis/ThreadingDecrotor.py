@@ -14,10 +14,10 @@ def run_in_thread(fn):
     """
     https://stackoverflow.com/questions/23944657/typeerror-method-takes-1-positional-argument-but-2-were-given
     """
-    @staticmethod
-    def run(*k):
+    # @staticmethod
+    def run(*args, **kwargs):
         
-        thread = threading.Thread(target=fn, args=(*k,), daemon = False)
+        thread = threading.Thread(target=fn, args=args, kwargs=kwargs)
         thread.start()
         print('run_in_thread start')
         return thread # <-- return the thread
@@ -29,18 +29,42 @@ class test(QWidget):
         self.layout = QVBoxLayout() 
         self.aabuttom = QPushButton('Top')
         self.layout.addWidget(self.aabuttom)
-        self.aabuttom.clicked.connect(self.call)
+        self.aabuttom.clicked.connect(lambda:self.run_in_thread(self.call))
         
-        self.num = 'call'
+        self.num = 1
         print(self.num)
         self.setLayout(self.layout) 
                 
-    @run_in_thread
-    def call(self):
+    
+    def run_in_thread(self, fn, *args, **kwargs):
+        """
+        Send target function to thread.
+        Usage: lambda: self.run_in_thread(self.fn)
+        
+        Parameters
+        ----------
+        fn : function
+            Target function to put in thread.
 
+        Returns
+        -------
+        thread : TYPE
+            Threading handle.
+
+        """
+        thread = threading.Thread(target=fn, args=args, kwargs=kwargs)
+        thread.start()
+        print('run_in_thread start')
+        
+        return thread
+        
+    # @run_in_thread
+    def call(self):
         for i in range(10):
+            self.num+=1
             print(self.num)
             time.sleep(2)
+
         
 if __name__ == "__main__":
     def run_app():

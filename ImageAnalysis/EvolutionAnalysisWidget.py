@@ -227,7 +227,7 @@ class MainGUI(QWidget):
         
         ExecuteAnalysisButton = QPushButton('Load images', self)
 #        ExecuteAnalysisButton.setObjectName('Startbutton')
-        ExecuteAnalysisButton.clicked.connect(lambda: self.StartScreeningAnalysisThread())
+        ExecuteAnalysisButton.clicked.connect(lambda: self.run_in_thread(self.ScreeningAnalysis))
         LoadSettingLayout.addWidget(ExecuteAnalysisButton, 1, 3)
         
         self.ClearAnalysisInforButton = QtWidgets.QPushButton('Clear infor')
@@ -318,13 +318,28 @@ class MainGUI(QWidget):
         self.Lib_folder = None
         self.Tag_round_infor = []
         self.Lib_round_infor = []
-    
-    def StartScreeningAnalysisThread(self):
         
-        self.ScreeningAnalysis_thread = threading.Thread(target = self.ScreeningAnalysis, daemon = True)
-        self.ScreeningAnalysis_thread.start()  
+    def run_in_thread(self, fn, *args, **kwargs):
+        """
+        Send target function to thread.
+        Usage: lambda: self.run_in_thread(self.fn)
+        
+        Parameters
+        ----------
+        fn : function
+            Target function to put in thread.
+
+        Returns
+        -------
+        thread : TYPE
+            Threading handle.
+
+        """
+        thread = threading.Thread(target=fn, args=args, kwargs=kwargs)
+        thread.start()
+        
+        return thread
     
-    # @run_in_thread
     def ScreeningAnalysis(self):
         Mean_intensity_in_contour_thres = self.Mean_intensity_in_contour_thres_box.value()
         Contour_soma_ratio_thres = self.Contour_soma_ratio_thres_box.value()
