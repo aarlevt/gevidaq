@@ -293,6 +293,14 @@ class MainGUI(QWidget):
     # =============================================================================
     """
     def SetAnalysisPath(self):
+        """
+        Set the directory information for rounds.
+
+        Returns
+        -------
+        None.
+
+        """
         self.Analysissavedirectory = str(QtWidgets.QFileDialog.getExistingDirectory())
         self.datasavedirectorytextbox.setText(self.Analysissavedirectory)
         
@@ -305,7 +313,14 @@ class MainGUI(QWidget):
             self.Lib_folder = self.Analysissavedirectory    
         
     def SetAnalysisRound(self):
+        """
+        Sepcify the round numbers and store the information in list.
 
+        Returns
+        -------
+        None.
+
+        """
         if self.FilepathSwitchBox.currentText() == 'Tag':
             self.Tag_round_infor.append(self.AnalysisRoundBox.value())
         elif self.FilepathSwitchBox.currentText() == 'Lib':
@@ -341,6 +356,18 @@ class MainGUI(QWidget):
         return thread
     
     def ScreeningAnalysis(self):
+        """
+        Main function running through the whole brightness screening data analysis.
+        1) Create MaskRCNN instance.
+        2) Get the Dataframe from tag and library screening round.
+        3) Merge the two rounds based on bounding box intersection between cell images.
+        4) Filter out results under threadhold.
+        
+        Returns
+        -------
+        None.
+
+        """
         Mean_intensity_in_contour_thres = self.Mean_intensity_in_contour_thres_box.value()
         Contour_soma_ratio_thres = self.Contour_soma_ratio_thres_box.value()
         # For the brightness screening
@@ -364,7 +391,14 @@ class MainGUI(QWidget):
         self.UpdateSelectionScatter()
     #%%
     def UpdateSelectionScatter(self):
+        """
+        Plot the scatter graph.
 
+        Returns
+        -------
+        None.
+
+        """
         self.EvaluatingPara_list = [self.X_axisBox.currentText(), self.Y_axisBox.currentText()]
         
         self.Matdisplay_Figure.clear()
@@ -388,7 +422,20 @@ class MainGUI(QWidget):
                 
     def GoThroughTopCells(self, direction):
         """
-        ! Cell dataframe index starts from Cell 1, which corresponds to popnexttopimgcounter = 0.
+        According to the direction, get the cell index in dataframe and display
+        the cell image and position in scatter plot.
+        
+        Cell dataframe index starts from Cell 1, which corresponds to popnexttopimgcounter = 0.
+
+        Parameters
+        ----------
+        direction : string
+            In which direction show the next cell.
+
+        Returns
+        -------
+        None.
+
         """
         # =============================================================================
         #         Show the next ranked cell
@@ -534,6 +581,14 @@ class MainGUI(QWidget):
             self.display_selected_image()
             
     def ShowScatterPos(self):
+        """
+        Show the scatter position of cell in ranked sequence.
+
+        Returns
+        -------
+        None.
+
+        """
 #        if self.ButtonShowInScatter.isChecked():
         self.Matdisplay_Figure.clear()
         ax1 = self.Matdisplay_Figure.add_subplot(111)
@@ -548,6 +603,14 @@ class MainGUI(QWidget):
 #            self.GoThroughTopCells('null')
             
     def ShowSequenceScatter(self):
+        """
+        Show the scatter position of cell which is searched through index IDnum.
+
+        Returns
+        -------
+        None.
+
+        """
 #        if self.ShowSequenceScatterButton.isChecked():
         self.Matdisplay_Figure.clear()
         ax1 = self.Matdisplay_Figure.add_subplot(111)
