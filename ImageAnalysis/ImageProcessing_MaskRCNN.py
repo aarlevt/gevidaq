@@ -184,15 +184,18 @@ class ProcessImageML():
         image = ProcessImage.convert_for_MaskRCNN(Rawimage)
         
         # Run the detection on input image.
-        results        = self.Detector.detect([Image])
+        results        = self.Detector.detect([image])
         
         MLresults      = results[0]
         
         if axis != None:
             # If axis is given, draw on axis.
-            visualize.display_instances(image, MLresults['rois'], MLresults['masks'], MLresults['class_ids'], 
+            visualize.display_instances(image, MLresults['rois'], MLresults['masks'], MLresults['class_ids'],
                                             ['BG'] + self.config.ValidLabels, ax=axis,
-                                            centre_coors = MLresults['Centre_coor'], Centre_coor_radius = 2 )#MLresults['scores'],            
+                                            centre_coors = MLresults['Centre_coor'], Centre_coor_radius = 2, 
+                                            WhiteSpace = (0, 0))#MLresults['class_ids'],MLresults['scores'], 
+            # ax.imshow(fig)
+       
             return MLresults
         else:
             return MLresults
@@ -494,6 +497,8 @@ class ProcessImageML():
 if __name__ == "__main__":
     
     import time
+    import skimage
+    # from skimage.io import imread
     # =============================================================================
     tag_folder = r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\2020-4-08 Archon citrine library 100FOVs\trial_3_library_cellspicked'
     lib_folder = r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\2020-7-30 Archon1 comparision 100 FOV\code_test'
@@ -502,18 +507,17 @@ if __name__ == "__main__":
     tag_round = 'Round1'
     lib_round = 'Round2'
     
-    starttime = time.time()
     
     ProcessML = ProcessImageML()
 
 #    cell_Data_1 = ProcessML.FluorescenceAnalysis(lib_folder, tag_round)
-    cell_Data_2 = ProcessML.FluorescenceAnalysis(lib_folder, tag_round)
-#    Cell_DataFrame_Merged = ProcessML.MergeDataFrames(cell_Data_1, cell_Data_2, method = 'TagLib')
-#    DataFrames_filtered = ProcessML.FilterDataFrames(Cell_DataFrame_Merged, Mean_intensity_in_contour_thres = 0.25, Contour_soma_ratio_thres = 1)
-#    DataFrame_sorted = ProcessML.Sorting_onTwoaxes(DataFrames_filtered, axis_1 = "Lib_Tag_contour_ratio", axis_2 = "Contour_soma_ratio_Lib", weight_1 = 1, weight_2 = 0.5)
-#    ProcessML.showPlotlyScatter(DataFrame_sorted, x_axis='Lib_Tag_contour_ratio', y_axis="Contour_soma_ratio_Lib")
-    # =============================================================================
-#    tif_image = imread(r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\People\Xin Meng\Code\Data\Trial_tif\Round1_Coords3_R16500C19800_PMT_0Zmax.tif')
-#    MLresults_dict = np.load \
-#    (r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\People\Xin Meng\Code\Data\Trial_tif\tagprotein_cell_properties_dict.npy',allow_pickle='TRUE').item()
-#    
+    # cell_Data_2 = ProcessML.FluorescenceAnalysis(lib_folder, tag_round)
+    
+    # 5.6s for each detection
+    img = skimage.io.imread(r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\2020-7-30 Archon1 comparision 100 FOV\code_test\Round1_Coords1_R0C0_PMT_0Zmax.tif")
+    for _ in range(3):    
+        starttime = time.time()
+        ProcessML.DetectionOnImage(img)
+        endtime = time.time()
+        print(starttime-endtime)
+    
