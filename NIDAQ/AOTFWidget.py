@@ -18,15 +18,13 @@ from PyQt5.QtWidgets import (QWidget, QButtonGroup, QLabel, QSlider, QSpinBox, Q
 
 import pyqtgraph as pg
 import time
-import sys
-
-from NIDAQ.DAQoperator import DAQmission
-
+import threading
 import os
 # Append parent folder to system path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 import StylishQT
 from NIDAQ.ServoMotor import Servo
+from NIDAQ.DAQoperator import DAQmission
 
 class AOTFWidgetUI(QWidget):
     
@@ -142,11 +140,20 @@ class AOTFWidgetUI(QWidget):
         self.lasers_status['532'] = [False, 0]
         self.lasers_status['640'] = [False, 0]
         
+        thread = threading.Thread(target=self.start_up_event)
+        thread.start()        
+        self.shutter488Button.setChecked(False)
         #**************************************************************************************************************************************
         #--------------------------------------------------------------------------------------------------------------------------------------
         #-----------------------------------------------------------Fuc for AOTF---------------------------------------------------------------
         #--------------------------------------------------------------------------------------------------------------------------------------          
         #**************************************************************************************************************************************
+    def start_up_event(self):
+        servo= Servo()
+        # close the blue shutter
+        servo.rotate(target_servo = 'servo_modulation_1', degree = 0)
+        
+    
     def updatelinevalue(self, wavelength):
         if wavelength == 640:
             self.line640.setText(str(self.slider640.value()/100))
@@ -246,10 +253,10 @@ class AOTFWidgetUI(QWidget):
         if laser == "488":
             if self.shutter488Button.isChecked():
                 servo= Servo()
-                servo.rotate(target_servo = 'servo_modulation_1', degree = 0)
+                servo.rotate(target_servo = 'servo_modulation_1', degree = 180)
             else:
                 servo= Servo()
-                servo.rotate(target_servo = 'servo_modulation_1', degree = 180)
+                servo.rotate(target_servo = 'servo_modulation_1', degree = 0)
         
     def set_registration_mode(self, flag_registration_mode):
         if flag_registration_mode:

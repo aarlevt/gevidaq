@@ -18,6 +18,7 @@ from PyQt5.QtWidgets import (QWidget, QButtonGroup, QLabel, QSlider, QSpinBox, Q
 
 import pyqtgraph as pg
 import time
+import threading
 import sys
 import os
 # Ensure that the Widget can be run either independently or as part of Tupolev.
@@ -27,7 +28,7 @@ if __name__ == "__main__":
     os.chdir(dname+'/../')
 import StylishQT
 
-from ThorlabsFilterSlider.Filtermovement_Thread import FiltermovementThread
+from ThorlabsFilterSlider.filterpyserial import ELL9Filter
 
 class FilterSliderWidgetUI(QWidget):
     
@@ -241,39 +242,62 @@ class FilterSliderWidgetUI(QWidget):
         #-----------------------------------------------------------Fucs for filter movement---------------------------------------------------
         #--------------------------------------------------------------------------------------------------------------------------------------          
         #************************************************************************************************************************************** 
+    def run_in_thread(self, fn, *args, **kwargs):
+        """
+        Send target function to thread.
+        Usage: lambda: self.run_in_thread(self.fn)
+        
+        Parameters
+        ----------
+        fn : function
+            Target function to put in thread.
+
+        Returns
+        -------
+        thread : TYPE
+            Threading handle.
+
+        """
+        thread = threading.Thread(target=fn, args=args, kwargs=kwargs)
+        thread.start()
+        
+        return thread
+    
     def DecodeFilterMove(self):
         
         if self.FilterButtongroup_1.checkedId() == -2:
-            self.filter_move_towards("COM9", 0)
+            self.run_in_thread(self.filter_move_towards("COM9", 0))
         elif self.FilterButtongroup_1.checkedId() == -3:
-            self.filter_move_towards("COM9", 1)
+            self.run_in_thread(self.filter_move_towards("COM9", 1))
         elif self.FilterButtongroup_1.checkedId() == -4:
-            self.filter_move_towards("COM9", 2)
+            self.run_in_thread(self.filter_move_towards("COM9", 2))
         elif self.FilterButtongroup_1.checkedId() == -5:
-            self.filter_move_towards("COM9", 3)
+            self.run_in_thread(self.filter_move_towards("COM9", 3))
     
         if self.FilterButtongroup_2.checkedId() == -2:
-            self.filter_move_towards("COM7", 0)
+            self.run_in_thread(self.filter_move_towards("COM7", 0))
         elif self.FilterButtongroup_2.checkedId() == -3:
-            self.filter_move_towards("COM7", 1)
+            self.run_in_thread(self.filter_move_towards("COM7", 1))
         elif self.FilterButtongroup_2.checkedId() == -4:
-            self.filter_move_towards("COM7", 2)
+            self.run_in_thread(self.filter_move_towards("COM7", 2))
         elif self.FilterButtongroup_2.checkedId() == -5:
-            self.filter_move_towards("COM7", 3)
+            self.run_in_thread(self.filter_move_towards("COM7", 3))
             
         if self.FilterButtongroup_3.checkedId() == -2:
-            self.filter_move_towards("COM15", 0)
+            self.run_in_thread(self.filter_move_towards("COM15", 0))
         elif self.FilterButtongroup_3.checkedId() == -3:
-            self.filter_move_towards("COM15", 1)
+            self.run_in_thread(self.filter_move_towards("COM15", 1))
 
-            
+    # def start_up_event(self):
+    #     ports = ["COM9", "COM7", "COM15"]
+    #     try:
+    #         for port in ports:
+    #             ELL9Filter_ins = ELL9Filter(port)
+    #             pos = 
+
     def filter_move_towards(self, COMport, pos):
-        filter_movement_thread = FiltermovementThread(COMport, pos)
-        filter_movement_thread.filtercurrent_position.connect(self.update_slider_current_pos)
-        filter_movement_thread.start()
-        time.sleep(0.2)
-        filter_movement_thread.quit()
-        filter_movement_thread.wait()
+        ELL9Filter_ins = ELL9Filter(COMport)
+        ELL9Filter_ins.moveToPosition(pos)
         
     def update_slider_current_pos(self, current_pos):
 #        .setValue(current_pos)

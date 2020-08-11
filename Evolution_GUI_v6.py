@@ -35,7 +35,7 @@ from NIDAQ.constants import HardwareConstants
 import NIDAQ.WaveformWidget
 from EvolutionScanningThread import ScanningExecutionThread # This is the thread file for execution.
 from SampleStageControl.stage import LudlStage
-from NIDAQ.generalDaqerThread import execute_tread_singlesample_digital
+from NIDAQ.DAQoperator import DAQmission
 
 import FocusCalibrater
 import GalvoWidget.PMTWidget
@@ -1275,15 +1275,12 @@ class Mainbody(QWidget):
         self.ScreenAnalysisMLWindow.show()
         
     def execute_tread_single_sample_digital(self, channel):
+        daq= DAQmission()
         if channel == 'LED':
             if self.switchbutton_LED.isChecked():
-                execute_tread_singlesample_AOTF_digital = execute_tread_singlesample_digital()
-                execute_tread_singlesample_AOTF_digital.set_waves(channel, 1)
-                execute_tread_singlesample_AOTF_digital.start()
+                daq.sendSingleDigital('LED', True)
             else:
-                execute_tread_singlesample_AOTF_digital = execute_tread_singlesample_digital()
-                execute_tread_singlesample_AOTF_digital.set_waves(channel, 0)
-                execute_tread_singlesample_AOTF_digital.start()
+                daq.sendSingleDigital('LED', False)
     
     def closeEvent(self, event):
         QtWidgets.QApplication.quit()

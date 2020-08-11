@@ -44,7 +44,7 @@ class Servo:
         if degree >= 0 and degree <= 360:
             dutycycle = round((degree/180) * 0.05 + 0.05, 6)
             
-            PWM_wave = self.blockWave(self.sampling_rate, self.PWM_frequency, dutycycle, repeats = 35)
+            PWM_wave = self.blockWave(self.sampling_rate, self.PWM_frequency, dutycycle, repeats = 25)
             
             PWM_wave = np.where(PWM_wave == 0, False, True)
 #            plt.figure()

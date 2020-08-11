@@ -22,7 +22,7 @@ from CoordinatesManager.backend.polynomialTransformation import polynomialRegres
 from CoordinatesManager import DMDActuator, ManualRegistration, DMDWidget, GalvoWidget, StageRegistrationWidget
 
 from NIDAQ.DAQoperator import DAQmission
-from NIDAQ.generalDaqerThread import execute_analog_readin_optional_digital_thread
+# from NIDAQ.generalDaqerThread import execute_analog_readin_optional_digital_thread
 from NIDAQ.wavegenerator import waveRecPic
 
 from ImageAnalysis.ImageProcessing import ProcessImage
