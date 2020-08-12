@@ -35,23 +35,12 @@ if __name__ == "__main__":
     abspath = os.path.abspath(__file__)
     dname = os.path.dirname(abspath)
     os.chdir(dname+'/../')
-    # os.chdir(os.getcwd()+'/')
-#------------------------------------------------------------------------------
-#----------------------------------TF-1----------------------------------------
-# os.chdir(r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\People\Xin Meng\Code\Python_test\ImageAnalysis')
-# from ImageProcessing import ProcessImage
-# from mrcnn import visualize
-# sys.path.append(".\MaskRCNN")
 
-# from Config.ConfigFileDemo import cellConfig     
-# from DetectClass import Detect
 #----------------------------------TF-2----------------------------------------
 
 from MaskRCNN.Configurations.ConfigFileInferenceOld import cellConfig
 from MaskRCNN.Engine.MaskRCNN import MaskRCNN as modellib
 import MaskRCNN.Miscellaneous.visualize as visualize
-#------------------------------------------------------------------------------
-# os.chdir(r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\People\Xin Meng\Code\Python_test\ImageAnalysis')
 from ImageAnalysis.ImageProcessing import ProcessImage
 #================================================================ProcessImage===============================================
 class ProcessImageML():
@@ -84,8 +73,6 @@ class ProcessImageML():
         # config.IMAGE_MIN_DIM = 1024
         # config.IMAGE_MAX_DIM = 1024
         # config.IMAGE_MIN_SCALE = 1
-        
-        
         
         # Create model
         self.Detector = modellib(self.config, 'inference', model_dir=self.config.LogDir)
@@ -432,67 +419,7 @@ class ProcessImageML():
                          hover_data= ['Contour_soma_ratio_Lib', 'Lib_Tag_contour_ratio', 'ImgNameInfor_Lib'], width=1050, height=950)
 #        fig.update_layout(hovermode="x")
         fig.write_html(saving_directory, auto_open=True)
-        
-    #%%
-                    
-#    def preProcessMLimg(self, image, smallest_size, lowest_region_intensity):
-#        """
-#        # =======Some preprocessing to get rid of junk parts and make image clearer.=========
-#        #
-#        # --smallest_size/biggest_size: cells size out of this range are ignored.
-#        # --lowest_region_intensity: cells with mean region intensity below this are ignored.
-#        # --cell_region_opening_factor: degree of opening operation on individual cell mask.
-#        # --cell_region_closing_factor: degree of closing operation on individual cell mask.
-#        #====================================================================================
-#        """
-#        openingfactor=2
-#        closingfactor=3
-#        binary_adaptive_block_size=335
-#        cell_region_opening_factor=1
-#        cell_region_closing_factor=2
-#        
-#        image = denoise_tv_chambolle(image, weight=0.01) # Denoise the image.
-#      
-#        # -----------------------------------------------Set background to 0-----------------------------------------------
-#        AdaptiveThresholding = threshold_local(image, binary_adaptive_block_size, offset=0)
-#        BinaryMask = image >= AdaptiveThresholding
-#        OpeningBinaryMask = opening(BinaryMask, square(int(openingfactor)))
-#        RegionProposal_Mask = closing(OpeningBinaryMask, square(int(closingfactor)))
-#        
-#        clear_border(RegionProposal_Mask)
-#        # label image regions, prepare for regionprops
-#        label_image = label(RegionProposal_Mask)  
-#        FinalpreProcessROIMask = np.zeros((image.shape[0], image.shape[1]))
-#        
-#        for region in regionprops(label_image,intensity_image = image): 
-#            
-#            # skip small images
-#            if region.area > smallest_size and region.mean_intensity > lowest_region_intensity:
-#                
-#                # draw rectangle around segmented coins
-#                minr, minc, maxr, maxc = region.bbox
-#
-#                bbox_area = (maxr-minr)*(maxc-minc)
-#                # Based on the boundingbox for each cell from first image in the stack, raw image of slightly larger region is extracted from each round.
-#                RawRegionImg = image[minr:maxr, minc:maxc] # Raw region image 
-#
-#                #---------Get the cell filled mask-------------
-#                filled_mask_bef, MeanIntensity_Background = ProcessImage.get_cell_filled_mask(RawRegionImg = RawRegionImg, region_area = bbox_area*0.2, 
-#                                                                                                      cell_region_opening_factor = cell_region_opening_factor, 
-#                                                                                                      cell_region_closing_factor = cell_region_closing_factor)
-#
-#                filled_mask_convolve2d = ProcessImage.smoothing_filled_mask(RawRegionImg, filled_mask_bef = filled_mask_bef, region_area = bbox_area*0.2, threshold_factor = 1.1)
-#                #----------Put region maks back to original image.-----------
-#                preProcessROIMask = np.zeros((image.shape[0], image.shape[1]))
-#                preProcessROIMask[minr:maxr, minc:maxc] = filled_mask_convolve2d
-#                
-#                FinalpreProcessROIMask += preProcessROIMask
-#                
-#        FinalpreProcessROIMask = np.where(FinalpreProcessROIMask > 1, 1, FinalpreProcessROIMask)
-#        ClearedImg = FinalpreProcessROIMask * image
-#        
-#        return ClearedImg
-    #%%
+
     
 if __name__ == "__main__":
     

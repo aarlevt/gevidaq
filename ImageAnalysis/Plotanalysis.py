@@ -281,7 +281,7 @@ if __name__ == "__main__":
     def run_app():
         app = QtWidgets.QApplication(sys.argv)
         pg.setConfigOptions(imageAxisOrder='row-major')
-        mainwin = Mainbody()
+        mainwin = PlotAnalysisGUI()
         mainwin.show()
         app.exec_()
     run_app()

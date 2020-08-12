@@ -423,9 +423,9 @@ class ProcessImage():
         return LibFluorescenceLookupBook        
     #%%
     """           
-    # ==========================================================================================================================================================
-    # ************************************    Contour scanning processing    ************************************    
-    # ==========================================================================================================================================================
+    # =========================================================================
+    #     Contour scanning processing       
+    # =========================================================================
     """
     def findContour(imagewithouthole, image, threshold):
         """
@@ -673,6 +673,7 @@ class ProcessImage():
                     contour_x_acceleration = np.diff(X_interpolated, n=2)/time_gap**2
                     contour_y_acceleration = np.diff(Y_interpolated, n=2)/time_gap**2
                     
+                    AccelerationGalvo = 1.54*10**8 # Maximum acceleration of galvo mirror in volt/s^2
                     if AccelerationGalvo < np.amax(abs(contour_x_acceleration)):
                         print(np.amax(abs(contour_x_acceleration)))
                     if AccelerationGalvo < np.amax(abs(contour_y_acceleration)):
@@ -851,6 +852,12 @@ class ProcessImage():
         return ContourArray_forDaq
     
     #--------------------------------------------------------------------------
+    #%%
+    """
+    # =========================================================================
+    #  Organize cell properties dictionary
+    # =========================================================================
+    """
     
     def get_cell_properties_Roundstack(imagestack, RegionProposalMask, smallest_size, contour_thres, contour_dilationparameter, cell_region_opening_factor, cell_region_closing_factor):
         
@@ -962,11 +969,6 @@ class ProcessImage():
             
         return CellPropDictEachRound
     
-    """
-    # ==========================================================================================================================================================
-    # ************************************   Organize cell properties dictionary  ************************************ 
-    # ==========================================================================================================================================================
-    """
 
     def TagFluorescenceAnalysis(tag_folder, tag_round, Roundness_threshold):
         """
@@ -1205,7 +1207,7 @@ class ProcessImage():
         return Selected_LookupBook        
     #%%
     # =============================================================================
-    #     ROI and mask generation
+    #     ROI and mask generation, DMD related
     # =============================================================================
     def CreateBinaryMaskFromRoiCoordinates(list_of_rois, fill_contour = False, contour_thickness = 1, mask_resolution = (2048, 2048), invert_mask = False):
         """
@@ -1578,6 +1580,147 @@ class ProcessImage():
         else:
             return Rawimage
         
+    #%%
+    # =============================================================================
+    #     Pixel weighting
+    # =============================================================================
+    def readbinaryfile(filepath):
+        """
+        Read in the binary files, which has 'Ip' or 'Vp' as suffix that comes from old Labview code.
+
+        Parameters
+        ----------
+        filepath : String
+            Path to the target numpy file.
+
+        Returns
+        -------
+        data : np.array
+            The inteprated data.
+        srate : TYPE
+            DESCRIPTION.
+
+        """
+        
+        sizebytes = os.path.getsize(filepath)
+        inputfilename = (filepath)
+        
+        with open(inputfilename, 'rb') as fid:
+            data_array_h1 = np.fromfile(fid, count=2, dtype='>d')
+            data_array_sc = np.fromfile(fid, count=(int(data_array_h1[0])*int(data_array_h1[1])), dtype='>d')
+            data_array_sc=np.reshape(data_array_sc, (int(data_array_h1[0]), int(data_array_h1[1])), order='F')
+            
+            data_array_h1[1]=1
+            data_array_sc = data_array_sc[:,1]
+            
+            data_array_samplesperchannel =  (sizebytes-fid.tell())/2/data_array_h1[1]
+            
+            data_array_udat = np.fromfile(fid, count=(int(data_array_h1[1])*int(data_array_samplesperchannel)), dtype='>H')#read as uint16
+            data_array_udat_1 = data_array_udat.astype(np.int32)#convertdtype here as data might be saturated, out of uint16 range
+            data_array_sdat = data_array_udat_1-(2**15)
+            
+        temp=np.ones(int(data_array_samplesperchannel))*data_array_sc[1]
+        
+        for i in range(1, int(data_array_h1[0])-1):
+            L=(np.ones(int(data_array_samplesperchannel))*data_array_sc[i+1])*np.power(data_array_sdat, i)
+            temp=temp+L
+        
+        data = temp
+        srate= data_array_sc[0]
+        
+        return data, srate
+    
+    def extractV(video, Vin):
+        """
+        Perform the correlation between input video and voltage signal or trace of video itself,
+        calculate the weighted pixel information.
+
+        Parameters
+        ----------
+        video : np.array
+            The input video in numpy array format.
+        Vin : np.array
+            Input patch voltage signals or camera trace, with which the video correlate.
+
+        Returns
+        -------
+        corrimage : np.array
+            DF/DV image.
+        weightimage : np.array
+            1/sigmaimage, in units of 1/voltage^2.
+        sigmaimage : np.array
+            The variance between predicted "voltage" and input voltage.
+
+        """
+        readin_video = video.copy()
+        readin_voltage_patch = Vin.copy()
+        
+        sizex = readin_video.shape[1]
+        sizey = readin_video.shape[2]
+        
+        # This is the mean intensity image of the whole video stack.
+        video_mean_image = np.mean(readin_video, axis = 0) 
+        
+        # Mean value of the waveform that you want to correlate with(patch clamp voltage signal or camera trace).
+        average_voltage = np.mean(readin_voltage_patch) 
+        
+        # 1-D array of variance of voltage signal.
+        readin_voltage_variance = readin_voltage_patch - average_voltage
+        voltagelength = len(readin_voltage_patch)
+        
+        #----------------------Subtract off background-------------------------
+        # Reshape the mean intensity 2D image to 3D, to the same length as voltage signal.
+        averageimage_tiled = np.tile(video_mean_image, (voltagelength,1,1))
+        
+        # 3-D array of variance between each frame from raw video and the total mean intensity image.
+        readin_video_variance = readin_video - averageimage_tiled
+            
+        #-----Correlate the changes in intensity with the applied voltage------
+        # Reshape the 1D readin_voltage_variance into 3D.
+        readin_voltage_variance_3D = np.resize(readin_voltage_variance,(voltagelength,1,1))
+        
+        corrimage = readin_video_variance.copy()
+        
+        # At each frame, get the product of video_variance and voltage_variance
+        #  = DV*DF
+        for i in range(voltagelength):
+            corrimage[i] = corrimage[i]*readin_voltage_variance_3D[i]
+            
+        # Normalize to magnitude of voltage changes (DV*DF./DV^2) = DF/DV
+        corrimage = np.mean(corrimage, axis = 0)/np.mean(((readin_voltage_variance)**2)) 
+        
+        # Calculate a dV estimate at each pixel, based on the linear regression.
+        corrmat = np.tile(corrimage, (voltagelength,1,1))
+        
+        # At each pixel in video, get predicted DV
+        # DF/(DF/DV) = DV
+        estimate_DV = readin_video_variance/corrmat
+          
+        imtermediate = np.zeros(estimate_DV.shape)
+    
+        #--------Look at the residuals to get a noise at each pixel-----------
+        for i in range(voltagelength):
+            # At each frame, compute the variance between predicted "voltage" and input voltage.
+            imtermediate[i] = (estimate_DV[i] - readin_voltage_variance_3D[i])**2
+        sigmaimage = np.mean(imtermediate, axis = 0)
+        
+        # Weightimg scales inverted with variance between input voltage and measured "voltage";
+        # Variance is expressed in units of voltage squared. standard way to do it would be to cast input voltage in form of fit and leave data as data. 
+        weightimage = 1/sigmaimage
+                                            
+        weightimage[np.isnan(weightimage)] = 0
+        weightimage = weightimage/np.mean(weightimage)
+        
+        estimate_DV[np.isnan(estimate_DV)] = 0 #Set places where imgs2 == NaN to zero
+        '''
+        dVout = squeeze(mean(mean(imgs2.*repmat(weightimg, [1 1 L])))) #squeeze takes something along the time axis and puts it 1xn vector
+
+        Vout = dVout + avgV
+        offsetimg = avgimg - avgV*corrimg
+        '''
+
+        return corrimage, weightimage, sigmaimage
+    
     #%%
 if __name__ == "__main__":
     

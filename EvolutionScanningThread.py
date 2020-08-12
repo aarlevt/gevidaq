@@ -484,18 +484,6 @@ class ScanningExecutionThread(QThread):
                             self.adcollector.runWaveforms(clock_source = self.clock_source, sampling_rate = WaveformPackageToBeExecute[0],
                                                           analog_signals = WaveformPackageToBeExecute[1], digital_signals = WaveformPackageToBeExecute[2], 
                                                           readin_channels = WaveformPackageToBeExecute[3])
-#                            if self.clock_source == 'Dev1 as clock source':
-#                                self.adcollector = execute_analog_readin_optional_digital_thread()
-#                                self.adcollector.set_waves(WaveformPackageToBeExecute[0], WaveformPackageToBeExecute[1], WaveformPackageToBeExecute[2], WaveformPackageToBeExecute[3]) #[0] = sampling rate, [1] = analogcontainer_array, [2] = digitalcontainer_array, [3] = readinchan
-#                                self.adcollector.collected_data.connect(self.ProcessData)
-#                                self.adcollector.run()
-#                                time.sleep(0.2)
-#                                #self.ai_dev_scaling_coeff = self.adcollector.get_ai_dev_scaling_coeff()
-#                            elif self.clock_source == 'Cam as clock source' :
-#                                self.adcollector = execute_analog_and_readin_digital_optional_camtrig_thread()
-#                                self.adcollector.set_waves(WaveformPackageToBeExecute[0], WaveformPackageToBeExecute[1], WaveformPackageToBeExecute[2], WaveformPackageToBeExecute[3])
-#                                self.adcollector.collected_data.connect(self.ProcessData)
-#                                self.adcollector.run()
                             
                             #------------------Camera saving-------------------
                             if _camera_isUsed == True:

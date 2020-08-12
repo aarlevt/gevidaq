@@ -27,16 +27,17 @@ import csv
 import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
-try:
-    from ImageAnalysis.matlabAnalysis import readbinaryfile, extractV
-    import ImageAnalysis.Plotanalysis
-#    import ImageAnalysis.CellSelectionGUI_ML
-except:
-    from matlabAnalysis import readbinaryfile, extractV
-    import Plotanalysis
-#    import CellSelectionGUI_ML
 from skimage.io import imread
 import threading
+
+# Ensure that the Widget can be run either independently or as part of Tupolev.
+if __name__ == "__main__":
+    abspath = os.path.abspath(__file__)
+    dname = os.path.dirname(abspath)
+    os.chdir(dname+'/../')
+from ImageAnalysis.ImageProcessing import ProcessImage
+import ImageAnalysis.Plotanalysis
+
 
 class AnalysisWidgetUI(QWidget):
     
@@ -325,10 +326,7 @@ class AnalysisWidgetUI(QWidget):
         image_display_container_layout.addWidget(imageanalysis_weight_Container, 1, 0)
         
         #----------------------------------------------------------------------
-        try:
-            Display_Container_tabs_tab3 = Plotanalysis.PlotAnalysisGUI()
-        except:
-            Display_Container_tabs_tab3 = ImageAnalysis.Plotanalysis.PlotAnalysisGUI()
+        Display_Container_tabs_tab3 = ImageAnalysis.Plotanalysis.PlotAnalysisGUI()
 #        Display_Container_tabs_tab3.setLayout(self.Curvedisplay_Layout)
         
         #----------------------------------------------------------------------
@@ -420,13 +418,13 @@ class AnalysisWidgetUI(QWidget):
 			# For Labview generated data.
             if file.endswith(".Ip"):
                 self.Ipfilename = os.path.dirname(self.fileName) + '/'+file
-                curvereadingobjective_i =  readbinaryfile(self.Ipfilename)               
+                curvereadingobjective_i =  ProcessImage.readbinaryfile(self.Ipfilename)               
                 self.Ip, self.samplingrate_curve = curvereadingobjective_i.readbinarycurve()                
                 self.Ip = self.Ip[0:len(self.Ip)-2]
                 
             elif file.endswith(".Vp"):
                 self.Vpfilename = os.path.dirname(self.fileName) + '/'+file
-                curvereadingobjective_V =  readbinaryfile(self.Vpfilename)               
+                curvereadingobjective_V =  ProcessImage.readbinaryfile(self.Vpfilename)               
                 self.Vp, self.samplingrate_curve = curvereadingobjective_V.readbinarycurve()                
                 self.Vp = self.Vp[0:len(self.Vp)-2] # Here -2 because there are two extra recording points in the recording file.
             
@@ -792,14 +790,12 @@ class AnalysisWidgetUI(QWidget):
             
             self.Vp_downsample = self.Vp_downsample[0:len(self.videostack)]
             
-            weight_ins = extractV(self.videostack, self.Vp_downsample*1000/10) # *1000: convert to mV; /10 is to correct for the *10 add on at patch amplifier.
-            self.corrimage, self.weightimage, self.sigmaimage= weight_ins.cal()
+            self.corrimage, self.weightimage, self.sigmaimage = ProcessImage.extractV(self.videostack, self.Vp_downsample*1000/10) # *1000: convert to mV; /10 is to correct for the *10 add on at patch amplifier.
     
             self.pw_weightimage.setImage(self.weightimage)
             
         elif self.switch_Vp_or_camtrace.currentText() == 'Camera trace':
-            weight_ins = extractV(self.videostack, self.camsignalsum*1000/10)
-            self.corrimage, self.weightimage, self.sigmaimage= weight_ins.cal()
+            self.corrimage, self.weightimage, self.sigmaimage = ProcessImage.extractV(self.videostack, self.camsignalsum*1000/10)
     
             self.pw_weightimage.setImage(self.weightimage)
 
