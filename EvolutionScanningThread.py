@@ -25,7 +25,7 @@ import threading
 class ScanningExecutionThread(QThread):
     
     ScanningResult = pyqtSignal(np.ndarray, np.ndarray, object, object) #The signal for the measurement, we can connect to this signal
-    
+    #%%
     def __init__(self, RoundQueueDict, RoundCoordsDict, GeneralSettingDict, *args, **kwargs):        
         super().__init__(*args, **kwargs)
         self.RoundQueueDict = RoundQueueDict
@@ -42,7 +42,7 @@ class ScanningExecutionThread(QThread):
         
         self.scansavedirectory = self.GeneralSettingDict['savedirectory']
         self.meshgridnumber = int(self.GeneralSettingDict['Meshgrid'])
-        
+    #%%
     def Try_until_Success(func):
         """ This is the decorator to try to execute the function until succeed.
         """
@@ -70,13 +70,11 @@ class ScanningExecutionThread(QThread):
         
         return wrapper
     
+    #%%
     def run(self):
-        """
-        # ==========================================================================================================================================================
-        #                                                                       Initialization
-        # ==========================================================================================================================================================
-        """
-        #%%
+        """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        #                                                               Connect devices.
+        # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
         """
         # =============================================================================
         #         connect the Objective motor
@@ -116,31 +114,19 @@ class ScanningExecutionThread(QThread):
         if len(self.RoundQueueDict['InsightEvents']) != 0:
             self.Laserinstance = InsightX3('COM11')
             try:
-                querygap = 1.1
+                # querygap = 1.1
                 # self.Laserinstance.SetWatchdogTimer(0) # Disable the laser watchdog!
 #                Status_watchdog_thread = threading.Thread(target = self.Status_watchdog, args=[querygap], daemon=True)
 #                Status_watchdog_thread.start() 
-                time.sleep(1)
+                # time.sleep(1)
                 #-------------Initialize laser--------------
                 self.watchdog_flag = False
                 time.sleep(0.5)
         
                 warmupstatus = 0
                 while int(warmupstatus) != 100:
-                    try:
-                        warmupstatus = self.Laserinstance.QueryWarmupTime()
-                        time.sleep(0.6)
-                    except:
-                        time.sleep(0.6)
-                        
-                # if int(warmupstatus) == 100:
-                #     self.warmupstatus = True
-                #     print('Laser fully warmed up.')
-                #     if 'Laser state:Ready' in self.Status_list:
-                #         self.Laserinstance.Turn_On_PumpLaser()
-                #         self.laserRun = True
-                #     elif 'Laser state:RUN' in self.Status_list:
-                #         self.laserRun = True
+                    warmupstatus = self.Laserinstance.QueryWarmupTime()
+                    time.sleep(0.6)
                         
                 self.watchdog_flag = True
                 time.sleep(0.5)
@@ -150,24 +136,24 @@ class ScanningExecutionThread(QThread):
             # If turn on the laser shutter in the beginning
             if 'Shutter_Open' in self.GeneralSettingDict['StartUpEvents']:
                 time.sleep(0.5)
-                while True:
-                    try:
-                        self.Laserinstance.Open_TunableBeamShutter()
-                        break
-                    except:
-                        time.sleep(1)
+
+                self.Laserinstance.Open_TunableBeamShutter()
+
                 time.sleep(0.5)                
         #%%
-        """
-        # ==========================================================================================================================================================
-        #                                                                       Execution
-        # ==========================================================================================================================================================
-        """
-   
+        """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        #                                                                  Execution
+        # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
         GridSequence = 0
         TotalGridNumber = self.meshgridnumber**2
         ScanningMaxCoord = int(np.amax(self.RoundCoordsDict['CoordsPackage_1'])) # Get the largest coordinate
+        
         for EachGrid in range(TotalGridNumber):
+            """
+            #------------------------------------------------------------------------------
+            #:::::::::::::::::::::::::::::::: AT EACH GRID ::::::::::::::::::::::::::::::::
+            #------------------------------------------------------------------------------
+            """
             """
             # =============================================================================
             #         For each small repeat unit in the scanning meshgrid
@@ -179,199 +165,38 @@ class ScanningExecutionThread(QThread):
             time.sleep(0.5)
             
             for EachRound in range(int(len(self.RoundQueueDict)/2-1)): # EachRound is the round sequence number starting from 0, while the actual number used in dictionary is 1.
+                """
+                #-------------------------------------------------------------------------------
+                #:::::::::::::::::::::::::::::::: AT EACH ROUND ::::::::::::::::::::::::::::::::
+                #-------------------------------------------------------------------------------
+                """
                 print ('----------------------------------------------------------------------------')            
                 print('Below is Grid {}, Round {}.'.format(EachGrid, EachRound+1)) # EachRound+1 is the corresponding round number when setting the dictionary starting from round 1.
-                
-                """
-                # =============================================================================
-                #         Unpack the settings for each round
-                # =============================================================================
-                """
-                # Initialize variables
-                CoordOrder = 0      # Counter for n th coordinates, for appending cell properties array.      
-                CellPropertiesDict = {}
-                ND_filter1_Pos = None
-                ND_filter2_Pos = None
-                EM_filter_Pos = None
-                cp_end_index = -1
-                self.IndexLookUpCellPropertiesDict = {} #look up dictionary for each cell properties
-                
-                #-------------Unpack the focus stack information.
-                ZStackinfor = self.GeneralSettingDict['FocusStackInfoDict']['RoundPackage_{}'.format(EachRound+1)]
-                self.ZStackNum = int(ZStackinfor[ZStackinfor.index('Focus')+5])
-                self.ZStackStep = float(ZStackinfor[ZStackinfor.index('Being')+5:len(ZStackinfor)])
-                
-                #-------------Unpack infor for stage move.
-                CoordsNum = int(len(self.RoundCoordsDict['CoordsPackage_{}'.format(EachRound+1)])/2) #Each pos has 2 coords
-                
-                #-------------Unpack infor for filter event. In the list, the first one is for ND filter and the second one is for emission filter.
-                FilterEventIndexList = [i for i,x in enumerate(self.RoundQueueDict['FilterEvents']) if 'Round_{}'.format(EachRound+1) in x]
-                
-                if len(FilterEventIndexList) > 0:
-                    NDposText = self.RoundQueueDict['FilterEvents'][FilterEventIndexList[0]]
-                    NDnumber = NDposText[NDposText.index('ToPos_')+6:len(NDposText)]
-                    
-                    EMposText = self.RoundQueueDict['FilterEvents'][FilterEventIndexList[1]]
-                    EMprotein = EMposText[EMposText.index('ToPos_')+6:len(EMposText)]
-                    
-                    # "COM9" for filter 1 port, which has ND values from 0 to 3.
-                    # "COM7" for filter 2 port, which has ND values from 0 to 0.5.
-                    if NDnumber == '0':
-                        ND_filter1_Pos = 0
-                        ND_filter2_Pos = 0
-                    elif NDnumber == '1':
-                        ND_filter1_Pos = 1
-                        ND_filter2_Pos = 0
-                    elif NDnumber == '2':
-                        ND_filter1_Pos = 2
-                        ND_filter2_Pos = 0
-                    elif NDnumber == '2.3':
-                        ND_filter1_Pos = 2
-                        ND_filter2_Pos = 2
-                    elif NDnumber == '2.5':
-                        ND_filter1_Pos = 2
-                        ND_filter2_Pos = 3
-                    elif NDnumber == '0.5':
-                        ND_filter1_Pos = 0
-                        ND_filter2_Pos = 3        
-                    elif NDnumber == '0.3':
-                        ND_filter1_Pos = 0
-                        ND_filter2_Pos = 2
-                    
-                    if EMprotein == 'Arch':
-                        EM_filter_Pos = 0
-                    elif EMprotein == 'eGFP' or EMprotein == 'Citrine':
-                        EM_filter_Pos = 1
-                    
-                #-------------Unpack infor for Insight X3. In the list, the first one is for shutter event and the second one is for wavelength event. 
-                InsightX3EventIndexList = [i for i,x in enumerate(self.RoundQueueDict['InsightEvents']) if 'Round_{}'.format(EachRound+1) in x]
-                
                 """
                 # =============================================================================
                 #         Execute Insight event at the beginning of each round
                 # =============================================================================
                 """            
-                if len(InsightX3EventIndexList) == 1:
-                    print(InsightX3EventIndexList)
-                    InsightText = self.RoundQueueDict['InsightEvents'][InsightX3EventIndexList[0]]
-                    if 'Shutter_Open' in InsightText:
-                        self.watchdog_flag = False
-                        time.sleep(0.5)
-                        while True:
-                            try:
-                                self.Laserinstance.Open_TunableBeamShutter()
-                                break
-                            except:
-                                time.sleep(1)
-                        time.sleep(0.5)
-                        print('Laser shutter open.')
-                        self.watchdog_flag = True
-                        time.sleep(0.5)
-    
-                    elif 'Shutter_Close' in InsightText:
-                        self.watchdog_flag = False
-                        time.sleep(0.5)
-                        while True:
-                            try:
-                                self.Laserinstance.Close_TunableBeamShutter()
-                                break
-                            except:
-                                time.sleep(1)
-                        time.sleep(0.5)
-                        print('Laser shutter closed.')
-                        self.watchdog_flag = True
-                        time.sleep(0.5)
-                    elif 'WavelengthTo' in InsightText:
-                        self.watchdog_flag = False
-                        time.sleep(0.5)
-                        TargetWavelen = int(InsightText[InsightText.index('To_')+3:len(InsightText)])
-                        print(TargetWavelen)
-                        while True:
-                            try:
-                                self.Laserinstance.SetWavelength(TargetWavelen)
-                                break
-                            except:
-                                time.sleep(1)
-                        time.sleep(5)
-                        self.watchdog_flag = True
-                        time.sleep(0.5)
-                        
-                elif len(InsightX3EventIndexList) == 2:
-                    
-                    InsightText_wl = self.RoundQueueDict['InsightEvents'][InsightX3EventIndexList[1]]
-                    InsightText_st = self.RoundQueueDict['InsightEvents'][InsightX3EventIndexList[0]]
-                    
-                    if 'WavelengthTo' in InsightText_wl and 'Shutter_Open' in InsightText_st:
-                        self.watchdog_flag = False
-                        time.sleep(0.5)
-                        TargetWavelen = int(InsightText_wl[InsightText_wl.index('To_')+3:len(InsightText_wl)])
-                        while True:
-                            try:
-                                self.Laserinstance.SetWavelength(TargetWavelen)
-                                break
-                            except:
-                                time.sleep(1)
-                        time.sleep(5)
-                        while True:
-                            try:
-                                self.Laserinstance.Open_TunableBeamShutter()
-                                break
-                            except:
-                                time.sleep(1)
-                        print('Laser shutter open.')
-                        self.watchdog_flag = True
-                        time.sleep(0.5)
-                        
-                    elif 'WavelengthTo' in InsightText_wl and 'Shutter_Close' in InsightText_st:
-                        self.watchdog_flag = False
-                        time.sleep(0.5)
-                        TargetWavelen = int(InsightText_wl[InsightText_wl.index('To_')+3:len(InsightText_wl)])
-                        while True:
-                            try:                        
-                                self.Laserinstance.SetWavelength(TargetWavelen)
-                                break
-                            except:
-                                time.sleep(1)
-                        time.sleep(5)
-                        while True:
-                            try:
-                                self.Laserinstance.Close_TunableBeamShutter()
-                                break
-                            except:
-                                time.sleep(1)
-                        time.sleep(1)
-                        print('Laser shutter closed.')
-                        self.watchdog_flag = True
-                        time.sleep(0.5)
-                        
-                    time.sleep(2)
+                self.laser_init(EachRound)
                     
                 """
                 # =============================================================================
                 #         Execute filter event at the beginning of each round
                 # =============================================================================
-                """            
-                if ND_filter1_Pos != None and ND_filter2_Pos != None:
-                    #Move filter 1
-                    self.filter1 = ELL9Filter("COM9")
-                    self.filter1.moveToPosition(ND_filter1_Pos)
-                    time.sleep(1)
-                    #Move filter 2
-                    self.filter2 = ELL9Filter("COM7")
-                    self.filter2.moveToPosition(ND_filter2_Pos)
-                    time.sleep(1)
-                if EM_filter_Pos != None:
-                    self.filter3 = ELL9Filter("COM15")
-                    self.filter3.moveToPosition(EM_filter_Pos)
-                    time.sleep(1)
+                """
+                self.filters_init(EachRound)
     
                     
                 self.currentCoordsSeq = 0
                 #%%
+                #-------------Unpack infor for stage move.
+                CoordsNum = int(len(self.RoundCoordsDict['CoordsPackage_{}'.format(EachRound+1)])/2) #Each pos has 2 coords                
                 for EachCoord in range(CoordsNum):
-
-                    #-----------------------------------------------At each stage coordinate:--------------------------------------------
-
+                    """
+                    #------------------------------------------------------------------------------------
+                    #:::::::::::::::::::::::::::::::: AT EACH COORDINATE ::::::::::::::::::::::::::::::::
+                    #------------------------------------------------------------------------------------
+                    """
                     self.error_massage = None
                     
                     self.currentCoordsSeq += 1
@@ -390,143 +215,75 @@ class ScanningExecutionThread(QThread):
                         self.error_massage = 'Fail_MoveStage'
                         self.errornum += 1
                         print('Stage move failed! Error number: {}'.format(int(self.errornum)))
-                    
-                    print ('Round {}. Current index: {}.'.format(EachRound+1, [RowIndex,ColumnIndex]))
 
-                    time.sleep(1)
+                    time.sleep(0.4)
                     
-                    """
                     # =============================================================================
-                    #         Get the z stack objective positions ready
+                    #                     Unpack the focus stack information.
                     # =============================================================================
-                    """
-                    #-------------------------------------------If focus correction applies----------------------------------------
-                    if len(self.GeneralSettingDict['FocusCorrectionMatrixDict']) > 0:
-                        FocusPosArray = self.GeneralSettingDict['FocusCorrectionMatrixDict']['RoundPackage_{}_Grid_{}'.format(EachRound+1, EachGrid)]
-    #                    print(FocusPosArray)
-                        FocusPosArray = FocusPosArray.flatten('F')
-                        FocusPos_fromCorrection = FocusPosArray[EachCoord]
-                        print('Target focus pos: '.format(FocusPos_fromCorrection))
+                    self.ZStackNum, ZStackPosList = self.unpack_focus_stack(EachGrid, EachRound, EachCoord)
                     
-                    # Without focus correction
-                    if len(self.GeneralSettingDict['FocusCorrectionMatrixDict']) == 0:
-                        ZStacklinspaceStart = self.ObjCurrentPos['1'] - (math.floor(self.ZStackNum/2)-1)*self.ZStackStep
-                        ZStacklinspaceEnd = self.ObjCurrentPos['1'] + (self.ZStackNum - math.floor(self.ZStackNum/2))*self.ZStackStep
-                    # With focus correction
-                    elif len(self.GeneralSettingDict['FocusCorrectionMatrixDict']) > 0:
-                        ZStacklinspaceStart = FocusPos_fromCorrection - (math.floor(self.ZStackNum/2)-1)*self.ZStackStep
-                        ZStacklinspaceEnd = FocusPos_fromCorrection + (self.ZStackNum - math.floor(self.ZStackNum/2))*self.ZStackStep                    
-                        
-                    ZStackPosList = np.linspace(ZStacklinspaceStart, ZStacklinspaceEnd, num = self.ZStackNum)       
-                    print(ZStackPosList)
-                    
-                    """
-                    # =============================================================================
-                    #         Execute waveform packages
-                    # =============================================================================
-                    """
-                    self.WaveforpackageNum = int(len(self.RoundQueueDict['RoundPackage_{}'.format(EachRound+1)][0]))
-                    #Execute each individual waveform package
-                    print('*******************************************Round {}. Current index: {}.**************************************************'.format(EachRound+1, [RowIndex,ColumnIndex]))
+                
+                    print('*******************************************Round {}. Current index: {}.**************************************************'.format\
+                          (EachRound+1, [RowIndex,ColumnIndex]))
                     
                     #------------------Move to Z stack focus-------------------
                     for EachZStackPos in range(self.ZStackNum): 
+                        """
+                        #------------------------------------------------------------------------------------
+                        #:::::::::::::::::::::::::::::::: AT EACH ZSTACK ::::::::::::::::::::::::::::::::::::
+                        #------------------------------------------------------------------------------------
+                        """
                         print('--------------------------------------------Stack {}--------------------------------------------------'.format(EachZStackPos+1))
                         if self.ZStackNum > 1:
                             self.ZStackOrder = int(EachZStackPos +1) # Here the first one is 1, not starting from 0.
                             FocusPos = ZStackPosList[EachZStackPos]
                             print('Target focus pos: {}'.format(FocusPos))
     
-                            pos = PIMotor.move(self.pi_device_instance.pidevice, FocusPos)
+                            PIMotor.move(self.pi_device_instance.pidevice, FocusPos)
                             self.ObjCurrentPosInStack = self.pi_device_instance.pidevice.qPOS(self.pi_device_instance.pidevice.axes)
                             print("Current position: {:.4f}".format(self.ObjCurrentPosInStack['1']))
                             
                             time.sleep(0.3)
                         else:
                             self.ZStackOrder = 1
-                        
+                        """
+                        # =============================================================================
+                        #         Execute waveform packages
+                        # =============================================================================
+                        """
+                        self.WaveforpackageNum = int(len(self.RoundQueueDict['RoundPackage_{}'.format(EachRound+1)][0]))                        
                         #------------For waveforms in each coordinate----------
                         for EachWaveform in range(self.WaveforpackageNum):
-                            # Extract information
-                            WaveformPackageToBeExecute = self.RoundQueueDict['RoundPackage_{}'.format(EachRound+1)][0]['WaveformPackage_{}'.format(EachWaveform+1)]
-                            CameraPackageToBeExecute = self.RoundQueueDict['RoundPackage_{}'.format(EachRound+1)][1]["CameraPackage_{}".format(EachWaveform+1)]                  
-                            WaveformPackageGalvoInfor = self.RoundQueueDict['GalvoInforPackage_{}'.format(EachRound+1)]['GalvoInfor_{}'.format(EachWaveform+1)]
-
-                            self.readinchan = WaveformPackageToBeExecute[3]
-                            self.RoundWaveformIndex = [EachRound+1, EachWaveform+1] # first is current round number, second is current waveform package number.
-                            self.CurrentPosIndex = [RowIndex, ColumnIndex]
-                            
-                            #----------------Camera operations-----------------
-                            _camera_isUsed = False
-                            if CameraPackageToBeExecute != {}: # if camera operations are configured
-                                _camera_isUsed = True
-                                CamSettigList = CameraPackageToBeExecute["Settings"]
-                                self.HamamatsuCam.StartStreaming(BufferNumber = CameraPackageToBeExecute["Buffer_number"],
-                                                                 trigger_source = CamSettigList[CamSettigList.index("trigger_source")+1],
-                                                                 exposure_time = CamSettigList[CamSettigList.index("exposure_time")+1],
-                                                                 trigger_active = CamSettigList[CamSettigList.index("trigger_active")+1])
-                                # Make sure that the camera is prepared before waveform execution.
-#                                while self.HamamatsuCam.isStreaming == False:
-#                                    print('Waiting for camera...')
-#                                    time.sleep(0.5)
-                                time.sleep(1)
-                            print('Now start waveforms')
-                            #----------------Waveforms operations--------------
-                            if WaveformPackageGalvoInfor != 'NoGalvo': # Unpack the information of galvo scanning.
-                                self.readinchan = WaveformPackageGalvoInfor[0]
-                                self.repeatnum = WaveformPackageGalvoInfor[1]
-                                self.PMT_data_index_array = WaveformPackageGalvoInfor[2]
-                                self.averagenum = WaveformPackageGalvoInfor[3]
-                                self.lenSample_1 = WaveformPackageGalvoInfor[4]
-                                self.ScanArrayXnum = WaveformPackageGalvoInfor[5]
-                            
-                            self.adcollector = DAQmission()
-                            self.adcollector.runWaveforms(clock_source = self.clock_source, sampling_rate = WaveformPackageToBeExecute[0],
-                                                          analog_signals = WaveformPackageToBeExecute[1], digital_signals = WaveformPackageToBeExecute[2], 
-                                                          readin_channels = WaveformPackageToBeExecute[3])
-                            
-                            #------------------Camera saving-------------------
-                            if _camera_isUsed == True:
-                                self.HamamatsuCam.isSaving = True
-                                tif_name = os.path.join(self.scansavedirectory, 'Round'+str(self.RoundWaveformIndex[0])+'_Coords'+str(self.currentCoordsSeq)+'_R'+str(self.CurrentPosIndex[0])+'C'+str(self.CurrentPosIndex[1])+'_Cam_'+'Zpos'+str(self.ZStackOrder)+'.tif')
-                                self.HamamatsuCam.StopStreaming(saving_dir = tif_name)
-                                # Make sure that the saving process is finished.
-                                while self.HamamatsuCam.isSaving == True:
-                                    print('Camera saving...')
-                                    time.sleep(0.5)
-                                time.sleep(1)                                
+                            """
+                            # =============================================================================
+                            #         Execute pre-set operations at EACH COORDINATE.
+                            # =============================================================================
+                            """
+                            self.inidividual_coordinate_operation(EachRound, EachWaveform, RowIndex, ColumnIndex)
                                 
                             
                         time.sleep(0.6) # Wait for receiving data to be done.
                     time.sleep(0.3)
                     print('*************************************************************************************************************************')
+                    
         #%%
-        """
-        # ==========================================================================================================================================================
-        #                                                                       Finalizing
-        # ==========================================================================================================================================================
-        """                
+        """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        #                                                            Disconnect devices.
+        # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""             
         
         # Switch off laser
         if len(self.RoundQueueDict['InsightEvents']) != 0:
             self.watchdog_flag = False
             time.sleep(0.5)
-            
-            while True:
-                try:
-                    self.Laserinstance.Close_TunableBeamShutter()
-                    break
-                except:
-                    time.sleep(1)
+
+            self.Laserinstance.Close_TunableBeamShutter()
+
             time.sleep(0.5)
             
             self.Laserinstance.SaveVariables()
-            while True:
-                try:                        
-                    self.Laserinstance.Turn_Off_PumpLaser()
-                    break
-                except:
-                    time.sleep(1)
+                     
+            self.Laserinstance.Turn_Off_PumpLaser()
                     
         # Disconnect camera
         if self._use_camera == True:
@@ -540,8 +297,297 @@ class ScanningExecutionThread(QThread):
             pass
         
     #%%
+    def laser_init(self, EachRound):
+        """
+        Execute Insight event at the beginning of each round
+
+        Parameters
+        ----------
+        EachRound : int
+            Round index.
+
+        Returns
+        -------
+        None.
+
+        """
+        #-Unpack infor for Insight X3. In the list, the first one is for shutter event and the second one is for wavelength event. 
+        InsightX3EventIndexList = [i for i,x in enumerate(self.RoundQueueDict['InsightEvents']) if 'Round_{}'.format(EachRound+1) in x]
+          
+        if len(InsightX3EventIndexList) == 1:
+            print(InsightX3EventIndexList)
+            InsightText = self.RoundQueueDict['InsightEvents'][InsightX3EventIndexList[0]]
+            if 'Shutter_Open' in InsightText:
+                self.watchdog_flag = False
+                time.sleep(0.5)
+
+                self.Laserinstance.Open_TunableBeamShutter()
+
+                time.sleep(0.5)
+                print('Laser shutter open.')
+                self.watchdog_flag = True
+                time.sleep(0.5)
+
+            elif 'Shutter_Close' in InsightText:
+                self.watchdog_flag = False
+                time.sleep(0.5)
+
+                self.Laserinstance.Close_TunableBeamShutter()
+
+                time.sleep(0.5)
+                print('Laser shutter closed.')
+                self.watchdog_flag = True
+                time.sleep(0.5)
+            elif 'WavelengthTo' in InsightText:
+                self.watchdog_flag = False
+                time.sleep(0.5)
+                TargetWavelen = int(InsightText[InsightText.index('To_')+3:len(InsightText)])
+                print(TargetWavelen)
+
+                self.Laserinstance.SetWavelength(TargetWavelen)
+
+                time.sleep(5)
+                self.watchdog_flag = True
+                time.sleep(0.5)
+                
+        elif len(InsightX3EventIndexList) == 2:
+            
+            InsightText_wl = self.RoundQueueDict['InsightEvents'][InsightX3EventIndexList[1]]
+            InsightText_st = self.RoundQueueDict['InsightEvents'][InsightX3EventIndexList[0]]
+            
+            if 'WavelengthTo' in InsightText_wl and 'Shutter_Open' in InsightText_st:
+                self.watchdog_flag = False
+                time.sleep(0.5)
+                TargetWavelen = int(InsightText_wl[InsightText_wl.index('To_')+3:len(InsightText_wl)])
+
+                self.Laserinstance.SetWavelength(TargetWavelen)
+
+                time.sleep(5)
+
+                self.Laserinstance.Open_TunableBeamShutter()
+
+                print('Laser shutter open.')
+                self.watchdog_flag = True
+                time.sleep(0.5)
+                
+            elif 'WavelengthTo' in InsightText_wl and 'Shutter_Close' in InsightText_st:
+                self.watchdog_flag = False
+                time.sleep(0.5)
+                TargetWavelen = int(InsightText_wl[InsightText_wl.index('To_')+3:len(InsightText_wl)])
+               
+                self.Laserinstance.SetWavelength(TargetWavelen)
+
+                time.sleep(5)
+
+                self.Laserinstance.Close_TunableBeamShutter()
+
+                time.sleep(1)
+                print('Laser shutter closed.')
+                self.watchdog_flag = True
+                time.sleep(0.5)
+                
+            time.sleep(2)
+            
+    def filters_init(self, EachRound):
+        """
+        Execute filter event at the beginning of each round.
+
+        Parameters
+        ----------
+        EachRound : int
+            Round index.
+
+        Returns
+        -------
+        None.
+
+        """
+        
+        #-Unpack infor for filter event. In the list, the first one is for ND filter and the second one is for emission filter.
+        FilterEventIndexList = [i for i,x in enumerate(self.RoundQueueDict['FilterEvents']) if 'Round_{}'.format(EachRound+1) in x]
+        
+        if len(FilterEventIndexList) > 0:
+            NDposText = self.RoundQueueDict['FilterEvents'][FilterEventIndexList[0]]
+            NDnumber = NDposText[NDposText.index('ToPos_')+6:len(NDposText)]
+            
+            EMposText = self.RoundQueueDict['FilterEvents'][FilterEventIndexList[1]]
+            EMprotein = EMposText[EMposText.index('ToPos_')+6:len(EMposText)]
+            
+            # "COM9" for filter 1 port, which has ND values from 0 to 3.
+            # "COM7" for filter 2 port, which has ND values from 0 to 0.5.
+            if NDnumber == '0':
+                ND_filter1_Pos = 0
+                ND_filter2_Pos = 0
+            elif NDnumber == '1':
+                ND_filter1_Pos = 1
+                ND_filter2_Pos = 0
+            elif NDnumber == '2':
+                ND_filter1_Pos = 2
+                ND_filter2_Pos = 0
+            elif NDnumber == '2.3':
+                ND_filter1_Pos = 2
+                ND_filter2_Pos = 2
+            elif NDnumber == '2.5':
+                ND_filter1_Pos = 2
+                ND_filter2_Pos = 3
+            elif NDnumber == '0.5':
+                ND_filter1_Pos = 0
+                ND_filter2_Pos = 3        
+            elif NDnumber == '0.3':
+                ND_filter1_Pos = 0
+                ND_filter2_Pos = 2
+            
+            if EMprotein == 'Arch':
+                EM_filter_Pos = 0
+            elif EMprotein == 'eGFP' or EMprotein == 'Citrine':
+                EM_filter_Pos = 1
+            
+            # Execution
+            if ND_filter1_Pos != None and ND_filter2_Pos != None:
+                #Move filter 1
+                self.filter1 = ELL9Filter("COM9")
+                self.filter1.moveToPosition(ND_filter1_Pos)
+                time.sleep(1)
+                #Move filter 2
+                self.filter2 = ELL9Filter("COM7")
+                self.filter2.moveToPosition(ND_filter2_Pos)
+                time.sleep(1)
+            if EM_filter_Pos != None:
+                self.filter3 = ELL9Filter("COM15")
+                self.filter3.moveToPosition(EM_filter_Pos)
+                time.sleep(1)
+    
+    def unpack_focus_stack(self, EachGrid, EachRound, EachCoord):
+        """
+        Unpack the focus stack information.
+
+        Parameters
+        ----------
+        EachGrid : int
+            Current grid index.
+        EachRound : int
+            Current round index.
+        EachCoord : int
+            Current coordinate index.
+
+        Returns
+        -------
+        ZStackNum : int
+            Number of focus positions in stack.
+        ZStackPosList : list
+            List of focus stack positions for objective to go to.
+
+        """
+        ZStackinfor = self.GeneralSettingDict['FocusStackInfoDict']['RoundPackage_{}'.format(EachRound+1)]        
+        ZStackNum = int(ZStackinfor[ZStackinfor.index('Focus')+5])
+        ZStackStep = float(ZStackinfor[ZStackinfor.index('Being')+5:len(ZStackinfor)])
+        
+        # If focus correction applies, unpact the target focus infor.
+        if len(self.GeneralSettingDict['FocusCorrectionMatrixDict']) > 0:
+            FocusPosArray = self.GeneralSettingDict['FocusCorrectionMatrixDict']['RoundPackage_{}_Grid_{}'.format(EachRound+1, EachGrid)]
+            FocusPosArray = FocusPosArray.flatten('F')
+            FocusPos_fromCorrection = FocusPosArray[EachCoord]
+        
+        # Without focus correction
+        if len(self.GeneralSettingDict['FocusCorrectionMatrixDict']) == 0:
+            ZStacklinspaceStart = self.ObjCurrentPos['1'] - (math.floor(ZStackNum/2)-1) * ZStackStep
+            ZStacklinspaceEnd = self.ObjCurrentPos['1'] + (ZStackNum - math.floor(ZStackNum/2)) * ZStackStep
+        # With focus correction
+        elif len(self.GeneralSettingDict['FocusCorrectionMatrixDict']) > 0:
+            ZStacklinspaceStart = FocusPos_fromCorrection - (math.floor(self.ZStackNum/2)-1)* ZStackStep
+            ZStacklinspaceEnd = FocusPos_fromCorrection + (ZStackNum - math.floor(ZStackNum/2)) * ZStackStep                    
+            
+        ZStackPosList = np.linspace(ZStacklinspaceStart, ZStacklinspaceEnd, num = ZStackNum)       
+        print('ZStackPos is : {}'.format(ZStackPosList))
+        
+        return ZStackNum, ZStackPosList
+        
+    def inidividual_coordinate_operation(self, EachRound, EachWaveform, RowIndex, ColumnIndex):
+        """
+        Execute pre-set operations at each coordinate.
+
+        Parameters
+        ----------
+        EachRound : int
+            Current round index.
+        EachWaveform : int
+            Current waveform package index.
+        RowIndex : int
+            Current sample stage row index.
+        ColumnIndex : int
+            Current sample stage row index.
+
+        Returns
+        -------
+        None.
+
+        """
+        # Extract information
+        WaveformPackageToBeExecute = self.RoundQueueDict['RoundPackage_{}'.format(EachRound+1)][0]['WaveformPackage_{}'.format(EachWaveform+1)]
+        CameraPackageToBeExecute = self.RoundQueueDict['RoundPackage_{}'.format(EachRound+1)][1]["CameraPackage_{}".format(EachWaveform+1)]                  
+        WaveformPackageGalvoInfor = self.RoundQueueDict['GalvoInforPackage_{}'.format(EachRound+1)]['GalvoInfor_{}'.format(EachWaveform+1)]
+
+        self.readinchan = WaveformPackageToBeExecute[3]
+        self.RoundWaveformIndex = [EachRound+1, EachWaveform+1] # first is current round number, second is current waveform package number.
+        self.CurrentPosIndex = [RowIndex, ColumnIndex]
+        
+        #----------------Camera operations-----------------
+        _camera_isUsed = False
+        if CameraPackageToBeExecute != {}: # if camera operations are configured
+            _camera_isUsed = True
+            CamSettigList = CameraPackageToBeExecute["Settings"]
+            self.HamamatsuCam.StartStreaming(BufferNumber = CameraPackageToBeExecute["Buffer_number"],
+                                             trigger_source = CamSettigList[CamSettigList.index("trigger_source")+1],
+                                             exposure_time = CamSettigList[CamSettigList.index("exposure_time")+1],
+                                             trigger_active = CamSettigList[CamSettigList.index("trigger_active")+1])
+            # Make sure that the camera is prepared before waveform execution.
+#                                while self.HamamatsuCam.isStreaming == False:
+#                                    print('Waiting for camera...')
+#                                    time.sleep(0.5)
+            time.sleep(1)
+        print('Now start waveforms')
+        #----------------Waveforms operations--------------
+        if WaveformPackageGalvoInfor != 'NoGalvo': # Unpack the information of galvo scanning.
+            self.readinchan = WaveformPackageGalvoInfor[0]
+            self.repeatnum = WaveformPackageGalvoInfor[1]
+            self.PMT_data_index_array = WaveformPackageGalvoInfor[2]
+            self.averagenum = WaveformPackageGalvoInfor[3]
+            self.lenSample_1 = WaveformPackageGalvoInfor[4]
+            self.ScanArrayXnum = WaveformPackageGalvoInfor[5]
+        
+        self.adcollector = DAQmission()
+        self.adcollector.collected_data.connect(self.ProcessData)
+        self.adcollector.runWaveforms(clock_source = self.clock_source, sampling_rate = WaveformPackageToBeExecute[0],
+                                      analog_signals = WaveformPackageToBeExecute[1], digital_signals = WaveformPackageToBeExecute[2], 
+                                      readin_channels = WaveformPackageToBeExecute[3])
+        
+        #------------------Camera saving-------------------
+        if _camera_isUsed == True:
+            self.HamamatsuCam.isSaving = True
+            tif_name = os.path.join(self.scansavedirectory, 'Round'+str(self.RoundWaveformIndex[0])+'_Coords'+str(self.currentCoordsSeq)+ \
+                                    '_R'+str(self.CurrentPosIndex[0])+'C'+str(self.CurrentPosIndex[1])+'_Cam_'+'Zpos'+str(self.ZStackOrder)+'.tif')
+            self.HamamatsuCam.StopStreaming(saving_dir = tif_name)
+            # Make sure that the saving process is finished.
+            while self.HamamatsuCam.isSaving == True:
+                print('Camera saving...')
+                time.sleep(0.5)
+            time.sleep(1)             
+    
     #--------------------------------------------------------------Reconstruct and save images from 1D recorded array.--------------------------------------------------------------------------------       
     def ProcessData(self, data_waveformreceived):    
+        """
+        Process the singal collected by Daq recording channels.
+
+        Parameters
+        ----------
+        data_waveformreceived : TYPE
+            Output from DAQmission collected_data signal.
+
+        Returns
+        -------
+        None.
+
+        """
         print('ZStackOrder is:'+str(self.ZStackOrder)+'numis_'+str(self.ZStackNum))
         self.adcollector.save_as_binary(self.scansavedirectory)
         
@@ -568,9 +614,10 @@ class ScanningExecutionThread(QThread):
                         Value_yPixels = int(self.lenSample_1/self.ScanArrayXnum)
                         self.PMT_image_reconstructed = np.reshape(Dataholder_average, (Value_yPixels, self.ScanArrayXnum))
                         
-                        self.PMT_image_reconstructed = self.PMT_image_reconstructed[:, 50:550] # Crop size based on: M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Xin\2019-12-30 2p beads area test 4um
+                        self.PMT_image_reconstructed = self.PMT_image_reconstructed[:, 50:550] 
+                        # Crop size based on: M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Xin\2019-12-30 2p beads area test 4um
 #                        self.PMT_image_reconstructed = self.PMT_image_reconstructed[:, 70:326] # for 256*256 images
-                        #---------------------------------------------For multiple images in one z pos, Stack the arrays into a 3d array--------------------------------------------------------------------------
+                        #---------------------------------------------For multiple images in one z pos, Stack the arrays into a 3d array-------------------------------------------------
                         if imageSequence == 0:
                             self.PMT_image_reconstructed_stack = self.PMT_image_reconstructed[np.newaxis, :, :] # Turns into 3d array
                         else:
@@ -593,10 +640,12 @@ class ScanningExecutionThread(QThread):
                             self.PMT_image_maxprojection = np.max(self.PMT_image_maxprojection_stack, axis=0)
                             
                             LocalimgZprojection = Image.fromarray(self.PMT_image_maxprojection) #generate an image object
-                            LocalimgZprojection.save(os.path.join(self.scansavedirectory, 'Round'+str(self.RoundWaveformIndex[0])+'_Coords'+str(self.currentCoordsSeq)+'_R'+str(self.CurrentPosIndex[0])+'C'+str(self.CurrentPosIndex[1])+'_PMT_'+str(imageSequence)+'Zmax'+'.tif')) #save as tif                            
+                            LocalimgZprojection.save(os.path.join(self.scansavedirectory, 'Round'+str(self.RoundWaveformIndex[0])+'_Coords'+str(self.currentCoordsSeq) \
+                                                                  +'_R'+str(self.CurrentPosIndex[0])+'C'+str(self.CurrentPosIndex[1])+'_PMT_'+str(imageSequence)+'Zmax'+'.tif')) #save as tif                            
 #                            
                         Localimg = Image.fromarray(self.PMT_image_reconstructed) #generate an image object
-                        Localimg.save(os.path.join(self.scansavedirectory, 'Round'+str(self.RoundWaveformIndex[0])+'_Coords'+str(self.currentCoordsSeq)+'_R'+str(self.CurrentPosIndex[0])+'C'+str(self.CurrentPosIndex[1])+'_PMT_'+str(imageSequence)+'Zpos'+str(self.ZStackOrder)+'.tif')) #save as tif
+                        Localimg.save(os.path.join(self.scansavedirectory, 'Round'+str(self.RoundWaveformIndex[0])+'_Coords'+str(self.currentCoordsSeq)+'_R'+str(self.CurrentPosIndex[0])+ \
+                                                   'C'+str(self.CurrentPosIndex[1])+'_PMT_'+str(imageSequence)+'Zpos'+str(self.ZStackOrder)+'.tif')) #save as tif
                         
                         plt.figure()
                         plt.imshow(self.PMT_image_reconstructed, cmap = plt.cm.gray) # For reconstructed image we pull out the first layer, getting 2d img.
@@ -644,10 +693,12 @@ class ScanningExecutionThread(QThread):
                             self.PMT_image_maxprojection = np.max(self.PMT_image_maxprojection_stack, axis=0)
                             
                             LocalimgZprojection = Image.fromarray(self.PMT_image_maxprojection) #generate an image object
-                            LocalimgZprojection.save(os.path.join(self.scansavedirectory, 'Round'+str(self.RoundWaveformIndex[0])+'_Coords'+str(self.currentCoordsSeq)+'_R'+str(self.CurrentPosIndex[0])+'C'+str(self.CurrentPosIndex[1])+'_PMT_'+str(imageSequence)+'Zmax'+'.tif')) #save as tif                            
+                            LocalimgZprojection.save(os.path.join(self.scansavedirectory, 'Round'+str(self.RoundWaveformIndex[0])+'_Coords'+str(self.currentCoordsSeq)+ \
+                                                                  '_R'+str(self.CurrentPosIndex[0])+'C'+str(self.CurrentPosIndex[1])+'_PMT_'+str(imageSequence)+'Zmax'+'.tif')) #save as tif                            
                         
                         Localimg = Image.fromarray(self.PMT_image_reconstructed) #generate an image object
-                        Localimg.save(os.path.join(self.scansavedirectory, 'Round'+str(self.RoundWaveformIndex[0])+'_Coords'+str(self.currentCoordsSeq)+'_R'+str(self.CurrentPosIndex[0])+'C'+str(self.CurrentPosIndex[1])+'_PMT_'+str(imageSequence)+'Zpos'+str(self.ZStackOrder)+'.tif')) #save as tif
+                        Localimg.save(os.path.join(self.scansavedirectory, 'Round'+str(self.RoundWaveformIndex[0])+'_Coords'+str(self.currentCoordsSeq)+'_R'+str(self.CurrentPosIndex[0])+ \
+                                                   'C'+str(self.CurrentPosIndex[1])+'_PMT_'+str(imageSequence)+'Zpos'+str(self.ZStackOrder)+'.tif')) #save as tif
                         
                         plt.figure()
                         plt.imshow(self.PMT_image_reconstructed, cmap = plt.cm.gray)
