@@ -149,11 +149,13 @@ class AOTFWidgetUI(QWidget):
         #--------------------------------------------------------------------------------------------------------------------------------------          
         #**************************************************************************************************************************************
     def start_up_event(self):
-        servo= Servo()
-        # close the blue shutter
-        servo.rotate(target_servo = 'servo_modulation_1', degree = 0)
+        try:
+            servo= Servo()
+            # close the blue shutter
+            servo.rotate(target_servo = 'servo_modulation_1', degree = 0)
+        except:
+            print('Fail to initialize servo position.')
         
-    
     def updatelinevalue(self, wavelength):
         if wavelength == 640:
             self.line640.setText(str(self.slider640.value()/100))
