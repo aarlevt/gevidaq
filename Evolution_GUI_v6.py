@@ -61,6 +61,7 @@ class Mainbody(QWidget):
         self.RoundQueueDict = {}        
         self.WaveformQueueDict = {}
         self.CamOperationDict = {}
+        self.PhotocycleDict = {}
         self.RoundQueueDict['InsightEvents'] = []
         self.RoundQueueDict['FilterEvents'] = []
         
@@ -153,11 +154,15 @@ class Mainbody(QWidget):
         self.ApplyFocusSetCheckbox.setStyleSheet('color:blue;font:bold "Times New Roman"')
         FocusCorrectionContainerLayout.addWidget(self.ApplyFocusSetCheckbox, 0, 0, 1, 1)
         
+        self.KeepFocusSetCheckbox = QCheckBox("Keep focus set")
+        self.KeepFocusSetCheckbox.setStyleSheet('color:blue;font:bold "Times New Roman"')
+        FocusCorrectionContainerLayout.addWidget(self.KeepFocusSetCheckbox, 0, 1, 1, 1)
+        
         self.FocusInterStrategy = QComboBox()
         self.FocusInterStrategy.addItems(['Duplicate', 'Interpolation'])
-        FocusCorrectionContainerLayout.addWidget(self.FocusInterStrategy, 0, 1)
+        FocusCorrectionContainerLayout.addWidget(self.FocusInterStrategy, 0, 2)
         
-        FocusCorrectionContainerLayout.addWidget(QLabel("Focus offset:"), 0, 2)
+        FocusCorrectionContainerLayout.addWidget(QLabel("Focus offset:"), 0, 3)
         self.FocusCorrectionOffsetBox = QDoubleSpinBox(self)
         self.FocusCorrectionOffsetBox.setDecimals(4)
         self.FocusCorrectionOffsetBox.setMinimum(-10)
@@ -247,11 +252,7 @@ class Mainbody(QWidget):
         self.RoundOrderBox.setMaximumWidth(30)
         PipelineContainerLayout.addWidget(self.RoundOrderBox, 0, 1)
         PipelineContainerLayout.addWidget(QLabel("Round sequence:"), 0, 0)
-        
-#        ButtonAddRound = QPushButton('Add Round', self)
-#        ButtonAddRound.setStyleSheet("QPushButton {color:white;background-color: teal; border-style: outset;border-radius: 10px;border-width: 2px;font: bold 14px;padding: 6px}"
-#                                        "QPushButton:pressed {color:red;background-color: white; border-style: outset;border-radius: 10px;border-width: 2px;font: bold 14px;padding: 6px}")        
-        
+                
         ButtonAddRound = StylishQT.addButton()
         ButtonDeleteRound = StylishQT.stop_deleteButton()
         
@@ -426,11 +427,15 @@ class Mainbody(QWidget):
         
         ButtonAddWaveform.clicked.connect(self.AddFreshWaveform)
         ButtonAddWaveform.clicked.connect(self.AddCameraOperation)
+        ButtonAddWaveform.clicked.connect(self.AddPhotocycleOperation)
         
         ButtonDeleteWaveform.clicked.connect(self.DeleteFreshWaveform)
         ButtonDeleteWaveform.clicked.connect(self.DeleteCameraOperation)
+        ButtonDeleteWaveform.clicked.connect(self.DeletePhotocycleOperation)
+        
         ButtonClearWaveform.clicked.connect(self.ClearWaveformQueue)
         ButtonClearWaveform.clicked.connect(self.CleanCameraOperation)
+        ButtonClearWaveform.clicked.connect(self.CleanPhotocycleOperation)
         #--------------------------------------------------------------------------------------------------------------------------------------
         self.EachCoordDwellSettingTabs = QTabWidget()
  
@@ -452,6 +457,11 @@ class Mainbody(QWidget):
         # =============================================================================
         CameraDwellTab = QWidget()
         CameraDwellTabLayout = QGridLayout()
+        
+        self.photocycleChecbox = QCheckBox("Photo cycle")
+        self.photocycleChecbox.setStyleSheet('color:Indigo;font:bold "Times New Roman"')
+        CameraDwellTabLayout.addWidget(self.photocycleChecbox, 0, 0)  
+        
 
         self.CamTriggerSettingBox = QComboBox()
         self.CamTriggerSettingBox.addItems(["EXTERNAL", "INTERNAL"])
@@ -459,15 +469,15 @@ class Mainbody(QWidget):
         self.CamTriggerActive_SettingBox = QComboBox()
         self.CamTriggerActive_SettingBox.addItems(['EDGE', 'LEVEL', 'SYNCREADOUT'])
         
-        CameraDwellTabLayout.addWidget(QLabel("Trigger:"), 1, 0)
-        CameraDwellTabLayout.addWidget(self.CamTriggerSettingBox, 1, 1)
-        CameraDwellTabLayout.addWidget(self.CamTriggerActive_SettingBox, 1, 2)
+        CameraDwellTabLayout.addWidget(QLabel("Trigger:"), 2, 0)
+        CameraDwellTabLayout.addWidget(self.CamTriggerSettingBox, 2, 1)
+        CameraDwellTabLayout.addWidget(self.CamTriggerActive_SettingBox, 2, 2)
         
         self.StreamBufferTotalFrames_spinbox = QSpinBox()
         self.StreamBufferTotalFrames_spinbox.setMaximum(120000)
         self.StreamBufferTotalFrames_spinbox.setValue(0)
-        CameraDwellTabLayout.addWidget(self.StreamBufferTotalFrames_spinbox, 1, 4)
-        CameraDwellTabLayout.addWidget(QLabel("Buffers:"), 1, 3)
+        CameraDwellTabLayout.addWidget(self.StreamBufferTotalFrames_spinbox, 2, 4)
+        CameraDwellTabLayout.addWidget(QLabel("Buffers:"), 2, 3)
         
         self.CamExposureBox = QDoubleSpinBox(self)
         self.CamExposureBox.setDecimals(6)
@@ -475,8 +485,53 @@ class Mainbody(QWidget):
         self.CamExposureBox.setMaximum(100)
         self.CamExposureBox.setValue(0.001501)
         self.CamExposureBox.setSingleStep(0.001)  
-        CameraDwellTabLayout.addWidget(self.CamExposureBox, 1, 6)  
-        CameraDwellTabLayout.addWidget(QLabel("Exposure time:"), 1, 5)
+        CameraDwellTabLayout.addWidget(self.CamExposureBox, 2, 6)  
+        CameraDwellTabLayout.addWidget(QLabel("Exposure time:"), 2, 5)
+        
+        #---------------------------Camera ROI settings------------------------
+        CameraROIPosContainer = QGroupBox("ROI position")
+        CameraROIPosContainer.setStyleSheet("QGroupBox { background-color:#F5F5F5;}")
+        CameraROIPosLayout = QGridLayout()
+        
+        OffsetLabel = QLabel("Offset")
+        OffsetLabel.setFixedHeight(30)
+        ROISizeLabel = QLabel("Size")
+        ROISizeLabel.setFixedHeight(30)
+        
+        CameraROIPosLayout.addWidget(OffsetLabel, 2, 1)
+        CameraROIPosLayout.addWidget(ROISizeLabel, 2, 2)
+
+        self.ROI_hpos_spinbox = QSpinBox()
+        self.ROI_hpos_spinbox.setMaximum(2048)
+        self.ROI_hpos_spinbox.setValue(0)
+
+        CameraROIPosLayout.addWidget(self.ROI_hpos_spinbox, 3, 1)
+        
+        self.ROI_vpos_spinbox = QSpinBox()
+        self.ROI_vpos_spinbox.setMaximum(2048)
+        self.ROI_vpos_spinbox.setValue(0)
+
+        CameraROIPosLayout.addWidget(self.ROI_vpos_spinbox, 4, 1)
+        
+        self.ROI_hsize_spinbox = QSpinBox()
+        self.ROI_hsize_spinbox.setMaximum(2048)
+        self.ROI_hsize_spinbox.setValue(2048)
+
+        CameraROIPosLayout.addWidget(self.ROI_hsize_spinbox, 3, 2)
+        
+        self.ROI_vsize_spinbox = QSpinBox()
+        self.ROI_vsize_spinbox.setMaximum(2048)
+        self.ROI_vsize_spinbox.setValue(2048)
+
+        CameraROIPosLayout.addWidget(self.ROI_vsize_spinbox, 4, 2)
+        
+        CameraROIPosLayout.addWidget(QLabel("Horizontal"), 3, 0)
+        CameraROIPosLayout.addWidget(QLabel("Vertical"), 4, 0)
+        
+        CameraROIPosContainer.setLayout(CameraROIPosLayout)
+        CameraROIPosContainer.setFixedHeight(105)
+        
+        CameraDwellTabLayout.addWidget(CameraROIPosContainer, 3, 1, 3, 3)
         
         CameraDwellTab.setLayout(CameraDwellTabLayout)
         
@@ -504,12 +559,15 @@ class Mainbody(QWidget):
     
     ====RoundQueueDict====                              Dictionary=============
     
-      -- key: RoundPackage_{}
+      -- key: RoundPackage_{}                           List of operations at each coordinate. {} stands for round sequence number.
             |__ WaveformQueueDict                       Dictionary
                 key: WaveformPackage_{}                 Waveforms tuple signal from Waveformer. At each coordinate.
                 
             |__ CamOperationDict                        Dictionary
-                key: CameraPackage_{}
+                key: CameraPackage_{}                   Camera operations at each coordinate. {} stands for waveform/camera sequence number.
+                
+            |__ PhotocycleDict                          Dictionary
+                key: PhotocyclePackage_{}               Photocycle experiment information. {} stands for waveform/camera sequence number.
             
       -- key: GalvoInforPackage_{}                   
             |__ WaveformQueueDict_GalvoInfor            Dictionary
@@ -589,7 +647,12 @@ class Mainbody(QWidget):
         if self.StreamBufferTotalFrames_spinbox.value() != 0:
             CameraOperation = {"Settings": ["trigger_source", self.CamTriggerSettingBox.currentText(), 
                                             "exposure_time", self.CamExposureBox.value(),
-                                            "trigger_active", self.CamTriggerActive_SettingBox.currentText()], 
+                                            "trigger_active", self.CamTriggerActive_SettingBox.currentText(),
+                                            "subarray_hsize", self.ROI_hsize_spinbox.value(),
+                                            "subarray_vsize", self.ROI_vsize_spinbox.value(),
+                                            "subarray_hpos", self.ROI_hpos_spinbox.value(),
+                                            "subarray_vpos", self.ROI_vpos_spinbox.value()
+                                            ], 
                                "Buffer_number": self.StreamBufferTotalFrames_spinbox.value()}
             
             self.CamOperationDict['CameraPackage_{}'.format(CurrentCamPackageSequence)] = CameraOperation
@@ -602,6 +665,25 @@ class Mainbody(QWidget):
         
     def CleanCameraOperation(self):
         self.CamOperationDict = {}
+        
+    # ==========================================================================================================================================================
+    # --------------------------------------------------------------Photocycle operation at each coordinate-----------------------------------------------------
+    # ==========================================================================================================================================================
+    def AddPhotocycleOperation(self):
+        CurrentPhotocycleSequence = self.WaveformOrderBox.value()
+        
+        if self.photocycleChecbox.isChecked():
+            PhotocycleOperation = [True]
+            self.PhotocycleDict['PhotocyclePackage_{}'.format(CurrentPhotocycleSequence)] = PhotocycleOperation
+        else:
+            self.PhotocycleDict['PhotocyclePackage_{}'.format(CurrentPhotocycleSequence)] = {}   
+            
+    def DeletePhotocycleOperation(self):
+        CurrentPhotocycleSequence = self.WaveformOrderBox.value()
+        del self.PhotocycleDict['PhotocyclePackage_{}'.format(CurrentPhotocycleSequence)]    
+        
+    def CleanPhotocycleOperation(self):
+        self.PhotocycleDict = {}
     # ==========================================================================================================================================================
     # --------------------------------------------------------------Settings at each round----------------------------------------------------------------------
     # ==========================================================================================================================================================
@@ -611,8 +693,9 @@ class Mainbody(QWidget):
         WaveformQueueDict = copy.deepcopy(self.WaveformQueueDict) # Here we make the self.WaveformQueueDict private so that other rounds won't refer to the same variable.
         WaveformQueueDict_GalvoInfor = copy.deepcopy(self.WaveformQueueDict_GalvoInfor)
         CamOperationDict = copy.deepcopy(self.CamOperationDict)
+        PhotocycleDict = copy.deepcopy(self.PhotocycleDict)
         
-        self.RoundQueueDict['RoundPackage_{}'.format(CurrentRoundSequence)] = [WaveformQueueDict, CamOperationDict]
+        self.RoundQueueDict['RoundPackage_{}'.format(CurrentRoundSequence)] = [WaveformQueueDict, CamOperationDict, PhotocycleDict]
         self.RoundQueueDict['GalvoInforPackage_{}'.format(CurrentRoundSequence)] = WaveformQueueDict_GalvoInfor # Information we need to restore pmt scanning images.
         
         #Configure information for Z-stack
@@ -682,7 +765,7 @@ class Mainbody(QWidget):
                 position_index.append(int(j))
                 
                 self.CoordContainer = np.append(self.CoordContainer, (position_index))
-#                print('the coords now: '+ str(self.CoordContainer))
+
                 del position_index[-1]
                 
             position_index=[]
@@ -700,6 +783,7 @@ class Mainbody(QWidget):
     def ClearRoundQueue(self):
         self.WaveformQueueDict = {}
         self.CamOperationDict = {}
+        self.PhotocycleDict = {}
         self.RoundQueueDict = {}
         self.RoundQueueDict['InsightEvents'] = []
         self.RoundQueueDict['FilterEvents'] = []
@@ -722,219 +806,20 @@ class Mainbody(QWidget):
         StartUpEvents = []
         if self.OpenTwoPLaserShutterCheckbox.isChecked():
             StartUpEvents.append('Shutter_Open')
-        #--------------------------------------------------------Generate the focus correction matrix-----------------------------------------------------------
-        if self.ApplyFocusSetCheckbox.isChecked():
-            self.FocusCorrectionMatrixDict = {}
-            if self.FocusInterStrategy.currentText() == 'Interpolation':
-            
-                for CurrentRound in range(len(self.RoundCoordsDict)):
-                    
-                    if len(self.RoundCoordsDict['CoordsPackage_{}'.format(CurrentRound+1)]) > 2: # If it's more than 1 pos.
-                        #---------------numpy.meshgrid method------------------------
-                        OriginalCoordsPackage = self.RoundCoordsDict['CoordsPackage_{}'.format(CurrentRound+1)]
-                        
-                        step = OriginalCoordsPackage[3] - OriginalCoordsPackage[1]
-                        
-                        OriginalCoordsOdd_Row = OriginalCoordsPackage[::2]
-                        OriginalCoordsEven_Col = OriginalCoordsPackage[1::2]
-                        
-                        row_start = np.amin(OriginalCoordsOdd_Row)
-                        row_end = np.amax(OriginalCoordsOdd_Row)
-                        
-                        column_start = np.amin(OriginalCoordsEven_Col)
-                        column_end = np.amax(OriginalCoordsEven_Col)     
-                        
-                        linspace_num = int((row_end-row_start)/step)+1
-                        X = np.linspace(row_start,row_end,linspace_num)
-                        Y = np.linspace(column_start,column_end,linspace_num)
-        #                ExeColumnIndex, ExeRowIndex = np.meshgrid(X,Y)
-        #                
-        #                self.ExeColumnIndexMeshgrid = ExeColumnIndex.astype(int)
-        #                self.ExeRowIndexMeshgrid = ExeRowIndex.astype(int)
-                        
-                        self.FocusCorrectionMatrix = self.CorrectionFomula(X, Y)
-                        
-                        self.FocusCorrectionMatrix = self.FocusCorrectionMatrix.flatten()
-                        print(self.FocusCorrectionMatrix)
-                        
-                        FocusCorrectionMatrix = copy.deepcopy(self.FocusCorrectionMatrix)
-                        FocusCorrectionMatrix += self.FocusCorrectionOffsetBox.value()
-                        self.FocusCorrectionMatrixDict['RoundPackage_{}'.format(CurrentRound+1)] = FocusCorrectionMatrix
-    
-                    else:
-                        self.FocusCorrectionMatrix = self.RoundCoordsDict['CoordsPackage_{}'.format(CurrentRound+1)]
-                        FocusCorrectionMatrix = copy.deepcopy(self.FocusCorrectionMatrix)
-                        
-                        FocusCorrectionMatrix += self.FocusCorrectionOffsetBox.value()
-                        
-                        self.FocusCorrectionMatrixDict['RoundPackage_{}'.format(CurrentRound+1)] = FocusCorrectionMatrix
-                        
-                        
-            elif self.FocusInterStrategy.currentText() == 'Duplicate':
-                for EachGrid in range(meshrepeat**2):
-                    if len(self.FocusDuplicateMethodInfor['Grid_{}'.format(EachGrid)][0,:]) > 1:
-                        RawDuplicateRow = self.FocusDuplicateMethodInfor['Grid_{}'.format(EachGrid)][0,:] # The row index from calibration step (Corresponding to column index in python array)
-                        RawDuplicateCol = self.FocusDuplicateMethodInfor['Grid_{}'.format(EachGrid)][1,:]
-                        RawDuplicateFocus = self.FocusDuplicateMethodInfor['Grid_{}'.format(EachGrid)][2,:]
-                        sparsestep = RawDuplicateCol[1] - RawDuplicateCol[0]
-        #                print('sparse step {}'.format(sparsestep))
-                        for CurrentRound in range(len(self.RoundCoordsDict)):
-                            
-                            if len(self.RoundCoordsDict['CoordsPackage_{}'.format(CurrentRound+1)]) > 2: # If it's more than 1 pos.
-                                #---------------numpy.meshgrid method------------------------
-                                OriginalCoordsPackage = self.RoundCoordsDict['CoordsPackage_{}'.format(CurrentRound+1)]
-                                
-                                Originalstep = OriginalCoordsPackage[3] - OriginalCoordsPackage[1]
-                                
-                                OriginalCoordsOdd_Row = OriginalCoordsPackage[::2]
-                                OriginalCoordsEven_Col = OriginalCoordsPackage[1::2]
-                                
-                                row_start = np.amin(OriginalCoordsOdd_Row)
-                                row_end = np.amax(OriginalCoordsOdd_Row)
-                                
-                                column_start = np.amin(OriginalCoordsEven_Col)
-                                column_end = np.amax(OriginalCoordsEven_Col)     
-                                
-                                linspace_num_x = int((row_end-row_start)/Originalstep)+1
-                                linspace_num_y = int((column_end-column_start)/Originalstep)+1
-                                X = np.linspace(row_start,row_end,linspace_num_x)
-                                Y = np.linspace(column_start,column_end,linspace_num_y)
-                                
-                                ExeRowIndex, ExeColIndex = np.meshgrid(X,Y)
-                                
-                                FocusCorrectionMatrixContainer = RawDuplicateFocus[0]*np.ones((len(Y), len(X)))
-         
-                                c = int(sparsestep/Originalstep)
-        #                        print('RawDuplicateFocus'+str(RawDuplicateFocus))
-        #                        print(FocusCorrectionMatrixContainer)
-                                for i in range(len(RawDuplicateRow)):
-                                    row = int(RawDuplicateRow[i]/sparsestep)
-                                    col = int(RawDuplicateCol[i]/sparsestep)
-                                    
-        #                            print('row{},col{}'.format(row, col))
-                                    
-                                    try:    
-                                        FocusCorrectionMatrixContainer[col*c:col*c+c, row*c:row*c+c] = RawDuplicateFocus[i]
-                                    except:
-                                        pass# Last row should stay the same
-                                
-                                FocusCorrectionMatrixContainer = copy.deepcopy(FocusCorrectionMatrixContainer)
-                                FocusCorrectionMatrixContainer += self.FocusCorrectionOffsetBox.value()
-        #                        FocusCorrectionMatrixContainer = FocusCorrectionMatrixContainer.flatten()
-                                
-        #                        print(FocusCorrectionMatrixContainer.shape)
-                                self.FocusCorrectionMatrixDict['RoundPackage_{}_Grid_{}'.format(CurrentRound+1, EachGrid)] = FocusCorrectionMatrixContainer               
-                                print(self.FocusCorrectionMatrixDict['RoundPackage_{}_Grid_{}'.format(CurrentRound+1, EachGrid)])
-                                
-                    elif len(self.FocusDuplicateMethodInfor['Grid_{}'.format(EachGrid)][0,:]) == 1:
-                        RawDuplicateFocus = self.FocusDuplicateMethodInfor['Grid_{}'.format(EachGrid)][2,:]
-
-                        for CurrentRound in range(len(self.RoundCoordsDict)):
-                            
-                            if len(self.RoundCoordsDict['CoordsPackage_{}'.format(CurrentRound+1)]) > 2: # If it's more than 1 pos.
-                                #---------------numpy.meshgrid method------------------------
-                                OriginalCoordsPackage = self.RoundCoordsDict['CoordsPackage_{}'.format(CurrentRound+1)]
-                                
-                                Originalstep = OriginalCoordsPackage[3] - OriginalCoordsPackage[1]
-                                
-                                OriginalCoordsOdd_Row = OriginalCoordsPackage[::2]
-                                OriginalCoordsEven_Col = OriginalCoordsPackage[1::2]
-                                
-                                row_start = np.amin(OriginalCoordsOdd_Row)
-                                row_end = np.amax(OriginalCoordsOdd_Row)
-                                
-                                column_start = np.amin(OriginalCoordsEven_Col)
-                                column_end = np.amax(OriginalCoordsEven_Col)     
-                                
-                                linspace_num_x = int((row_end-row_start)/Originalstep)+1
-                                linspace_num_y = int((column_end-column_start)/Originalstep)+1
-                                X = np.linspace(row_start,row_end,linspace_num_x)
-                                Y = np.linspace(column_start,column_end,linspace_num_y)
-                                
-                                ExeRowIndex, ExeColIndex = np.meshgrid(X,Y)
-                                
-                                FocusCorrectionMatrixContainer = RawDuplicateFocus[0]*np.ones((len(Y), len(X)))
-                                
-                                FocusCorrectionMatrixContainer = copy.deepcopy(FocusCorrectionMatrixContainer)
-                                FocusCorrectionMatrixContainer += self.FocusCorrectionOffsetBox.value()
-        #                        FocusCorrectionMatrixContainer = FocusCorrectionMatrixContainer.flatten()
-                                
-        #                        print(FocusCorrectionMatrixContainer.shape)
-                                self.FocusCorrectionMatrixDict['RoundPackage_{}_Grid_{}'.format(CurrentRound+1, EachGrid)] = FocusCorrectionMatrixContainer               
-                                print(self.FocusCorrectionMatrixDict['RoundPackage_{}_Grid_{}'.format(CurrentRound+1, EachGrid)])
-        else:
-            self.FocusCorrectionMatrixDict = {}
+        
+        # Interpolate in between the focus correction positions
+        FocusCorrectionMatrixDict = self.upsize_focus_matrix()
             
         generalnamelist = ['savedirectory', 'FocusCorrectionMatrixDict', 'FocusStackInfoDict', 'Meshgrid', 'Scanning step', 'StartUpEvents']
         
-        generallist = [savedirectory, self.FocusCorrectionMatrixDict, self.FocusStackInfoDict, meshrepeat, self.step, StartUpEvents]
+        generallist = [savedirectory, FocusCorrectionMatrixDict, self.FocusStackInfoDict, meshrepeat, self.step, StartUpEvents]
         
         for item in range(len(generallist)):
             self.GeneralSettingDict[generalnamelist[item]] = generallist[item]
 #        print(self.GeneralSettingDict['FocusStackInfoDict'])
         self.normalOutputWritten('Rounds configured.\n')
         
-        #---------------------------------------------------------------Show general info---------------------------------------------------------------------------------
-        self.normalOutputWritten('--------Pipeline general info--------\n')
-        for eachround in range(int(len(self.RoundQueueDict)/2-1)):
-            
-            waveformPackage = self.RoundQueueDict['RoundPackage_'+str(eachround+1)][0]
-            camOperationPackage = self.RoundQueueDict['RoundPackage_'+str(eachround+1)][1]
-            waveform_sequence = 1
-            
-            for eachwaveform in waveformPackage:
-                
-                #--------------------------------------------------------------
-                # show waveform settings
-                
-                try:
-                    if len(waveformPackage[eachwaveform][3]) != 0:
-                        self.normalOutputWritten('Round {}, sequence {}, recording channels:{}.\n'.format(eachround+1, waveform_sequence, waveformPackage[eachwaveform][3]))
-                        print('Round {}, recording channels:{}.'.format(eachround+1, waveformPackage[eachwaveform][3]))#[1]['Sepcification']
-#                    else:
-#                        self.normalOutputWritten('Round {} No recording channel.\n'.format(eachround+1))
-                except:
-                    
-                    self.normalOutputWritten('No recording channel.\n')
-                    print(waveformPackage[eachwaveform][3])
-                    print('No recording channel.')
-                    
-                try:
-                    self.normalOutputWritten('Round {}, Analog signals:{}.\n'.format(eachround+1, waveformPackage[eachwaveform][1]['Sepcification']))
-                    print('Round {}, Analog signals:{}.'.format(eachround+1, waveformPackage[eachwaveform][1]['Sepcification']))#
-                except:
-                    self.normalOutputWritten('No Analog signals.\n')
-                    print('No Analog signals.')
-                    
-                try:
-                    if len(waveformPackage[eachwaveform][2]['Sepcification']) != 0:
-                        self.normalOutputWritten('Round {}, Digital signals:{}.\n'.format(eachround+1, waveformPackage[eachwaveform][2]['Sepcification']))
-                        print('Round {}, Digital signals:{}.'.format(eachround+1, waveformPackage[eachwaveform][2]['Sepcification']))#
-#                    else:
-#                        self.normalOutputWritten('Round {} No Digital signals.\n'.format(eachround+1))
-                except:
-                    self.normalOutputWritten('No Digital signals.\n')
-                    print('No Digital signals.')
-                waveform_sequence += 1
-                self.normalOutputWritten('\n')
-                
-            for eachcamoperation in camOperationPackage:
-                #--------------------------------------------------------------
-                # Show camera operations
-               
-                try:
-                    if len(camOperationPackage[eachcamoperation]) != 0:
-                        self.normalOutputWritten('Round {}, cam Buffer_number:{}.\n'.format(eachround+1, camOperationPackage[eachcamoperation]['Buffer_number']))
-                        print('Round {}, cam Buffer_number:{}.\n'.format(eachround+1, camOperationPackage[eachcamoperation]['Buffer_number']))#
-#                    else:
-#                        self.normalOutputWritten('Round {} No Digital signals.\n'.format(eachround+1))
-                except:
-                    self.normalOutputWritten('No camera operations.\n')
-                    print('No camera operations.')                    
-            
-            self.normalOutputWritten('-----------end of round-----------\n')
-            
-        self.normalOutputWritten('----------------------------------------\n')
+        self.show_pipline_infor()
         
         
     def _open_file_dialog(self):
@@ -959,7 +844,6 @@ class Mainbody(QWidget):
         get_ipython().run_line_magic('matplotlib', 'inline') # before start, set spyder back to inline
         
         self.ExecuteThreadInstance = ScanningExecutionThread(self.RoundQueueDict, self.RoundCoordsDict, self.GeneralSettingDict)
-#        self.ExecuteThreadInstance.ScanningResult.connect(self.GetDataForShowingRank)
         self.ExecuteThreadInstance.start()
         
     def Savepipeline(self):
@@ -969,51 +853,6 @@ class Mainbody(QWidget):
         np.save(os.path.join(self.savedirectory, self.saving_prefix, datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'_Pipeline'), SavepipelineInstance)
         
         
-    def GetDataForShowingRank(self, RankedAllCellProperties, FinalMergedCoords, IndexLookUpCellPropertiesDict, PMTimageDict):
-        
-        self.RankedAllCellProperties = RankedAllCellProperties
-        self.FinalMergedCoords = FinalMergedCoords # Stage coordinates of the top cells with same ones merged together.
-        self.IndexLookUpCellPropertiesDict = IndexLookUpCellPropertiesDict
-        self.PMTimageDict = PMTimageDict
-        
-        self.TotalCoordsNum = len(self.FinalMergedCoords)
-        
-        self.TopGeneralInforLabel.setText('Number of coords in total: {}'.format(self.TotalCoordsNum))
-
-#    def PopNextTopCells(self, direction):       
-#        if direction == 'next':
-#            if self.popnexttopimgcounter > (self.TotalCoordsNum-1):#Make sure it doesn't go beyond the last coords.
-#                self.popnexttopimgcounter -= 1
-#            CurrentPosIndex = self.FinalMergedCoords[self.popnexttopimgcounter,:].tolist() # self.popnexttopimgcounter is the order number of each Stage coordinates.
-#            
-#            self.TopCoordsLabel.setText("Row: {} Col: {}".format(CurrentPosIndex[0], CurrentPosIndex[1]))     
-#            self.CurrentImgShowTopCells = self.PMTimageDict['RoundPackage_{}'.format(self.GeneralSettingDict['BefRoundNum'])]['row_{}_column_{}'.format(CurrentPosIndex[0], CurrentPosIndex[1])]
-#            self.ShowTopCellsInstance = ShowTopCellsThread(self.GeneralSettingDict, self.RankedAllCellProperties, CurrentPosIndex, 
-#                                                           self.IndexLookUpCellPropertiesDict, self.CurrentImgShowTopCells, self.Matdisplay_Figure)
-#            self.ShowTopCellsInstance.run()
-#    #        self.ax = self.ShowTopCellsInstance.gg()
-#    #        self.ax = self.Matdisplay_Figure.add_subplot(111)
-#            self.Matdisplay_Canvas.draw()
-##            if self.popnexttopimgcounter < (self.TotalCoordsNum-1):
-#            self.popnexttopimgcounter += 1 # Alwasy plus 1 to get it ready for next move.
-#            
-#        elif direction == 'previous':
-#            self.popnexttopimgcounter -= 2 
-#            if self.popnexttopimgcounter >= 0:
-#                CurrentPosIndex = self.FinalMergedCoords[self.popnexttopimgcounter,:].tolist() # self.popnexttopimgcounter is the order number of each Stage coordinates.
-#                
-#                self.TopCoordsLabel.setText("Row: {} Col: {}".format(CurrentPosIndex[0], CurrentPosIndex[1]))     
-#                self.CurrentImgShowTopCells = self.PMTimageDict['RoundPackage_{}'.format(self.GeneralSettingDict['BefRoundNum'])]['row_{}_column_{}'.format(CurrentPosIndex[0], CurrentPosIndex[1])]
-#                self.ShowTopCellsInstance = ShowTopCellsThread(self.GeneralSettingDict, self.RankedAllCellProperties, CurrentPosIndex, 
-#                                                               self.IndexLookUpCellPropertiesDict, self.CurrentImgShowTopCells, self.Matdisplay_Figure)
-#                self.ShowTopCellsInstance.run()
-#        #        self.ax = self.ShowTopCellsInstance.gg()
-#        #        self.ax = self.Matdisplay_Figure.add_subplot(111)
-#                self.Matdisplay_Canvas.draw()
-#                if self.popnexttopimgcounter < (self.TotalCoordsNum-1):
-#                    self.popnexttopimgcounter += 1
-#            else:
-#                self.popnexttopimgcounter = 0
     #%%
     """
     # =============================================================================
@@ -1029,12 +868,37 @@ class Mainbody(QWidget):
         self.RoundQueueDict = temp_loaded_container[0]
         self.RoundCoordsDict = temp_loaded_container[1]
         self.GeneralSettingDict = temp_loaded_container[2]
+
+        # Interpolate in between the focus correction positions
+        FocusCorrectionMatrixDict = self.upsize_focus_matrix()
+
+        # Refresh the focus correction
+        self.GeneralSettingDict['FocusCorrectionMatrixDict'] = FocusCorrectionMatrixDict
+
+        # if saving directory is re-configured, refresh it, otherwise keep as it is.
+        if len(self.savedirectorytextbox.text()) >= 1:
+            self.GeneralSettingDict['savedirectory'] = self.savedirectory
         
-        #--------------------------------------------------------Generate the focus correction matrix-----------------------------------------------------------
+        self.normalOutputWritten('Pipeline loaded.\n')
+        print('Pipeline loaded.')
+        
+        self.show_pipline_infor()
+        
+    def upsize_focus_matrix(self):
+        """
+        Generate the focus correction matrix
+
+        Returns
+        -------
+        FocusCorrectionMatrixDict : dict
+            Fully interpolated focus correction matrix.
+
+        """
+
         if self.ApplyFocusSetCheckbox.isChecked():
-            self.FocusCorrectionMatrixDict = {}
+            FocusCorrectionMatrixDict = {}
             if self.FocusInterStrategy.currentText() == 'Interpolation':
-            
+                # Interpolate between gaps
                 for CurrentRound in range(len(self.RoundCoordsDict)):
                     
                     if len(self.RoundCoordsDict['CoordsPackage_{}'.format(CurrentRound+1)]) > 2: # If it's more than 1 pos.
@@ -1067,7 +931,8 @@ class Mainbody(QWidget):
                         
                         FocusCorrectionMatrix = copy.deepcopy(self.FocusCorrectionMatrix)
                         FocusCorrectionMatrix += self.FocusCorrectionOffsetBox.value()
-                        self.FocusCorrectionMatrixDict['RoundPackage_{}'.format(CurrentRound+1)] = FocusCorrectionMatrix
+                        
+                        FocusCorrectionMatrixDict['RoundPackage_{}'.format(CurrentRound+1)] = FocusCorrectionMatrix
     
                     else:
                         self.FocusCorrectionMatrix = self.RoundCoordsDict['CoordsPackage_{}'.format(CurrentRound+1)]
@@ -1075,7 +940,7 @@ class Mainbody(QWidget):
                         
                         FocusCorrectionMatrix += self.FocusCorrectionOffsetBox.value()
                         
-                        self.FocusCorrectionMatrixDict['RoundPackage_{}'.format(CurrentRound+1)] = FocusCorrectionMatrix
+                        FocusCorrectionMatrixDict['RoundPackage_{}'.format(CurrentRound+1)] = FocusCorrectionMatrix
                         
                         
             elif self.FocusInterStrategy.currentText() == 'Duplicate':
@@ -1131,8 +996,8 @@ class Mainbody(QWidget):
                                 FocusCorrectionMatrixContainer += self.FocusCorrectionOffsetBox.value()
         #                        FocusCorrectionMatrixContainer = FocusCorrectionMatrixContainer.flatten()
                                 
-                                self.FocusCorrectionMatrixDict['RoundPackage_{}_Grid_{}'.format(CurrentRound+1, EachGrid)] = FocusCorrectionMatrixContainer               
-                                print(self.FocusCorrectionMatrixDict['RoundPackage_{}_Grid_{}'.format(CurrentRound+1, EachGrid)])
+                                FocusCorrectionMatrixDict['RoundPackage_{}_Grid_{}'.format(CurrentRound+1, EachGrid)] = FocusCorrectionMatrixContainer               
+                                print(FocusCorrectionMatrixDict['RoundPackage_{}_Grid_{}'.format(CurrentRound+1, EachGrid)])
                                 
                     elif len(self.FocusDuplicateMethodInfor['Grid_{}'.format(EachGrid)][0,:]) == 1:
                         RawDuplicateFocus = self.FocusDuplicateMethodInfor['Grid_{}'.format(EachGrid)][2,:]
@@ -1168,18 +1033,27 @@ class Mainbody(QWidget):
         #                        FocusCorrectionMatrixContainer = FocusCorrectionMatrixContainer.flatten()
                                 
         #                        print(FocusCorrectionMatrixContainer.shape)
-                                self.FocusCorrectionMatrixDict['RoundPackage_{}_Grid_{}'.format(CurrentRound+1, EachGrid)] = FocusCorrectionMatrixContainer               
-                                print(self.FocusCorrectionMatrixDict['RoundPackage_{}_Grid_{}'.format(CurrentRound+1, EachGrid)])
+                                FocusCorrectionMatrixDict['RoundPackage_{}_Grid_{}'.format(CurrentRound+1, EachGrid)] = FocusCorrectionMatrixContainer               
+                                print(FocusCorrectionMatrixDict['RoundPackage_{}_Grid_{}'.format(CurrentRound+1, EachGrid)])
+                                
         else:
-            self.FocusCorrectionMatrixDict = {}
+            if self.KeepFocusSetCheckbox.isChecked():
+                # Keep the original focus correction
+                FocusCorrectionMatrixDict = self.GeneralSettingDict['FocusCorrectionMatrixDict']
+            else:
+                FocusCorrectionMatrixDict = {}
+                
+        return FocusCorrectionMatrixDict
         
-        self.GeneralSettingDict['FocusCorrectionMatrixDict'] = self.FocusCorrectionMatrixDict # Refresh the focus correction
-        self.GeneralSettingDict['savedirectory'] = self.savedirectory
-        
-        self.normalOutputWritten('Pipeline loaded.\n')
-        print('Pipeline loaded.')
-        
-        #---------------------------------------------------------------Show general info---------------------------------------------------------------------------------
+    def show_pipline_infor(self):
+        """
+        Show general information of the pipeline.
+
+        Returns
+        -------
+        None.
+
+        """
         self.normalOutputWritten('--------Pipeline general info--------\n')
         for eachround in range(int(len(self.RoundQueueDict)/2-1)):
 
@@ -1290,9 +1164,6 @@ if __name__ == "__main__":
     def run_app():
         app = QtWidgets.QApplication(sys.argv)
         QtWidgets.QApplication.setStyle(QStyleFactory.create('Fusion'))
-        stylesheet = '.\Icons\gui_style.qss'
-#        with open(stylesheet,"r") as style:
-#              app.setStyleSheet(style.read())
         mainwin = Mainbody()
         mainwin.show()
         app.exec_()

@@ -13,14 +13,16 @@ from PIL import Image
 from matplotlib import pyplot as plt
 import os
 from datetime import datetime
-from NIDAQ.DAQoperator import DAQmission
+import math
+from skimage.io import imread
+import threading
 
+from NIDAQ.DAQoperator import DAQmission
 from PI_ObjectiveMotor.focuser import PIMotor
 from ThorlabsFilterSlider.filterpyserial import ELL9Filter
 from InsightX3.TwoPhotonLaser_backend import InsightX3
 from HamamatsuCam.HamamatsuActuator import CamActuator
-import math
-import threading
+
 #---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 class ScanningExecutionThread(QThread):
     
@@ -35,40 +37,11 @@ class ScanningExecutionThread(QThread):
         self.ludlStage = LudlStage("COM12")
         self.watchdog_flag = True
         
-#        self.PMTimageDict = {}
-#        for i in range(int(len(self.RoundQueueDict)/2-1)): # initial the nested PMTimageDict dictionary. -2 because default keys for insight and filter.
-#            self.PMTimageDict['RoundPackage_{}'.format(i+1)] = {}
         self.clock_source = 'DAQ' # Should be set by GUI.
         
         self.scansavedirectory = self.GeneralSettingDict['savedirectory']
         self.meshgridnumber = int(self.GeneralSettingDict['Meshgrid'])
-    #%%
-    def Try_until_Success(func):
-        """ This is the decorator to try to execute the function until succeed.
-        """
-        def wrapper(*args, **kwargs):
-            
-            success = None
-            failnumber = 0
-            
-            while success is None:
-                if failnumber <8:
-                    try:
-                        returnValue = func(*args, **kwargs)
-                        success = True
-
-                    except:
-    
-                        failnumber += 1                    
-                        print('Laser action failed, failnumber: {}'.format(failnumber))
-                        time.sleep(0.2)
-                else:
-                    print('Fail for 8 times, give up - -')
-                    success = False                    
-                    
-            return returnValue
         
-        return wrapper
     
     #%%
     def run(self):
@@ -92,6 +65,7 @@ class ScanningExecutionThread(QThread):
         # =============================================================================
         """
         self._use_camera = False
+        # Check if camera is used.
         for key in self.RoundQueueDict:
             if "RoundPackage_" in key:
                 for waveform_and_cam_key in self.RoundQueueDict[key][1]:
@@ -99,7 +73,7 @@ class ScanningExecutionThread(QThread):
                         if len(self.RoundQueueDict[key][1][waveform_and_cam_key]) != 0:
                             self._use_camera = True
         
-        if self._use_camera == True:
+        if self._use_camera:
             print('Connecting camera...')
             self.HamamatsuCam = CamActuator()
             self.HamamatsuCam.initializeCamera()
@@ -139,7 +113,25 @@ class ScanningExecutionThread(QThread):
 
                 self.Laserinstance.Open_TunableBeamShutter()
 
-                time.sleep(0.5)                
+                time.sleep(0.5)     
+        """
+        # =============================================================================
+        #         Initialize ML
+        # =============================================================================
+        """        
+        self._use_ML = False
+        # Check if machine learning segmentation is used.
+        for key in self.RoundQueueDict:
+            if "RoundPackage_" in key:
+                for photocycle_key in self.RoundQueueDict[key][2]:
+                    if "PhotocyclePackage_" in photocycle_key:
+                        if len(self.RoundQueueDict[key][2][photocycle_key]) != 0:
+                            self._use_ML = True
+        if self._use_ML:
+            from ImageAnalysis.ImageProcessing_MaskRCNN import ProcessImageML
+            Predictor = ProcessImageML()
+            print("ML loaded.")
+            
         #%%
         """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         #                                                                  Execution
@@ -252,9 +244,37 @@ class ScanningExecutionThread(QThread):
                         #         Execute waveform packages
                         # =============================================================================
                         """
-                        self.WaveforpackageNum = int(len(self.RoundQueueDict['RoundPackage_{}'.format(EachRound+1)][0]))                        
+                        self.Waveform_sequence_Num = int(len(self.RoundQueueDict['RoundPackage_{}'.format(EachRound+1)][0]))                        
                         #------------For waveforms in each coordinate----------
-                        for EachWaveform in range(self.WaveforpackageNum):
+                        for EachWaveform in range(self.Waveform_sequence_Num):
+                            
+                            # Get the photo cycle information
+                            PhotocyclePackageToBeExecute = self.RoundQueueDict['RoundPackage_{}'.format(EachRound+1)][2] \
+                                                            ["PhotocyclePackage_{}".format(EachWaveform+1)]
+                            
+                            # See if in this waveform sequence photo cycle is involved.
+                            # PhotocyclePackageToBeExecute is {} if not configured.
+                            if len(PhotocyclePackageToBeExecute) > 0:
+                                # Load the previous acquired camera image
+                                self.cam_tif_name = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\2020-8-13 Screening Archon1 library V5 and 6\V6\Round1_Coords1_R0C0_PMT_0Zmax.tif"
+                                previous_cam_img = imread(self.cam_tif_name)
+                                img_width = previous_cam_img.shape[1]
+                                print('width and height:')
+                                print(img_width)
+                                img_height = previous_cam_img.shape[0]
+                                print(img_height)
+                                # Get the segmentation of full image.
+                                fig, ax = plt.subplots()
+                                MLresults = Predictor.DetectionOnImage(previous_cam_img, axis = ax)
+                                ax.imshow(fig)
+                                
+                                ROI_number = len(MLresults["scores"])
+                                
+                                for each_ROI in range(ROI_number):
+                                    # if MLresults['class_ids'][each_ROI] == 3:
+                                    ROIlist = MLresults['rois'][each_ROI]
+                                    print([ROIlist[0], ROIlist[2], ROIlist[1], ROIlist[3]])
+                                    # CellMask_roi = CellMask[ROIlist[0]:ROIlist[2], ROIlist[1]:ROIlist[3]] # Individual cell mask in each bounding box
                             """
                             # =============================================================================
                             #         Execute pre-set operations at EACH COORDINATE.
@@ -494,7 +514,7 @@ class ScanningExecutionThread(QThread):
             ZStacklinspaceEnd = self.ObjCurrentPos['1'] + (ZStackNum - math.floor(ZStackNum/2)) * ZStackStep
         # With focus correction
         elif len(self.GeneralSettingDict['FocusCorrectionMatrixDict']) > 0:
-            ZStacklinspaceStart = FocusPos_fromCorrection - (math.floor(self.ZStackNum/2)-1)* ZStackStep
+            ZStacklinspaceStart = FocusPos_fromCorrection - (math.floor(ZStackNum/2)-1)* ZStackStep
             ZStacklinspaceEnd = FocusPos_fromCorrection + (ZStackNum - math.floor(ZStackNum/2)) * ZStackStep                    
             
         ZStackPosList = np.linspace(ZStacklinspaceStart, ZStacklinspaceEnd, num = ZStackNum)       
@@ -539,7 +559,12 @@ class ScanningExecutionThread(QThread):
             self.HamamatsuCam.StartStreaming(BufferNumber = CameraPackageToBeExecute["Buffer_number"],
                                              trigger_source = CamSettigList[CamSettigList.index("trigger_source")+1],
                                              exposure_time = CamSettigList[CamSettigList.index("exposure_time")+1],
-                                             trigger_active = CamSettigList[CamSettigList.index("trigger_active")+1])
+                                             trigger_active = CamSettigList[CamSettigList.index("trigger_active")+1],
+                                             subarray_hsize = CamSettigList[CamSettigList.index("subarray_hsize")+1],
+                                             subarray_vsize = CamSettigList[CamSettigList.index("subarray_vsize")+1],
+                                             subarray_hpos = CamSettigList[CamSettigList.index("subarray_hpos")+1],
+                                             subarray_vpos = CamSettigList[CamSettigList.index("subarray_vpos")+1])
+            # HamamatsuCam starts another thread to pull out frames from buffer.
             # Make sure that the camera is prepared before waveform execution.
 #                                while self.HamamatsuCam.isStreaming == False:
 #                                    print('Waiting for camera...')
@@ -564,9 +589,9 @@ class ScanningExecutionThread(QThread):
         #------------------Camera saving-------------------
         if _camera_isUsed == True:
             self.HamamatsuCam.isSaving = True
-            tif_name = os.path.join(self.scansavedirectory, 'Round'+str(self.RoundWaveformIndex[0])+'_Coords'+str(self.currentCoordsSeq)+ \
+            self.cam_tif_name = os.path.join(self.scansavedirectory, 'Round'+str(self.RoundWaveformIndex[0])+'_Coords'+str(self.currentCoordsSeq)+ \
                                     '_R'+str(self.CurrentPosIndex[0])+'C'+str(self.CurrentPosIndex[1])+'_Cam_'+'Zpos'+str(self.ZStackOrder)+'.tif')
-            self.HamamatsuCam.StopStreaming(saving_dir = tif_name)
+            self.HamamatsuCam.StopStreaming(saving_dir = self.cam_tif_name)
             # Make sure that the saving process is finished.
             while self.HamamatsuCam.isSaving == True:
                 print('Camera saving...')
