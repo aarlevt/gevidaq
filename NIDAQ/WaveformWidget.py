@@ -70,7 +70,7 @@ class WaveformGenerator(QWidget):
                                   '640blanking',
                                   '532blanking',
                                   '488blanking',
-                                  'Perfusion_8',
+                                  'LED',#'Perfusion_8',
                                   'Perfusion_7',
                                   'Perfusion_6',
                                   'Perfusion_2',

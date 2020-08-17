@@ -129,7 +129,7 @@ class ScanningExecutionThread(QThread):
                             self._use_ML = True
         if self._use_ML:
             from ImageAnalysis.ImageProcessing_MaskRCNN import ProcessImageML
-            Predictor = ProcessImageML()
+            self.Predictor = ProcessImageML()
             print("ML loaded.")
             
         #%%
@@ -255,26 +255,46 @@ class ScanningExecutionThread(QThread):
                             # See if in this waveform sequence photo cycle is involved.
                             # PhotocyclePackageToBeExecute is {} if not configured.
                             if len(PhotocyclePackageToBeExecute) > 0:
+                                
+                                
+                                
                                 # Load the previous acquired camera image
-                                self.cam_tif_name = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\2020-8-13 Screening Archon1 library V5 and 6\V6\Round1_Coords1_R0C0_PMT_0Zmax.tif"
+                                self.cam_tif_name = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\2020-8-13 Screening Archon1 library V5 and 6\V6\Round2_Coords181_R19800C0_PMT_0Zmax.tif"
                                 previous_cam_img = imread(self.cam_tif_name)
                                 img_width = previous_cam_img.shape[1]
-                                print('width and height:')
-                                print(img_width)
+
                                 img_height = previous_cam_img.shape[0]
-                                print(img_height)
+
                                 # Get the segmentation of full image.
                                 fig, ax = plt.subplots()
-                                MLresults = Predictor.DetectionOnImage(previous_cam_img, axis = ax)
-                                ax.imshow(fig)
+                                MLresults = self.Predictor.DetectionOnImage(previous_cam_img, axis = ax)
                                 
                                 ROI_number = len(MLresults["scores"])
-                                
+                                print('roi number: {}'.format(ROI_number))
                                 for each_ROI in range(ROI_number):
                                     # if MLresults['class_ids'][each_ROI] == 3:
                                     ROIlist = MLresults['rois'][each_ROI]
-                                    print([ROIlist[0], ROIlist[2], ROIlist[1], ROIlist[3]])
-                                    # CellMask_roi = CellMask[ROIlist[0]:ROIlist[2], ROIlist[1]:ROIlist[3]] # Individual cell mask in each bounding box
+                                    print(ROIlist)
+                                    # np array's column([1]) is the width of image, and is the row in stage coordinates.
+                                    ROI_center_width = int(ROIlist[1] + (ROIlist[3] - ROIlist[1])/2)
+                                    print('ROI_center_width '.format(ROIlist))
+                                    ROI_center_height = int(ROIlist[0] + (ROIlist[2] + ROIlist[0])/2)
+                                    print('ROI_center_height '.format(ROIlist))
+                                    cam_stage_transform_factor = 1.135
+                                    
+                                    stage_move_col = (int((img_width)/2) - ROI_center_width) * cam_stage_transform_factor
+                                    print(stage_move_col)
+                                    stage_move_row = (int((img_height)/2) - ROI_center_height) * cam_stage_transform_factor
+                                    print(stage_move_row)
+                                    # Move cell of interest to the center of field of view
+                                    self.ludlStage.moveRel(xRel = stage_move_row, yRel= stage_move_col)
+                                    
+                                    time.sleep(1)
+                                    
+                                    # Move the cell back
+                                    self.ludlStage.moveRel(xRel = -1*stage_move_row, yRel= -1*stage_move_col)
+                                    time.sleep(1)
+
                             """
                             # =============================================================================
                             #         Execute pre-set operations at EACH COORDINATE.
@@ -589,8 +609,8 @@ class ScanningExecutionThread(QThread):
         #------------------Camera saving-------------------
         if _camera_isUsed == True:
             self.HamamatsuCam.isSaving = True
-            self.cam_tif_name = os.path.join(self.scansavedirectory, 'Round'+str(self.RoundWaveformIndex[0])+'_Coords'+str(self.currentCoordsSeq)+ \
-                                    '_R'+str(self.CurrentPosIndex[0])+'C'+str(self.CurrentPosIndex[1])+'_Cam_'+'Zpos'+str(self.ZStackOrder)+'.tif')
+            img_text =  "_Cam_"+str(self.RoundWaveformIndex[1])+"_Zpos" + str(self.ZStackOrder)
+            self.cam_tif_name = self.generate_tif_name(extra_text = img_text)
             self.HamamatsuCam.StopStreaming(saving_dir = self.cam_tif_name)
             # Make sure that the saving process is finished.
             while self.HamamatsuCam.isSaving == True:
@@ -665,12 +685,12 @@ class ScanningExecutionThread(QThread):
                             self.PMT_image_maxprojection = np.max(self.PMT_image_maxprojection_stack, axis=0)
                             
                             LocalimgZprojection = Image.fromarray(self.PMT_image_maxprojection) #generate an image object
-                            LocalimgZprojection.save(os.path.join(self.scansavedirectory, 'Round'+str(self.RoundWaveformIndex[0])+'_Coords'+str(self.currentCoordsSeq) \
-                                                                  +'_R'+str(self.CurrentPosIndex[0])+'C'+str(self.CurrentPosIndex[1])+'_PMT_'+str(imageSequence)+'Zmax'+'.tif')) #save as tif                            
-#                            
+                            img_text =  "_PMT_"+str(imageSequence)+"Zmax" 
+                            LocalimgZprojection.save(self.generate_tif_name(extra_text = img_text)) #save as tif                            
+                        
                         Localimg = Image.fromarray(self.PMT_image_reconstructed) #generate an image object
-                        Localimg.save(os.path.join(self.scansavedirectory, 'Round'+str(self.RoundWaveformIndex[0])+'_Coords'+str(self.currentCoordsSeq)+'_R'+str(self.CurrentPosIndex[0])+ \
-                                                   'C'+str(self.CurrentPosIndex[1])+'_PMT_'+str(imageSequence)+'Zpos'+str(self.ZStackOrder)+'.tif')) #save as tif
+                        img_text =  "_PMT_"+str(imageSequence)+"Zpos" + str(self.ZStackOrder)
+                        Localimg.save(self.generate_tif_name(extra_text = img_text)) #save as tif
                         
                         plt.figure()
                         plt.imshow(self.PMT_image_reconstructed, cmap = plt.cm.gray) # For reconstructed image we pull out the first layer, getting 2d img.
@@ -718,12 +738,12 @@ class ScanningExecutionThread(QThread):
                             self.PMT_image_maxprojection = np.max(self.PMT_image_maxprojection_stack, axis=0)
                             
                             LocalimgZprojection = Image.fromarray(self.PMT_image_maxprojection) #generate an image object
-                            LocalimgZprojection.save(os.path.join(self.scansavedirectory, 'Round'+str(self.RoundWaveformIndex[0])+'_Coords'+str(self.currentCoordsSeq)+ \
-                                                                  '_R'+str(self.CurrentPosIndex[0])+'C'+str(self.CurrentPosIndex[1])+'_PMT_'+str(imageSequence)+'Zmax'+'.tif')) #save as tif                            
+                            img_text =  "_PMT_"+str(imageSequence)+"Zmax" 
+                            LocalimgZprojection.save(self.generate_tif_name(extra_text = img_text)) #save as tif                            
                         
                         Localimg = Image.fromarray(self.PMT_image_reconstructed) #generate an image object
-                        Localimg.save(os.path.join(self.scansavedirectory, 'Round'+str(self.RoundWaveformIndex[0])+'_Coords'+str(self.currentCoordsSeq)+'_R'+str(self.CurrentPosIndex[0])+ \
-                                                   'C'+str(self.CurrentPosIndex[1])+'_PMT_'+str(imageSequence)+'Zpos'+str(self.ZStackOrder)+'.tif')) #save as tif
+                        img_text =  "_PMT_"+str(imageSequence)+"Zpos" + str(self.ZStackOrder)
+                        Localimg.save(self.generate_tif_name(extra_text = img_text)) #save as tif
                         
                         plt.figure()
                         plt.imshow(self.PMT_image_reconstructed, cmap = plt.cm.gray)
@@ -733,6 +753,11 @@ class ScanningExecutionThread(QThread):
 
         print('ProcessData executed.')
         
+        def generate_tif_name(self, extra_text = "_"):
+            
+            tif_name = os.path.join(self.scansavedirectory, 'Round'+str(self.RoundWaveformIndex[0])+'_Coords'+str(self.currentCoordsSeq)+ \
+                                    '_R'+str(self.CurrentPosIndex[0])+'C'+str(self.CurrentPosIndex[1])+ extra_text +'.tif')            
+            return tif_name
     #----------------------------------------------------------------WatchDog for laser----------------------------------------------------------------------------------
     def Status_watchdog(self, querygap):
         

@@ -168,10 +168,10 @@ class ProcessImageML():
         """ 
         Convert image pixel values to unit8 to run on MaskRCNN, and then run MaskRCNN on it.
         """        
-        image = ProcessImage.convert_for_MaskRCNN(Rawimage)
+        # image = ProcessImage.convert_for_MaskRCNN(Rawimage)
         
         # Run the detection on input image.
-        results        = self.Detector.detect([image])
+        results        = self.Detector.detect([Rawimage])
         
         MLresults      = results[0]
         
