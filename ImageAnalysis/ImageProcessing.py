@@ -19,7 +19,7 @@ from skimage.measure import label, perimeter, find_contours
 from skimage.morphology import closing, square, opening, reconstruction, skeletonize, convex_hull_image, dilation, thin, binary_erosion, disk, binary_dilation
 from skimage.measure import regionprops, moments, moments_central, moments_hu
 from skimage.draw import line, polygon2mask, polygon_perimeter
-from skimage.color import label2rgb, gray2rgb
+from skimage.color import label2rgb, gray2rgb, rgb2gray
 from skimage.restoration import denoise_tv_chambolle
 from skimage.io import imread
 from skimage.transform import rotate, resize
@@ -30,6 +30,7 @@ import numpy.lib.recfunctions as rfn
 import copy
 import os
 import pandas as pd
+import cv2
 # import plotly.express as px
 
 #================================================================ProcessImage============================================================
@@ -161,6 +162,35 @@ class ProcessImage():
         RegionProposal_ImgInMask = RegionProposal_Mask*template_image
         
         return RegionProposal_Mask, RegionProposal_ImgInMask
+    
+    def variance_of_laplacian(image):
+        """
+        Compute the Laplacian of the image and then return the focus
+        measure, which is simply the variance of the Laplacian        
+
+        Parameters
+        ----------
+        image : np.array
+            Gray scale input image.
+
+        Returns
+        -------
+        sharpness : float
+            Sharpness of the image, the higher the better.
+
+        """
+        if image.shape[2] == 3:
+            image = rgb2gray(image)
+        
+        # convolution of 3 x 3 kernel, according to different datatype.
+        if type(image[0,0])==np.float32:
+            sharpness = cv2.Laplacian(image, cv2.CV_32F).var()
+        elif type(image[0,0])==np.float64:
+            sharpness = cv2.Laplacian(image, cv2.CV_64F).var()
+        elif type(image[0,0])==np.float64:
+            sharpness = cv2.Laplacian(image, cv2.CV_64F).var()
+            
+        return sharpness
     
     
     def Region_Proposal(image, RegionProposalMask, smallest_size, biggest_size, lowest_region_intensity, Roundness_thres, DeadPixelPercentageThreshold,

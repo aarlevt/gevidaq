@@ -617,22 +617,8 @@ class ScanningExecutionThread(QThread):
                 print('Camera saving...')
                 time.sleep(0.5)
             time.sleep(1)             
-    
-    #--------------------------------------------------------------Reconstruct and save images from 1D recorded array.--------------------------------------------------------------------------------       
+        #--------------------------------------------------------------Reconstruct and save images from 1D recorded array.--------------------------------------------------------------------------------       
     def ProcessData(self, data_waveformreceived):    
-        """
-        Process the singal collected by Daq recording channels.
-
-        Parameters
-        ----------
-        data_waveformreceived : TYPE
-            Output from DAQmission collected_data signal.
-
-        Returns
-        -------
-        None.
-
-        """
         print('ZStackOrder is:'+str(self.ZStackOrder)+'numis_'+str(self.ZStackNum))
         self.adcollector.save_as_binary(self.scansavedirectory)
         
@@ -659,10 +645,9 @@ class ScanningExecutionThread(QThread):
                         Value_yPixels = int(self.lenSample_1/self.ScanArrayXnum)
                         self.PMT_image_reconstructed = np.reshape(Dataholder_average, (Value_yPixels, self.ScanArrayXnum))
                         
-                        self.PMT_image_reconstructed = self.PMT_image_reconstructed[:, 50:550] 
-                        # Crop size based on: M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Xin\2019-12-30 2p beads area test 4um
+                        self.PMT_image_reconstructed = self.PMT_image_reconstructed[:, 50:550] # Crop size based on: M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Xin\2019-12-30 2p beads area test 4um
 #                        self.PMT_image_reconstructed = self.PMT_image_reconstructed[:, 70:326] # for 256*256 images
-                        #---------------------------------------------For multiple images in one z pos, Stack the arrays into a 3d array-------------------------------------------------
+                        #---------------------------------------------For multiple images in one z pos, Stack the arrays into a 3d array--------------------------------------------------------------------------
                         if imageSequence == 0:
                             self.PMT_image_reconstructed_stack = self.PMT_image_reconstructed[np.newaxis, :, :] # Turns into 3d array
                         else:
@@ -685,12 +670,10 @@ class ScanningExecutionThread(QThread):
                             self.PMT_image_maxprojection = np.max(self.PMT_image_maxprojection_stack, axis=0)
                             
                             LocalimgZprojection = Image.fromarray(self.PMT_image_maxprojection) #generate an image object
-                            img_text =  "_PMT_"+str(imageSequence)+"Zmax" 
-                            LocalimgZprojection.save(self.generate_tif_name(extra_text = img_text)) #save as tif                            
-                        
+                            LocalimgZprojection.save(os.path.join(self.scansavedirectory, 'Round'+str(self.RoundWaveformIndex[0])+'_Coords'+str(self.currentCoordsSeq)+'_R'+str(self.CurrentPosIndex[0])+'C'+str(self.CurrentPosIndex[1])+'_PMT_'+str(imageSequence)+'Zmax'+'.tif')) #save as tif                            
+#                            
                         Localimg = Image.fromarray(self.PMT_image_reconstructed) #generate an image object
-                        img_text =  "_PMT_"+str(imageSequence)+"Zpos" + str(self.ZStackOrder)
-                        Localimg.save(self.generate_tif_name(extra_text = img_text)) #save as tif
+                        Localimg.save(os.path.join(self.scansavedirectory, 'Round'+str(self.RoundWaveformIndex[0])+'_Coords'+str(self.currentCoordsSeq)+'_R'+str(self.CurrentPosIndex[0])+'C'+str(self.CurrentPosIndex[1])+'_PMT_'+str(imageSequence)+'Zpos'+str(self.ZStackOrder)+'.tif')) #save as tif
                         
                         plt.figure()
                         plt.imshow(self.PMT_image_reconstructed, cmap = plt.cm.gray) # For reconstructed image we pull out the first layer, getting 2d img.
@@ -738,12 +721,10 @@ class ScanningExecutionThread(QThread):
                             self.PMT_image_maxprojection = np.max(self.PMT_image_maxprojection_stack, axis=0)
                             
                             LocalimgZprojection = Image.fromarray(self.PMT_image_maxprojection) #generate an image object
-                            img_text =  "_PMT_"+str(imageSequence)+"Zmax" 
-                            LocalimgZprojection.save(self.generate_tif_name(extra_text = img_text)) #save as tif                            
+                            LocalimgZprojection.save(os.path.join(self.scansavedirectory, 'Round'+str(self.RoundWaveformIndex[0])+'_Coords'+str(self.currentCoordsSeq)+'_R'+str(self.CurrentPosIndex[0])+'C'+str(self.CurrentPosIndex[1])+'_PMT_'+str(imageSequence)+'Zmax'+'.tif')) #save as tif                            
                         
                         Localimg = Image.fromarray(self.PMT_image_reconstructed) #generate an image object
-                        img_text =  "_PMT_"+str(imageSequence)+"Zpos" + str(self.ZStackOrder)
-                        Localimg.save(self.generate_tif_name(extra_text = img_text)) #save as tif
+                        Localimg.save(os.path.join(self.scansavedirectory, 'Round'+str(self.RoundWaveformIndex[0])+'_Coords'+str(self.currentCoordsSeq)+'_R'+str(self.CurrentPosIndex[0])+'C'+str(self.CurrentPosIndex[1])+'_PMT_'+str(imageSequence)+'Zpos'+str(self.ZStackOrder)+'.tif')) #save as tif
                         
                         plt.figure()
                         plt.imshow(self.PMT_image_reconstructed, cmap = plt.cm.gray)
@@ -752,6 +733,140 @@ class ScanningExecutionThread(QThread):
                         print('No.{} image failed to generate.'.format(imageSequence))
 
         print('ProcessData executed.')
+    #--------------------------------------------------------------Reconstruct and save images from 1D recorded array.--------------------------------------------------------------------------------       
+#     def ProcessData(self, data_waveformreceived):    
+#         """
+#         Process the singal collected by Daq recording channels.
+
+#         Parameters
+#         ----------
+#         data_waveformreceived : TYPE
+#             Output from DAQmission collected_data signal.
+
+#         Returns
+#         -------
+#         None.
+
+#         """
+#         print('ZStackOrder is:'+str(self.ZStackOrder)+'numis_'+str(self.ZStackNum))
+#         self.adcollector.save_as_binary(self.scansavedirectory)
+        
+#         self.channel_number = len(data_waveformreceived)
+#         if self.channel_number == 1:            
+#             if 'Vp' in self.readinchan:
+#                 pass
+#             elif 'Ip' in self.readinchan:
+#                 pass
+#             elif 'PMT' in self.readinchan:  # repeatnum, PMT_data_index_array, averagenum, ScanArrayXnum
+
+#                 self.data_collected_0 = data_waveformreceived[0]*-1
+#                 self.data_collected_0 = self.data_collected_0[0:len(self.data_collected_0)-1]
+#                 print(len(self.data_collected_0))                
+#                 for imageSequence in range(self.repeatnum):
+                    
+#                     try:
+#                         self.PMT_image_reconstructed_array = self.data_collected_0[np.where(self.PMT_data_index_array == imageSequence+1)]
+# #                        if imageSequence == int(self.repeatnum)-1:
+# #                            self.PMT_image_reconstructed_array = self.PMT_image_reconstructed_array[0:len(self.PMT_image_reconstructed_array)-1] # Extra one sample at the end.
+# #                        print(self.PMT_image_reconstructed_array.shape)
+#                         Dataholder_average = np.mean(self.PMT_image_reconstructed_array.reshape(self.averagenum, -1), axis=0)
+# #                        print(Dataholder_average.shape)
+#                         Value_yPixels = int(self.lenSample_1/self.ScanArrayXnum)
+#                         self.PMT_image_reconstructed = np.reshape(Dataholder_average, (Value_yPixels, self.ScanArrayXnum))
+                        
+#                         self.PMT_image_reconstructed = self.PMT_image_reconstructed[:, 50:550] 
+#                         # Crop size based on: M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Xin\2019-12-30 2p beads area test 4um
+# #                        self.PMT_image_reconstructed = self.PMT_image_reconstructed[:, 70:326] # for 256*256 images
+#                         #---------------------------------------------For multiple images in one z pos, Stack the arrays into a 3d array-------------------------------------------------
+#                         if imageSequence == 0:
+#                             self.PMT_image_reconstructed_stack = self.PMT_image_reconstructed[np.newaxis, :, :] # Turns into 3d array
+#                         else:
+#                             self.PMT_image_reconstructed_stack = np.concatenate((self.PMT_image_reconstructed_stack, self.PMT_image_reconstructed[np.newaxis, :, :]), axis=0)
+#                             print(self.PMT_image_reconstructed_stack.shape)
+#                         #---------------------------------------------Calculate the z max projection-----------------------------------------------------------------------
+#                         if self.repeatnum == 1: # Consider one repeat image situlation 
+#                             if self.ZStackNum > 1:
+#                                 if self.ZStackOrder == 1:
+#                                     self.PMT_image_maxprojection_stack = self.PMT_image_reconstructed[np.newaxis, :, :]
+
+#                                 else:
+
+#                                     self.PMT_image_maxprojection_stack = np.concatenate((self.PMT_image_maxprojection_stack, self.PMT_image_reconstructed[np.newaxis, :, :]), axis=0)
+
+#                             else:
+#                                 self.PMT_image_maxprojection_stack = self.PMT_image_reconstructed[np.newaxis, :, :]
+#                         # Save the max projection image
+#                         if self.ZStackOrder == self.ZStackNum:
+#                             self.PMT_image_maxprojection = np.max(self.PMT_image_maxprojection_stack, axis=0)
+                            
+#                             LocalimgZprojection = Image.fromarray(self.PMT_image_maxprojection) #generate an image object
+#                             img_text =  "_PMT_"+str(imageSequence)+"Zmax" 
+#                             LocalimgZprojection.save(self.generate_tif_name(extra_text = img_text)) #save as tif                            
+                        
+#                         Localimg = Image.fromarray(self.PMT_image_reconstructed) #generate an image object
+#                         img_text =  "_PMT_"+str(imageSequence)+"Zpos" + str(self.ZStackOrder)
+#                         Localimg.save(self.generate_tif_name(extra_text = img_text)) #save as tif
+                        
+#                         plt.figure()
+#                         plt.imshow(self.PMT_image_reconstructed, cmap = plt.cm.gray) # For reconstructed image we pull out the first layer, getting 2d img.
+#                         plt.show()
+#                     except:
+#                         print('No.{} image failed to generate.'.format(imageSequence))
+                    
+#         elif self.channel_number == 2: 
+#             if 'PMT' not in self.readinchan:
+#                 pass
+#             elif 'PMT' in self.readinchan:
+
+#                 self.data_collected_0 = data_waveformreceived[0]*-1
+#                 self.data_collected_0 = self.data_collected_0[0:len(self.data_collected_0)-1]
+#                 print(len(self.data_collected_0)) 
+#                 for imageSequence in range(self.repeatnum):
+#                     try:
+#                         self.PMT_image_reconstructed_array = self.data_collected_0[np.where(self.PMT_data_index_array == imageSequence+1)]
+#                         if imageSequence == int(self.repeatnum)-1:
+#                             self.PMT_image_reconstructed_array = self.PMT_image_reconstructed_array[0:len(self.PMT_image_reconstructed_array)-1] # Extra one sample at the end.
+
+#                         Dataholder_average = np.mean(self.PMT_image_reconstructed_array.reshape(self.averagenum, -1), axis=0)
+#                         Value_yPixels = int(self.lenSample_1/self.ScanArrayXnum)
+#                         self.PMT_image_reconstructed = np.reshape(Dataholder_average, (Value_yPixels, self.ScanArrayXnum))
+                        
+#                         self.PMT_image_reconstructed = self.PMT_image_reconstructed[:, 50:550]
+                        
+#                         # Stack the arrays into a 3d array
+#                         if imageSequence == 0:
+#                             self.PMT_image_reconstructed_stack = self.PMT_image_reconstructed[np.newaxis, :, :]
+#                         else:
+#                             self.PMT_image_reconstructed_stack = np.concatenate((self.PMT_image_reconstructed_stack, self.PMT_image_reconstructed[np.newaxis, :, :]), axis=0)
+                        
+#                         #---------------------------------------------Calculate the z max projection-----------------------------------------------------------------------
+#                         if self.repeatnum == 1: # Consider one repeat image situlation 
+#                             if self.ZStackNum > 1:
+#                                 if self.ZStackOrder == 1:
+#                                     self.PMT_image_maxprojection_stack = self.PMT_image_reconstructed[np.newaxis, :, :]
+#                                 else:
+#                                     self.PMT_image_maxprojection_stack = np.concatenate((self.PMT_image_maxprojection_stack, self.PMT_image_reconstructed[np.newaxis, :, :]), axis=0)
+#                             else:
+#                                 self.PMT_image_maxprojection_stack = self.PMT_image_reconstructed[np.newaxis, :, :]
+#                         # Save the max projection image
+#                         if self.ZStackOrder == self.ZStackNum:
+#                             self.PMT_image_maxprojection = np.max(self.PMT_image_maxprojection_stack, axis=0)
+                            
+#                             LocalimgZprojection = Image.fromarray(self.PMT_image_maxprojection) #generate an image object
+#                             img_text =  "_PMT_"+str(imageSequence)+"Zmax" 
+#                             LocalimgZprojection.save(self.generate_tif_name(extra_text = img_text)) #save as tif                            
+                        
+#                         Localimg = Image.fromarray(self.PMT_image_reconstructed) #generate an image object
+#                         img_text =  "_PMT_"+str(imageSequence)+"Zpos" + str(self.ZStackOrder)
+#                         Localimg.save(self.generate_tif_name(extra_text = img_text)) #save as tif
+                        
+#                         plt.figure()
+#                         plt.imshow(self.PMT_image_reconstructed, cmap = plt.cm.gray)
+#                         plt.show()
+#                     except:
+#                         print('No.{} image failed to generate.'.format(imageSequence))
+
+#         print('ProcessData executed.')
         
         def generate_tif_name(self, extra_text = "_"):
             

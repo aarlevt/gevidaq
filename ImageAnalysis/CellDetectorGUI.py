@@ -22,7 +22,7 @@ from MaskRCNN.Miscellaneous.utils import ConvertImage2RGB
 
 class CellGui(object):
     
-    def __init__(self,config,fig,ax):
+    def __init__(self, config, fig, ax):
         self.fig = fig
         self.ax = ax
         self.fig.canvas.mpl_connect('button_press_event', self.on_Mouse_Click)
@@ -44,6 +44,10 @@ class CellGui(object):
         except:
             pass
         
+    def UpdateConfig(self, config):
+        self.config = config
+        self.Predictor.UpdateConfig(config)
+    
     def getSelectedCellAtributes(self):
         if self.NumCells == 0:
             raise Exception('No cell instances, thus no selected cell results')
