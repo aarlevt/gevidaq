@@ -331,7 +331,7 @@ class ScanningExecutionThread(QThread):
         
         # Disconnect focus motor
         try:
-            PIMotor.CloseMotorConnection(self.pi_device_instance.pidevice)
+            self.pi_device_instance.CloseMotorConnection()
             print('Objective motor disconnected.')
         except:
             pass
@@ -883,5 +883,13 @@ class ScanningExecutionThread(QThread):
             else:
                 print('Watchdog stopped')
                 time.sleep(querygap)
-
+                
+if __name__ == '__main__':
+    def generate_tif_name(extra_text = "_"):
+        
+        tif_name = os.path.join(r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\People\Xin Meng\Code', 'Round'+str(1)+'_Coords'+str(12)+ \
+                                '_R'+str(11)+'C'+str(22)+ extra_text +'.tif')            
+        return tif_name
+    name = generate_tif_name(extra_text = 'img_text')
+    print(name)
         

@@ -150,7 +150,7 @@ class ObjMotorWidgetUI(QWidget):
         #--------------------------------------------------------------------------------------------------------------------------------------          
         #**************************************************************************************************************************************         
     def ConnectMotor(self):
-        self.ObjMotorcontrolContainer.setEnabled(False)
+        # self.ObjMotorcontrolContainer.setEnabled(False)
         self.ObjMotor_disconnect.setEnabled(True)
         self.ObjMotor_connect.setEnabled(False)
         
@@ -210,7 +210,7 @@ class ObjMotorWidgetUI(QWidget):
         self.ObjMotor_connect.setEnabled(True)
         self.ObjMotor_disconnect.setEnabled(False)
         
-        PIMotor.CloseMotorConnection(self.pi_device_instance.pidevice)
+        self.pi_device_instance.CloseMotorConnection()
         print('Disconnected')
         self.connect_status = False
 #        self.normalOutputWritten('Objective motor disconnected.'+'\n')

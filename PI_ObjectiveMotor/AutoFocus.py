@@ -11,6 +11,7 @@ Created on Tue Aug 18 13:54:51 2020
 # --2. Bisection to find the optimal.
 # =============================================================================
 
+import os
 # Ensure that the Widget can be run either independently or as part of Tupolev.
 if __name__ == "__main__":
     abspath = os.path.abspath(__file__)
@@ -25,7 +26,7 @@ import matplotlib.pyplot as plt
 
 class FocusFinder():
     
-    def __init__(self, source_of_image = "PMT", init_step_size = 0.010, total_step_number = 10, motor_handle = None, *args, **kwargs):
+    def __init__(self, source_of_image = "PMT", init_step_size = 0.010, total_step_number = 10, motor_handle = None, twophoton_handle = None, *args, **kwargs):
         """
         
 
@@ -39,6 +40,8 @@ class FocusFinder():
             Number of steps in total to find optimal focus. The default is 10.
         motor_handle : TYPE, optional
             Handle to control PI motor. The default is None.
+        twophoton_handle : TYPE, optional
+            Handle to control Insight X3. The default is None.
 
         Returns
         -------
@@ -106,14 +109,18 @@ class FocusFinder():
                 
                 # Get degree of focus in the mid.
                 mid_position = (upper_position + lower_position)/2
-                degree_of_focus_mid = self.evaluate_focus(mid_position)       
+                degree_of_focus_mid = self.evaluate_focus(mid_position)
+                
+                print("Current focus degree: {}".format(round(degree_of_focus_mid, 3)))
                 
             # If sits in upper half, make the middle values new bottom.
             if biesection_range_dic["top"][1] > biesection_range_dic["bot"][1]:
                 biesection_range_dic["bot"] = [mid_position, degree_of_focus_mid]
             else:
                 biesection_range_dic["top"] = [mid_position, degree_of_focus_mid]
-                
+            
+            print("The upper pos: {}; The lower: {}".format(biesection_range_dic["top"][0], biesection_range_dic["bot"][0]))
+            
         return mid_position
                 
                 
@@ -144,9 +151,10 @@ class FocusFinder():
             plt.imshow(image)
             plt.show()
         degree_of_focus = ProcessImage.variance_of_laplacian(image)
-        time.sleep(0.5)
+        time.sleep(0.2)
         
         return degree_of_focus
+    
             
     # def explore(self, image):
         
@@ -189,3 +197,7 @@ class FocusFinder():
 
     #     # Update total number of steps.
     #     self.steps_taken += 1
+if __name__ == "__main__":
+    ins = FocusFinder()
+    ins.bisection()
+    ins.pi_device_instance.CloseMotorConnection()

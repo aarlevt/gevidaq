@@ -119,25 +119,29 @@ class RasterScan():
             slave_Task.start() #Will wait for the readtask to start so it can use its clock
             master_Task.start()
             
-            while not self.isInterruptionRequested():
-                reader.read_many_sample(data = output, 
-                                        number_of_samples_per_channel = self.Totalscansamples)
+            # while not self.isInterruptionRequested():
+            reader.read_many_sample(data = output, 
+                                    number_of_samples_per_channel = self.Totalscansamples)
 
-                Dataholder_average = np.mean(output.reshape(self.averagenum, -1), axis=0)
+            Dataholder_average = np.mean(output.reshape(self.averagenum, -1), axis=0)
+            
+            if self.flag_return_image == True:
+                # Calculate the mean of average frames.
+                self.data_PMT = np.reshape(Dataholder_average, (self.pixel_number, self.total_X_sample_number))
                 
-                if self.flag_return_image == True:
-                    # Calculate the mean of average frames.
-                    self.data_PMT = np.reshape(Dataholder_average, (self.pixel_number, self.total_X_sample_number))
-                    
-                    # Cut off the flying back part.
-                    if self.pixel_number == 500:
-                        self.image_PMT= self.data_PMT[:, 50:550]*-1
-                    elif self.pixel_number == 256:
-                        self.image_PMT= self.data_PMT[:, 70:326]*-1
-                    
-                    return self.image_PMT
+                # Cut off the flying back part.
+                if self.pixel_number == 500:
+                    self.image_PMT= self.data_PMT[:, 50:550]*-1
+                elif self.pixel_number == 256:
+                    self.image_PMT= self.data_PMT[:, 70:326]*-1
+                
+                return self.image_PMT
                 
 if __name__ == '__main__':
+    import matplotlib.pyplot as plt
     galvo = RasterScan(Daq_sample_rate = 500000, edge_volt = 5)
     image = galvo.run()
+    plt.figure()
+    plt.imshow(image)
+    plt.show()
         

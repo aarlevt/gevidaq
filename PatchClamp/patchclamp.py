@@ -18,9 +18,8 @@ import numpy as np
 import sys
 sys.path.append('../')
 
-from NIDAQ.configuration import Configuration
 from NIDAQ.wavegenerator import blockWave
-from NIDAQ.constants import MeasurementConstants
+from NIDAQ.constants import MeasurementConstants, NiDaqChannels
 
 class ContinuousPatchThread(QThread):
     """
@@ -44,7 +43,7 @@ class ContinuousPatchThread(QThread):
         
         self.wave = wave
         
-        self.configs = Configuration()
+        self.configs = NiDaqChannels().look_up_table
     
     def setTiming(self, writeTask, readTask):
         #Check if they are on the same device
@@ -54,12 +53,12 @@ class ContinuousPatchThread(QThread):
         #Check if they are on the same device
         if readDev == writeDev: 
             writeClock = '/' + self.patchCurOutChan.split('/')[0] + '/ai/SampleClock' #Getting the device and its sampleClock 
-        elif readDev == self.configs.clock1Channel.split('/')[1]: #Checking if readTask is on same device as clock1.
-            readTask.export_signals.samp_clk_output_term = self.configs.clock1Channel
-            writeClock = self.configs.clock2Channel
-        elif readDev == self.configs.clock2Channel.split('/')[1]:
-            readTask.export_signals.samp_clk_output_term = self.configs.clock2Channel
-            writeClock = self.configs.clock1Channel
+        elif readDev == self.configs["clock1Channel"].split('/')[1]: #Checking if readTask is on same device as clock1.
+            readTask.export_signals.samp_clk_output_term = self.configs["clock1Channel"]
+            writeClock = self.configs["clock2Channel"]
+        elif readDev == self.configs["clock2Channel"].split('/')[1]:
+            readTask.export_signals.samp_clk_output_term = self.configs["clock2Channel"]
+            writeClock = self.configs["clock1Channel"]
         else:
             assert(True, "No corresponding clocks defined")
                 
@@ -75,9 +74,9 @@ class ContinuousPatchThread(QThread):
         Starts writing a waveform continuously to the patchclamp. While reading 
         the buffer periodically
         """
-        self.patchVoltOutChan = self.configs.patchVoltOutChannel
-        self.patchCurOutChan = self.configs.patchCurOutChannel
-        self.patchVoltInChan = self.configs.patchVoltInChannel
+        self.patchVoltOutChan = self.configs["Vp"]
+        self.patchCurOutChan = self.configs["Ip"]
+        self.patchVoltInChan = self.configs["patchAO"]
         
         #DAQ
         with nidaqmx.Task() as writeTask, nidaqmx.Task() as readTask:  
@@ -168,7 +167,7 @@ class ContinuousPatchThread_hold(QThread):
         
         self.wave = wave
         
-        self.configs = Configuration()
+        self.configs = NiDaqChannels().look_up_table
     
     def setTiming(self, writeTask, readTask):
         #Check if they are on the same device
@@ -178,12 +177,12 @@ class ContinuousPatchThread_hold(QThread):
         #Check if they are on the same device
         if readDev == writeDev: 
             writeClock = '/' + self.patchCurOutChan.split('/')[0] + '/ai/SampleClock' #Getting the device and its sampleClock 
-        elif readDev == self.configs.clock1Channel.split('/')[1]: #Checking if readTask is on same device as clock1.
-            readTask.export_signals.samp_clk_output_term = self.configs.clock1Channel
-            writeClock = self.configs.clock2Channel
-        elif readDev == self.configs.clock2Channel.split('/')[1]:
-            readTask.export_signals.samp_clk_output_term = self.configs.clock2Channel
-            writeClock = self.configs.clock1Channel
+        elif readDev == self.configs["clock1Channel"].split('/')[1]: #Checking if readTask is on same device as clock1.
+            readTask.export_signals.samp_clk_output_term = self.configs["clock1Channel"]
+            writeClock = self.configs["clock2Channel"]
+        elif readDev == self.configs["clock2Channel"].split('/')[1]:
+            readTask.export_signals.samp_clk_output_term = self.configs["clock2Channel"]
+            writeClock = self.configs["clock1Channel"]
         else:
             assert(True, "No corresponding clocks defined")
                 
@@ -199,9 +198,9 @@ class ContinuousPatchThread_hold(QThread):
         Starts writing a waveform continuously to the patchclamp. While reading 
         the buffer periodically
         """
-        self.patchVoltOutChan = self.configs.patchVoltOutChannel
-        self.patchCurOutChan = self.configs.patchCurOutChannel
-        self.patchVoltInChan = self.configs.patchVoltInChannel
+        self.patchVoltOutChan = self.configs["Vp"]
+        self.patchCurOutChan = self.configs["Ip"]
+        self.patchVoltInChan = self.configs["patchAO"]
         
         #DAQ
         with nidaqmx.Task() as writeTask, nidaqmx.Task() as readTask:  
@@ -293,7 +292,7 @@ class ContinuousPatchThread_currentclamp(QThread):
         
         self.wave = wave
         
-        self.configs = Configuration()
+        self.configs = NiDaqChannels().look_up_table
     
     def setTiming(self, writeTask, readTask):
         #Check if they are on the same device
@@ -303,12 +302,12 @@ class ContinuousPatchThread_currentclamp(QThread):
         #Check if they are on the same device
         if readDev == writeDev: 
             writeClock = '/' + self.patchCurOutChan.split('/')[0] + '/ai/SampleClock' #Getting the device and its sampleClock 
-        elif readDev == self.configs.clock1Channel.split('/')[1]: #Checking if readTask is on same device as clock1.
-            readTask.export_signals.samp_clk_output_term = self.configs.clock1Channel
-            writeClock = self.configs.clock2Channel
-        elif readDev == self.configs.clock2Channel.split('/')[1]:
-            readTask.export_signals.samp_clk_output_term = self.configs.clock2Channel
-            writeClock = self.configs.clock1Channel
+        elif readDev == self.configs["clock1Channel"].split('/')[1]: #Checking if readTask is on same device as clock1.
+            readTask.export_signals.samp_clk_output_term = self.configs["clock1Channel"]
+            writeClock = self.configs["clock2Channel"]
+        elif readDev == self.configs["clock2Channel"].split('/')[1]:
+            readTask.export_signals.samp_clk_output_term = self.configs["clock2Channel"]
+            writeClock = self.configs["clock1Channel"]
         else:
             assert(True, "No corresponding clocks defined")
                 
@@ -324,9 +323,9 @@ class ContinuousPatchThread_currentclamp(QThread):
         Starts writing a waveform continuously to the patchclamp. While reading 
         the buffer periodically
         """
-        self.patchVoltOutChan = self.configs.patchVoltOutChannel
-        self.patchCurOutChan = self.configs.patchCurOutChannel
-        self.patchCurInChan = self.configs.patchVoltInChannel
+        self.patchVoltOutChan = self.configs["Vp"]
+        self.patchCurOutChan = self.configs["Ip"]
+        self.patchCurInChan = self.configs["patchAO"]
         
         #DAQ
         with nidaqmx.Task() as writeTask, nidaqmx.Task() as readTask:  
@@ -417,7 +416,7 @@ class ContinuousPatchThread_zap(QThread):
         
         self.wave = wave
         
-        self.configs = Configuration()
+        self.configs = NiDaqChannels().look_up_table
     
     def setTiming(self, writeTask, readTask):
         #Check if they are on the same device
@@ -427,12 +426,12 @@ class ContinuousPatchThread_zap(QThread):
         #Check if they are on the same device
         if readDev == writeDev: 
             writeClock = '/' + self.patchCurOutChan.split('/')[0] + '/ai/SampleClock' #Getting the device and its sampleClock 
-        elif readDev == self.configs.clock1Channel.split('/')[1]: #Checking if readTask is on same device as clock1.
-            readTask.export_signals.samp_clk_output_term = self.configs.clock1Channel
-            writeClock = self.configs.clock2Channel
-        elif readDev == self.configs.clock2Channel.split('/')[1]:
-            readTask.export_signals.samp_clk_output_term = self.configs.clock2Channel
-            writeClock = self.configs.clock1Channel
+        elif readDev == self.configs["clock1Channel"].split('/')[1]: #Checking if readTask is on same device as clock1.
+            readTask.export_signals.samp_clk_output_term = self.configs["clock1Channel"]
+            writeClock = self.configs["clock2Channel"]
+        elif readDev == self.configs["clock2Channel"].split('/')[1]:
+            readTask.export_signals.samp_clk_output_term = self.configs["clock2Channel"]
+            writeClock = self.configs["clock1Channel"]
         else:
             assert(True, "No corresponding clocks defined")
                 
@@ -449,9 +448,9 @@ class ContinuousPatchThread_zap(QThread):
         Starts writing a waveform continuously to the patchclamp. While reading 
         the buffer periodically
         """
-        self.patchVoltOutChan = self.configs.patchVoltOutChannel
-        self.patchCurOutChan = self.configs.patchCurOutChannel
-        self.patchVoltInChan = self.configs.patchVoltInChannel
+        self.patchVoltOutChan = self.configs["Vp"]
+        self.patchCurOutChan = self.configs["Ip"]
+        self.patchVoltInChan = self.configs["patchAO"]
         
         #DAQ
         with nidaqmx.Task() as writeTask, nidaqmx.Task() as readTask:  

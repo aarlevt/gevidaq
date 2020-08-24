@@ -70,15 +70,15 @@ class PIMotor:
         for axis in pidevice.axes:
             print('position of axis {} = {:.4f}'.format(axis, positions[axis]))
             
-        print('Obj movement done')
-    #            pidevice.CloseConnection()
     
-    def GetCurrentPos(pidevice):
-        positions = pidevice.qPOS(pidevice.axes)
-        return positions
+    def GetCurrentPos(self):
+        # positions is a dictionary with key being axis name, here '1'.
+        positions = self.pidevice.qPOS(self.pidevice.axes)
         
-    def CloseMotorConnection(pidevice):
-        pidevice.CloseConnection()
+        return positions['1']
+        
+    def CloseMotorConnection(self):
+        self.pidevice.CloseConnection()
     
 if __name__ == '__main__':
     # To see what is going on in the background you can remove the following
@@ -91,5 +91,6 @@ if __name__ == '__main__':
 #    pi_device = pi.ConnectPIMotor
     
 #    PIMotor.move(pi.pidevice, 3.455)
-    pi.CloseMotorConnection(pi.pidevice)
+    print(pi.GetCurrentPos())
+    pi.CloseMotorConnection()
 

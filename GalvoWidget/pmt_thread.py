@@ -20,7 +20,6 @@ sys.path.append('../')
 
 import numpy as np
 import NIDAQ.wavegenerator
-from NIDAQ.configuration import Configuration
 from NIDAQ.wavegenerator import blockWave
 from NIDAQ.constants import MeasurementConstants
 
@@ -46,7 +45,6 @@ class pmtimaging_continuous_Thread(QThread):
         
         self.wave = wave
         
-        self.configs = Configuration()
             
     def run(self):
         """
@@ -170,8 +168,6 @@ class pmtimaging_continuous_Thread_contour(QThread):
         self.ypixelnumber = int((self.readNumber/self.averagenumber)/self.ScanArrayXnum)
         
         self.wave = wave
-        
-        self.configs = Configuration()
             
     def run(self):
         """
