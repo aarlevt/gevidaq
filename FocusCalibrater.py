@@ -13,7 +13,6 @@ import numpy as np
 from matplotlib import pyplot as plt
 from IPython import get_ipython
 from matplotlib.ticker import FormatStrFormatter
-from NIDAQ.configuration import Configuration
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtCore import pyqtSignal, QThread
@@ -371,7 +370,7 @@ class FocusMatrixFeeder(QWidget):
         
     def MoveMotor(self):
         
-        pos = PIMotor.move(self.pi_device_instance.pidevice, self.ObjMotor_target.value())
+        self.pi_device_instance.move(self.ObjMotor_target.value())
         self.ObjCurrentPos = self.pi_device_instance.pidevice.qPOS(self.pi_device_instance.pidevice.axes)
         self.ObjMotor_current_pos_Label.setText("Current position: {:.4f}".format(self.ObjCurrentPos['1'])) # Axis here is a string.
         self.ObjMotor_target.setValue(self.ObjCurrentPos['1'])
@@ -380,19 +379,19 @@ class FocusMatrixFeeder(QWidget):
         self.ObjMotor_connect.setEnabled(True)
         self.ObjMotor_disconnect.setEnabled(False)
         
-        PIMotor.CloseMotorConnection(self.pi_device_instance.pidevice)
+        self.pi_device_instance.CloseMotorConnection()
         print('Objective motor disconnected.')
 #        self.normalOutputWritten('Objective motor disconnected.'+'\n')
         
     def Motor_move_upwards(self):
         self.MotorStep = self.ObjMotor_step.value()
-        pos = PIMotor.move(self.pi_device_instance.pidevice, (self.ObjCurrentPos['1'] + self.MotorStep))
+        self.pi_device_instance.move(self.ObjCurrentPos['1'] + self.MotorStep)
         self.ObjCurrentPos = self.pi_device_instance.pidevice.qPOS(self.pi_device_instance.pidevice.axes)
         self.ObjMotor_current_pos_Label.setText("Current position: {:.4f}".format(self.ObjCurrentPos['1'])) # Axis here is a string.
         
     def Motor_move_downwards(self):
         self.MotorStep = self.ObjMotor_step.value()
-        pos = PIMotor.move(self.pi_device_instance.pidevice, (self.ObjCurrentPos['1'] - self.MotorStep))
+        self.pi_device_instance.move(self.ObjCurrentPos['1'] - self.MotorStep)
         self.ObjCurrentPos = self.pi_device_instance.pidevice.qPOS(self.pi_device_instance.pidevice.axes)
         self.ObjMotor_current_pos_Label.setText("Current position: {:.4f}".format(self.ObjCurrentPos['1'])) # Axis here is a string.
 

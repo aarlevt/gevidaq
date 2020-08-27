@@ -773,6 +773,24 @@ class Mainbody(QWidget):
         CurrentRoundSequence = self.RoundOrderBox.value()
         self.RoundCoordsDict['CoordsPackage_{}'.format(CurrentRoundSequence)] = self.CoordContainer
         
+        # Generate structured array containing scanning coordinates' information.
+        grid_gap = 4950
+        # Data type of structured array.
+        Coords_array_dtype = np.dtype([('row', 'i4'), ('col', 'i4'), ('auto_focus_flag', 'U10'), ('focus_position', 'f4')])
+        
+        Coords_array = np.array([], dtype=Coords_array_dtype)
+        
+        for row_pos in range(row_start, row_end, self.step):
+            for col_pos in range(column_start, column_end, self.step):
+                # At each left-top corner of the coordinates grid, place the 
+                # flag for auto focus
+                if col_pos % grid_gap == 0 and row_pos % grid_gap == 0:
+                    current_coord_array = np.array([(row_pos, col_pos, 'yes', -1)], dtype=Coords_array_dtype)
+                else:
+                    current_coord_array = np.array([(row_pos, col_pos, 'no', -1)], dtype=Coords_array_dtype)
+                    
+                Coords_array = np.append(Coords_array, current_coord_array)
+        
     def DeleteFreshRound(self):
         CurrentRoundSequence = self.RoundOrderBox.value()
         del self.RoundQueueDict['RoundPackage_{}'.format(CurrentRoundSequence)]
@@ -950,6 +968,10 @@ class Mainbody(QWidget):
                         RawDuplicateRow = self.FocusDuplicateMethodInfor['Grid_{}'.format(EachGrid)][0,:] # The row index from calibration step (Corresponding to column index in python array)
                         RawDuplicateCol = self.FocusDuplicateMethodInfor['Grid_{}'.format(EachGrid)][1,:]
                         RawDuplicateFocus = self.FocusDuplicateMethodInfor['Grid_{}'.format(EachGrid)][2,:]
+                        
+                        # As in focus correction coordinates matrix, it is sub-sampling
+                        # the actual coordinates, we need to interpolate it and put in
+                        # the objective positions.
                         sparsestep = RawDuplicateCol[1] - RawDuplicateCol[0]
                         print('sparse step {}'.format(sparsestep))
                         for CurrentRound in range(len(self.RoundCoordsDict)):

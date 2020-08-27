@@ -189,15 +189,15 @@ class ObjMotorWidgetUI(QWidget):
         
     def MoveMotor(self, direction):
         if direction == "Target":
-            pos = PIMotor.move(self.pi_device_instance.pidevice, self.ObjMotor_target.value())
+            pos = self.pi_device_instance.move(self.ObjMotor_target.value())
         elif direction == "UP":
             self.MotorStep = self.ObjMotor_step.value()
-            pos = PIMotor.move(self.pi_device_instance.pidevice, (self.ObjCurrentPos['1'] + self.MotorStep))
+            pos = self.pi_device_instance.move(self.ObjCurrentPos['1'] + self.MotorStep)
         elif direction == "DOWN":
             self.MotorStep = self.ObjMotor_step.value()
-            pos = PIMotor.move(self.pi_device_instance.pidevice, (self.ObjCurrentPos['1'] - self.MotorStep))
+            pos = self.pi_device_instance.move(self.ObjCurrentPos['1'] - self.MotorStep)
         elif direction == "Slider":
-            pos = PIMotor.move(self.pi_device_instance.pidevice, self.FocusSlider.value()/1000000)
+            pos = self.pi_device_instance.move(self.FocusSlider.value()/1000000)
             
         self.ObjCurrentPos = self.pi_device_instance.pidevice.qPOS(self.pi_device_instance.pidevice.axes)
         self.ObjMotor_current_pos_Label.setText("Current position: {:.4f}".format(self.ObjCurrentPos['1'])) # Axis here is a string.

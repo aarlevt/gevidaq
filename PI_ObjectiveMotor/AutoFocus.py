@@ -26,7 +26,7 @@ import matplotlib.pyplot as plt
 
 class FocusFinder():
     
-    def __init__(self, source_of_image = "PMT", init_step_size = 0.010, total_step_number = 10, motor_handle = None, twophoton_handle = None, *args, **kwargs):
+    def __init__(self, source_of_image = "PMT", init_step_size = 0.006, total_step_number = 6, motor_handle = None, twophoton_handle = None, *args, **kwargs):
         """
         
 
@@ -37,7 +37,7 @@ class FocusFinder():
         init_step_size : int, optional
             The step size when first doing coarse searching. The default is 0.010.
         step_number : int, optional
-            Number of steps in total to find optimal focus. The default is 10.
+            Number of steps in total to find optimal focus. The default is 5.
         motor_handle : TYPE, optional
             Handle to control PI motor. The default is None.
         twophoton_handle : TYPE, optional
@@ -62,8 +62,13 @@ class FocusFinder():
         else:
             self.pi_device_instance = motor_handle
         
+        
+        
         # Current position of the focus.
         self.current_pos = self.pi_device_instance.GetCurrentPos()
+        
+        # self.pi_device_instance.move(self.current_pos - 0.002)
+        
         # Number of steps already tried.
         self.steps_taken = 0
         # The focus degree of previous position.
@@ -73,7 +78,7 @@ class FocusFinder():
         # The input source of image.
         self.source_of_image = source_of_image
         if source_of_image == "PMT":
-            self.galvo = RasterScan(Daq_sample_rate = 500000, edge_volt = 5)
+            self.galvo = RasterScan(Daq_sample_rate = 500000, edge_volt = 3)
         
     def bisection(self):
         # The upper edge in which we run bisection.
@@ -89,13 +94,13 @@ class FocusFinder():
                 # Get degree of focus in the mid.
                 mid_position = (upper_position + lower_position)/2
                 degree_of_focus_mid = self.evaluate_focus(mid_position)
-                
+                print("mid focus degree: {}".format(round(degree_of_focus_mid, 5)))
                 # Move to top and evaluate.
                 degree_of_focus_up = self.evaluate_focus(obj_position = upper_position)
-                
+                print("top focus degree: {}".format(round(degree_of_focus_up, 5)))
                 # Move to bottom and evaluate.
                 degree_of_focus_low = self.evaluate_focus(obj_position = lower_position)
-                
+                print("bot focus degree: {}".format(round(degree_of_focus_low, 5)))
                 # Sorting dicitonary of degrees in ascending.
                 biesection_range_dic = {"top":[upper_position, degree_of_focus_up], 
                                         "bot":[lower_position, degree_of_focus_low]}
@@ -111,7 +116,7 @@ class FocusFinder():
                 mid_position = (upper_position + lower_position)/2
                 degree_of_focus_mid = self.evaluate_focus(mid_position)
                 
-                print("Current focus degree: {}".format(round(degree_of_focus_mid, 3)))
+                print("Current focus degree: {}".format(round(degree_of_focus_mid, 5)))
                 
             # If sits in upper half, make the middle values new bottom.
             if biesection_range_dic["top"][1] > biesection_range_dic["bot"][1]:
@@ -142,7 +147,7 @@ class FocusFinder():
         """
         
         if obj_position != None:
-            PIMotor.move(self.pi_device_instance.pidevice, obj_position)
+            self.pi_device_instance.move(obj_position)
             
         # Get the image.
         if self.source_of_image == "PMT":

@@ -48,7 +48,7 @@ class PIMotor:
 #        return self.pidevice
         
     
-    def move(pidevice, target_pos):  
+    def move(self, target_pos):  
         #pidevice.StopAll()
         #pidevice.SVO(pidevice.axes, [True] * len(pidevice.axes))
         #pitools.waitontarget(pidevice, axes=pidevice.axes)
@@ -59,15 +59,15 @@ class PIMotor:
         # GCS commands often return an (ordered) dictionary with axes/channels
         # as "keys" and the according values as "values".
     
-        rangemin = list(pidevice.qTMN().values())
-        rangemax = list(pidevice.qTMX().values())
-        ranges = zip(rangemin, rangemax)
+        # rangemin = list(pidevice.qTMN().values())
+        # rangemax = list(pidevice.qTMX().values())
+        # ranges = zip(rangemin, rangemax)
         
         targets = [target_pos]
-        pidevice.MOV(pidevice.axes, targets)
-        pitools.waitontarget(pidevice)
-        positions = pidevice.qPOS(pidevice.axes)
-        for axis in pidevice.axes:
+        self.pidevice.MOV(self.pidevice.axes, targets)
+        pitools.waitontarget(self.pidevice)
+        positions = self.pidevice.qPOS(self.pidevice.axes)
+        for axis in self.pidevice.axes:
             print('position of axis {} = {:.4f}'.format(axis, positions[axis]))
             
     

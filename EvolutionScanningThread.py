@@ -19,6 +19,7 @@ import threading
 
 from NIDAQ.DAQoperator import DAQmission
 from PI_ObjectiveMotor.focuser import PIMotor
+from PI_ObjectiveMotor.AutoFocus import FocusFinder
 from ThorlabsFilterSlider.filterpyserial import ELL9Filter
 from InsightX3.TwoPhotonLaser_backend import InsightX3
 from HamamatsuCam.HamamatsuActuator import CamActuator
@@ -57,7 +58,7 @@ class ScanningExecutionThread(QThread):
         self.pi_device_instance = PIMotor()
         print('Objective motor connected.')
         self.errornum = 0
-        self.ObjCurrentPos = self.pi_device_instance.pidevice.qPOS(self.pi_device_instance.pidevice.axes)
+        # self.ObjCurrentPos = self.pi_device_instance.pidevice.qPOS(self.pi_device_instance.pidevice.axes)
 
         """
         # =============================================================================
@@ -200,7 +201,15 @@ class ScanningExecutionThread(QThread):
                     """
                     RowIndex = int(self.RoundCoordsDict['CoordsPackage_{}'.format(EachRound+1)][EachCoord*2:EachCoord*2+2][0]) + ScanningGridOffset_Row
                     ColumnIndex = int(self.RoundCoordsDict['CoordsPackage_{}'.format(EachRound+1)][EachCoord*2:EachCoord*2+2][1]) + ScanningGridOffset_Col
-    
+                    """
+                    self.coord_array = self.RoundCoordsDict['CoordsPackage_{}'.format(EachRound+1)][EachCoord]
+                    
+                    RowIndex = self.coord_array['row'] + ScanningGridOffset_Row
+                    ColumnIndex = self.coord_array['col'] + ScanningGridOffset_Col
+                                      
+
+                    """
+                    
                     try:
                         self.ludlStage.moveAbs(RowIndex,ColumnIndex) # Row/Column indexs of np.array are opposite of stage row-col indexs.
                     except:
@@ -232,9 +241,9 @@ class ScanningExecutionThread(QThread):
                             FocusPos = ZStackPosList[EachZStackPos]
                             print('Target focus pos: {}'.format(FocusPos))
     
-                            PIMotor.move(self.pi_device_instance.pidevice, FocusPos)
-                            self.ObjCurrentPosInStack = self.pi_device_instance.pidevice.qPOS(self.pi_device_instance.pidevice.axes)
-                            print("Current position: {:.4f}".format(self.ObjCurrentPosInStack['1']))
+                            self.pi_device_instance.move(FocusPos)
+                            # self.ObjCurrentPosInStack = self.pi_device_instance.pidevice.qPOS(self.pi_device_instance.pidevice.axes)
+                            # print("Current position: {:.4f}".format(self.ObjCurrentPosInStack['1']))
                             
                             time.sleep(0.3)
                         else:
@@ -248,6 +257,7 @@ class ScanningExecutionThread(QThread):
                         #------------For waveforms in each coordinate----------
                         for EachWaveform in range(self.Waveform_sequence_Num):
                             
+                            #------------------For photo cycle-----------------
                             # Get the photo cycle information
                             PhotocyclePackageToBeExecute = self.RoundQueueDict['RoundPackage_{}'.format(EachRound+1)][2] \
                                                             ["PhotocyclePackage_{}".format(EachWaveform+1)]
@@ -294,7 +304,8 @@ class ScanningExecutionThread(QThread):
                                     # Move the cell back
                                     self.ludlStage.moveRel(xRel = -1*stage_move_row, yRel= -1*stage_move_col)
                                     time.sleep(1)
-
+                            #--------------------------------------------------
+                            
                             """
                             # =============================================================================
                             #         Execute pre-set operations at EACH COORDINATE.
@@ -527,17 +538,25 @@ class ScanningExecutionThread(QThread):
             FocusPosArray = self.GeneralSettingDict['FocusCorrectionMatrixDict']['RoundPackage_{}_Grid_{}'.format(EachRound+1, EachGrid)]
             FocusPosArray = FocusPosArray.flatten('F')
             FocusPos_fromCorrection = FocusPosArray[EachCoord]
+            
+            ZStacklinspaceStart = FocusPos_fromCorrection - (math.floor(ZStackNum/2))* ZStackStep
+            ZStacklinspaceEnd = FocusPos_fromCorrection + (ZStackNum - math.floor(ZStackNum/2)-1) * ZStackStep         
         
         # Without focus correction
-        if len(self.GeneralSettingDict['FocusCorrectionMatrixDict']) == 0:
-            ZStacklinspaceStart = self.ObjCurrentPos['1'] - (math.floor(ZStackNum/2)-1) * ZStackStep
-            ZStacklinspaceEnd = self.ObjCurrentPos['1'] + (ZStackNum - math.floor(ZStackNum/2)) * ZStackStep
-        # With focus correction
-        elif len(self.GeneralSettingDict['FocusCorrectionMatrixDict']) > 0:
-            ZStacklinspaceStart = FocusPos_fromCorrection - (math.floor(ZStackNum/2)-1)* ZStackStep
-            ZStacklinspaceEnd = FocusPos_fromCorrection + (ZStackNum - math.floor(ZStackNum/2)) * ZStackStep                    
+        else:
+            # If go for auto-focus at this coordinate
+            auto_focus_flag = self.coord_array['auto_focus_flag']
+                    
+            if auto_focus_flag == True:
+                instance_FocusFinder = FocusFinder(motor_handle = self.pi_device_instance)
+                instance_FocusFinder.bisection()
+                
+            self.ObjCurrentPos = self.pi_device_instance.GetCurrentPos()            
+            ZStacklinspaceStart = self.ObjCurrentPos - (math.floor(ZStackNum/2)) * ZStackStep
+            ZStacklinspaceEnd = self.ObjCurrentPos + (ZStackNum - math.floor(ZStackNum/2)-1) * ZStackStep
+                   
             
-        ZStackPosList = np.linspace(ZStacklinspaceStart, ZStacklinspaceEnd, num = ZStackNum)       
+        ZStackPosList = np.linspace(ZStacklinspaceStart, ZStacklinspaceEnd, num = ZStackNum)
         print('ZStackPos is : {}'.format(ZStackPosList))
         
         return ZStackNum, ZStackPosList

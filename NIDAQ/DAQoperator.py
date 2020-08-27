@@ -34,7 +34,12 @@ class DAQmission(QThread): # For all-purpose Nidaq tasks, use "Dev1/ai22" as ref
     def __init__(self, channel_LUT = None, *args, **kwargs):
         
         super().__init__(*args, **kwargs)
-        
+        """
+        Specifiy NI-daq channels. channel_LUT in the form of dictionary, with keys being the 
+        purpose of the channel (the same as the fields from the input waveforms' "Sepcification" 
+        field) and values being the port of the daq. If not specified it will load the dictionary
+        from NiDaqChannels class in NIDAQ.constants.
+        """
         if channel_LUT == None:
             self.channel_LUT = NiDaqChannels().look_up_table
         else:
@@ -42,8 +47,21 @@ class DAQmission(QThread): # For all-purpose Nidaq tasks, use "Dev1/ai22" as ref
         
     def sendSingleAnalog(self, channel, value):
         """
-        Write one single digital signal 
+        Write one single digital signal.
+
+        Parameters
+        ----------
+        channel : str
+            Purpose of the channel.
+        value : bool
+            Value to send.
+
+        Returns
+        -------
+        None.
+
         """
+
         self.channelname = self.channel_LUT[channel]
         self.writting_value = value
 
@@ -54,8 +72,21 @@ class DAQmission(QThread): # For all-purpose Nidaq tasks, use "Dev1/ai22" as ref
             
     def sendSingleDigital(self, channel, value):
         """
-        Write one single analog signal 
+        Write one single analog signal.
+
+        Parameters
+        ----------
+        channel : str
+            Purpose of the channel.
+        value : float
+            Value to send.
+
+        Returns
+        -------
+        None.
+
         """
+
         self.channelname = self.channel_LUT[channel]
         if value == True:
             writting_value = np.array([1], dtype = bool)
