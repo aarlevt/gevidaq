@@ -139,7 +139,6 @@ class ScanningExecutionThread(QThread):
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
         GridSequence = 0
         TotalGridNumber = self.meshgridnumber**2
-        ScanningMaxCoord = int(np.amax(self.RoundCoordsDict['CoordsPackage_1'])) # Get the largest coordinate
         
         for EachGrid in range(TotalGridNumber):
             """
@@ -152,9 +151,7 @@ class ScanningExecutionThread(QThread):
             #         For each small repeat unit in the scanning meshgrid
             # =============================================================================
             """
-            ScanningGridOffset_Row = int(GridSequence % self.meshgridnumber) * (ScanningMaxCoord + self.GeneralSettingDict['Scanning step']) # Offset coordinate row value for each well.
-            ScanningGridOffset_Col = int(GridSequence/self.meshgridnumber) * (ScanningMaxCoord + self.GeneralSettingDict['Scanning step']) # Offset coordinate colunm value for each well.
-            GridSequence += 1
+
             time.sleep(0.5)
             
             for EachRound in range(int(len(self.RoundQueueDict)/2-1)): # EachRound is the round sequence number starting from 0, while the actual number used in dictionary is 1.
@@ -183,7 +180,7 @@ class ScanningExecutionThread(QThread):
                 self.currentCoordsSeq = 0
                 #%%
                 #-------------Unpack infor for stage move.
-                CoordsNum = int(len(self.RoundCoordsDict['CoordsPackage_{}'.format(EachRound+1)])/2) #Each pos has 2 coords                
+                CoordsNum = len(self.RoundCoordsDict['CoordsPackage_{}'.format(EachRound+1)]) #Each pos has 2 coords                
                 for EachCoord in range(CoordsNum):
                     """
                     #------------------------------------------------------------------------------------
@@ -199,17 +196,16 @@ class ScanningExecutionThread(QThread):
                     #         Stage movement
                     # =============================================================================
                     """
-                    RowIndex = int(self.RoundCoordsDict['CoordsPackage_{}'.format(EachRound+1)][EachCoord*2:EachCoord*2+2][0]) + ScanningGridOffset_Row
-                    ColumnIndex = int(self.RoundCoordsDict['CoordsPackage_{}'.format(EachRound+1)][EachCoord*2:EachCoord*2+2][1]) + ScanningGridOffset_Col
-                    """
                     self.coord_array = self.RoundCoordsDict['CoordsPackage_{}'.format(EachRound+1)][EachCoord]
                     
+                    # Offset coordinate row value for each well.
+                    ScanningGridOffset_Row = int(EachGrid % self.meshgridnumber) * (self.GeneralSettingDict['StageGridOffset']) 
+                    # Offset coordinate colunm value for each well.
+                    ScanningGridOffset_Col = int(EachGrid/self.meshgridnumber) * (self.GeneralSettingDict['StageGridOffset']) 
+
                     RowIndex = self.coord_array['row'] + ScanningGridOffset_Row
                     ColumnIndex = self.coord_array['col'] + ScanningGridOffset_Col
                                       
-
-                    """
-                    
                     try:
                         self.ludlStage.moveAbs(RowIndex,ColumnIndex) # Row/Column indexs of np.array are opposite of stage row-col indexs.
                     except:
@@ -219,9 +215,12 @@ class ScanningExecutionThread(QThread):
 
                     time.sleep(0.4)
                     
+                    """
                     # =============================================================================
-                    #                     Unpack the focus stack information.
+                    #                               Focus position
+                    #         Unpack the focus stack information, conduct auto-focusing if set.
                     # =============================================================================
+                    """
                     self.ZStackNum, ZStackPosList = self.unpack_focus_stack(EachGrid, EachRound, EachCoord)
                     
                 
@@ -257,7 +256,11 @@ class ScanningExecutionThread(QThread):
                         #------------For waveforms in each coordinate----------
                         for EachWaveform in range(self.Waveform_sequence_Num):
                             
-                            #------------------For photo cycle-----------------
+                            """
+                            # =============================================================================
+                            #         For photo-cycle 
+                            # =============================================================================
+                            """
                             # Get the photo cycle information
                             PhotocyclePackageToBeExecute = self.RoundQueueDict['RoundPackage_{}'.format(EachRound+1)][2] \
                                                             ["PhotocyclePackage_{}".format(EachWaveform+1)]
@@ -511,7 +514,8 @@ class ScanningExecutionThread(QThread):
     def unpack_focus_stack(self, EachGrid, EachRound, EachCoord):
         """
         Unpack the focus stack information.
-
+        Determine focus position either from pre-set numbers of by auto-focusing.
+        
         Parameters
         ----------
         EachGrid : int
@@ -546,12 +550,23 @@ class ScanningExecutionThread(QThread):
         else:
             # If go for auto-focus at this coordinate
             auto_focus_flag = self.coord_array['auto_focus_flag']
+            # auto_focus_flag = False
+            #-----------------------Auto focus---------------------------------
+            if auto_focus_flag == "yes":
+                if self.coord_array['focus_position'] == -1.:
+                    instance_FocusFinder = FocusFinder(motor_handle = self.pi_device_instance)
+                    self.ObjCurrentPos = instance_FocusFinder.bisection()
+                    # Record the position
+                    self.RoundCoordsDict['CoordsPackage_{}'.format(EachRound+1)][EachCoord]['focus_position'] = self.ObjCurrentPos
                     
-            if auto_focus_flag == True:
-                instance_FocusFinder = FocusFinder(motor_handle = self.pi_device_instance)
-                instance_FocusFinder.bisection()
+                else: # If there's already position from last round, move to it.
+                    recorded_pos = self.RoundCoordsDict['CoordsPackage_{}'.format(EachRound+1)][EachCoord]['focus_position']
+                    self.pi_device_instance.move(recorded_pos)
+            #------------------------------------------------------------------
+            # If not auto focus, stay where it is.
+            else:
+                self.ObjCurrentPos = self.pi_device_instance.GetCurrentPos()
                 
-            self.ObjCurrentPos = self.pi_device_instance.GetCurrentPos()            
             ZStacklinspaceStart = self.ObjCurrentPos - (math.floor(ZStackNum/2)) * ZStackStep
             ZStacklinspaceEnd = self.ObjCurrentPos + (ZStackNum - math.floor(ZStackNum/2)-1) * ZStackStep
                    

@@ -26,6 +26,7 @@ from skimage.transform import rotate, resize
 from scipy.signal import convolve2d, medfilt
 import scipy.interpolate as interpolate
 from scipy.ndimage.filters import gaussian_filter1d
+from scipy import fftpack
 import scipy
 import pylab
 import numpy.lib.recfunctions as rfn
@@ -1496,8 +1497,8 @@ class ProcessImage():
 
         """
         
-        FFT = abs(scipy.fft(array))
-        freqs = scipy.fftpack.fftfreq(len(array)) * 5000
+        FFT = abs(scipy.fft.fft(array))
+        freqs = fftpack.fftfreq(len(array)) * 5000
         
         if show_result == True:
             pylab.subplot(211)

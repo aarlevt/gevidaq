@@ -287,40 +287,28 @@ class Mainbody(QWidget):
         ScanSettingLayout = QGridLayout() #Layout manager
         ScanContainer.layout = ScanSettingLayout
         
-        self.ScanStartRowIndexTextbox = QSpinBox(self)
-        self.ScanStartRowIndexTextbox.setMinimum(-20000)
-        self.ScanStartRowIndexTextbox.setMaximum(100000)
-        self.ScanStartRowIndexTextbox.setSingleStep(1650)
-        ScanSettingLayout.addWidget(self.ScanStartRowIndexTextbox, 0, 1)
-        ScanSettingLayout.addWidget(QLabel("Start index-row:"), 0, 0)
-      
-        self.ScanEndRowIndexTextbox = QSpinBox(self)
-        self.ScanEndRowIndexTextbox.setMinimum(-20000)
-        self.ScanEndRowIndexTextbox.setMaximum(100000)
-        self.ScanEndRowIndexTextbox.setSingleStep(1650)
-        ScanSettingLayout.addWidget(self.ScanEndRowIndexTextbox, 0, 3)
-        ScanSettingLayout.addWidget(QLabel("End index-row:"), 0, 2)
-        
-        self.ScanStartColumnIndexTextbox = QSpinBox(self)
-        self.ScanStartColumnIndexTextbox.setMinimum(-20000)
-        self.ScanStartColumnIndexTextbox.setMaximum(100000)
-        self.ScanStartColumnIndexTextbox.setSingleStep(1650)
-        ScanSettingLayout.addWidget(self.ScanStartColumnIndexTextbox, 1, 1)
-        ScanSettingLayout.addWidget(QLabel("Start index-column:"), 1, 0)   
-        
-        self.ScanEndColumnIndexTextbox = QSpinBox(self)
-        self.ScanEndColumnIndexTextbox.setMinimum(-20000)
-        self.ScanEndColumnIndexTextbox.setMaximum(100000)
-        self.ScanEndColumnIndexTextbox.setSingleStep(1650)
-        ScanSettingLayout.addWidget(self.ScanEndColumnIndexTextbox, 1, 3)
-        ScanSettingLayout.addWidget(QLabel("End index-column:"), 1, 2)      
+        self.ScanStepsNumTextbox = QSpinBox(self)
+        self.ScanStepsNumTextbox.setMinimum(1)
+        self.ScanStepsNumTextbox.setMaximum(100000)
+        self.ScanStepsNumTextbox.setValue(10)
+        self.ScanStepsNumTextbox.setSingleStep(1)
+        ScanSettingLayout.addWidget(self.ScanStepsNumTextbox, 0, 1)
+        ScanSettingLayout.addWidget(QLabel("Scanning step number:"), 0, 0)  
 
         self.ScanstepTextbox = QSpinBox(self)
         self.ScanstepTextbox.setMaximum(20000)
         self.ScanstepTextbox.setValue(1650)
         self.ScanstepTextbox.setSingleStep(500)
-        ScanSettingLayout.addWidget(self.ScanstepTextbox, 0, 5)
-        ScanSettingLayout.addWidget(QLabel("Step size:"), 0, 4)
+        ScanSettingLayout.addWidget(self.ScanstepTextbox, 0, 7)
+        ScanSettingLayout.addWidget(QLabel("Step size:"), 0, 6)
+        
+        self.AutoFocusGapTextbox = QSpinBox(self)
+        self.AutoFocusGapTextbox.setMinimum(1)
+        self.AutoFocusGapTextbox.setMaximum(100000)
+        self.AutoFocusGapTextbox.setValue(100)
+        self.AutoFocusGapTextbox.setSingleStep(5)
+        ScanSettingLayout.addWidget(self.AutoFocusGapTextbox, 0, 5)
+        ScanSettingLayout.addWidget(QLabel("Auto focus gap steps:"), 0, 4)
         
         self.FocusStackNumTextbox = QSpinBox(self)
         self.FocusStackNumTextbox.setMinimum(1)
@@ -334,7 +322,7 @@ class Mainbody(QWidget):
         self.FocusStackStepTextbox.setMinimum(0)
         self.FocusStackStepTextbox.setMaximum(10000)
         self.FocusStackStepTextbox.setDecimals(6)
-        self.FocusStackStepTextbox.setValue(0.001)
+        self.FocusStackStepTextbox.setValue(0.002)
         self.FocusStackStepTextbox.setSingleStep(0.001)  
         ScanSettingLayout.addWidget(self.FocusStackStepTextbox, 1, 7)
         ScanSettingLayout.addWidget(QLabel("Focus stack step(mm):"), 1, 6)   
@@ -347,33 +335,21 @@ class Mainbody(QWidget):
         TwoPLaserContainer = QGroupBox()        
         TwoPLaserSettingLayout = QGridLayout() #Layout manager
         
-        self.TwoPLaserShutterCheckbox = QCheckBox("Insight Shutter event")
-        self.TwoPLaserShutterCheckbox.setStyleSheet('color:blue;font:bold "Times New Roman"')
-        TwoPLaserSettingLayout.addWidget(self.TwoPLaserShutterCheckbox, 0, 0)
-        
-        self.TwoPLaserWavelengthCheckbox = QCheckBox("Insight Wavelength event")
-        self.TwoPLaserWavelengthCheckbox.setStyleSheet('color:blue;font:bold "Times New Roman"')
-        TwoPLaserSettingLayout.addWidget(self.TwoPLaserWavelengthCheckbox, 1, 0)        
+        self.TwoPLaserFilterCheckbox = QCheckBox("Insight/Filter event")
+        self.TwoPLaserFilterCheckbox.setStyleSheet('color:blue;font:bold "Times New Roman"')
+        TwoPLaserSettingLayout.addWidget(self.TwoPLaserFilterCheckbox, 0, 0)
         
         self.TwoPLaserWavelengthbox = QSpinBox(self)
         self.TwoPLaserWavelengthbox.setMinimum(680)
         self.TwoPLaserWavelengthbox.setMaximum(1300)
         self.TwoPLaserWavelengthbox.setSingleStep(100)
         self.TwoPLaserWavelengthbox.setValue(1280)
-        TwoPLaserSettingLayout.addWidget(self.TwoPLaserWavelengthbox, 1, 1)
+        TwoPLaserSettingLayout.addWidget(self.TwoPLaserWavelengthbox, 0, 1)
         
         self.TwoPLaserShutterCombox = QComboBox()
-        self.TwoPLaserShutterCombox.addItems(['Open', 'Close'])
-        TwoPLaserSettingLayout.addWidget(self.TwoPLaserShutterCombox, 0, 1)
-        
-        ButtonAddInsightEvent = QPushButton('Add Insight event', self)
-        TwoPLaserSettingLayout.addWidget(ButtonAddInsightEvent, 0, 2)
-        ButtonAddInsightEvent.clicked.connect(self.AddInsightEvent)
-        
-        ButtonDelInsightEvent = QPushButton('Del Insight event', self)
-        TwoPLaserSettingLayout.addWidget(ButtonDelInsightEvent, 1, 2) 
-        ButtonDelInsightEvent.clicked.connect(self.DelInsightEvent)
-        
+        self.TwoPLaserShutterCombox.addItems(['No shutter event', 'Open', 'Close'])
+        TwoPLaserSettingLayout.addWidget(self.TwoPLaserShutterCombox, 1, 1)
+
         #--------filter------------
         NDfilterlabel = QLabel("ND filter:")
         TwoPLaserSettingLayout.addWidget(NDfilterlabel, 0, 3)
@@ -389,13 +365,10 @@ class Mainbody(QWidget):
         self.EmisfilterCombox.addItems(['Arch', 'eGFP', 'Citrine'])
         TwoPLaserSettingLayout.addWidget(self.EmisfilterCombox, 1, 4)
         
-        ButtonAddFilterEvent = QPushButton('Add filter event', self)
-        TwoPLaserSettingLayout.addWidget(ButtonAddFilterEvent, 0, 5)
-        ButtonAddFilterEvent.clicked.connect(self.AddFilterEvent)
-        
-        ButtonDelFilterEvent = QPushButton('Del filter event', self)
-        TwoPLaserSettingLayout.addWidget(ButtonDelFilterEvent, 1, 5) 
-        ButtonDelFilterEvent.clicked.connect(self.DelFilterEvent)
+        ButtonDelEvent = QPushButton('Delete event', self)
+        TwoPLaserSettingLayout.addWidget(ButtonDelEvent, 1, 5) 
+        ButtonDelEvent.clicked.connect(self.DelFilterEvent)
+        ButtonDelEvent.clicked.connect(self.DelInsightEvent)
         
         TwoPLaserContainer.setLayout(TwoPLaserSettingLayout)
                 
@@ -704,17 +677,23 @@ class Mainbody(QWidget):
         
         self.FocusStackInfoDict['RoundPackage_{}'.format(CurrentRoundSequence)] = 'NumberOfFocus{}WithIncrementBeing{}'.format(ZstackNumber, ZstackStep)
         
+        self.AddFilterEvent()
+        
+        self.AddInsightEvent()
+        
         self.normalOutputWritten('Round{} added.\n'.format(CurrentRoundSequence))
         print('Round added.')
         
     #-----------------------Configure filter event-----------------------------
     def AddFilterEvent(self):
         CurrentRoundSequence = self.RoundOrderBox.value()
-
-        self.RoundQueueDict['FilterEvents'].append('Round_{}_ND_ToPos_{}'.format(CurrentRoundSequence, self.NDfilterCombox.currentText()))
-        self.RoundQueueDict['FilterEvents'].append('Round_{}_EM_ToPos_{}'.format(CurrentRoundSequence, self.EmisfilterCombox.currentText()))
-        print(self.RoundQueueDict['FilterEvents'])
-        self.normalOutputWritten(str(self.RoundQueueDict['FilterEvents'])+'\n')
+        
+        if self.TwoPLaserFilterCheckbox.isChecked():
+            
+            self.RoundQueueDict['FilterEvents'].append('Round_{}_ND_ToPos_{}'.format(CurrentRoundSequence, self.NDfilterCombox.currentText()))
+            self.RoundQueueDict['FilterEvents'].append('Round_{}_EM_ToPos_{}'.format(CurrentRoundSequence, self.EmisfilterCombox.currentText()))
+            print(self.RoundQueueDict['FilterEvents'])
+            self.normalOutputWritten('FilterEvents'+str(self.RoundQueueDict['FilterEvents'])+'\n')
         
     def DelFilterEvent(self):
         CurrentRoundSequence = self.RoundOrderBox.value()
@@ -729,67 +708,61 @@ class Mainbody(QWidget):
     def AddInsightEvent(self):
         CurrentRoundSequence = self.RoundOrderBox.value()
         
-        if self.TwoPLaserShutterCheckbox.isChecked():
-            self.RoundQueueDict['InsightEvents'].append('Round_{}_Shutter_{}'.format(CurrentRoundSequence, self.TwoPLaserShutterCombox.currentText()))
-        if self.TwoPLaserWavelengthCheckbox.isChecked():
+        if self.TwoPLaserFilterCheckbox.isChecked():
             self.RoundQueueDict['InsightEvents'].append('Round_{}_WavelengthTo_{}'.format(CurrentRoundSequence, self.TwoPLaserWavelengthbox.value()))
+            
+            if self.TwoPLaserShutterCombox.currentText() != 'No shutter event':
+                self.RoundQueueDict['InsightEvents'].append('Round_{}_Shutter_{}'.format(CurrentRoundSequence, self.TwoPLaserShutterCombox.currentText()))
+            
         print(self.RoundQueueDict['InsightEvents'])
-        self.normalOutputWritten(str(self.RoundQueueDict['InsightEvents'])+'\n')
+        self.normalOutputWritten('InsightEvents' + str(self.RoundQueueDict['InsightEvents'])+'\n')
         
     def DelInsightEvent(self):
         CurrentRoundSequence = self.RoundOrderBox.value()
         
-        if self.TwoPLaserShutterCheckbox.isChecked():
-            self.RoundQueueDict['InsightEvents'].remove('Round_{}_Shutter_{}'.format(CurrentRoundSequence, self.TwoPLaserShutterCombox.currentText()))
-        if self.TwoPLaserWavelengthCheckbox.isChecked():
+        if self.TwoPLaserFilterCheckbox.isChecked():
             self.RoundQueueDict['InsightEvents'].remove('Round_{}_WavelengthTo_{}'.format(CurrentRoundSequence, self.TwoPLaserWavelengthbox.value()))
+            
+            if self.TwoPLaserShutterCombox.currentText() != 'No shutter event':
+                self.RoundQueueDict['InsightEvents'].remove('Round_{}_Shutter_{}'.format(CurrentRoundSequence, self.TwoPLaserShutterCombox.currentText()))
+            
         print(self.RoundQueueDict['InsightEvents'])
         self.normalOutputWritten(str(self.RoundQueueDict['InsightEvents'])+'\n')
    
     #-----------------------------Generate Scan Coords-----------------------------
     def GenerateScanCoords(self):
-        self.CoordContainer = np.array([])
-        # settings for scanning index
-        position_index=[]
-        row_start = int(self.ScanStartRowIndexTextbox.value()) #row position index start number
-        row_end = int(self.ScanEndRowIndexTextbox.value())+1 #row position index end number
-        
-        column_start = int(self.ScanStartColumnIndexTextbox.value())
-        column_end = int(self.ScanEndColumnIndexTextbox.value())+1  # With additional plus one, the range is fully covered by steps.
-        
-        self.step = int(self.ScanstepTextbox.value()) #length of each step, 1500 for -5~5V FOV
-      
-        for i in range(row_start, row_end, self.step):
-            position_index.append(int(i))
-            for j in range(column_start, column_end, self.step):
-                position_index.append(int(j))
-                
-                self.CoordContainer = np.append(self.CoordContainer, (position_index))
-
-                del position_index[-1]
-                
-            position_index=[]
-
         CurrentRoundSequence = self.RoundOrderBox.value()
-        self.RoundCoordsDict['CoordsPackage_{}'.format(CurrentRoundSequence)] = self.CoordContainer
+        # settings for scanning index
+        step = self.ScanstepTextbox.value()
+        
+        row_start = 0 
+        row_end = self.ScanStepsNumTextbox.value() * step
+        
+        column_start = 0 
+        column_end = self.ScanStepsNumTextbox.value() * step
         
         # Generate structured array containing scanning coordinates' information.
-        grid_gap = 4950
+        AutoFocusGap = self.AutoFocusGapTextbox.value() * step
         # Data type of structured array.
         Coords_array_dtype = np.dtype([('row', 'i4'), ('col', 'i4'), ('auto_focus_flag', 'U10'), ('focus_position', 'f4')])
         
         Coords_array = np.array([], dtype=Coords_array_dtype)
         
-        for row_pos in range(row_start, row_end, self.step):
-            for col_pos in range(column_start, column_end, self.step):
+        for row_pos in range(row_start, row_end, step):
+            for col_pos in range(column_start, column_end, step):
                 # At each left-top corner of the coordinates grid, place the 
                 # flag for auto focus
-                if col_pos % grid_gap == 0 and row_pos % grid_gap == 0:
-                    current_coord_array = np.array([(row_pos, col_pos, 'yes', -1)], dtype=Coords_array_dtype)
+                if col_pos % AutoFocusGap == 0 and row_pos % AutoFocusGap == 0:
+                    if col_pos == 0 and row_pos == 0:
+                        current_coord_array = np.array([(row_pos, col_pos, 'no', -1)], dtype=Coords_array_dtype)
+                    else:
+                        current_coord_array = np.array([(row_pos, col_pos, 'yes', -1)], dtype=Coords_array_dtype)
                 else:
                     current_coord_array = np.array([(row_pos, col_pos, 'no', -1)], dtype=Coords_array_dtype)
                     
                 Coords_array = np.append(Coords_array, current_coord_array)
+
+        self.RoundCoordsDict['CoordsPackage_{}'.format(CurrentRoundSequence)] = Coords_array
         
     def DeleteFreshRound(self):
         CurrentRoundSequence = self.RoundOrderBox.value()
@@ -821,6 +794,8 @@ class Mainbody(QWidget):
     def ConfigGeneralSettings(self):
         savedirectory = self.savedirectory
         meshrepeat = self.ScanRepeatTextbox.value()
+        StageGridOffset = self.ScanStepsNumTextbox.value() * self.ScanstepTextbox.value()
+        
         StartUpEvents = []
         if self.OpenTwoPLaserShutterCheckbox.isChecked():
             StartUpEvents.append('Shutter_Open')
@@ -828,9 +803,9 @@ class Mainbody(QWidget):
         # Interpolate in between the focus correction positions
         FocusCorrectionMatrixDict = self.upsize_focus_matrix()
             
-        generalnamelist = ['savedirectory', 'FocusCorrectionMatrixDict', 'FocusStackInfoDict', 'Meshgrid', 'Scanning step', 'StartUpEvents']
+        generalnamelist = ['savedirectory', 'FocusCorrectionMatrixDict', 'FocusStackInfoDict', 'StageGridOffset', 'Meshgrid', 'StartUpEvents']
         
-        generallist = [savedirectory, FocusCorrectionMatrixDict, self.FocusStackInfoDict, meshrepeat, self.step, StartUpEvents]
+        generallist = [savedirectory, FocusCorrectionMatrixDict, self.FocusStackInfoDict, StageGridOffset, meshrepeat, StartUpEvents]
         
         for item in range(len(generallist)):
             self.GeneralSettingDict[generalnamelist[item]] = generallist[item]

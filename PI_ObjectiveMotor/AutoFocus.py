@@ -62,13 +62,12 @@ class FocusFinder():
         else:
             self.pi_device_instance = motor_handle
         
-        
-        
         # Current position of the focus.
         self.current_pos = self.pi_device_instance.GetCurrentPos()
         
-        # self.pi_device_instance.move(self.current_pos - 0.002)
-        
+        # Threshold for focus-degree
+        self.focus_degree_thres = 0.001
+
         # Number of steps already tried.
         self.steps_taken = 0
         # The focus degree of previous position.
@@ -95,6 +94,13 @@ class FocusFinder():
                 mid_position = (upper_position + lower_position)/2
                 degree_of_focus_mid = self.evaluate_focus(mid_position)
                 print("mid focus degree: {}".format(round(degree_of_focus_mid, 5)))
+                
+                # Break the loop if focus degree is below threshold which means
+                # that there's no cell in image.
+                if degree_of_focus_mid <= self.focus_degree_thres:
+                    mid_position = False
+                    break
+
                 # Move to top and evaluate.
                 degree_of_focus_up = self.evaluate_focus(obj_position = upper_position)
                 print("top focus degree: {}".format(round(degree_of_focus_up, 5)))
@@ -204,5 +210,5 @@ class FocusFinder():
     #     self.steps_taken += 1
 if __name__ == "__main__":
     ins = FocusFinder()
-    ins.bisection()
+    ins.bisection() # will return false if there's no cell in view.
     ins.pi_device_instance.CloseMotorConnection()
