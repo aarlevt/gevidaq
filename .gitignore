@@ -13,6 +13,7 @@ Deprecated
 !Icons/*.png
 *.json
 *.log
+*.db
 
 # jupyternotebook cache
 *.ipynb_checkpoints
