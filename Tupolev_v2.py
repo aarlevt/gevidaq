@@ -46,6 +46,7 @@ import ThorlabsFilterSlider.FilterSliderWidget
 import PI_ObjectiveMotor.ObjMotorWidget
 import InsightX3.TwoPhotonLaserUI
 import Weather_GUI
+import Evolution_GUI_v7
 
 import pyqtgraph.console
 import HamamatsuCam.HamamatsuUI
@@ -214,11 +215,21 @@ class Mainbody(QWidget):
         # =============================================================================
         #         GUI for Insight X3      
         # =============================================================================
-        self.open_Insight = StylishQT.FancyPushButton(55, 25, color1=(70,130,180), color2=(144,238,144))
-        self.open_Insight.setText("Open Insight laser")
+        self.open_Insight = StylishQT.FancyPushButton(50, 50, color1=(176,224,230), color2=(135,206,250))
+        self.open_Insight.setIcon(QIcon("./Icons/spectra_physics.png"))
+        self.open_Insight.setIconSize(QSize(40, 40))
         self.open_Insight.clicked.connect(self.open_Insight_UI)
-        self.layout.addWidget(self.open_Insight, 3, 0, 1, 2)
+        self.layout.addWidget(self.open_Insight, 3, 0, 1, 1)
         self.open_Insight.setGraphicsEffect(QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2))
+        # =============================================================================
+        #         GUI for evolution screening     
+        # =============================================================================
+        self.open_screening_button = StylishQT.FancyPushButton(50, 50, color1=(245,245,220), color2=(255,228,196))
+        self.open_screening_button.setIcon(QIcon("./Icons/screening.png"))
+        self.open_screening_button.setIconSize(QSize(45, 45))
+        self.open_screening_button.clicked.connect(self.open_screening)
+        self.layout.addWidget(self.open_screening_button, 3, 1, 1, 1)
+        self.open_screening_button.setGraphicsEffect(QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2))
         # =============================================================================
         #         Console massage    
         # =============================================================================
@@ -327,7 +338,11 @@ class Mainbody(QWidget):
         
     def open_Insight_UI(self):
         self.open_Insight_UIWindow = InsightX3.TwoPhotonLaserUI.InsightWidgetUI()
-        self.open_Insight_UIWindow.show()        
+        self.open_Insight_UIWindow.show()
+        
+    def open_screening(self):
+        self.open_screening_UIWindow = Evolution_GUI_v7.Mainbody()
+        self.open_screening_UIWindow.show()
     # =============================================================================
     #     Fucs for console display
     # =============================================================================

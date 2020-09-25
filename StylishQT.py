@@ -8,7 +8,7 @@ Created on Mon Apr 20 18:33:21 2020
 """
 from PyQt5 import QtWidgets, QtCore, QtGui
 from PyQt5.QtCore import Qt, pyqtSignal, QRectF, QPoint, QRect, QObject, QSize, QAbstractAnimation, QVariantAnimation
-from PyQt5.QtGui import QImage, QPalette, QBrush, QFont, QPainter, QColor, QPen, QIcon
+from PyQt5.QtGui import QImage, QPalette, QBrush, QFont, QPainter, QColor, QPen, QIcon, QPixmap
 
 from PyQt5.QtWidgets import (QWidget, QButtonGroup, QLabel, QSlider, QSpinBox, QDoubleSpinBox, QGridLayout, QPushButton, QGroupBox, 
                              QLineEdit, QVBoxLayout, QHBoxLayout, QComboBox, QMessageBox, QTabWidget, QCheckBox, QRadioButton, 
@@ -248,18 +248,27 @@ class generateButton(QtWidgets.QPushButton):
         
 class connectButton(QtWidgets.QPushButton):
     """
-    Button style for 'generate'
+    Button style for 'connect' button
     """
     def __init__(self, parent = None):
         super().__init__(parent)
-        self.setIcon(QIcon('./Icons/connect.png')) 
+        self.setCheckable(True)
+
+        # self.setIcon(QIcon('./Icons/connect.png'))
         self.setStyleSheet("QPushButton {color:black;background-color: qlineargradient( x1:0 y1:0, x2:1 y2:0, stop:0 #FFFF00, stop:1 #E5CCFF);border-radius: 8px;}" 
-                                          "QPushButton:hover:!pressed {color:white;background-color: #9999FF;border-radius: 8px;}"
-                                          "QPushButton:disabled {color:white;background-color: grey;border-radius: 8px;}") 
-          
+                           "QPushButton:hover:!pressed {color:white;background-color: #9999FF;border-radius: 8px;}"
+                           "QPushButton:disabled {color:white;background-color: grey;border-radius: 8px;}"
+                           "QPushButton:checked {color:black;background-color: qlineargradient( x1:0 y1:0, x2:1 y2:0, stop:0 #FF9999, stop:1 #FFCC99);border-radius: 8px;}" ) 
+                                           
         self.setFixedHeight(30)
-        self.setGraphicsEffect(QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2))
+        self.setGraphicsEffect(QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2))  
         
+        icon = QIcon()
+        icon.addPixmap(QPixmap('./Icons/disconnect.png'))
+        icon.addPixmap(QPixmap('./Icons/connect.png'), QIcon.Normal, QIcon.On)
+        self.setIcon(icon)
+
+              
 class disconnectButton(QtWidgets.QPushButton):
     """
     Button style for 'generate'
@@ -467,6 +476,8 @@ if __name__ == "__main__":
     bar._dial.sliderReleased.connect(lambda:print(bar._dial.value()))
     
     lay2.addWidget(bar)
+    button = connectButton()
+    lay2.addWidget(button)
         
     def closeEvent(self, event):
         QtWidgets.QApplication.quit()

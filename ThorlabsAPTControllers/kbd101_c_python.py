@@ -10,8 +10,8 @@ import time
 
 from ctypes import *
 
-os.chdir(r"C:\Labsoftware\Thorlabs")
-lib = cdll.LoadLibrary("Thorlabs.MotionControl.KCube.BrushlessMotor.dll")
+# os.chdir(r"C:\Labsoftware\Thorlabs")
+lib = cdll.LoadLibrary(r"C:\Labsoftware\Thorlabs\Thorlabs.MotionControl.KCube.BrushlessMotor.dll")
 
 
 
@@ -20,7 +20,7 @@ lib = cdll.LoadLibrary("Thorlabs.MotionControl.KCube.BrushlessMotor.dll")
 lib.TLI_BuildDeviceList()
 
 #set up serial number variable
-serialNumber = c_char_p("28251114")
+serialNumber = c_char_p("28251139".encode('utf-8'))
 moveTimeout=60.0
 
 
@@ -44,8 +44,9 @@ messageID = c_ushort()
 messageData = c_ulong()
 while(homed == False):
     lib.BMC_GetNextMessage(serialNumber, byref(messageType), byref(messageID), byref(messageData))
-    if ((messageID.value == 0 and messageType.value == 2) or (time.time()-homeStartTime) > moveTimeout): homed = True
-lib.BMC_ClearMessageQueue(serialNumber);
+    if ((messageID.value == 0 and messageType.value == 2) or (time.time()-homeStartTime) > moveTimeout): 
+        homed = True
+lib.BMC_ClearMessageQueue(serialNumber)
 
 
 deviceUnit= c_int()
@@ -70,7 +71,8 @@ moved=False
 while(moved == False):
     lib.BMC_GetNextMessage(serialNumber, byref(messageType), byref(messageID), byref(messageData))
     
-    if ((messageID.value == 1 and messageType.value == 2) or (time.time()-moveStartTime) > moveTimeout): moved = True
+    if ((messageID.value == 1 and messageType.value == 2) or (time.time()-moveStartTime) > moveTimeout): 
+        moved = True
 
 #clean up and exit
 lib.BMC_ClearMessageQueue(serialNumber)

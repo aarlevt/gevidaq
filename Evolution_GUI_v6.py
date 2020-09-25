@@ -54,7 +54,7 @@ class Mainbody(QWidget):
         os.chdir('./')# Set directory to current folder.
         self.setFont(QFont("Arial"))
         
-        self.setMinimumSize(1080, 1920)
+        # self.setMinimumSize(1080, 1920)
         self.setWindowTitle("McDonnell")
         self.layout = QGridLayout(self)
         
@@ -76,7 +76,6 @@ class Mainbody(QWidget):
         self.Lib_round_infor = []
         
         self.savedirectory = r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data'
-        self.ludlStage = LudlStage("COM12")
         #**************************************************************************************************************************************
         #-----------------------------------------------------------GUI for GeneralSettings----------------------------------------------------
         #**************************************************************************************************************************************
@@ -112,8 +111,8 @@ class Mainbody(QWidget):
         ButtonExePipeline = StylishQT.runButton()
         ButtonExePipeline.clicked.connect(self.ExecutePipeline)
         
-        ButtonSavePipeline = StylishQT.saveButton()
-        ButtonSavePipeline.clicked.connect(self.Savepipeline)
+        # ButtonSavePipeline = StylishQT.saveButton()
+        # ButtonSavePipeline.clicked.connect(self.Savepipeline)
         
         # Pipeline import
         self.LoadPipelineAddressbox = QLineEdit(self)    
@@ -141,7 +140,7 @@ class Mainbody(QWidget):
         
         GeneralSettingContainerLayout.addWidget(ButtonConfigurePipeline, 0, 3)        
         GeneralSettingContainerLayout.addWidget(ButtonExePipeline, 0, 5)
-        GeneralSettingContainerLayout.addWidget(ButtonSavePipeline, 0, 4)    
+        # GeneralSettingContainerLayout.addWidget(ButtonSavePipeline, 0, 4)    
         GeneralSettingContainer.setLayout(GeneralSettingContainerLayout)
         
         #**************************************************************************************************************************************
@@ -834,6 +833,8 @@ class Mainbody(QWidget):
         self.FocusDuplicateMethodInfor = CorrectionDictForDuplicateMethod
         
     def ExecutePipeline(self):
+        self.Savepipeline()
+        
         get_ipython().run_line_magic('matplotlib', 'inline') # before start, set spyder back to inline
         
         self.ExecuteThreadInstance = ScanningExecutionThread(self.RoundQueueDict, self.RoundCoordsDict, self.GeneralSettingDict)
