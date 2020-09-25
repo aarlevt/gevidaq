@@ -254,7 +254,6 @@ class connectButton(QtWidgets.QPushButton):
         super().__init__(parent)
         self.setCheckable(True)
 
-        # self.setIcon(QIcon('./Icons/connect.png'))
         self.setStyleSheet("QPushButton {color:black;background-color: qlineargradient( x1:0 y1:0, x2:1 y2:0, stop:0 #FFFF00, stop:1 #E5CCFF);border-radius: 8px;}" 
                            "QPushButton:hover:!pressed {color:white;background-color: #9999FF;border-radius: 8px;}"
                            "QPushButton:disabled {color:white;background-color: grey;border-radius: 8px;}"

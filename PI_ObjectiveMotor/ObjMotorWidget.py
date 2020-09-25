@@ -51,7 +51,7 @@ class ObjMotorWidgetUI(QWidget):
         #**************************************************************************************************************************************
         
         # Movement based on relative positions.
-        self.ObjMotorcontrolContainer = QGroupBox("Objective motor control")
+        self.ObjMotorcontrolContainer = QGroupBox("Objective control")
         self.ObjMotorcontrolContainer.setStyleSheet("QGroupBox {\
                                 font: bold;\
                                 border: 1px solid silver;\

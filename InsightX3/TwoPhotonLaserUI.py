@@ -21,7 +21,6 @@ from PyQt5.QtWidgets import (QWidget, QButtonGroup, QLabel, QSlider, QSpinBox, Q
 import time
 import sys
 import threading, queue
-from InsightX3.TwoPhotonLaser import TwoPhotonExecutor
 from InsightX3.TwoPhotonLaser_backend import InsightX3
 import StylishQT
 
