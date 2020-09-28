@@ -258,10 +258,10 @@ class Mainbody(QWidget):
         self.AutoFocusGapTextbox = QSpinBox(self)
         self.AutoFocusGapTextbox.setMinimum(1)
         self.AutoFocusGapTextbox.setMaximum(100000)
-        self.AutoFocusGapTextbox.setValue(100)
+        self.AutoFocusGapTextbox.setValue(0)
         self.AutoFocusGapTextbox.setSingleStep(5)
         ScanSettingLayout.addWidget(self.AutoFocusGapTextbox, 0, 5)
-        ScanSettingLayout.addWidget(QLabel("Auto focus gap steps:"), 0, 4)
+        ScanSettingLayout.addWidget(QLabel("Auto focus grid steps:"), 0, 4)
         
         self.FocusStackNumTextbox = QSpinBox(self)
         self.FocusStackNumTextbox.setMinimum(1)
@@ -714,22 +714,23 @@ class Mainbody(QWidget):
         column_end = (self.ScanStepsNumTextbox.value() -1) * step
         
         # Generate structured array containing scanning coordinates' information.
-        AutoFocusGap_num = self.AutoFocusGapTextbox.value()
-        AutoFocusGap = AutoFocusGap_num * step
+        AutoFocusGrid_steps = self.AutoFocusGapTextbox.value()
+        AutoFocusCoordGap = AutoFocusGrid_steps * step
         
         # Number of coordinates per row
         Coords_number_per_row = (row_end - row_start) / step + 1
         
         # Generate the 
-        AutoFocusGridNum = int(Coords_number_per_row / (1 + AutoFocusGap_num))
-        AutoFocusGridOffsetList = []
-        # Auto focus grid coordinates offset list
-        for row_offset in range(AutoFocusGridNum):
-            for col_offset in range(AutoFocusGridNum):
-                AutoFocusGridOffsetList.append([row_offset * step * (AutoFocusGap_num+1), col_offset * step * (AutoFocusGap_num+1)])
-        
-        if AutoFocusGridNum == 0:
-            AutoFocusGridOffsetList = [0, 0]
+        if AutoFocusGrid_steps != 0:
+            AutoFocusGridNum = int(Coords_number_per_row / AutoFocusGrid_steps)
+            AutoFocusGridOffsetList = []
+            # Auto focus grid coordinates offset list
+            for row_offset in range(AutoFocusGridNum):
+                for col_offset in range(AutoFocusGridNum):
+                    AutoFocusGridOffsetList.append([row_offset * step * AutoFocusGrid_steps, col_offset * step * AutoFocusGrid_steps])
+        else:
+            AutoFocusGridOffsetList = [[0, 0]]
+            
         # Data type of structured array.
         Coords_array_dtype = np.dtype([('row', 'i4'), ('col', 'i4'), ('auto_focus_flag', 'U10'), ('focus_position', 'f4')])
         
@@ -739,11 +740,11 @@ class Mainbody(QWidget):
             AutoFocusOffset_row = AutoFocusGridOffset[0]
             AutoFocusOffset_col = AutoFocusGridOffset[1]
             
-            for row_pos in range(row_start, AutoFocusGap + 1, step):
-                for col_pos in range(column_start, AutoFocusGap + 1, step):
+            for row_pos in range(row_start, AutoFocusCoordGap, step):
+                for col_pos in range(column_start, AutoFocusCoordGap, step):
                     # At each left-top corner of the coordinates grid, place the 
                     # flag for auto focus
-                    if col_pos == 0 and row_pos == 0:
+                    if col_pos == 0 and row_pos == 0 and AutoFocusGrid_steps != 0:
                         current_coord_array = np.array([(row_pos + AutoFocusOffset_row, col_pos + AutoFocusOffset_col, 'yes', -1)], dtype=Coords_array_dtype)
                     else:
                         current_coord_array = np.array([(row_pos + AutoFocusOffset_row, col_pos + AutoFocusOffset_col, 'no', -1)], dtype=Coords_array_dtype)
