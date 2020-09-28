@@ -180,7 +180,7 @@ class ScanningExecutionThread(QThread):
                 self.currentCoordsSeq = 0
                 #%%
                 #-------------Unpack infor for stage move.
-                CoordsNum = len(self.RoundCoordsDict['CoordsPackage_{}'.format(EachRound+1)]) #Each pos has 2 coords                
+                CoordsNum = len(self.RoundCoordsDict['CoordsPackage_{}'.format(EachRound+1)])              
                 for EachCoord in range(CoordsNum):
                     """
                     #------------------------------------------------------------------------------------
@@ -551,16 +551,33 @@ class ScanningExecutionThread(QThread):
             # If go for auto-focus at this coordinate
             auto_focus_flag = self.coord_array['auto_focus_flag']
             # auto_focus_flag = False
+            print('focus_position {}'.format(self.coord_array['focus_position']))
+            
             #-----------------------Auto focus---------------------------------
             if auto_focus_flag == "yes":
+                
                 if self.coord_array['focus_position'] == -1.:
                     instance_FocusFinder = FocusFinder(motor_handle = self.pi_device_instance)
+                    print("--------------Start auto-focusing-----------------")
                     self.ObjCurrentPos = instance_FocusFinder.bisection()
-                    # Record the position
-                    self.RoundCoordsDict['CoordsPackage_{}'.format(EachRound+1)][EachCoord]['focus_position'] = self.ObjCurrentPos
+                    
+                    try:
+                        if self.ObjCurrentPos[0] == False: # If there's no cell in FOV
+                        # Skip?  mid_position = [False, self.current_pos]
+                            self.ObjCurrentPos = self.ObjCurrentPos[1]
+                    except:
+                        pass
+                        
+                    print("--------------End of auto-focusing----------------")
+                    # Record the position, try to write it in the NEXT round dict.
+                    try:
+                        self.RoundCoordsDict['CoordsPackage_{}'.format(EachRound + 2)][EachCoord]['focus_position'] = self.ObjCurrentPos
+                    except:# If it's already the last round, skip.
+                        pass
                     
                 else: # If there's already position from last round, move to it.
                     recorded_pos = self.RoundCoordsDict['CoordsPackage_{}'.format(EachRound+1)][EachCoord]['focus_position']
+                    print("=====================Move to last recorded position=================")
                     self.pi_device_instance.move(recorded_pos)
             #------------------------------------------------------------------
             # If not auto focus, stay where it is.

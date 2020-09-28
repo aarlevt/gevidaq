@@ -26,7 +26,7 @@ import matplotlib.pyplot as plt
 
 class FocusFinder():
     
-    def __init__(self, source_of_image = "PMT", init_step_size = 0.006, total_step_number = 6, motor_handle = None, twophoton_handle = None, *args, **kwargs):
+    def __init__(self, source_of_image = "PMT", init_step_size = 0.007, total_step_number = 5, motor_handle = None, twophoton_handle = None, *args, **kwargs):
         """
         
 
@@ -66,7 +66,7 @@ class FocusFinder():
         self.current_pos = self.pi_device_instance.GetCurrentPos()
         
         # Threshold for focus-degree
-        self.focus_degree_thres = 0.001
+        self.focus_degree_thres = 0.00008
 
         # Number of steps already tried.
         self.steps_taken = 0
@@ -98,7 +98,7 @@ class FocusFinder():
                 # Break the loop if focus degree is below threshold which means
                 # that there's no cell in image.
                 if degree_of_focus_mid <= self.focus_degree_thres:
-                    mid_position = False
+                    mid_position = [False, self.current_pos]
                     break
 
                 # Move to top and evaluate.

@@ -708,31 +708,47 @@ class Mainbody(QWidget):
         step = self.ScanstepTextbox.value()
         
         row_start = 0 
-        row_end = self.ScanStepsNumTextbox.value() * step
+        row_end = (self.ScanStepsNumTextbox.value() -1) * step
         
         column_start = 0 
-        column_end = self.ScanStepsNumTextbox.value() * step
+        column_end = (self.ScanStepsNumTextbox.value() -1) * step
         
         # Generate structured array containing scanning coordinates' information.
-        AutoFocusGap = self.AutoFocusGapTextbox.value() * step
+        AutoFocusGap_num = self.AutoFocusGapTextbox.value()
+        AutoFocusGap = AutoFocusGap_num * step
+        
+        # Number of coordinates per row
+        Coords_number_per_row = (row_end - row_start) / step + 1
+        
+        # Generate the 
+        AutoFocusGridNum = int(Coords_number_per_row / (1 + AutoFocusGap_num))
+        AutoFocusGridOffsetList = []
+        # Auto focus grid coordinates offset list
+        for row_offset in range(AutoFocusGridNum):
+            for col_offset in range(AutoFocusGridNum):
+                AutoFocusGridOffsetList.append([row_offset * step * (AutoFocusGap_num+1), col_offset * step * (AutoFocusGap_num+1)])
+        
+        if AutoFocusGridNum == 0:
+            AutoFocusGridOffsetList = [0, 0]
         # Data type of structured array.
         Coords_array_dtype = np.dtype([('row', 'i4'), ('col', 'i4'), ('auto_focus_flag', 'U10'), ('focus_position', 'f4')])
         
         Coords_array = np.array([], dtype=Coords_array_dtype)
         
-        for row_pos in range(row_start, row_end, step):
-            for col_pos in range(column_start, column_end, step):
-                # At each left-top corner of the coordinates grid, place the 
-                # flag for auto focus
-                if col_pos % AutoFocusGap == 0 and row_pos % AutoFocusGap == 0:
+        for AutoFocusGridOffset in AutoFocusGridOffsetList:
+            AutoFocusOffset_row = AutoFocusGridOffset[0]
+            AutoFocusOffset_col = AutoFocusGridOffset[1]
+            
+            for row_pos in range(row_start, AutoFocusGap + 1, step):
+                for col_pos in range(column_start, AutoFocusGap + 1, step):
+                    # At each left-top corner of the coordinates grid, place the 
+                    # flag for auto focus
                     if col_pos == 0 and row_pos == 0:
-                        current_coord_array = np.array([(row_pos, col_pos, 'no', -1)], dtype=Coords_array_dtype)
+                        current_coord_array = np.array([(row_pos + AutoFocusOffset_row, col_pos + AutoFocusOffset_col, 'yes', -1)], dtype=Coords_array_dtype)
                     else:
-                        current_coord_array = np.array([(row_pos, col_pos, 'yes', -1)], dtype=Coords_array_dtype)
-                else:
-                    current_coord_array = np.array([(row_pos, col_pos, 'no', -1)], dtype=Coords_array_dtype)
-                    
-                Coords_array = np.append(Coords_array, current_coord_array)
+                        current_coord_array = np.array([(row_pos + AutoFocusOffset_row, col_pos + AutoFocusOffset_col, 'no', -1)], dtype=Coords_array_dtype)
+                        
+                    Coords_array = np.append(Coords_array, current_coord_array)
 
         self.RoundCoordsDict['CoordsPackage_{}'.format(CurrentRoundSequence)] = Coords_array
         
