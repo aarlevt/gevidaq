@@ -32,10 +32,9 @@ class KCubeWidgetUI(QWidget):
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-#        os.chdir('./')# Set directory to current folder.
+
         self.setFont(QFont("Arial"))
         
-        self.resize(265,130)
         self.setWindowTitle("KCube Widget")
         self.layout = QGridLayout(self)
         
@@ -52,10 +51,15 @@ class KCubeWidgetUI(QWidget):
         KCubeContainerLayout.addWidget(self.connectButton, 0, 0)
         self.connectButton.clicked.connect(lambda: self.buildCommunication())
         
+        self.PosSwitchButton = StylishQT.MySwitch('PMT pos.', 'lemon chiffon', 'Camera pos.', 'lavender', width = 60)
+        self.PosSwitchButton.setChecked(False)
+        self.PosSwitchButton.clicked.connect(self.PosSwitchEvent)
+        KCubeContainerLayout.addWidget(self.PosSwitchButton, 0, 1)
+        
         KCubeContainer.setLayout(KCubeContainerLayout)
         
         self.layout.addWidget(KCubeContainer, 0, 0)
-
+        self.setFixedHeight(90)
     
     def run_in_thread(self, fn, *args, **kwargs):
         """
@@ -96,6 +100,14 @@ class KCubeWidgetUI(QWidget):
     def DisconnectMotor(self):
         self.KCube_instance.Exit()
         
+    def PosSwitchEvent(self):
+        if self.PosSwitchButton.isChecked():
+
+            self.run_in_thread(lambda:self.run_in_thread(self.KCube_instance.Move(32)))
+        else:
+
+            self.run_in_thread(lambda:self.KCube_instance.Home())        
+    
 if __name__ == "__main__":
     def run_app():
         app = QtWidgets.QApplication(sys.argv)

@@ -569,6 +569,8 @@ class ScanningExecutionThread(QThread):
                         pass
                         
                     print("--------------End of auto-focusing----------------")
+                    time.sleep(1)
+                    
                     # Record the position, try to write it in the NEXT round dict.
                     try:
                         self.RoundCoordsDict['CoordsPackage_{}'.format(EachRound + 2)][EachCoord]['focus_position'] = self.ObjCurrentPos

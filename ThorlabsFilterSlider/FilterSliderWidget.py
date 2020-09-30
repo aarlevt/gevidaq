@@ -226,7 +226,7 @@ class FilterSliderWidgetUI(QWidget):
         EM_filtercontrolContainer.setFixedWidth(65)
         
         ND_filtercontrolContainer.setLayout(self.filtercontrolLayout)
-        ND_filtercontrolContainer.setFixedHeight(110)
+        # ND_filtercontrolContainer.setFixedHeight(110)
         ND_filtercontrolContainer.setFixedWidth(200)
 #        self.setPalette(palette)
 #        self.setAutoFillBackground(True)

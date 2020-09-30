@@ -665,7 +665,7 @@ class DAQmission(QThread): # For all-purpose Nidaq tasks, use "Dev1/ai22" as ref
 
 if __name__ == "__main__":
      daq= DAQmission()
-     daq.sendSingleDigital('DMD_trigger', False)
-     daq.sendSingleDigital('LED', False)
+     # daq.sendSingleDigital('DMD_trigger', False)
+     # daq.sendSingleDigital('LED', False)
      # daq.sendSingleAnalog('galvosx', 0)
-     # daq.sendSingleAnalog('galvosy', 0)
+     daq.sendSingleAnalog('galvosy', 0)

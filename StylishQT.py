@@ -149,7 +149,7 @@ class runButton(QtWidgets.QPushButton):
     """
     def __init__(self, label = '', parent = None):
         super().__init__(parent)
-        self.setIcon(QIcon('./Icons/Run.png'))
+        self.setIcon(QIcon('./Icons/Run_1.png'))
         StyleSheet = ("QPushButton {color:#0000CC;font: bold;background-color: qlineargradient( x1:0 y1:0, x2:1 y2:0, stop:0 #FF99FF, stop:1 #9ED8FF);border-radius: 8px;}" 
                       "QPushButton:hover:!pressed {color:white;background-color: #9999FF;border-radius: 8px;}"
                       "QPushButton:disabled {color:white;background-color: grey;border-radius: 8px;}")
@@ -158,6 +158,7 @@ class runButton(QtWidgets.QPushButton):
         self.setFixedHeight(32)
         self.setIconSize(QSize(30, 30))
         self.setGraphicsEffect(QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2))
+        self.setToolTip("Execute")
         
 class stop_deleteButton(QtWidgets.QPushButton):
     """
@@ -172,6 +173,7 @@ class stop_deleteButton(QtWidgets.QPushButton):
         self.setStyleSheet(StyleSheet)
         self.setFixedHeight(32)
         self.setGraphicsEffect(QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2))
+        self.setToolTip("Stop/Delete")
         
 class cleanButton(QtWidgets.QPushButton):
     """
@@ -187,6 +189,7 @@ class cleanButton(QtWidgets.QPushButton):
         self.setText(label)
         self.setFixedHeight(32)
         self.setGraphicsEffect(QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2))
+        self.setToolTip("Clear")
         
 class checkableButton(QtWidgets.QPushButton):
     """
@@ -217,6 +220,7 @@ class saveButton(QtWidgets.QPushButton):
         self.setStyleSheet(StyleSheet)               
         self.setFixedHeight(32)
         self.setGraphicsEffect(QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2))
+        self.setToolTip("Save")
         
 class addButton(QtWidgets.QPushButton):
     """
@@ -231,6 +235,7 @@ class addButton(QtWidgets.QPushButton):
         self.setStyleSheet(StyleSheet)               
         self.setFixedHeight(32)
         self.setGraphicsEffect(QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2))
+        self.setToolTip("Add")
         
 class generateButton(QtWidgets.QPushButton):
     """
@@ -245,6 +250,7 @@ class generateButton(QtWidgets.QPushButton):
         self.setStyleSheet(StyleSheet)               
         self.setFixedHeight(32)
         self.setGraphicsEffect(QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2))
+        self.setToolTip("Generate/Configure")
         
 class connectButton(QtWidgets.QPushButton):
     """
@@ -266,7 +272,7 @@ class connectButton(QtWidgets.QPushButton):
         icon.addPixmap(QPixmap('./Icons/disconnect.png'))
         icon.addPixmap(QPixmap('./Icons/connect.png'), QIcon.Normal, QIcon.On)
         self.setIcon(icon)
-
+        self.setToolTip("Connect/Disconnect")
               
 class disconnectButton(QtWidgets.QPushButton):
     """
@@ -281,6 +287,7 @@ class disconnectButton(QtWidgets.QPushButton):
           
         self.setFixedHeight(30)
         self.setGraphicsEffect(QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2))
+        self.setToolTip("Disconnect")
         
 class SquareImageView(pg.ImageView):
     """

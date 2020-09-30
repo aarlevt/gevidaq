@@ -44,6 +44,7 @@ import NIDAQ.AOTFWidget
 import NIDAQ.DAQoperator
 import ThorlabsFilterSlider.FilterSliderWidget
 import PI_ObjectiveMotor.ObjMotorWidget
+import ThorlabsKCube.KCubeWidget
 import InsightX3.TwoPhotonLaserUI
 import Weather_GUI
 import Evolution_GUI_v7
@@ -51,7 +52,6 @@ import Evolution_GUI_v7
 import pyqtgraph.console
 import HamamatsuCam.HamamatsuUI
 import CoordinatesManager.CoordinateWidget2
-
 
 #Setting graph settings
 #"""
@@ -160,10 +160,12 @@ class Mainbody(QWidget):
         
         self.shutter2PButton = StylishQT.checkableButton(Icon_path = './Icons/shutter.png')
         self.shutter2PButton.clicked.connect(self.shutter2Paction)        
+        self.shutter2PButton.setToolTip("Open/Close InsightX3 shutter")
         
         self.LEDButton = StylishQT.checkableButton(Icon_path = './Icons/LED.png')
         self.LEDButton.clicked.connect(self.LEDaction)
-
+        self.LEDButton.setToolTip("Trun on/off LED")
+        
         self.shutter2PButton.setGraphicsEffect(QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2))
         self.LEDButton.setGraphicsEffect(QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2))
         
@@ -180,9 +182,15 @@ class Mainbody(QWidget):
         self.layout.addWidget(Weather_GUI.WeatherUI(), 1, 0)
         
         # =============================================================================
+        #         GUI for Thorlabs motor
+        # =============================================================================
+        self.KCubeWidgetInstance = SampleStageControl.StageMoveWidget.StageWidgetUI()
+        self.layout.addWidget(self.KCubeWidgetInstance, 4, 0, 1, 2)
+        
+        # =============================================================================
         #         GUI for sample stage
         # =============================================================================
-        self.StageMoveWidgetInstance = SampleStageControl.StageMoveWidget.StageWidgetUI()
+        self.StageMoveWidgetInstance = ThorlabsKCube.KCubeWidget.KCubeWidgetUI()
         self.layout.addWidget(self.StageMoveWidgetInstance, 6, 0, 1, 2)
 
         # =============================================================================
@@ -208,6 +216,7 @@ class Mainbody(QWidget):
         # =============================================================================
         self.open_cam = StylishQT.FancyPushButton(55, 25, color1=(255,153,255), color2=(204,208,255))
         self.open_cam.setIcon(QIcon('./Icons/Hamamatsu.png'))
+        self.open_cam.setToolTip("Open camera widget")
         self.open_cam.setIconSize(QSize(100, 100))
         self.open_cam.clicked.connect(self.open_camera)
         self.layout.addWidget(self.open_cam, 2, 0, 1, 2)
@@ -217,6 +226,7 @@ class Mainbody(QWidget):
         # =============================================================================
         self.open_Insight = StylishQT.FancyPushButton(50, 50, color1=(176,224,230), color2=(135,206,250))
         self.open_Insight.setIcon(QIcon("./Icons/spectra_physics.png"))
+        self.open_Insight.setToolTip("Open 2-p laser widget")
         self.open_Insight.setIconSize(QSize(40, 40))
         self.open_Insight.clicked.connect(self.open_Insight_UI)
         self.layout.addWidget(self.open_Insight, 3, 0, 1, 1)
@@ -226,6 +236,7 @@ class Mainbody(QWidget):
         # =============================================================================
         self.open_screening_button = StylishQT.FancyPushButton(50, 50, color1=(245,245,220), color2=(255,228,196))
         self.open_screening_button.setIcon(QIcon("./Icons/screening.png"))
+        self.open_screening_button.setToolTip("Open screening widget")
         self.open_screening_button.setIconSize(QSize(45, 45))
         self.open_screening_button.clicked.connect(self.open_screening)
         self.layout.addWidget(self.open_screening_button, 3, 1, 1, 1)

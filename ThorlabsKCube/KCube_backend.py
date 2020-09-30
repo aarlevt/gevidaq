@@ -98,7 +98,9 @@ class KCube:
         
         self.lib.BMC_StopPolling(self.serialNumber)
         
-        self.lib.BMC_Close(self.serialNumber)        
+        self.lib.BMC_Close(self.serialNumber)   
+        
+        print('K-cube connection closed.')
         
 if (__name__ == "__main__"):
     motor = KCube()

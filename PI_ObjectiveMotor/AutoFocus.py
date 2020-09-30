@@ -26,7 +26,7 @@ import matplotlib.pyplot as plt
 
 class FocusFinder():
     
-    def __init__(self, source_of_image = "PMT", init_step_size = 0.007, total_step_number = 5, motor_handle = None, twophoton_handle = None, *args, **kwargs):
+    def __init__(self, source_of_image = "PMT", init_step_size = 0.008, total_step_number = 5, motor_handle = None, twophoton_handle = None, *args, **kwargs):
         """
         
 

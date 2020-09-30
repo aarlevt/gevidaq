@@ -40,7 +40,7 @@ class ObjMotorWidgetUI(QWidget):
 #        os.chdir('./')# Set directory to current folder.
         self.setFont(QFont("Arial"))
         
-#        self.setMinimumSize(1350,900)
+        self.setMinimumHeight(150)
         self.setWindowTitle("ObjMotorWidget")
         self.layout = QGridLayout(self)
         self.connect_status = False
@@ -51,7 +51,7 @@ class ObjMotorWidgetUI(QWidget):
         #**************************************************************************************************************************************
         
         # Movement based on relative positions.
-        self.ObjMotorcontrolContainer = QGroupBox("Objective control")
+        self.ObjMotorcontrolContainer = QGroupBox("Objective focus")
         self.ObjMotorcontrolContainer.setStyleSheet("QGroupBox {\
                                 font: bold;\
                                 border: 1px solid silver;\
@@ -103,7 +103,7 @@ class ObjMotorWidgetUI(QWidget):
         self.ObjMotorcontrolLayout.addWidget(QLabel("Target:"), 2, 0)
         
         self.ObjMotor_current_pos_Label = QLabel("Current position: ")
-        self.ObjMotorcontrolLayout.addWidget(self.ObjMotor_current_pos_Label, 1, 0, 1, 2)
+        self.ObjMotorcontrolLayout.addWidget(self.ObjMotor_current_pos_Label, 0, 1, 1, 1)
         
         self.ObjMotor_goto = QPushButton()
         self.ObjMotor_goto.setIcon(QIcon('./Icons/move_coord.png')) 
