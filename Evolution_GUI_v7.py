@@ -34,7 +34,6 @@ from EvolutionScanningThread import ScanningExecutionThread # This is the thread
 from SampleStageControl.stage import LudlStage
 from NIDAQ.DAQoperator import DAQmission
 
-import FocusCalibrater
 import GalvoWidget.PMTWidget
 import NIDAQ.AOTFWidget
 import ThorlabsFilterSlider.FilterSliderWidget

@@ -17,15 +17,13 @@ import numpy as np
 from matplotlib import pyplot as plt
 from IPython import get_ipython
 
-from NIDAQ.wavegenerator import (waveRecPic, generate_AO_for640, generate_AO_for488, generate_digital_waveform, generate_DO_forPerfusion,
-                                        generate_AO_for532, generate_AO_forpatch, generate_ramp, generate_AO)
-from NIDAQ.DAQoperator import DAQmission
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtCore import pyqtSignal, QThread
 from PyQt5.QtWidgets import (QWidget,QLineEdit, QLabel, QGridLayout, QPushButton, QVBoxLayout, QProgressBar, QHBoxLayout, QListWidget,
                              QComboBox, QMessageBox, QPlainTextEdit, QGroupBox, QTabWidget, QCheckBox, QDoubleSpinBox, QSpinBox)
 import pyqtgraph as pg
+import pyqtgraph.exporters
 from pyqtgraph import PlotDataItem, TextItem
 import os
 # Ensure that the Widget can be run either independently or as part of Tupolev.
@@ -33,7 +31,9 @@ if __name__ == "__main__":
     abspath = os.path.abspath(__file__)
     dname = os.path.dirname(abspath)
     os.chdir(dname+'/../')
-    
+from NIDAQ.wavegenerator import (waveRecPic, generate_AO_for640, generate_AO_for488, generate_digital_waveform, generate_DO_forPerfusion,
+                                        generate_AO_for532, generate_AO_forpatch, generate_ramp, generate_AO)
+from NIDAQ.DAQoperator import DAQmission
 from PIL import Image
 
 import threading
@@ -75,6 +75,29 @@ class WaveformGenerator(QWidget):
                                   'Perfusion_6',
                                   'Perfusion_2',
                                   '2Pshutter']
+        
+        self.color_dictionary = {'galvos':[255,255,255],
+                                'galvos_contour':[255,255,255],
+                                '640AO':[255,0,0],
+                                '488AO':[0,0,255],
+                                '532AO':[0,255,0],
+                                'patchAO':[100, 100, 0],
+                                'cameratrigger':[0,255,255],
+                                'galvotrigger':[100,100,200], 
+                                'blankingall':[255,229,204],
+                                '640blanking':[255,204,255],
+                                '532blanking':[255,255,0],
+                                '488blanking':[255,51,153],
+                                'LED':[154,205,50],
+                                'Perfusion_7':[127,255,212],
+                                'Perfusion_6':[102,40,91],
+                                'Perfusion_2':[255,215,0],
+                                '2Pshutter':[229,204,255],
+                                'DMD_trigger':[255,215,0]
+                                }
+        
+        self.PlotDataItem_dict = {}
+        self.waveform_data_dict = {}
         #**************************************************************************************************************************************
         #--------------------------------------------------------------------------------------------------------------------------------------
         #-----------------------------------------------------------GUI for Waveform tab-------------------------------------------------------
@@ -93,6 +116,7 @@ class WaveformGenerator(QWidget):
         self.current_Analog_channel = QComboBox()
         self.current_Analog_channel.addItems(self.AnalogChannelList)
         self.AnalogLayout.addWidget(self.current_Analog_channel, 3, 0)
+        self.current_Analog_channel.setCurrentIndex(1)
         
         self.add_waveform_button = StylishQT.addButton()
         self.add_waveform_button.setFixedHeight(32)
@@ -101,11 +125,9 @@ class WaveformGenerator(QWidget):
         self.button_del_analog = StylishQT.stop_deleteButton()
         self.button_del_analog.setFixedHeight(32)
         self.AnalogLayout.addWidget(self.button_del_analog, 3, 2)        
-        
-        self.dictionary_switch_list = []
 
-        self.add_waveform_button.clicked.connect(self.chosen_wave)
-        self.button_del_analog.clicked.connect(self.del_chosen_wave)
+        self.add_waveform_button.clicked.connect(self.add_waveform_analog)
+        self.button_del_analog.clicked.connect(self.del_waveform_analog)
         #self.current_Analog_channel.currentIndexChanged.connect(self.chosen_wave)
         self.wavetablayout= QGridLayout()
         
@@ -122,7 +144,7 @@ class WaveformGenerator(QWidget):
         self.wavetabs.addTab(self.wavetab4,"Galvo")
         self.wavetabs.addTab(self.wavetab5,"Photocycle")    
         
-        self.wavetabs.setCurrentIndex(3)
+        # self.wavetabs.setCurrentIndex(3)
         
         #------------------------------------------------------------------------------------------------------------------------------------
         #----------------------------------------------------------Waveform General settings-------------------------------------------------
@@ -151,10 +173,10 @@ class WaveformGenerator(QWidget):
         self.ReadLayout.addWidget(QLabel("Sampling rate:"), 0, 4)
         
         # Checkbox for saving waveforms
-        self.textboxsavingwaveforms= QCheckBox("Save wavefroms")
-#        self.textboxsavingwaveforms.setChecked(True)
-        self.textboxsavingwaveforms.setStyleSheet('color:CadetBlue;font:bold "Times New Roman"')
-        self.ReadLayout.addWidget(self.textboxsavingwaveforms, 1, 4) 
+        self.checkbox_saveWaveforms= QCheckBox("Save wavefroms")
+#        self.checkbox_saveWaveforms.setChecked(True)
+        self.checkbox_saveWaveforms.setStyleSheet('color:CadetBlue;font:bold "Times New Roman"')
+        self.ReadLayout.addWidget(self.checkbox_saveWaveforms, 1, 4) 
         
         # Read-in channels
         record_channel_container = StylishQT.roundQGroupBox(title = "Recording")
@@ -198,7 +220,7 @@ class WaveformGenerator(QWidget):
         self.button_all = StylishQT.generateButton()
         self.button_all.setFixedWidth(110)
         executionContainerLayout.addWidget(self.button_all, 0, 0)
-        self.button_all.clicked.connect(self.show_all)
+        self.button_all.clicked.connect(self.organize_waveforms)
 
         self.button_execute = StylishQT.runButton("Execute")
         self.button_execute.setEnabled(False)
@@ -557,23 +579,7 @@ class WaveformGenerator(QWidget):
         self.galvos_tabs.addTab(self.contour_galvo_tab, 'Contour scanning')
 
         self.galvotablayout.addWidget(self.galvos_tabs,0,0)
-        '''
-        self.button1 = QPushButton('SHOW WAVE', self)
-        self.galvotablayout.addWidget(self.button1, 1, 11)
-        
-        self.button1.clicked.connect(self.generate_galvos)
-        self.button1.clicked.connect(self.generate_galvos_graphy)
-        
-        self.button_triggerforcam = QPushButton('With trigger!', self)
-        self.galvotablayout.addWidget(self.button_triggerforcam, 2, 9)
-        
-        self.GalvoRepeatTextbox = QComboBox()
-        self.GalvoRepeatTextbox.addItems(['0','1'])
-        self.galvotablayout.addWidget(self.GalvoRepeatTextbox, 2, 10)
-        
-        self.button_triggerforcam.clicked.connect(self.generate_galvotrigger)        
-        self.button_triggerforcam.clicked.connect(self.generate_galvotrigger_graphy)
-        '''
+
         self.wavetab4.setLayout(self.galvotablayout)
         
         self.AnalogLayout.addWidget(self.wavetabs, 4, 0, 2, 6) 
@@ -586,13 +592,13 @@ class WaveformGenerator(QWidget):
         DigitalContainer = QGroupBox("Digital signals")
         self.DigitalLayout = QGridLayout() #self.AnalogLayout manager
         
-        self.textbox3A = QComboBox()
-        self.textbox3A.addItems(self.DigitalChannelList)
-        self.DigitalLayout.addWidget(self.textbox3A, 0, 0)
+        self.Digital_channel_combox = QComboBox()
+        self.Digital_channel_combox.addItems(self.DigitalChannelList)
+        self.DigitalLayout.addWidget(self.Digital_channel_combox, 0, 0)
         
         self.button3 = StylishQT.addButton()
         self.DigitalLayout.addWidget(self.button3, 0, 1)
-        self.button3.clicked.connect(self.chosen_wave_digital)
+        self.button3.clicked.connect(self.add_waveform_digital)
         #---------------------------------------------------------------------------------------------------------------------------        
         #---------------!!!!!!!!!!!!!!!!! now 'EXECUTE DIGITAL' button is depreceted----------------------------------------------
 #        self.button_execute_digital = QPushButton('EXECUTE DIGITAL', self)
@@ -606,7 +612,7 @@ class WaveformGenerator(QWidget):
         
 #        self.button_execute_digital.clicked.connect(self.execute_digital)
         #self.button_execute_digital.clicked.connect(self.startProgressBar)
-        self.button_del_digital.clicked.connect(self.del_chosen_wave_digital)
+        self.button_del_digital.clicked.connect(self.del_waveform_digital)
         # ------------------------------------------------------Wave settings------------------------------------------
         self.digitalwavetablayout= QGridLayout()
         
@@ -664,6 +670,9 @@ class WaveformGenerator(QWidget):
         self.pw.addLine(x=0)
         self.pw.addLine(y=0)
         self.pw.setMinimumHeight(180)
+        
+        self.pw_PlotItem = self.pw.getPlotItem()
+        self.pw_PlotItem.addLegend()
         #------------------------------------------------------------------------------------------------------------------
         #----------------------------------------------------------Data win-------------------------------------------------
         #------------------------------------------------------------------------------------------------------------------  
@@ -707,361 +716,88 @@ class WaveformGenerator(QWidget):
                 
         if self.uiDaq_sample_rate != int(self.SamplingRateTextbox.value()):
             print('ERROR: Sampling rates is different!')
+    
+        self.PlotDataItem_dict = {}
+        self.waveform_data_dict = {}
         
         for i in range(len(temp_loaded_container)):
-            if temp_loaded_container[i]['Sepcification'] == '640AO':
-                self.finalwave_640 = temp_loaded_container[i]['Waveform']
-                self.generate_640AO_graphy()            
-                self.set_switch('640AO')  
-            elif temp_loaded_container[i]['Sepcification'] == '532AO':
-                self.finalwave_532 = temp_loaded_container[i]['Waveform']
-                self.generate_532AO_graphy()            
-                self.set_switch('532AO') 
-            elif temp_loaded_container[i]['Sepcification'] == '488AO':
-                self.finalwave_488 = temp_loaded_container[i]['Waveform']
-                self.generate_488AO_graphy()            
-                self.set_switch('488AO') 
-            elif temp_loaded_container[i]['Sepcification'] == 'patchAO':
-                self.finalwave_patch = temp_loaded_container[i]['Waveform']
-                self.generate_patchAO_graphy()            
-                self.set_switch('patchAO') 
-            elif temp_loaded_container[i]['Sepcification'] == 'cameratrigger':
-                self.finalwave_cameratrigger = temp_loaded_container[i]['Waveform']
-                self.generate_cameratrigger_graphy()            
-                self.set_switch('cameratrigger') 
-            elif temp_loaded_container[i]['Sepcification'] == 'DMD_trigger':
-                self.finalwave_DMD_trigger = temp_loaded_container[i]['Waveform']
-                self.generate_DMD_trigger_graphy()            
-                self.set_switch('DMD_trigger') 
-            elif temp_loaded_container[i]['Sepcification'] == 'galvotrigger':
-                self.final_galvotrigger = temp_loaded_container[i]['Waveform']
-                self.generate_galvotrigger_graphy()            
-                self.set_switch('galvotrigger')                
-            elif temp_loaded_container[i]['Sepcification'] == 'blankingall':
-                self.finalwave_blankingall = temp_loaded_container[i]['Waveform']
-                self.generate_blankingall_graphy()            
-                self.set_switch('blankingall')
-            elif temp_loaded_container[i]['Sepcification'] == '640blanking':
-                self.finalwave_640blanking = temp_loaded_container[i]['Waveform']
-                self.generate_640blanking_graphy()            
-                self.set_switch('640blanking')
-            elif temp_loaded_container[i]['Sepcification'] == '532blanking':
-                self.finalwave_532blanking = temp_loaded_container[i]['Waveform']
-                self.generate_532blanking_graphy()            
-                self.set_switch('532blanking')
-            elif temp_loaded_container[i]['Sepcification'] == '488blanking':
-                self.finalwave_488blanking = temp_loaded_container[i]['Waveform']
-                self.generate_488blanking_graphy()            
-                self.set_switch('488blanking')
-            elif temp_loaded_container[i]['Sepcification'] == 'Perfusion_8':
-                self.finalwave_Perfusion_8 = temp_loaded_container[i]['Waveform']
-                self.generate_Perfusion_8_graphy()            
-                self.set_switch('Perfusion_8')
-            elif temp_loaded_container[i]['Sepcification'] == 'Perfusion_7':
-                self.finalwave_Perfusion_7 = temp_loaded_container[i]['Waveform']
-                self.generate_Perfusion_7_graphy()            
-                self.set_switch('Perfusion_7')
-            elif temp_loaded_container[i]['Sepcification'] == 'Perfusion_6':
-                self.finalwave_Perfusion_6 = temp_loaded_container[i]['Waveform']
-                self.generate_Perfusion_6_graphy()            
-                self.set_switch('Perfusion_6')
-            elif temp_loaded_container[i]['Sepcification'] == 'Perfusion_2':
-                self.finalwave_Perfusion_2 = temp_loaded_container[i]['Waveform']
-                self.generate_Perfusion_2_graphy()            
-                self.set_switch('Perfusion_2')
-            elif temp_loaded_container[i]['Sepcification'] == '2Pshutter':
-                self.finalwave_2Pshutter = temp_loaded_container[i]['Waveform']
-                self.generate_2Pshutter_graphy()            
-                self.set_switch('2Pshutter')
-                
-    def chosen_wave(self):
+            
+            channel_keyword = temp_loaded_container[i]['Sepcification']
+            
+            self.waveform_data_dict[channel_keyword] = temp_loaded_container[i]['Waveform']
+            self.generate_graphy(channel_keyword, self.waveform_data_dict[channel_keyword])                
+        
+    
+    #%%
+    def add_waveform_analog(self):
         # make sure that the square wave tab is active now
+        channel_keyword = self.current_Analog_channel.currentText()
+        
+        #----------------------Square waves-----------------------------------
         if self.wavetabs.currentIndex() == 0:
-            if self.current_Analog_channel.currentText() == '640AO':
-                if self.finalwave_640 is not None:
-                    self.pw.removeItem(self.PlotDataItem_640AO) 
-                    self.pw.removeItem(self.textitem_640AO)
-                self.generate_640AO()
-                self.generate_640AO_graphy()            
-                self.set_switch('640AO')            
-                    
-            elif self.current_Analog_channel.currentText() == '532AO':
-                if self.finalwave_532 is not None:
-                    self.pw.removeItem(self.PlotDataItem_532AO) 
-                    self.pw.removeItem(self.textitem_532AO)
-                self.generate_532AO()
-                self.generate_532AO_graphy()
-                self.set_switch('532AO')
-            elif self.current_Analog_channel.currentText() == '488AO':
-                if self.finalwave_488 is not None:
-                    self.pw.removeItem(self.PlotDataItem_488AO) 
-                    self.pw.removeItem(self.textitem_488AO)
-                self.generate_488AO()
-                self.generate_488AO_graphy()
-                self.set_switch('488AO')
-            elif self.current_Analog_channel.currentText() == 'patchAO':
-                if self.finalwave_patch is not None:
-                    self.pw.removeItem(self.PlotDataItem_patch) 
-                    self.pw.removeItem(self.textitem_patch)
-                self.generate_patchAO()
-                self.generate_patchAO_graphy()
-                self.set_switch('patchAO')
                 
+            self.waveform_data_dict[channel_keyword] = self.generate_analog(channel_keyword)
+            self.generate_graphy(channel_keyword, self.waveform_data_dict[channel_keyword])            
+        
+        #-------------------------Ramp waves----------------------------------
         if self.wavetabs.currentIndex() == 1:
-            if self.current_Analog_channel.currentText() == '640AO':
-                if self.finalwave_640 is not None:
-                    self.pw.removeItem(self.PlotDataItem_640AO) 
-                    self.pw.removeItem(self.textitem_640AO)
-                self.generate_ramp('640AO')
-                self.generate_640AO_graphy()            
-                self.set_switch('640AO')            
-                    
-            elif self.current_Analog_channel.currentText() == '532AO':
-                if self.finalwave_532 is not None:
-                    self.pw.removeItem(self.PlotDataItem_532AO) 
-                    self.pw.removeItem(self.textitem_532AO)
-                self.generate_ramp('532AO')
-                self.generate_532AO_graphy()
-                self.set_switch('532AO')
-            elif self.current_Analog_channel.currentText() == '488AO':
-                if self.finalwave_488 is not None:
-                    self.pw.removeItem(self.PlotDataItem_488AO) 
-                    self.pw.removeItem(self.textitem_488AO)
-                self.generate_ramp('488AO')
-                self.generate_488AO_graphy()
-                self.set_switch('488AO')
-            elif self.current_Analog_channel.currentText() == 'patchAO':
-                if self.finalwave_patch is not None:
-                    self.pw.removeItem(self.PlotDataItem_patch) 
-                    self.pw.removeItem(self.textitem_patch)
-                self.generate_ramp('patchAO')
-                self.generate_patchAO_graphy()
-                self.set_switch('patchAO')                
                 
+            self.waveform_data_dict[channel_keyword] = self.generate_ramp(channel_keyword)
+            self.generate_graphy(channel_keyword, self.waveform_data_dict[channel_keyword])            
+        
+        #------------------------Photo cycle----------------------------------
         if self.wavetabs.currentIndex() == 4:
-            if self.current_Analog_channel.currentText() == '640AO':
-                if self.finalwave_640 is not None:
-                    self.pw.removeItem(self.PlotDataItem_640AO) 
-                    self.pw.removeItem(self.textitem_640AO)
-                self.generate_photocycle_640()
-                self.generate_640AO_graphy()            
-                self.set_switch('640AO')            
-                    
-            elif self.current_Analog_channel.currentText() == '532AO':
-                if self.finalwave_532 is not None:
-                    self.pw.removeItem(self.PlotDataItem_532AO) 
-                    self.pw.removeItem(self.textitem_532AO)
-                self.generate_photocycle_532()
-                self.generate_532AO_graphy()
-                self.set_switch('532AO')
-            elif self.current_Analog_channel.currentText() == '488AO':
-                if self.finalwave_488 is not None:
-                    self.pw.removeItem(self.PlotDataItem_488AO) 
-                    self.pw.removeItem(self.textitem_488AO)
-                self.generate_photocycle_488()
-                self.generate_488AO_graphy()
-                self.set_switch('488AO')
-                
+            self.waveform_data_dict[channel_keyword] = self.generate_photocycle(channel_keyword)
+            self.generate_graphy(channel_keyword, self.waveform_data_dict[channel_keyword])                  
+        
+        #----------------------------Galvo scanning---------------------------
         if self.wavetabs.currentIndex() == 3:
             if self.galvos_tabs.currentIndex() == 0:
-                if self.current_Analog_channel.currentText() == 'galvos':
-                    if self.Galvo_samples is not None:
-                        self.pw.removeItem(self.PlotDataItem_galvos) 
-                        self.pw.removeItem(self.textitem_galvos)
-                    self.generate_galvos()
-                    self.generate_galvos_graphy()
-                    self.set_switch('galvos')
-            elif self.galvos_tabs.currentIndex() == 1:
-                if self.current_Analog_channel.currentText() == 'galvos':
-                    if self.handle_viewbox_coordinate_position_array_expanded_forDaq_waveform is not None:
-                        self.pw.removeItem(self.PlotDataItem_galvos) 
-                        self.pw.removeItem(self.textitem_galvos)
-                    self.generate_contour_for_waveform()
-                    self.generate_galvos_contour_graphy()
-                    self.set_switch('galvos_contour')
-            
-    def del_chosen_wave(self):
-        if self.current_Analog_channel.currentText() == '640AO':
-            #add_waveform_button.disconnect()
-            self.pw.removeItem(self.PlotDataItem_640AO) 
-            self.pw.removeItem(self.textitem_640AO)
-            self.finalwave_640 = None
-            self.del_set_switch('640AO')
-            
-        elif self.current_Analog_channel.currentText() == '532AO':
-            self.pw.removeItem(self.PlotDataItem_532AO) 
-            self.pw.removeItem(self.textitem_532AO)
-            self.finalwave_532 = None
-            self.del_set_switch('532AO')
-        elif self.current_Analog_channel.currentText() == '488AO':
-            self.pw.removeItem(self.PlotDataItem_488AO)   
-            self.pw.removeItem(self.textitem_488AO)
-            self.finalwave_488 = None
-            self.del_set_switch('488AO')
-        elif self.current_Analog_channel.currentText() == 'patchAO':
-            self.pw.removeItem(self.PlotDataItem_patch) 
-            self.pw.removeItem(self.textitem_patch)
-            self.finalwave_patch = None
-            self.del_set_switch('patchAO')
-        elif self.current_Analog_channel.currentText() == 'galvos':
-            if self.galvos_tabs.currentIndex() == 0:
-                self.pw.removeItem(self.PlotDataItem_galvos)  
-                self.pw.removeItem(self.textitem_galvos)
-                self.finalwave_galvos = None
-                self.del_set_switch('galvos')
-            
-    def chosen_wave_digital(self):        
-        if self.textbox3A.currentText() == 'cameratrigger':
-            if self.finalwave_cameratrigger is not None:
-                self.pw.removeItem(self.PlotDataItem_cameratrigger) 
-                self.pw.removeItem(self.textitem_cameratrigger)
-            self.generate_digital_waveform('cameratrigger')
-            self.generate_cameratrigger_graphy()
-            self.set_switch('cameratrigger')           
-        elif self.textbox3A.currentText() == 'galvotrigger':
-            if self.final_galvotrigger is not None:
-                self.pw.removeItem(self.PlotDataItem_galvotrigger) 
-                self.pw.removeItem(self.textitem_galvotrigger)
-            self.generate_galvotrigger()
-            self.generate_galvotrigger_graphy()
-            self.set_switch('galvotrigger')
-        elif self.textbox3A.currentText() == 'DMD_trigger':
-            if self.finalwave_DMD_trigger is not None:
-                self.pw.removeItem(self.PlotDataItem_DMD_trigger) 
-                self.pw.removeItem(self.textitem_DMD_trigger)
-            self.generate_digital_waveform('DMD_trigger')
-            self.generate_DMD_trigger_graphy()
-            self.set_switch('DMD_trigger')
-        elif self.textbox3A.currentText() == 'blankingall':
-            if self.finalwave_blankingall is not None:
-                self.pw.removeItem(self.PlotDataItem_blankingall) 
-                self.pw.removeItem(self.textitem_blankingall)
-            self.generate_digital_waveform('blankingall')
-            self.generate_blankingall_graphy()
-            self.set_switch('blankingall')                                   
-        elif self.textbox3A.currentText() == '640blanking':
-            if self.finalwave_640blanking is not None:
-                self.pw.removeItem(self.PlotDataItem_640blanking) 
-                self.pw.removeItem(self.textitem_640blanking)
-            self.generate_digital_waveform('640blanking')
-            self.generate_640blanking_graphy()
-            self.set_switch('640blanking')                                 
-        elif self.textbox3A.currentText() == '532blanking':
-            if self.finalwave_532blanking is not None:
-                self.pw.removeItem(self.PlotDataItem_532blanking) 
-                self.pw.removeItem(self.textitem_532blanking)
-            self.generate_digital_waveform('532blanking')
-            self.generate_532blanking_graphy()
-            self.set_switch('532blanking')    
-        elif self.textbox3A.currentText() == '488blanking':
-            if self.finalwave_488blanking is not None:
-                self.pw.removeItem(self.PlotDataItem_488blanking) 
-                self.pw.removeItem(self.textitem_488blanking)
-            self.generate_digital_waveform('488blanking')
-            self.generate_488blanking_graphy()
-            self.set_switch('488blanking')
-        elif self.textbox3A.currentText() == 'Perfusion_8':
-            if self.finalwave_Perfusion_8 is not None:
-                self.pw.removeItem(self.PlotDataItem_Perfusion_8) 
-                self.pw.removeItem(self.textitem_Perfusion_8)
-            self.generate_Perfusion_8()
-            self.generate_Perfusion_8_graphy()
-            self.set_switch('Perfusion_8')  
-        elif self.textbox3A.currentText() == 'Perfusion_7':
-            if self.finalwave_Perfusion_7 is not None:
-                self.pw.removeItem(self.PlotDataItem_Perfusion_7) 
-                self.pw.removeItem(self.textitem_Perfusion_7)
-            self.generate_Perfusion_7()
-            self.generate_Perfusion_7_graphy()
-            self.set_switch('Perfusion_7')
-        elif self.textbox3A.currentText() == 'Perfusion_6':
-            if self.finalwave_Perfusion_6 is not None:
-                self.pw.removeItem(self.PlotDataItem_Perfusion_6) 
-                self.pw.removeItem(self.textitem_Perfusion_6)
-            self.generate_Perfusion_6()
-            self.generate_Perfusion_6_graphy()
-            self.set_switch('Perfusion_6')
-        elif self.textbox3A.currentText() == 'Perfusion_2':
-            if self.finalwave_Perfusion_2 is not None:
-                self.pw.removeItem(self.PlotDataItem_Perfusion_2) 
-                self.pw.removeItem(self.textitem_Perfusion_2)
-            self.generate_Perfusion_2()
-            self.generate_Perfusion_2_graphy()
-            self.set_switch('Perfusion_2')
-        elif self.textbox3A.currentText() == '2Pshutter':
-            if self.finalwave_2Pshutter is not None:
-                self.pw.removeItem(self.PlotDataItem_2Pshutter) 
-                self.pw.removeItem(self.textitem_2Pshutter)
-            self.generate_digital_waveform('2Pshutter')
-            self.generate_2Pshutter_graphy()
-            self.set_switch('2Pshutter') 
+                if channel_keyword == 'galvos':
 
-    def del_chosen_wave_digital(self):        
-        if self.textbox3A.currentText() == 'cameratrigger':
-            self.pw.removeItem(self.PlotDataItem_cameratrigger)   
-            self.pw.removeItem(self.textitem_cameratrigger)
-            self.finalwave_cameratrigger = None
-            self.del_set_switch('cameratrigger')
-          
-        elif self.textbox3A.currentText() == 'galvotrigger':
-            self.pw.removeItem(self.PlotDataItem_galvotrigger) 
-            self.pw.removeItem(self.textitem_galvotrigger)
-            self.final_galvotrigger = None
-            self.del_set_switch('galvotrigger')
-        elif self.textbox3A.currentText() == 'DMD_trigger':
-            self.pw.removeItem(self.PlotDataItem_galvotrigger) 
-            self.pw.removeItem(self.textitem_galvotrigger)
-            self.finalwave_DMD_trigger = None
-            self.del_set_switch('DMD_trigger')
-        elif self.textbox3A.currentText() == 'blankingall':
-            self.pw.removeItem(self.PlotDataItem_blankingall) 
-            self.pw.removeItem(self.textitem_blankingall)
-            self.finalwave_blankingall = None
-            self.del_set_switch('blankingall')
-                                   
-        elif self.textbox3A.currentText() == '640blanking':
-            self.pw.removeItem(self.PlotDataItem_640blanking)    
-            self.pw.removeItem(self.textitem_640blanking)
-            self.finalwave_640blanking = None
-            self.del_set_switch('640blanking')
-                                 
-        elif self.textbox3A.currentText() == '532blanking':
-            self.pw.removeItem(self.PlotDataItem_532blanking)
-            self.pw.removeItem(self.textitem_532blanking)
-            self.finalwave_532blanking = None
-            self.del_set_switch('532blanking')   
-        elif self.textbox3A.currentText() == '488blanking':
-            self.pw.removeItem(self.PlotDataItem_488blanking)   
-            self.pw.removeItem(self.textitem_488blanking)
-            self.finalwave_488blanking = None
-            self.del_set_switch('488blanking')
-        elif self.textbox3A.currentText() == 'Perfusion_8':
-            self.pw.removeItem(self.PlotDataItem_Perfusion_8)   
-            self.pw.removeItem(self.textitem_Perfusion_8)
-            self.finalwave_Perfusion_8 = None
-            self.del_set_switch('Perfusion_8')    
-        elif self.textbox3A.currentText() == 'Perfusion_7':
-            self.pw.removeItem(self.PlotDataItem_Perfusion_7)   
-            self.pw.removeItem(self.textitem_Perfusion_7)
-            self.finalwave_Perfusion_7 = None
-            self.del_set_switch('Perfusion_7') 
-        elif self.textbox3A.currentText() == 'Perfusion_6':
-            self.pw.removeItem(self.PlotDataItem_Perfusion_6)   
-            self.pw.removeItem(self.textitem_Perfusion_6)
-            self.finalwave_Perfusion_6 = None
-            self.del_set_switch('Perfusion_6') 
-        elif self.textbox3A.currentText() == 'Perfusion_2':
-            self.pw.removeItem(self.PlotDataItem_Perfusion_2)   
-            self.pw.removeItem(self.textitem_Perfusion_2)
-            self.finalwave_Perfusion_2 = None
-            self.del_set_switch('Perfusion_2') 
-        elif self.textbox3A.currentText() == '2Pshutter':
-            self.pw.removeItem(self.PlotDataItem_2Pshutter)   
-            self.pw.removeItem(self.textitem_2Pshutter)
-            self.finalwave_2Pshutter = None
-            self.del_set_switch('2Pshutter')      
+                    self.waveform_data_dict[channel_keyword] = self.generate_galvos()
+                    self.generate_graphy(channel_keyword, self.waveform_data_dict[channel_keyword][1, :])
+                    
+            elif self.galvos_tabs.currentIndex() == 1:# For contour
+                if channel_keyword == 'galvos':
+                    
+                    self.waveform_data_dict['galvos_contour'] = self.generate_contour_for_waveform()
+                    self.generate_graphy('galvos_contour', self.waveform_data_dict['galvos_contour'][1, :])
             
+    def del_waveform_analog(self):
+        
+        channel_keyword = self.current_Analog_channel.currentText()
+        
+        self.pw_PlotItem.removeItem(self.PlotDataItem_dict[channel_keyword])
+        
+        del self.PlotDataItem_dict[channel_keyword]
+        del self.waveform_data_dict[channel_keyword]
+
+        
+    #%%
             
+    def add_waveform_digital(self):
+        
+        channel_keyword = self.Digital_channel_combox.currentText()
+        
+        if channel_keyword != "galvotrigger":
+            self.waveform_data_dict[channel_keyword] = self.generate_digital(channel_keyword)
+        else:
+            self.waveform_data_dict[channel_keyword] = self.generate_galvotrigger()
+            
+        self.generate_graphy(channel_keyword, self.waveform_data_dict[channel_keyword])
+
+    def del_waveform_digital(self):    
+        
+        channel_keyword = self.Digital_channel_combox.currentText()
+        
+        self.pw_PlotItem.removeItem(self.PlotDataItem_dict[channel_keyword])
+        
+        del self.PlotDataItem_dict[channel_keyword]
+        del self.waveform_data_dict[channel_keyword]
+            
+    
+    #%%
     def generate_contour_for_waveform(self):
         self.contour_time = int(self.GalvoContourLastTextbox.value())
         
@@ -1072,18 +808,6 @@ class WaveformGenerator(QWidget):
         self.handle_viewbox_coordinate_position_array_expanded_forDaq_waveform = np.vstack((self.repeated_contoursamples_1,self.repeated_contoursamples_2))
         
         return self.handle_viewbox_coordinate_position_array_expanded_forDaq_waveform
-        
-    def generate_galvos_contour_graphy(self):
-
-        self.xlabelhere_galvos = np.arange(len(self.handle_viewbox_coordinate_position_array_expanded_forDaq_waveform[1,:]))/self.Daq_sample_rate_pmt
-        self.PlotDataItem_galvos = PlotDataItem(self.xlabelhere_galvos, self.handle_viewbox_coordinate_position_array_expanded_forDaq_waveform[1,:])
-        self.PlotDataItem_galvos.setDownsampling(auto=True, method='mean')            
-        self.PlotDataItem_galvos.setPen('w')
-
-        self.pw.addItem(self.PlotDataItem_galvos)
-        self.textitem_galvos = pg.TextItem(text='Contour', color=('w'), anchor=(1, 1))
-        self.textitem_galvos.setPos(0, 5)
-        self.pw.addItem(self.textitem_galvos)
                                      
     def generate_galvos(self):
         
@@ -1155,23 +879,10 @@ class WaveformGenerator(QWidget):
         self.PMT_data_index_array_repeated = np.append(self.offsetsamples_galvo, self.PMT_data_index_array_repeated)
         self.PMT_data_index_array_repeated = np.append(self.PMT_data_index_array_repeated ,0)    
         
-        self.Galvo_samples = np.vstack((self.repeated_samples_1,self.repeated_samples_2_yaxis))
+        Galvo_samples = np.vstack((self.repeated_samples_1,self.repeated_samples_2_yaxis))
         
-        return self.Galvo_samples
-            
-    def generate_galvos_graphy(self):
+        return Galvo_samples
 
-        self.xlabelhere_galvos = np.arange(len(self.repeated_samples_2_yaxis))/self.uiDaq_sample_rate    
-        self.PlotDataItem_galvos = PlotDataItem(self.xlabelhere_galvos, self.repeated_samples_2_yaxis)
-        self.PlotDataItem_galvos.setDownsampling(auto=True, method='mean')            
-        self.PlotDataItem_galvos.setPen('w')
-
-        self.pw.addItem(self.PlotDataItem_galvos)
-        self.textitem_galvos = pg.TextItem(text='galvos', color=('w'), anchor=(1, 1))
-        self.textitem_galvos.setPos(0, 5)
-        self.pw.addItem(self.textitem_galvos)
-
-            
     def generate_galvotrigger(self):
         self.uiDaq_sample_rate = int(self.SamplingRateTextbox.value())
         #Scanning settings
@@ -1239,199 +950,87 @@ class WaveformGenerator(QWidget):
         self.repeated_gap_samples_galvotrigger = np.tile(self.gap_samples_galvotrigger, repeatnum)
         self.offset_galvotrigger = np.array(self.offsetsamples_galvo, dtype=bool)
         
-        self.final_galvotrigger = np.append(self.offset_galvotrigger, self.repeated_gap_samples_galvotrigger)
-        self.final_galvotrigger = np.append(self.final_galvotrigger, False)
-        return self.final_galvotrigger
+        final_galvotrigger = np.append(self.offset_galvotrigger, self.repeated_gap_samples_galvotrigger)
+        final_galvotrigger = np.append(final_galvotrigger, False)
         
-    def generate_galvotrigger_graphy(self):
-        self.xlabelhere_galvos = np.arange(len(self.repeated_samples_2_yaxis))/self.uiDaq_sample_rate
-        self.final_galvotrigger_forgraphy = self.final_galvotrigger.astype(int)
-        self.PlotDataItem_galvotrigger = PlotDataItem(self.xlabelhere_galvos, self.final_galvotrigger_forgraphy)
-        self.PlotDataItem_galvotrigger.setPen(100,100,200)
-        self.PlotDataItem_galvotrigger.setDownsampling(auto=True, method='mean')
-        self.pw.addItem(self.PlotDataItem_galvotrigger)
-        
-        self.textitem_galvotrigger = pg.TextItem(text='galvotrigger', color=(100,100,200), anchor=(1, 1))
-        self.textitem_galvotrigger.setPos(0, -5)
-        self.pw.addItem(self.textitem_galvotrigger)
+        return final_galvotrigger
 
-        
-    def generate_640AO(self):
-        
-        self.uiDaq_sample_rate = int(self.SamplingRateTextbox.value())
-        self.uiwavefrequency_2 = float(self.AnalogFreqTextbox.text())
-        if not self.AnalogOffsetTextbox.text():
-            self.uiwaveoffset_2 = 0
-        else:
-            self.uiwaveoffset_2 = int(self.AnalogOffsetTextbox.text()) # in ms
-        self.uiwaveperiod_2 = int(self.AnalogDurationTextbox.text())
-        self.uiwaveDC_2 = int(self.AnalogDCTextbox.currentText())
-        if not self.AnalogRepeatTextbox.text():
-            self.uiwaverepeat_2 = 1
-        else:
-            self.uiwaverepeat_2 = int(self.AnalogRepeatTextbox.text())
-        if not self.AnalogGapTextbox.text():
-            self.uiwavegap_2 = 0
-        else:
-            self.uiwavegap_2 = int(self.AnalogGapTextbox.text())
-        self.uiwavestartamplitude_2 = float(self.AnalogStartingAmpTextbox.value())
-        if not self.AnalogBaselineTextbox.text():
-            self.uiwavebaseline_2 = 0
-        else:
-            self.uiwavebaseline_2 = float(self.AnalogBaselineTextbox.text())
-        self.uiwavestep_2 = float(self.AnalogStepTextbox.value())
-        self.uiwavecycles_2 = int(self.AnalogCyclesTextbox.value())   
-        
-            
-        s = generate_AO_for640(self.uiDaq_sample_rate, self.uiwavefrequency_2, self.uiwaveoffset_2, self.uiwaveperiod_2, self.uiwaveDC_2
-                               , self.uiwaverepeat_2, self.uiwavegap_2, self.uiwavestartamplitude_2, self.uiwavebaseline_2, self.uiwavestep_2, self.uiwavecycles_2)
-        self.finalwave_640 = s.generate()
-        return self.finalwave_640
-            
-    def generate_640AO_graphy(self):            
-        xlabelhere_640 = np.arange(len(self.finalwave_640))/self.uiDaq_sample_rate
-        #plt.plot(xlabelhere_galvo, samples_1)
-        self.PlotDataItem_640AO = PlotDataItem(xlabelhere_640, self.finalwave_640, downsample = 10)
-        self.PlotDataItem_640AO.setPen('r')
-        self.PlotDataItem_640AO.setDownsampling(auto=True, method='subsample')
-        self.pw.addItem(self.PlotDataItem_640AO)
-        
-        self.textitem_640AO = pg.TextItem(text='640AO', color=('r'), anchor=(1, 1))
-        self.textitem_640AO.setPos(0, 4)
-        self.pw.addItem(self.textitem_640AO)
-           
+    #%%
+    def generate_analog(self, channel):
+        """
+        Generate analog signals.
 
-    def generate_488AO(self):
-        
-        self.uiDaq_sample_rate = int(self.SamplingRateTextbox.value())
-        self.uiwavefrequency_488AO = float(self.AnalogFreqTextbox.text())
-        if not self.AnalogOffsetTextbox.text():
-            self.uiwaveoffset_488AO = 0
-        else:
-            self.uiwaveoffset_488AO = int(self.AnalogOffsetTextbox.text()) # in ms
-        self.uiwaveperiod_488AO = int(self.AnalogDurationTextbox.text())
-        self.uiwaveDC_488AO = int(self.AnalogDCTextbox.currentText())
-        if not self.AnalogRepeatTextbox.text():
-            self.uiwaverepeat_488AO = 1
-        else:
-            self.uiwaverepeat_488AO = int(self.AnalogRepeatTextbox.text())
-        if not self.AnalogGapTextbox.text():
-            self.uiwavegap_488AO = 0
-        else:
-            self.uiwavegap_488AO = int(self.AnalogGapTextbox.text())
-        self.uiwavestartamplitude_488AO = float(self.AnalogStartingAmpTextbox.value())
-        if not self.AnalogBaselineTextbox.text():
-            self.uiwavebaseline_488AO = 0
-        else:
-            self.uiwavebaseline_488AO = float(self.AnalogBaselineTextbox.text())
-        self.uiwavestep_488AO = float(self.AnalogStepTextbox.value())
-        self.uiwavecycles_488AO = int(self.AnalogCyclesTextbox.value())   
-                    
-        s = generate_AO_for488(self.uiDaq_sample_rate, self.uiwavefrequency_488AO, self.uiwaveoffset_488AO, self.uiwaveperiod_488AO, self.uiwaveDC_488AO
-                               , self.uiwaverepeat_488AO, self.uiwavegap_488AO, self.uiwavestartamplitude_488AO, self.uiwavebaseline_488AO, self.uiwavestep_488AO, self.uiwavecycles_488AO)
-        self.finalwave_488 = s.generate()
-        return self.finalwave_488
-            
-    def generate_488AO_graphy(self):
-        xlabelhere_488 = np.arange(len(self.finalwave_488))/self.uiDaq_sample_rate
-        #plt.plot(xlabelhere_galvo, samples_1)
-        self.PlotDataItem_488AO = PlotDataItem(xlabelhere_488, self.finalwave_488)
-        self.PlotDataItem_488AO.setPen('b')
-        self.PlotDataItem_488AO.setDownsampling(auto=True, method='subsample')
-        self.pw.addItem(self.PlotDataItem_488AO)
-        
-        self.textitem_488AO = pg.TextItem(text='488AO', color=('b'), anchor=(1, 1))
-        self.textitem_488AO.setPos(0, 2)
-        self.pw.addItem(self.textitem_488AO)
+        Parameters
+        ----------
+        channel : TYPE
+            DESCRIPTION.
 
+        Returns
+        -------
+        finalwave : TYPE
+            DESCRIPTION.
+
+        """
+        self.uiDaq_sample_rate = int(self.SamplingRateTextbox.value())
+        uiwavefrequency_2 = float(self.AnalogFreqTextbox.text())
+        if not self.AnalogOffsetTextbox.text():
+            uiwaveoffset_2 = 0
+        else:
+            uiwaveoffset_2 = int(self.AnalogOffsetTextbox.text()) # in ms
+        uiwaveperiod_2 = int(self.AnalogDurationTextbox.text())
+        uiwaveDC_2 = int(self.AnalogDCTextbox.currentText())
+        if not self.AnalogRepeatTextbox.text():
+            uiwaverepeat_2 = 1
+        else:
+            uiwaverepeat_2 = int(self.AnalogRepeatTextbox.text())
+        if not self.AnalogGapTextbox.text():
+            uiwavegap_2 = 0
+        else:
+            uiwavegap_2 = int(self.AnalogGapTextbox.text())
+        uiwavestartamplitude_2 = float(self.AnalogStartingAmpTextbox.value())
+        if not self.AnalogBaselineTextbox.text():
+            uiwavebaseline_2 = 0
+        else:
+            uiwavebaseline_2 = float(self.AnalogBaselineTextbox.text())
+        uiwavestep_2 = float(self.AnalogStepTextbox.value())
+        uiwavecycles_2 = int(self.AnalogCyclesTextbox.value())   
         
-    def generate_532AO(self):
+            
+        s = generate_AO_for640(self.uiDaq_sample_rate, uiwavefrequency_2, uiwaveoffset_2, uiwaveperiod_2, uiwaveDC_2
+                               , uiwaverepeat_2, uiwavegap_2, uiwavestartamplitude_2, uiwavebaseline_2, uiwavestep_2, uiwavecycles_2)
+        finalwave = s.generate()
+        
+        return finalwave
+    
+    #%%
+    # --------------------------------------------------------------------------------for generating digital signals------------------------------------------------------------------------------------
+    def generate_digital(self, channel):
         
         self.uiDaq_sample_rate = int(self.SamplingRateTextbox.value())
-        self.uiwavefrequency_532AO = float(self.AnalogFreqTextbox.text())
-        if not self.AnalogOffsetTextbox.text():
-            self.uiwaveoffset_532AO = 0
+        self.uiwavefrequency_digital_waveform = float(self.DigFreqTextbox.text())
+        if not self.DigOffsetTextbox.text():
+            self.uiwaveoffset_digital_waveform = 0
         else:
-            self.uiwaveoffset_532AO = int(self.AnalogOffsetTextbox.text()) # in ms
-        self.uiwaveperiod_532AO = int(self.AnalogDurationTextbox.text())
-        self.uiwaveDC_532AO = int(self.AnalogDCTextbox.currentText())
-        if not self.AnalogRepeatTextbox.text():
-            self.uiwaverepeat_532AO = 1
+            self.uiwaveoffset_digital_waveform = int(self.DigOffsetTextbox.text())
+        self.uiwaveperiod_digital_waveform = int(self.DigDurationTextbox.text())
+        self.uiwaveDC_digital_waveform = int(self.DigDCTextbox.currentText())
+        if not self.DigRepeatTextbox.text():
+            self.uiwaverepeat_digital_waveform_number = 1
         else:
-            self.uiwaverepeat_532AO = int(self.AnalogRepeatTextbox.text())
-        if not self.AnalogGapTextbox.text():
-            self.uiwavegap_532AO = 0
+            self.uiwaverepeat_digital_waveform_number = int(self.DigRepeatTextbox.text())
+        if not self.DigGapTextbox.text():
+            self.uiwavegap_digital_waveform = 0
         else:
-            self.uiwavegap_532AO = int(self.AnalogGapTextbox.text())
-        self.uiwavestartamplitude_532AO = float(self.AnalogStartingAmpTextbox.value())
-        if not self.AnalogBaselineTextbox.text():
-            self.uiwavebaseline_532AO = 0
-        else:
-            self.uiwavebaseline_532AO = float(self.AnalogBaselineTextbox.text())
-        self.uiwavestep_532AO = float(self.AnalogStepTextbox.value())
-        self.uiwavecycles_532AO = int(self.AnalogCyclesTextbox.value())   
+            self.uiwavegap_digital_waveform = int(self.DigGapTextbox.text())
         
-        #if int(self.textbox4A.currentText()) == 1:
+        #if int(self.textbox11A.currentText()) == 1:
             
-        s = generate_AO_for532(self.uiDaq_sample_rate, self.uiwavefrequency_532AO, self.uiwaveoffset_532AO, self.uiwaveperiod_532AO, self.uiwaveDC_532AO
-                               , self.uiwaverepeat_532AO, self.uiwavegap_532AO, self.uiwavestartamplitude_532AO, self.uiwavebaseline_532AO, self.uiwavestep_532AO, self.uiwavecycles_532AO)
-        self.finalwave_532 = s.generate()
-        return self.finalwave_532
-            
-    def generate_532AO_graphy(self):
-        xlabelhere_532 = np.arange(len(self.finalwave_532))/self.uiDaq_sample_rate
-        self.PlotDataItem_532AO = PlotDataItem(xlabelhere_532, self.finalwave_532)
-        self.PlotDataItem_532AO.setPen('g')
-        self.PlotDataItem_532AO.setDownsampling(auto=True, method='subsample')
-        self.pw.addItem(self.PlotDataItem_532AO)
+        digital_waveform = generate_digital_waveform(self.uiDaq_sample_rate, self.uiwavefrequency_digital_waveform, self.uiwaveoffset_digital_waveform,
+                                                     self.uiwaveperiod_digital_waveform, self.uiwaveDC_digital_waveform, self.uiwaverepeat_digital_waveform_number, self.uiwavegap_digital_waveform)
         
-        self.textitem_532AO = pg.TextItem(text='532AO', color=('g'), anchor=(1, 1))
-        self.textitem_532AO.setPos(0, 3)
-        self.pw.addItem(self.textitem_532AO)
+        return digital_waveform.generate()
         
-    def generate_patchAO(self):
-        
-        self.uiDaq_sample_rate = int(self.SamplingRateTextbox.value())
-        self.uiwavefrequency_patchAO = float(self.AnalogFreqTextbox.text())
-        if not self.AnalogOffsetTextbox.text():
-            self.uiwaveoffset_patchAO = 0
-        else:
-            self.uiwaveoffset_patchAO = int(self.AnalogOffsetTextbox.text()) # in ms
-        self.uiwaveperiod_patchAO = int(self.AnalogDurationTextbox.text())
-        self.uiwaveDC_patchAO = int(self.AnalogDCTextbox.currentText())
-        if not self.AnalogRepeatTextbox.text():
-            self.uiwaverepeat_patchAO = 1
-        else:
-            self.uiwaverepeat_patchAO = int(self.AnalogRepeatTextbox.text())
-        if not self.AnalogGapTextbox.text():
-            self.uiwavegap_patchAO = 0
-        else:
-            self.uiwavegap_patchAO = int(self.AnalogGapTextbox.text())
-        self.uiwavestartamplitude_patchAO = float(self.AnalogStartingAmpTextbox.value())
-        if not self.AnalogBaselineTextbox.text():
-            self.uiwavebaseline_patchAO = 0
-        else:
-            self.uiwavebaseline_patchAO = float(self.AnalogBaselineTextbox.text())
-        self.uiwavestep_patchAO = float(self.AnalogStepTextbox.value())
-        self.uiwavecycles_patchAO = int(self.AnalogCyclesTextbox.value())   
-        
-        #if int(self.textbox5A.currentText()) == 1:
-            
-        s = generate_AO_forpatch(self.uiDaq_sample_rate, self.uiwavefrequency_patchAO, self.uiwaveoffset_patchAO, self.uiwaveperiod_patchAO, self.uiwaveDC_patchAO
-                               , self.uiwaverepeat_patchAO, self.uiwavegap_patchAO, self.uiwavestartamplitude_patchAO, self.uiwavebaseline_patchAO, self.uiwavestep_patchAO, self.uiwavecycles_patchAO)
-        self.finalwave_patch = s.generate()
-        return self.finalwave_patch
-            
-    def generate_patchAO_graphy(self):
-        xlabelhere_patch = np.arange(len(self.finalwave_patch))/self.uiDaq_sample_rate
-        self.PlotDataItem_patch = PlotDataItem(xlabelhere_patch, self.finalwave_patch)
-        self.PlotDataItem_patch.setPen(100, 100, 0)
-        self.pw.addItem(self.PlotDataItem_patch)
-        
-        self.textitem_patch = pg.TextItem(text='patch ', color=(100, 100, 0), anchor=(1, 1))
-        self.textitem_patch.setPos(0, 1)
-        self.pw.addItem(self.textitem_patch)
-        
+    #%%
     #--------------------------------------------------------------------------------- for generating ramp voltage signals------------------------------------------------------------------------------
     def generate_ramp(self, channel):
         self.uiDaq_sample_rate = int(self.SamplingRateTextbox.value())
@@ -1465,373 +1064,13 @@ class WaveformGenerator(QWidget):
                                       self.uiwaveperiod_ramp, self.uiwavesymmetry_ramp, self.uiwaverepeat_ramp, self.uiwavegap_ramp,
                                       self.uiwavestartamplitude_ramp, self.uiwavebaseline_ramp, self.uiwavestep_ramp, self.uiwavecycles_ramp)
         
-        if channel == '640AO':
-            self.finalwave_640 = ramp_instance.generate()
-        elif channel == '532AO':
-            self.finalwave_532 = ramp_instance.generate()
-        elif channel == '488AO':
-            self.finalwave_488 = ramp_instance.generate()           
-        elif channel == 'patchAO':
-            self.finalwave_patch = ramp_instance.generate()
+        return ramp_instance.generate()
 
-    # --------------------------------------------------------------------------------for generating digital signals------------------------------------------------------------------------------------
-    def generate_digital_waveform(self, channel):
-        
-        self.uiDaq_sample_rate = int(self.SamplingRateTextbox.value())
-        self.uiwavefrequency_digital_waveform = float(self.DigFreqTextbox.text())
-        if not self.DigOffsetTextbox.text():
-            self.uiwaveoffset_digital_waveform = 0
-        else:
-            self.uiwaveoffset_digital_waveform = int(self.DigOffsetTextbox.text())
-        self.uiwaveperiod_digital_waveform = int(self.DigDurationTextbox.text())
-        self.uiwaveDC_digital_waveform = int(self.DigDCTextbox.currentText())
-        if not self.DigRepeatTextbox.text():
-            self.uiwaverepeat_digital_waveform_number = 1
-        else:
-            self.uiwaverepeat_digital_waveform_number = int(self.DigRepeatTextbox.text())
-        if not self.DigGapTextbox.text():
-            self.uiwavegap_digital_waveform = 0
-        else:
-            self.uiwavegap_digital_waveform = int(self.DigGapTextbox.text())
-        
-        #if int(self.textbox11A.currentText()) == 1:
-            
-        digital_waveform = generate_digital_waveform(self.uiDaq_sample_rate, self.uiwavefrequency_digital_waveform, self.uiwaveoffset_digital_waveform,
-                                                     self.uiwaveperiod_digital_waveform, self.uiwaveDC_digital_waveform, self.uiwaverepeat_digital_waveform_number, self.uiwavegap_digital_waveform)
-        
-        if channel == "cameratrigger":
-            self.finalwave_cameratrigger = digital_waveform.generate()
-            return self.finalwave_cameratrigger
-        elif channel == "DMD_trigger":
-            self.finalwave_DMD_trigger = digital_waveform.generate()
-            return self.finalwave_DMD_trigger
-        elif channel == "blankingall":
-            self.finalwave_blankingall = digital_waveform.generate()
-            return self.finalwave_blankingall
-        elif channel == "640blanking":
-            self.finalwave_640blanking = digital_waveform.generate()
-            return self.finalwave_640blanking
-        elif channel == "532blanking":
-            self.finalwave_532blanking = digital_waveform.generate()
-            return self.finalwave_532blanking            
-        elif channel == "488blanking":
-            self.finalwave_488blanking = digital_waveform.generate()
-            return self.finalwave_488blanking  
-        elif channel == "2Pshutter":
-            self.finalwave_2Pshutter = digital_waveform.generate()
-            return self.finalwave_2Pshutter
-            
-    def generate_cameratrigger_graphy(self):
 
-        xlabelhere_cameratrigger = np.arange(len(self.finalwave_cameratrigger))/self.uiDaq_sample_rate
-        self.finalwave_cameratrigger_forgraphy = self.finalwave_cameratrigger.astype(int)
-        self.PlotDataItem_cameratrigger = PlotDataItem(xlabelhere_cameratrigger, self.finalwave_cameratrigger_forgraphy)
-        self.PlotDataItem_cameratrigger.setPen('c')
-        self.PlotDataItem_cameratrigger.setDownsampling(auto=True, method='subsample')
-        #self.pw.addItem(self.PlotDataItem_cameratrigger)
         
-        try:
-            self.textitem_cameratrigger = pg.TextItem(text='cameratrigger '+str(self.uiwavefrequency_cameratrigger)+'hz', color=('c'), anchor=(1, 1))
-        except:
-            self.textitem_cameratrigger = pg.TextItem(text='cameratrigger ', color=('c'), anchor=(1, 1))
-        self.textitem_cameratrigger.setPos(0, 0)
-        self.pw.addItem(self.textitem_cameratrigger)
-            
-    def generate_640blanking_graphy(self):    
 
-        xlabelhere_640blanking = np.arange(len(self.finalwave_640blanking))/self.uiDaq_sample_rate
-        self.final_640blanking_forgraphy = self.finalwave_640blanking.astype(int)
-        self.PlotDataItem_640blanking = PlotDataItem(xlabelhere_640blanking, self.final_640blanking_forgraphy)
-        self.PlotDataItem_640blanking.setPen(255,204,255)
-        self.pw.addItem(self.PlotDataItem_640blanking)
-        
-        self.textitem_640blanking = pg.TextItem(text='640blanking', color=(255,204,255), anchor=(1, 1))
-        self.textitem_640blanking.setPos(0, -2)
-        self.pw.addItem(self.textitem_640blanking)
-            
-    def generate_532blanking_graphy(self):    
-
-        xlabelhere_532blanking = np.arange(len(self.finalwave_532blanking))/self.uiDaq_sample_rate
-        self.final_532blanking_forgraphy = self.finalwave_532blanking.astype(int)
-        self.PlotDataItem_532blanking = PlotDataItem(xlabelhere_532blanking, self.final_532blanking_forgraphy)
-        self.PlotDataItem_532blanking.setPen('y')
-        self.pw.addItem(self.PlotDataItem_532blanking)
-        
-        self.textitem_532blanking = pg.TextItem(text='532blanking', color=('y'), anchor=(1, 1))
-        self.textitem_532blanking.setPos(0, -3)
-        self.pw.addItem(self.textitem_532blanking)
-
-            
-    def generate_488blanking_graphy(self):    
-
-        xlabelhere_488blanking = np.arange(len(self.finalwave_488blanking))/self.uiDaq_sample_rate
-        self.final_488blanking_forgraphy = self.finalwave_488blanking.astype(int)
-        self.PlotDataItem_488blanking = PlotDataItem(xlabelhere_488blanking, self.final_488blanking_forgraphy)
-        self.PlotDataItem_488blanking.setPen(255,51,153)
-        self.pw.addItem(self.PlotDataItem_488blanking)
-        
-        self.textitem_488blanking = pg.TextItem(text='488blanking', color=(255,51,153), anchor=(1, 1))
-        self.textitem_488blanking.setPos(0, -4)
-        self.pw.addItem(self.textitem_488blanking)
-
-            
-    def generate_blankingall_graphy(self):    
-
-        xlabelhere_blankingall = np.arange(len(self.finalwave_blankingall))/self.uiDaq_sample_rate
-        self.final_blankingall_forgraphy = self.finalwave_blankingall.astype(int)
-        self.PlotDataItem_blankingall = PlotDataItem(xlabelhere_blankingall, self.final_blankingall_forgraphy)
-        self.PlotDataItem_blankingall.setPen(255,229,204)
-        self.pw.addItem(self.PlotDataItem_blankingall)
-        
-        self.textitem_blankingall = pg.TextItem(text='blankingall', color=(255,229,204), anchor=(1, 1))
-        self.textitem_blankingall.setPos(0, -1)
-        self.pw.addItem(self.textitem_blankingall)
-        
-    def generate_DMD_trigger_graphy(self):
-
-        xlabelhere_blankingall = np.arange(len(self.finalwave_DMD_trigger))/self.uiDaq_sample_rate
-        self.finalwave_DMD_trigger_forgraphy = self.finalwave_DMD_trigger.astype(int)
-        self.PlotDataItem_DMD_trigger = PlotDataItem(xlabelhere_blankingall, self.finalwave_DMD_trigger_forgraphy)
-        self.PlotDataItem_DMD_trigger.setPen(255,229,204)
-        self.pw.addItem(self.PlotDataItem_DMD_trigger)
-        
-        self.textitem_DMD_trigger = pg.TextItem(text='DMD_trigger', color=(255,229,204), anchor=(1, 1))
-        self.textitem_DMD_trigger.setPos(0, -5)
-        self.pw.addItem(self.textitem_DMD_trigger)
-        
-    def generate_Perfusion_8(self):
-        
-        self.uiDaq_sample_rate = int(self.SamplingRateTextbox.value())
-        self.uiwavefrequency_Perfusion_8 = float(self.DigFreqTextbox.text())
-        if not self.DigOffsetTextbox.text():
-            self.uiwaveoffset_Perfusion_8 = 0
-        else:
-            self.uiwaveoffset_Perfusion_8 = int(self.DigOffsetTextbox.text())
-        self.uiwaveperiod_Perfusion_8 = int(self.DigDurationTextbox.text())
-        self.uiwaveDC_Perfusion_8 = int(self.DigDCTextbox.currentText())
-        if not self.DigRepeatTextbox.text():
-            self.uiwaverepeat_Perfusion_8_number = 1
-        else:
-            self.uiwaverepeat_Perfusion_8_number = int(self.DigRepeatTextbox.text())
-        if not self.DigGapTextbox.text():
-            self.uiwavegap_Perfusion_8 = 0
-        else:
-            self.uiwavegap_Perfusion_8 = int(self.DigGapTextbox.toPlainText())
-        
-        #if int(self.textbox66A.currentText()) == 1:
-            
-        Perfusion_8 = generate_DO_forPerfusion(self.uiDaq_sample_rate, self.uiwavefrequency_Perfusion_8, self.uiwaveoffset_Perfusion_8,
-                                                     self.uiwaveperiod_Perfusion_8, self.uiwaveDC_Perfusion_8, self.uiwaverepeat_Perfusion_8_number, self.uiwavegap_Perfusion_8)
-        self.finalwave_Perfusion_8 = Perfusion_8.generate()
-        return self.finalwave_Perfusion_8
-            
-    def generate_Perfusion_8_graphy(self):    
-
-        xlabelhere_Perfusion_8 = np.arange(len(self.finalwave_Perfusion_8))/self.uiDaq_sample_rate
-        self.final_Perfusion_8_forgraphy = self.finalwave_Perfusion_8.astype(int)
-        self.PlotDataItem_Perfusion_8 = PlotDataItem(xlabelhere_Perfusion_8, self.final_Perfusion_8_forgraphy)
-        self.PlotDataItem_Perfusion_8.setPen(154,205,50)
-        self.pw.addItem(self.PlotDataItem_Perfusion_8)
-        
-        self.textitem_Perfusion_8 = pg.TextItem(text='Perfusion_8', color=(154,205,50), anchor=(1, 1))
-        self.textitem_Perfusion_8.setPos(0, -6)
-        self.pw.addItem(self.textitem_Perfusion_8)
-        
-    def generate_Perfusion_7(self):
-        
-        self.uiDaq_sample_rate = int(self.SamplingRateTextbox.value())
-        self.uiwavefrequency_Perfusion_7 = float(self.DigFreqTextbox.text())
-        if not self.DigOffsetTextbox.text():
-            self.uiwaveoffset_Perfusion_7 = 0
-        else:
-            self.uiwaveoffset_Perfusion_7 = int(self.DigOffsetTextbox.text())
-        self.uiwaveperiod_Perfusion_7 = int(self.DigDurationTextbox.text())
-        self.uiwaveDC_Perfusion_7 = int(self.DigDCTextbox.currentText())
-        if not self.DigRepeatTextbox.text():
-            self.uiwaverepeat_Perfusion_7_number = 1
-        else:
-            self.uiwaverepeat_Perfusion_7_number = int(self.DigRepeatTextbox.text())
-        if not self.DigGapTextbox.text():
-            self.uiwavegap_Perfusion_7 = 0
-        else:
-            self.uiwavegap_Perfusion_7 = int(self.DigGapTextbox.toPlainText())
-        
-        #if int(self.textbox66A.currentText()) == 1:
-            
-        Perfusion_7 = generate_DO_forPerfusion(self.uiDaq_sample_rate, self.uiwavefrequency_Perfusion_7, self.uiwaveoffset_Perfusion_7,
-                                                     self.uiwaveperiod_Perfusion_7, self.uiwaveDC_Perfusion_7, self.uiwaverepeat_Perfusion_7_number, self.uiwavegap_Perfusion_7)
-        self.finalwave_Perfusion_7 = Perfusion_7.generate()
-        return self.finalwave_Perfusion_7
-            
-    def generate_Perfusion_7_graphy(self):    
-
-        xlabelhere_Perfusion_7 = np.arange(len(self.finalwave_Perfusion_7))/self.uiDaq_sample_rate
-        self.final_Perfusion_7_forgraphy = self.finalwave_Perfusion_7.astype(int)
-        self.PlotDataItem_Perfusion_7 = PlotDataItem(xlabelhere_Perfusion_7, self.final_Perfusion_7_forgraphy)
-        self.PlotDataItem_Perfusion_7.setPen(127,255,212)
-        self.pw.addItem(self.PlotDataItem_Perfusion_7)
-        
-        self.textitem_Perfusion_7 = pg.TextItem(text='Perfusion_7', color=(127,255,212), anchor=(1, 1))
-        self.textitem_Perfusion_7.setPos(-0.3, -6)
-        self.pw.addItem(self.textitem_Perfusion_7)
-        
-    def generate_Perfusion_6(self):
-        
-        self.uiDaq_sample_rate = int(self.SamplingRateTextbox.value())
-        self.uiwavefrequency_Perfusion_6 = float(self.DigFreqTextbox.text())
-        if not self.DigOffsetTextbox.text():
-            self.uiwaveoffset_Perfusion_6 = 0
-        else:
-            self.uiwaveoffset_Perfusion_6 = int(self.DigOffsetTextbox.text())
-        self.uiwaveperiod_Perfusion_6 = int(self.DigDurationTextbox.text())
-        self.uiwaveDC_Perfusion_6 = int(self.DigDCTextbox.currentText())
-        if not self.DigRepeatTextbox.text():
-            self.uiwaverepeat_Perfusion_6_number = 1
-        else:
-            self.uiwaverepeat_Perfusion_6_number = int(self.DigRepeatTextbox.text())
-        if not self.DigGapTextbox.text():
-            self.uiwavegap_Perfusion_6 = 0
-        else:
-            self.uiwavegap_Perfusion_6 = int(self.DigGapTextbox.toPlainText())
-        
-        #if int(self.textbox66A.currentText()) == 1:
-            
-        Perfusion_6 = generate_DO_forPerfusion(self.uiDaq_sample_rate, self.uiwavefrequency_Perfusion_6, self.uiwaveoffset_Perfusion_6,
-                                                     self.uiwaveperiod_Perfusion_6, self.uiwaveDC_Perfusion_6, self.uiwaverepeat_Perfusion_6_number, self.uiwavegap_Perfusion_6)
-        self.finalwave_Perfusion_6 = Perfusion_6.generate()
-        return self.finalwave_Perfusion_6
-            
-    def generate_Perfusion_6_graphy(self):    
-
-        xlabelhere_Perfusion_6 = np.arange(len(self.finalwave_Perfusion_6))/self.uiDaq_sample_rate
-        self.final_Perfusion_6_forgraphy = self.finalwave_Perfusion_6.astype(int)
-        self.PlotDataItem_Perfusion_6 = PlotDataItem(xlabelhere_Perfusion_6, self.final_Perfusion_6_forgraphy)
-        self.PlotDataItem_Perfusion_6.setPen(102,40,91)
-        self.pw.addItem(self.PlotDataItem_Perfusion_6)
-        
-        self.textitem_Perfusion_6 = pg.TextItem(text='Perfusion_6', color=(102,40,91), anchor=(1, 1))
-        self.textitem_Perfusion_6.setPos(-0.6, -6)
-        self.pw.addItem(self.textitem_Perfusion_6)
-        
-    def generate_Perfusion_2(self):
-        
-        self.uiDaq_sample_rate = int(self.SamplingRateTextbox.value())
-        self.uiwavefrequency_Perfusion_2 = float(self.DigFreqTextbox.text())
-        if not self.DigOffsetTextbox.text():
-            self.uiwaveoffset_Perfusion_2 = 0
-        else:
-            self.uiwaveoffset_Perfusion_2 = int(self.DigOffsetTextbox.text())
-        self.uiwaveperiod_Perfusion_2 = int(self.DigDurationTextbox.text())
-        self.uiwaveDC_Perfusion_2 = int(self.DigDCTextbox.currentText())
-        if not self.DigRepeatTextbox.text():
-            self.uiwaverepeat_Perfusion_2_number = 1
-        else:
-            self.uiwaverepeat_Perfusion_2_number = int(self.DigRepeatTextbox.text())
-        if not self.DigGapTextbox.text():
-            self.uiwavegap_Perfusion_2 = 0
-        else:
-            self.uiwavegap_Perfusion_2 = int(self.DigGapTextbox.toPlainText())
-        
-        #if int(self.textbox66A.currentText()) == 1:
-            
-        Perfusion_2 = generate_DO_forPerfusion(self.uiDaq_sample_rate, self.uiwavefrequency_Perfusion_2, self.uiwaveoffset_Perfusion_2,
-                                                     self.uiwaveperiod_Perfusion_2, self.uiwaveDC_Perfusion_2, self.uiwaverepeat_Perfusion_2_number, self.uiwavegap_Perfusion_2)
-        self.finalwave_Perfusion_2 = Perfusion_2.generate()
-        return self.finalwave_Perfusion_2
-            
-    def generate_Perfusion_2_graphy(self):    
-
-        xlabelhere_Perfusion_2 = np.arange(len(self.finalwave_Perfusion_2))/self.uiDaq_sample_rate
-        self.final_Perfusion_2_forgraphy = self.finalwave_Perfusion_2.astype(int)
-        self.PlotDataItem_Perfusion_2 = PlotDataItem(xlabelhere_Perfusion_2, self.final_Perfusion_2_forgraphy)
-        self.PlotDataItem_Perfusion_2.setPen(255,215,0)
-        self.pw.addItem(self.PlotDataItem_Perfusion_2)
-        
-        self.textitem_Perfusion_2 = pg.TextItem(text='Perfusion_2', color=(255,215,0), anchor=(1, 1))
-        self.textitem_Perfusion_2.setPos(-0.9, -6)
-        self.pw.addItem(self.textitem_Perfusion_2)
-            
-    def generate_2Pshutter_graphy(self):    
-
-        xlabelhere_2Pshutter = np.arange(len(self.finalwave_2Pshutter))/self.uiDaq_sample_rate
-        self.final_2Pshutter_forgraphy = self.finalwave_2Pshutter.astype(int)
-        self.PlotDataItem_2Pshutter = PlotDataItem(xlabelhere_2Pshutter, self.final_2Pshutter_forgraphy)
-        self.PlotDataItem_2Pshutter.setPen(229,204,255)
-        self.pw.addItem(self.PlotDataItem_2Pshutter)
-        
-        self.textitem_2Pshutter = pg.TextItem(text='2Pshutter', color=(229,204,255), anchor=(1, 1))
-        self.textitem_2Pshutter.setPos(0, -7)
-        self.pw.addItem(self.textitem_2Pshutter)
-        
-    def generate_photocycle_640(self):
-        
-        self.uiDaq_sample_rate = int(self.SamplingRateTextbox.value())
-        self.uiwavefrequency_photocycle_640 = float(self.textbox_photocycleA.text())
-        if not self.textbox_photocycleB.text():
-            self.uiwavefrequency_offset_photocycle_640 = 100
-        else:
-            self.uiwavefrequency_offset_photocycle_640 = int(self.textbox_photocycleB.text())
-        self.uiwaveperiod_photocycle_640 = int(self.textbox_photocycleC.text())
-        self.uiwaveDC_photocycle_640 = int(self.textbox_photocycleE.currentText())
-        if not self.textbox_photocycleD.text():
-            self.uiwaverepeat_photocycle_640 = 10
-        else:
-            self.uiwaverepeat_photocycle_640 = int(self.textbox_photocycleD.text())
-        if not self.textbox_photocycleF.text():
-            self.uiwavegap_photocycle_640 = 100000
-        else:
-            self.uiwavegap_photocycle_640 = int(self.textbox_photocycleF.text())
-        self.uiwavestartamplitude_photocycle_640 = float(self.textbox_photocycleG.value())
-        if not self.textbox_photocycleH.text():
-            self.uiwavebaseline_photocycle_640 = 0
-        else:
-            self.uiwavebaseline_photocycle_640 = float(self.textbox_photocycleH.text())
-        self.uiwavestep_photocycle_640 = float(self.textbox_photocycleI.value())
-        self.uiwavecycles_photocycle_640 = float(self.textbox_photocycleJ.value())
-        self.uiwavestart_time_photocycle_640 = float(self.textbox_photocycleL.value())  
-        
-        self.uiwavecontrol_amplitude_photocycle_640 = float(self.textbox_photocycleM.value())         
-                    
-        s = generate_AO(self.uiDaq_sample_rate, self.uiwavefrequency_photocycle_640, self.uiwavefrequency_offset_photocycle_640, self.uiwaveperiod_photocycle_640, self.uiwaveDC_photocycle_640, self.uiwaverepeat_photocycle_640
-                               , self.uiwavegap_photocycle_640, self.uiwavestartamplitude_photocycle_640, self.uiwavebaseline_photocycle_640, self.uiwavestep_photocycle_640, self.uiwavecycles_photocycle_640, self.uiwavestart_time_photocycle_640,self.uiwavecontrol_amplitude_photocycle_640)
-        self.finalwave_640 = s.generate()
-        return self.finalwave_640
-    
-    def generate_photocycle_532(self):
-        
-        self.uiDaq_sample_rate = int(self.SamplingRateTextbox.value())
-        self.uiwavefrequency_photocycle_532 = float(self.textbox_photocycleA.text())
-        if not self.textbox_photocycleB.text():
-            self.uiwavefrequency_offset_photocycle_532 = 100
-        else:
-            self.uiwavefrequency_offset_photocycle_532 = int(self.textbox_photocycleB.text())
-        self.uiwaveperiod_photocycle_532 = int(self.textbox_photocycleC.text())
-        self.uiwaveDC_photocycle_532 = int(self.textbox_photocycleE.currentText())
-        if not self.textbox_photocycleD.text():
-            self.uiwaverepeat_photocycle_532 = 10
-        else:
-            self.uiwaverepeat_photocycle_532 = int(self.textbox_photocycleD.text())
-        if not self.textbox_photocycleF.text():
-            self.uiwavegap_photocycle_532 = 100000
-        else:
-            self.uiwavegap_photocycle_532 = int(self.textbox_photocycleF.text())
-        self.uiwavestartamplitude_photocycle_532 = float(self.textbox_photocycleG.value())
-        if not self.textbox_photocycleH.text():
-            self.uiwavebaseline_photocycle_532 = 0
-        else:
-            self.uiwavebaseline_photocycle_532 = float(self.textbox_photocycleH.text())
-        self.uiwavestep_photocycle_532 = float(self.textbox_photocycleI.value())
-        self.uiwavecycles_photocycle_532 = float(self.textbox_photocycleJ.value())
-        self.uiwavestart_time_photocycle_532 = float(self.textbox_photocycleL.value())  
-        
-        self.uiwavecontrol_amplitude_photocycle_532 = float(self.textbox_photocycleM.value())         
-                    
-        s = generate_AO(self.uiDaq_sample_rate, self.uiwavefrequency_photocycle_532, self.uiwavefrequency_offset_photocycle_532, self.uiwaveperiod_photocycle_532, self.uiwaveDC_photocycle_532, self.uiwaverepeat_photocycle_532
-                               , self.uiwavegap_photocycle_532, self.uiwavestartamplitude_photocycle_532, self.uiwavebaseline_photocycle_532, self.uiwavestep_photocycle_532, self.uiwavecycles_photocycle_532, self.uiwavestart_time_photocycle_532,self.uiwavecontrol_amplitude_photocycle_532)
-        self.finalwave_532 = s.generate()
-        return self.finalwave_532
-    
-    def generate_photocycle_488(self):
+    #%%
+    def generate_photocycle(self, channel):
         
         self.uiDaq_sample_rate = int(self.SamplingRateTextbox.value())
         self.uiwavefrequency_photocycle_488 = float(self.textbox_photocycleA.text())
@@ -1862,89 +1101,42 @@ class WaveformGenerator(QWidget):
                     
         s = generate_AO(self.uiDaq_sample_rate, self.uiwavefrequency_photocycle_488, self.uiwavefrequency_offset_photocycle_488, self.uiwaveperiod_photocycle_488, self.uiwaveDC_photocycle_488, self.uiwaverepeat_photocycle_488
                                , self.uiwavegap_photocycle_488, self.uiwavestartamplitude_photocycle_488, self.uiwavebaseline_photocycle_488, self.uiwavestep_photocycle_488, self.uiwavecycles_photocycle_488, self.uiwavestart_time_photocycle_488,self.uiwavecontrol_amplitude_photocycle_488)
-        self.finalwave_488 = s.generate()
-        return self.finalwave_488
-       
-    def set_switch(self, name):
-        #self.generate_dictionary_switch_instance[name] = 1
-        if name not in self.dictionary_switch_list:
-            self.dictionary_switch_list.append(name)
-            print(self.dictionary_switch_list)
-    def del_set_switch(self, name):
-        #self.generate_dictionary_switch_instance[name] = 1
-        if name in self.dictionary_switch_list:
-            self.dictionary_switch_list.remove(name)
-            print(self.dictionary_switch_list)
+        finalwave = s.generate()
+        
+        return finalwave
+    
+    
+    #%%
+    def generate_graphy(self, channel, waveform):
+        
+        if waveform.dtype == "bool":
+            waveform = waveform.astype(int)
+            
+        x_label = np.arange(len(waveform))/self.uiDaq_sample_rate    
+        current_PlotDataItem = PlotDataItem(x_label, waveform, name = channel)        
+        current_PlotDataItem.setPen(self.color_dictionary[channel])
+        
+        self.pw_PlotItem.addItem(current_PlotDataItem)
+        self.pw_PlotItem.setDownsampling(auto = True, mode='mean')
+        
+        self.PlotDataItem_dict[channel] = current_PlotDataItem
+        
+        print(self.waveform_data_dict.keys())
+        
+      #%%
+
     def clear_canvas(self):
         #Back to initial state
         self.pw.clear()
-        self.dictionary_switch_list =[]
-        #self.Galvo_samples = self.finalwave_640 = self.finalwave_488 = self.finalwave_532=self.finalwave_patch =None
-        #self.finalwave_cameratrigger=self.final_galvotrigger=self.finalwave_blankingall=self.finalwave_640blanking=self.finalwave_532blanking=self.finalwave_488blanking=self.finalwave_Perfusion_8 = None
-        #self.switch_galvos=self.switch_640AO=self.switch_488AO=self.switch_532AO=self.switch_patchAO=self.switch_cameratrigger=self.switch_galvotrigger=self.switch_blankingall=self.switch_640blanking=self.switch_532blanking=self.switch_488blanking=self.switch_Perfusion_8=0        
-        
-    def show_all(self):
+        self.PlotDataItem_dict = {}
+        self.waveform_data_dict = {}
 
-        self.switch_galvos=self.switch_galvos_contour=self.switch_640AO=self.switch_488AO=self.switch_532AO=self.switch_patchAO=self.switch_cameratrigger=self.switch_galvotrigger=self.switch_blankingall=self.switch_640blanking=\
-                            self.switch_532blanking=self.switch_488blanking=self.switch_Perfusion_8=self.switch_Perfusion_7=self.switch_Perfusion_6=self.switch_Perfusion_2=self.switch_2Pshutter=self.switch_DMD_trigger=0
-        color_dictionary = {'galvos':[255,255,255],
-                            'galvos_contour':[255,255,255],
-                            '640AO':[255,0,0],
-                            '488AO':[0,0,255],
-                            '532AO':[0,255,0],
-                            'patchAO':[100, 100, 0],
-                            'cameratrigger':[0,255,255],
-                            'galvotrigger':[100,100,200], 
-                            'blankingall':[255,229,204],
-                            '640blanking':[255,204,255],
-                            '532blanking':[255,255,0],
-                            '488blanking':[255,51,153],
-                            'Perfusion_8':[154,205,50],
-                            'Perfusion_7':[127,255,212],
-                            'Perfusion_6':[102,40,91],
-                            'Perfusion_2':[255,215,0],
-                            '2Pshutter':[229,204,255],
-                            'DMD_trigger':[255,215,0]
-                            }
-        # Use dictionary to execute functions: https://stackoverflow.com/questions/9168340/using-a-dictionary-to-select-function-to-execute/9168387#9168387
-        dictionary_analog = {'galvos':[self.switch_galvos,self.Galvo_samples],
-                             'galvos_contour':[self.switch_galvos_contour,self.handle_viewbox_coordinate_position_array_expanded_forDaq_waveform],
-                             '640AO':[self.switch_640AO,self.finalwave_640],
-                             '488AO':[self.switch_488AO,self.finalwave_488],
-                             '532AO':[self.switch_532AO,self.finalwave_532],
-                             'patchAO':[self.switch_patchAO,self.finalwave_patch]
-                             }
-                              
-                              
-        dictionary_digital = {'cameratrigger':[self.switch_cameratrigger,self.finalwave_cameratrigger],
-                              'DMD_trigger':[self.switch_DMD_trigger, self.finalwave_DMD_trigger],
-                              'galvotrigger':[self.switch_galvotrigger,self.final_galvotrigger], 
-                              'blankingall':[self.switch_blankingall, self.finalwave_blankingall],
-                              '640blanking':[self.switch_640blanking, self.finalwave_640blanking],
-                              '532blanking':[self.switch_532blanking, self.finalwave_532blanking],
-                              '488blanking':[self.switch_488blanking, self.finalwave_488blanking],
-                              'Perfusion_8':[self.switch_Perfusion_8, self.finalwave_Perfusion_8],
-                              'Perfusion_7':[self.switch_Perfusion_7, self.finalwave_Perfusion_7],
-                              'Perfusion_6':[self.switch_Perfusion_6, self.finalwave_Perfusion_6],
-                              'Perfusion_2':[self.switch_Perfusion_2, self.finalwave_Perfusion_2],
-                              '2Pshutter':[self.switch_2Pshutter, self.finalwave_2Pshutter]
-                              }
-        # set switch of selected waves to 1
-        for i in range(len(self.dictionary_switch_list)):
-            if self.dictionary_switch_list[i] in dictionary_analog:
-                dictionary_analog[self.dictionary_switch_list[i]][0] = 1
-                #print('switch = '+str(dictionary_analog[self.dictionary_switch_list[i]][0]))
-            elif self.dictionary_switch_list[i] in dictionary_digital:
-                dictionary_digital[self.dictionary_switch_list[i]][0] = 1
-        # Calculate the length of reference wave
-        # tags in the dictionary above should be the same as that in reference combox, then the dictionary below can work
-        
+    def organize_waveforms(self):
+
+        #-----------------Find the reference waveform length.------------------
         ReferenceWaveform_menu_text = self.ReferenceWaveform_menu.selectedItems()[0].text()
-        # 
-        if ReferenceWaveform_menu_text in dictionary_analog.keys():
-            reference_wave = dictionary_analog[ReferenceWaveform_menu_text][1]
-        else:
-            reference_wave = dictionary_digital[ReferenceWaveform_menu_text][1]
+        
+        reference_wave = self.waveform_data_dict[ReferenceWaveform_menu_text]
         
         if ReferenceWaveform_menu_text == 'galvos' or ReferenceWaveform_menu_text == 'galvos_contour': # in case of using galvos as reference wave
             self.reference_length = len(reference_wave[0, :])
@@ -1952,144 +1144,61 @@ class WaveformGenerator(QWidget):
             self.reference_length = len(reference_wave)
         print('reference_length: '+str(self.reference_length))
 
+        #------------------Set galvos sampele stack apart----------------------
+        if 'galvos' in self.waveform_data_dict:
+            self.waveform_data_dict['galvosx'+'avgnum_'+str(int(self.GalvoAvgNumTextbox.value()))] = self.waveform_data_dict['galvos'][0, :]
+            self.waveform_data_dict['galvosy'+'ypixels_'+str(int(self.GalvoYpixelNumTextbox.currentText()))] = self.waveform_data_dict['galvos'][1, :]
+            del self.waveform_data_dict['galvos']
+            
+        if 'galvos_contour' in self.waveform_data_dict:
+            self.waveform_data_dict['galvos_X'+'_contour'] = self.waveform_data_dict['galvos_contour'][0, :]
+            self.waveform_data_dict['galvos_Y'+'_contour'] = self.waveform_data_dict['galvos_contour'][1, :]
+            del self.waveform_data_dict['galvos_contour']   
+            
+        #---------------Get all waveforms the same length.---------------------
+        for waveform_key in self.waveform_data_dict:
+            if len(self.waveform_data_dict[waveform_key]) >= self.reference_length:
+                self.waveform_data_dict[waveform_key] = self.waveform_data_dict[waveform_key][0:self.reference_length]
+            else:
+                append_waveforms = np.zeros(self.reference_length-len(self.waveform_data_dict[waveform_key]))
+                self.waveform_data_dict[waveform_key] = np.append(self.waveform_data_dict[waveform_key], append_waveforms)
+                
         # Structured array to contain 
         # https://stackoverflow.com/questions/39622533/numpy-array-as-datatype-in-a-structured-array
-        tp_analog = np.dtype([('Waveform', float, (self.reference_length,)), ('Sepcification', 'U20')])
-        tp_digital = np.dtype([('Waveform', bool, (self.reference_length,)), ('Sepcification', 'U20')])
+        dataType_analog = np.dtype([('Waveform', float, (self.reference_length,)), ('Sepcification', 'U20')])
+        dataType_digital = np.dtype([('Waveform', bool, (self.reference_length,)), ('Sepcification', 'U20')])
         
-        self.analog_data_container = {}
+        digital_line_num = 0
+        for waveform_key in self.waveform_data_dict:
+            if waveform_key in self.DigitalChannelList:
+                digital_line_num += 1
+        analog_line_num = len(self.waveform_data_dict.keys()) - digital_line_num
+        
+        self.analog_array = np.zeros(analog_line_num, dtype = dataType_analog)
+        self.digital_array = np.zeros(digital_line_num, dtype = dataType_digital)
+        
+        line_num = 0
+        for waveform_key in self.waveform_data_dict:
 
-        for key in dictionary_analog:
-            if dictionary_analog[key][0] == 1: # if the signal line is added
-                self.analog_data_container[key] = dictionary_analog[key][1]
-        
-        # set galvos sampele stack apart
-        if 'galvos' in self.analog_data_container:
-            self.analog_data_container['galvosx'+'avgnum_'+str(int(self.GalvoAvgNumTextbox.value()))] = self.generate_galvos()[0, :]
-            self.analog_data_container['galvosy'+'ypixels_'+str(int(self.GalvoYpixelNumTextbox.currentText()))] = self.generate_galvos()[1, :]
-            del self.analog_data_container['galvos']
-            
-        if 'galvos_contour' in self.analog_data_container:
-            self.analog_data_container['galvos_X'+'_contour'] = self.generate_contour_for_waveform()[0, :]
-            self.analog_data_container['galvos_Y'+'_contour'] = self.generate_contour_for_waveform()[1, :]
-            del self.analog_data_container['galvos_contour']      
-        
-        # reform all waves according to the length of reference wave
-        for key in self.analog_data_container:
-            if len(self.analog_data_container[key]) >= self.reference_length:
-                self.analog_data_container[key] = self.analog_data_container[key][0:self.reference_length]
+            if self.waveform_data_dict[waveform_key].dtype == "float":
+                self.analog_array[line_num] = np.array([(self.waveform_data_dict[waveform_key], waveform_key)], dtype = dataType_analog)
             else:
-                append_waveforms = np.zeros(self.reference_length-len(self.analog_data_container[key]))
-                self.analog_data_container[key] = np.append(self.analog_data_container[key], append_waveforms)
-            #print(len(self.analog_data_container[key]))
-        self.analogcontainer_array = np.zeros(len(self.analog_data_container), dtype =tp_analog)
-        analogloopnum = 0
-        for key in self.analog_data_container:
-            self.analogcontainer_array[analogloopnum] = np.array([(self.analog_data_container[key], key)], dtype =tp_analog)
-            analogloopnum = analogloopnum+ 1
-            
-        #num_rows, num_cols = self.analogcontainer_array['Waveform'].shape
-        print(self.analogcontainer_array['Sepcification'])
-        
-        # digital lines
-        self.digital_data_container = {}
-        
-        for key in dictionary_digital:
-            if dictionary_digital[key][0] == 1: # if the signal line is added
-                self.digital_data_container[key] = dictionary_digital[key][1]
-        
-        # reform all waves according to the length of reference wave
-        for key in self.digital_data_container:
-            if len(self.digital_data_container[key]) >= self.reference_length:
-                self.digital_data_container[key] = self.digital_data_container[key][0:self.reference_length]
-            elif key == 'blankingall':
-                append_waveforms = np.ones(self.reference_length-len(self.digital_data_container[key]))
-                self.digital_data_container[key] = np.append(self.digital_data_container[key], append_waveforms)                
-            else:
-                append_waveforms = np.zeros(self.reference_length-len(self.digital_data_container[key]))
-                self.digital_data_container[key] = np.append(self.digital_data_container[key], append_waveforms)
-            #print(len(self.digital_data_container[key]))
-        self.digitalcontainer_array = np.zeros(len(self.digital_data_container), dtype =tp_digital)
-        digitalloopnum = 0
-        for key in self.digital_data_container:
-            self.digitalcontainer_array[digitalloopnum] = np.array([(self.digital_data_container[key], key)], dtype =tp_digital)
-            digitalloopnum = digitalloopnum+ 1
-        print(self.digitalcontainer_array['Sepcification'])
-                
-        self.xlabelhere_all = np.arange(self.reference_length)/int(self.SamplingRateTextbox.value())
-        
-        self.pw.clear()
-        for i in range(analogloopnum):
-                                        
-            if self.analogcontainer_array['Sepcification'][i] != 'galvosx'+'avgnum_'+str(int(self.GalvoAvgNumTextbox.value())) and self.analogcontainer_array['Sepcification'][i] != 'galvos_X'+'_contour': #skip the galvoX, as it is too intense
-                if self.analogcontainer_array['Sepcification'][i] == 'galvosy'+'ypixels_'+str(int(self.GalvoYpixelNumTextbox.currentText())) or self.analogcontainer_array['Sepcification'][i] == 'galvos_Y'+'_contour':
-                    self.PlotDataItem_final = PlotDataItem(self.xlabelhere_all, self.analogcontainer_array['Waveform'][i])
-#                    self.PlotDataItem_final = PlotDataItem(signal.resample(self.xlabelhere_all, int(len(self.xlabelhere_all)/10)), signal.resample(self.analogcontainer_array['Waveform'][i], int(len(self.xlabelhere_all)/10)))
-                    #use the same color as before, taking advantages of employing same keys in dictionary
-                    self.PlotDataItem_final.setPen('w')
-                    self.PlotDataItem_final.setDownsampling(auto=True, method='subsample')
-                    self.pw.addItem(self.PlotDataItem_final)
-                
-                    self.textitem_final = pg.TextItem(text=str(self.analogcontainer_array['Sepcification'][i]), color=('w'), anchor=(1, 1))
-                    self.textitem_final.setPos(0, i+1)
-                    self.pw.addItem(self.textitem_final)
-                else:
-                    self.PlotDataItem_final = PlotDataItem(self.xlabelhere_all, self.analogcontainer_array['Waveform'][i])                  
-#                    self.PlotDataItem_final = PlotDataItem(signal.resample(self.xlabelhere_all, int(len(self.xlabelhere_all)/10)), signal.resample(self.analogcontainer_array['Waveform'][i], int(len(self.xlabelhere_all)/10)))
-                    #use the same color as before, taking advantages of employing same keys in dictionary
-                    self.PlotDataItem_final.setPen(color_dictionary[self.analogcontainer_array['Sepcification'][i]][0],color_dictionary[self.analogcontainer_array['Sepcification'][i]][1],\
-                                                   color_dictionary[self.analogcontainer_array['Sepcification'][i]][2])
-                    self.PlotDataItem_final.setDownsampling(auto=True, method='subsample')
-                    self.pw.addItem(self.PlotDataItem_final)
-                    
-                    self.textitem_final = pg.TextItem(text=str(self.analogcontainer_array['Sepcification'][i]), color=(color_dictionary[self.analogcontainer_array['Sepcification'][i]][0],\
-                                                                                                                       color_dictionary[self.analogcontainer_array['Sepcification'][i]][1],color_dictionary[self.analogcontainer_array['Sepcification'][i]][2]), anchor=(1, 1))
-                    self.textitem_final.setPos(0, i+1)
-                    self.pw.addItem(self.textitem_final)
-                i += 1
-        for i in range(digitalloopnum):
-            digitalwaveforgraphy = self.digitalcontainer_array['Waveform'][i].astype(int)
-            self.PlotDataItem_final = PlotDataItem(self.xlabelhere_all, digitalwaveforgraphy)
-#            self.PlotDataItem_final = PlotDataItem(signal.resample(self.xlabelhere_all, int(len(self.xlabelhere_all)/10)), signal.resample(digitalwaveforgraphy, int(len(self.xlabelhere_all)/10)))
-            self.PlotDataItem_final.setPen(color_dictionary[self.digitalcontainer_array['Sepcification'][i]][0],color_dictionary[self.digitalcontainer_array['Sepcification'][i]][1],color_dictionary[self.digitalcontainer_array['Sepcification'][i]][2])
-            self.PlotDataItem_final.setDownsampling(auto=True, method='subsample')
-            self.pw.addItem(self.PlotDataItem_final)
-            
-            self.textitem_final = pg.TextItem(text=str(self.digitalcontainer_array['Sepcification'][i]), color=(color_dictionary[self.digitalcontainer_array['Sepcification'][i]][0],color_dictionary[self.digitalcontainer_array['Sepcification'][i]][1],\
-                                                                                                                color_dictionary[self.digitalcontainer_array['Sepcification'][i]][2]), anchor=(1, 1))
-            self.textitem_final.setPos(0, -1*i)
-            self.pw.addItem(self.textitem_final)
-            i += 1
-        '''
-        plt.figure()
-        for i in range(analogloopnum):
-            if self.analogcontainer_array['Sepcification'][i] != 'galvosx'+'avgnum_'+str(int(self.GalvoAvgNumTextbox.value())): #skip the galvoX, as it is too intense
-                plt.plot(xlabelhere_all, self.analogcontainer_array['Waveform'][i])
-        for i in range(digitalloopnum):
-            plt.plot(xlabelhere_all, self.digitalcontainer_array['Waveform'][i])
-        plt.text(0.1, 1.1, 'Time lasted:'+str(xlabelhere_all[-1])+'s', fontsize=12)
-        plt.show()
-        '''
-        # Saving configed waveforms
-        if self.textboxsavingwaveforms.isChecked():
-            #temp_save_wave = np.empty((len(self.analogcontainer_array['Sepcification'])+len(self.digitalcontainer_array['Sepcification']), 1), dtype=np.object)
+                self.digital_array[line_num] = np.array([(self.waveform_data_dict[waveform_key], waveform_key)], dtype = dataType_digital)
+
+        #-----------------Saving configed waveforms---------------------------
+        if self.checkbox_saveWaveforms.isChecked():
+
             ciao=[] # Variable name 'ciao' was defined by Nicolo Ceffa.
 
-            for i in range(len(self.analogcontainer_array['Sepcification'])):
-
-                ciao.append(self.analogcontainer_array[i])
-                #temp_save_wave[i]=self.analogcontainer_array[i]
+            for i in range(len(self.analog_array['Sepcification'])):
+                ciao.append(self.analog_array[i])
             
-            for i in range(len(self.digitalcontainer_array['Sepcification'])):
-                #temp_save_wave[i+len(self.analogcontainer_array['Sepcification'])]=self.digitalcontainer_array[i]
-                ciao.append(self.digitalcontainer_array[i])
+            for i in range(len(self.digital_array['Sepcification'])):
+                ciao.append(self.digital_array[i])
 
-            #print(temp_save_wave)
-            
-            #np.append(temp_save_wave, self.analogcontainer_array, axis = 0)
-            #np.append(temp_save_wave, self.digitalcontainer_array, axis = 0)
-            #print(temp_save_wave)
             np.save(os.path.join(self.savedirectory, datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'_'+self.saving_prefix+'_'+'Wavefroms_sr_'+ str(int(self.SamplingRateTextbox.value()))), ciao)
+            
+            self.save_plot_figure()
         
         self.readinchan = []
         
@@ -2100,9 +1209,9 @@ class WaveformGenerator(QWidget):
         if self.ReadChanIpTextbox.isChecked():
             self.readinchan.append('Ip')       
         
-        print(self.readinchan)
+        print("Recording channels: {}".format(self.readinchan))
         
-        self.GeneratedWaveformPackage = (int(self.SamplingRateTextbox.value()), self.analogcontainer_array, self.digitalcontainer_array, self.readinchan)
+        self.GeneratedWaveformPackage = (int(self.SamplingRateTextbox.value()), self.analog_array, self.digital_array, self.readinchan)
         self.WaveformPackage.emit(self.GeneratedWaveformPackage)
         
         try:
@@ -2110,11 +1219,21 @@ class WaveformGenerator(QWidget):
             self.GalvoScanInfor.emit(self.GalvoScanInforPackage)
         except:
             self.GalvoScanInfor.emit('NoGalvo') # Emit a string
-        #execute(int(self.SamplingRateTextbox.currentText()), self.analogcontainer_array, self.digitalcontainer_array, self.readinchan)
         
         self.button_execute.setEnabled(True)
+
+        return self.analog_array, self.digital_array, self.readinchan
+    
+    def save_plot_figure(self):
+        # create an exporter instance, as an argument give it
+        # the item you wish to export
+        exporter = pg.exporters.ImageExporter(self.pw.getPlotItem())
         
-        return self.analogcontainer_array, self.digitalcontainer_array, self.readinchan
+        # set export parameters if needed
+        exporter.parameters()['width'] = 1000   # (note this also affects height parameter)
+        
+        # save to file
+        exporter.export(os.path.join(self.savedirectory, datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'_'+self.saving_prefix+'_'+'Wavefroms_sr_'+ str(int(self.SamplingRateTextbox.value()))) + '.png')     
     
     def execute_tread(self):
         run_DAQ_Waveforms_thread = threading.Thread(target=self.run_DAQ_Waveforms, daemon = False)
@@ -2123,7 +1242,7 @@ class WaveformGenerator(QWidget):
     def run_DAQ_Waveforms(self):
         self.adcollector = DAQmission()
         self.adcollector.runWaveforms(clock_source = self.clock_source.currentText(), sampling_rate = self.uiDaq_sample_rate,
-                                      analog_signals = self.analogcontainer_array, digital_signals = self.digitalcontainer_array, 
+                                      analog_signals = self.analog_array, digital_signals = self.digital_array, 
                                       readin_channels = self.readinchan)
         self.adcollector.save_as_binary(self.savedirectory)
         

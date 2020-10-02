@@ -944,7 +944,7 @@ class AnalysisWidgetUI(QWidget):
         self.single_waveform_fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, 'Single File', 'M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data',"Image files (*.npy)")
         self.textbox_single_waveform_filename.setText(self.single_waveform_fileName)
         
-        self.single_waveform = np.load(self.single_waveform_fileName, allow_pickle=True)
+        self.single_waveform = np.load(self.single_waveform_fileName, allow_pickle=True)[5:]
         
         try:
             plt.figure()

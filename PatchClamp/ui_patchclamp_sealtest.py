@@ -44,15 +44,18 @@ class SlidingWindow(pg.PlotWidget):
     """SlidingWindow gives access to the windowSize most recent values that were appended to it.
     Since the class inherits the pg.PlotWidget it can be added to the UI as a plot widget with a 
     sliding window. It is not yet verified that this will work. However it is worth a try ;)."""
-    def __init__(self, windowSize, *args, **kwargs):
+    def __init__(self, windowSize, title, unit, *args, **kwargs):
         super().__init__(*args, **kwargs) #Call the pg.PlotWidget so this class has the same behaviour as the PlotWidget object
         self.data = np.array([])
         self.n = 0
         self.windowSize = windowSize
+        self.setTitle(title = title)
+        self.setLabel('left', units=unit)
+        self.setLabel('bottom', text="20 ms")
         
         self.pen = QPen()
         self.pen.setColor(QColor(145,255,244))
-        self.pen.setWidth(.7)
+        # self.pen.setWidth(.7)
         self.pen.setStyle(Qt.DashLine)
         self.plotData = self.plot(pen=self.pen) #call plot, so it is not needed to calll this in the UI. However, you can still change the pen variables in the UI.
         
@@ -76,7 +79,7 @@ class SlidingWindow(pg.PlotWidget):
 class PatchclampSealTestUI(QWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.saving_dir = r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Patch clamp'
+        self.saving_dir = r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Patch clamp\seal_test'
         
         #------------------------Initiating patchclamp class-------------------
         self.sealTest = PatchclampSealTest()
@@ -266,12 +269,12 @@ class PatchclampSealTestUI(QWidget):
                                         #Derived from: https://stackoverflow.com/questions/17914960/pyqt-runtimeerror-wrapped-c-c-object-has-been-deleted
                                         # and http://enki-editor.org/2014/08/23/Pyqt_mem_mgmt.html
         
-        self.outVolPlotWidget = SlidingWindow(200) #Should be bigger than the readvalue
-        self.outCurPlotWidget = SlidingWindow(200) #Should be bigger than the readvalue
+        self.outVolPlotWidget = SlidingWindow(200, title = "Voltage", unit = "V") #Should be bigger than the readvalue
+        self.outCurPlotWidget = SlidingWindow(200, title = "Current", unit = "A") #Should be bigger than the readvalue
         
-        self.plotLayout.addWidget(QLabel('Voltage (mV):'), 0, 0)
+        # self.plotLayout.addWidget(QLabel('Voltage (mV):'), 0, 0)
         self.plotLayout.addWidget(self.outVolPlotWidget, 1, 0)
-        self.plotLayout.addWidget(QLabel('Current (pA):'), 0, 1)
+        # self.plotLayout.addWidget(QLabel('Current (pA):'), 0, 1)
         self.plotLayout.addWidget(self.outCurPlotWidget, 1, 1)
         
         valueContainer = QGroupBox("Resistance/Capacitance")
@@ -479,6 +482,8 @@ class PatchclampSealTestUI(QWidget):
             self.capacitanceLabel.setText("Capacitance:  %s" % 'NaN')
             self.ratioLabel.setText("Ratio:  %s" % 'NaN')
         
+        self.patch_parameters = "R_{}_C_{}".format(round(membraneResistance, 3), round(capacitance, 3))
+        
     def stopMeasurement(self):
         """Stop the seal test."""   
         self.stopButton.setEnabled(False)
@@ -550,13 +555,13 @@ class PatchclampSealTestUI(QWidget):
     def savePatchfigure(self):
         # create an exporter instance, as an argument give it
         # the item you wish to export
-        exporter = pg.exporters.ImageExporter(self.outCurPlotWidget.getPlotItem)
+        exporter = pg.exporters.ImageExporter(self.outCurPlotWidget.getPlotItem())
         
         # set export parameters if needed
-        exporter.parameters()['width'] = 100   # (note this also affects height parameter)
+        exporter.parameters()['width'] = 500   # (note this also affects height parameter)
         
         # save to file
-        exporter.export(self.saving_dir + '\R{}_C{}_sealtest.png'.format(int(self.estimated_size_resistance), int(self.estimated_size_capacitance)))        
+        exporter.export(self.saving_dir + "//" + self.patch_parameters + '_sealtest.png')        
 
 if __name__ == "__main__":
     def run_app():

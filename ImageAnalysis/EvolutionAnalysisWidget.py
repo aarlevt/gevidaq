@@ -249,7 +249,7 @@ class MainGUI(QWidget):
         LoadSettingLayout.addWidget(QLabel("Weight:"), 2, 2)
         
         self.Y_axisBox = QComboBox()
-        self.Y_axisBox.addItems(['Contour_soma_ratio_Lib'])
+        self.Y_axisBox.addItems(['Mean_intensity_in_contour_Lib', 'Contour_soma_ratio_Lib'])
         LoadSettingLayout.addWidget(self.Y_axisBox, 3, 1)
         LoadSettingLayout.addWidget(QLabel('Y axis: '), 3, 0)
         
