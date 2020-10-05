@@ -43,7 +43,7 @@ class LudlStage:
                     except:
     
                         failnumber += 1                    
-                        print('filter move failed, failnumber: {}'.format(failnumber))
+                        print('Stage move failed, failnumber: {}'.format(failnumber))
                         time.sleep(0.2)
                 else:
                     print('Fail for 8 times, give up - -')
