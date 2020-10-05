@@ -784,8 +784,13 @@ class WaveformGenerator(QWidget):
             self.waveform_data_dict[channel_keyword] = self.generate_digital(channel_keyword)
         else:
             self.waveform_data_dict[channel_keyword] = self.generate_galvotrigger()
-            
-        self.generate_graphy(channel_keyword, self.waveform_data_dict[channel_keyword])
+        
+        if channel_keyword == "cameratrigger":
+            # For camera triggers, set to zeros so that it does not block canvas.
+            rectified_waveform = np.zeros(len(self.waveform_data_dict[channel_keyword]))
+            self.generate_graphy(channel_keyword, rectified_waveform)
+        else:
+            self.generate_graphy(channel_keyword, self.waveform_data_dict[channel_keyword])
 
     def del_waveform_digital(self):    
         
@@ -1136,7 +1141,10 @@ class WaveformGenerator(QWidget):
         #-----------------Find the reference waveform length.------------------
         ReferenceWaveform_menu_text = self.ReferenceWaveform_menu.selectedItems()[0].text()
         
-        reference_wave = self.waveform_data_dict[ReferenceWaveform_menu_text]
+        try:
+            reference_wave = self.waveform_data_dict[ReferenceWaveform_menu_text]
+        except KeyError:
+            QMessageBox.warning(self,'Oops','Please select the right reference waveform!',QMessageBox.Ok)
         
         if ReferenceWaveform_menu_text == 'galvos' or ReferenceWaveform_menu_text == 'galvos_contour': # in case of using galvos as reference wave
             self.reference_length = len(reference_wave[0, :])
