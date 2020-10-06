@@ -249,7 +249,7 @@ class MainGUI(QWidget):
         LoadSettingLayout.addWidget(QLabel("Weight:"), 2, 2)
         
         self.Y_axisBox = QComboBox()
-        self.Y_axisBox.addItems(['Mean_intensity_in_contour_Lib', 'Contour_soma_ratio_Lib'])
+        self.Y_axisBox.addItems(['Contour_soma_ratio_Lib', 'Mean_intensity_in_contour_Lib'])
         LoadSettingLayout.addWidget(self.Y_axisBox, 3, 1)
         LoadSettingLayout.addWidget(QLabel('Y axis: '), 3, 0)
         
@@ -382,8 +382,11 @@ class MainGUI(QWidget):
         
         cell_Data_1 = self.ProcessML.FluorescenceAnalysis(tag_folder, tag_round)
         cell_Data_2 = self.ProcessML.FluorescenceAnalysis(lib_folder, lib_round)
+        
         Cell_DataFrame_Merged = self.ProcessML.MergeDataFrames(cell_Data_1, cell_Data_2, method = 'TagLib')
+        
         DataFrames_filtered = self.ProcessML.FilterDataFrames(Cell_DataFrame_Merged, Mean_intensity_in_contour_thres, Contour_soma_ratio_thres)
+        
         self.DataFrame_sorted = self.ProcessML.Sorting_onTwoaxes(DataFrames_filtered, axis_1 = self.X_axisBox.currentText(), axis_2 = self.Y_axisBox.currentText(), 
                                                                  weight_1 = self.WeightBoxSelectionFactor_1.value(), weight_2 = self.WeightBoxSelectionFactor_2.value())
         

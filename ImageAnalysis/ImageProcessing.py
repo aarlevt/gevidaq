@@ -1263,6 +1263,10 @@ class ProcessImage():
                 # after here intensityimage_intensity is changed from contour labeled with number 5 to binary image.
                 cell_contour_mask_dilated = ProcessImage.inward_mask_dilation(cell_contour_mask, CellMask_roi, dilation_parameter = 11)   
                 
+                # plt.figure()
+                # plt.imshow(RawImg_roi * cell_contour_mask_dilated)
+                # plt.show()
+
                 #-------------Calculate intensity based on masks---------------
                 cell_contour_meanIntensity = np.mean(RawImg_roi[np.where(cell_contour_mask_dilated == 1)]) # Mean pixel value of cell membrane.
                 cell_area_meanIntensity = np.mean(RawImg_roi[np.where(CellMask_roi == 1)]) # Mean pixel value of whole cell area.

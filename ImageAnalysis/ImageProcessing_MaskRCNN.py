@@ -318,6 +318,9 @@ class ProcessImageML():
                 maxr_Data_1 = int(bounding_box_str_Data_1[bounding_box_str_Data_1.index('maxr')+4:bounding_box_str_Data_1.index('_minc')])        
                 minc_Data_1 = int(bounding_box_str_Data_1[bounding_box_str_Data_1.index('minc')+4:bounding_box_str_Data_1.index('_maxc')])
                 maxc_Data_1 = int(bounding_box_str_Data_1[bounding_box_str_Data_1.index('maxc')+4:len(bounding_box_str_Data_1)])
+                
+                Area_cell_1 = (maxr_Data_1 - minr_Data_1) * (maxc_Data_1 - minc_Data_1)
+                
                 intersection_Area_percentage_list = []
                 index_list_Data_2 = []
                 # Iterate through DataFrame 2 calculating intersection area
@@ -333,6 +336,8 @@ class ProcessImageML():
                         minc_Data_2 = int(bounding_box_str_Data_2[bounding_box_str_Data_2.index('minc')+4:bounding_box_str_Data_2.index('_maxc')])
                         maxc_Data_2 = int(bounding_box_str_Data_2[bounding_box_str_Data_2.index('maxc')+4:len(bounding_box_str_Data_2)])                
                         
+                        Area_cell_2 = (maxr_Data_2 - minr_Data_2) * (maxc_Data_2 - minc_Data_2)
+                        
                         # Overlapping row
                         if minr_Data_2 < maxr_Data_1 and maxr_Data_2 > minr_Data_1:
                             intersection_rowNumber = min((abs(minr_Data_2 - maxr_Data_1), maxr_Data_1 - minr_Data_1)) - max(maxr_Data_1 - maxr_Data_2, 0)
@@ -345,7 +350,9 @@ class ProcessImageML():
                             intersection_colNumber = 0                
             
                         intersection_Area = intersection_rowNumber * intersection_colNumber
-                        intersection_Area_percentage = intersection_Area / ((maxr_Data_1 - minr_Data_1) * (maxc_Data_1 - minc_Data_1))
+                        # Calculate the percentage based on smaller number of intersection over the two.
+                        intersection_Area_percentage = min([(intersection_Area / Area_cell_1), (intersection_Area / Area_cell_2)])
+
                         intersection_Area_percentage_list.append(intersection_Area_percentage)
                         index_list_Data_2.append(index_2)
                 
