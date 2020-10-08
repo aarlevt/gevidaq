@@ -126,28 +126,38 @@ class DMDWidget(QWidget):
         settings_container_layout = QGridLayout()
         self.settings_container.setLayout(settings_container_layout)
         
-        settings_container_layout.addWidget(QLabel('ALP_PROJ_STEP (trigger)'), 0, 0)
+        settings_container_layout.addWidget(QLabel('ALP_PROJ_MODE'), 0, 0)
+        self.ALP_PROJ_MODE_Combox = QComboBox()
+        self.ALP_PROJ_MODE_Combox.addItems(['ALP_MASTER', 'ALP_SLAVE'])
+        self.ALP_PROJ_MODE_Combox.setToolTip("This ControlType is used to select from an internal or external trigger source.")
+        settings_container_layout.addWidget(self.ALP_PROJ_MODE_Combox, 0, 1)
+        
+        settings_container_layout.addWidget(QLabel('ALP_PROJ_STEP'), 2, 0)
         self.ALP_PROJ_STEP_Combox = QComboBox()
         self.ALP_PROJ_STEP_Combox.addItems(['ALP_DEFAULT', 'ALP_EDGE_RISING'])
-        settings_container_layout.addWidget(self.ALP_PROJ_STEP_Combox, 0, 1)
+        self.ALP_PROJ_STEP_Combox.setToolTip("Set frame switching trigger method in the sequence.(Only in ALP_MASTER mode)")
+        settings_container_layout.addWidget(self.ALP_PROJ_STEP_Combox, 2, 1)
         
-        settings_container_layout.addWidget(QLabel('ALP_BIN_MODE'), 1, 0)
+        settings_container_layout.addWidget(QLabel('ALP_BIN_MODE'), 3, 0)
         self.ALP_ALP_BIN_MODE_Combox = QComboBox()
         self.ALP_ALP_BIN_MODE_Combox.addItems(['ALP_BIN_NORMAL', 'ALP_BIN_UNINTERRUPTED'])
-        self.ALP_ALP_BIN_MODE_Combox.currentIndexChanged.connect(self.set_repeat_from_BIN_MODE)
-        settings_container_layout.addWidget(self.ALP_ALP_BIN_MODE_Combox, 1, 1)
+        self.ALP_ALP_BIN_MODE_Combox.setToolTip("Binary mode: select from ALP_BIN_NORMAL and ALP_BIN_UNINTERRUPTED (No dark phase between frames)")
+        # self.ALP_ALP_BIN_MODE_Combox.currentIndexChanged.connect(self.set_repeat_from_BIN_MODE)
+        settings_container_layout.addWidget(self.ALP_ALP_BIN_MODE_Combox, 3, 1)
         
         self.frame_rate_textbox = QLineEdit()
         self.frame_rate_textbox.setValidator(QtGui.QIntValidator())
         self.frame_rate_textbox.setText('1000000') # Default 33334
+        self.frame_rate_textbox.setToolTip
+        ("Display time of a single image of the sequence in microseconds. PictureTime is set to minimize the dark time according illuminationTime.")
         
         self.repeat_imgseq_button = QCheckBox()
         self.repeat_imgseq_button.setChecked(True)
         
-        settings_container_layout.addWidget(QLabel(u"Frame duration (µs):"), 2, 0)
-        settings_container_layout.addWidget(self.frame_rate_textbox, 2, 1)
-        settings_container_layout.addWidget(QLabel('Repeat sequence:'), 3, 0)
-        settings_container_layout.addWidget(self.repeat_imgseq_button, 3, 1)
+        settings_container_layout.addWidget(QLabel(u"Illumination time(µs):"), 4, 0)
+        settings_container_layout.addWidget(self.frame_rate_textbox, 4, 1)
+        settings_container_layout.addWidget(QLabel('Repeat sequence:'), 5, 0)
+        settings_container_layout.addWidget(self.repeat_imgseq_button, 5, 1)
         
         box_layout.addWidget(self.connect_button, 0, 0)
         box_layout.addWidget(self.register_button, 0, 1)
@@ -351,7 +361,19 @@ class DMDWidget(QWidget):
         ALP_DEFAULT step forward after each displayed DMD frame. (int = 0)
         ALP_LEVEL_HIGH | LOW step forward if and only if the trigger input is high / low
         ALP_EDGE_RISING | FALLING frame transition depends on a trigger edge. (int = 2009)
+        
+        A transition to the next sequence can take place without any gaps, which uses AlpProjStartCont.
         """
+        # Set ALP_PROJ_MODE to ALP_MASTER
+        ALP_PROJ_MODE = 2300   #	Select from ALP_MASTER and ALP_SLAVE mode */
+        ALP_MASTER =    2301
+        ALP_SLAVE =     2302
+        
+        if self.ALP_PROJ_MODE_Combox.currentText() == "ALP_MASTER":
+            self.DMD_actuator.DMD.ProjControl(controlType = ALP_PROJ_MODE, value = ALP_MASTER)
+        elif self.ALP_PROJ_MODE_Combox.currentText() == "ALP_SLAVE":
+            self.DMD_actuator.DMD.ProjControl(controlType = ALP_PROJ_MODE, value = ALP_SLAVE)
+        
         repeat = self.repeat_imgseq_button.isChecked()
         frame_time = int(self.frame_rate_textbox.text())
         self.DMD_actuator.set_repeat(repeat)
@@ -359,12 +381,14 @@ class DMDWidget(QWidget):
         print(f"DMD illumination time is set to {frame_time} μs.")
         
         # Set the clocking of DMD, ALP_DEFAULT = internal clock and ALP_EDGE_RISING = external clock.
+        ALP_PROJ_STEP =	2329
+        
         if self.ALP_PROJ_STEP_Combox.currentText() == "ALP_DEFAULT":
-            self.DMD_actuator.DMD.ProjControl(controlType = 2329, value = 0)
-            print('set to ALP_DEFAULT')
+            self.DMD_actuator.DMD.ProjControl(controlType = ALP_PROJ_STEP, value = 0)
+            print('ALP_PROJ_STEP set to ALP_DEFAULT')
         elif self.ALP_PROJ_STEP_Combox.currentText() == "ALP_EDGE_RISING":
-            self.DMD_actuator.DMD.ProjControl(controlType = 2329, value = 2009)
-            print('set to ALP_EDGE_RISING')
+            self.DMD_actuator.DMD.ProjControl(controlType = ALP_PROJ_STEP, value = 2009)
+            print('ALP_PROJ_STEP set to ALP_EDGE_RISING')
         
         # Set the binary mode of DMD.
         ALP_BIN_MODE =			2104	#	Binary mode: select from ALP_BIN_NORMAL and ALP_BIN_UNINTERRUPTED (AlpSeqControl) 
@@ -378,22 +402,8 @@ class DMDWidget(QWidget):
         elif self.ALP_ALP_BIN_MODE_Combox.currentText() == "ALP_BIN_UNINTERRUPTED":
             self.DMD_actuator.DMD.SeqControl(controlType = ALP_BIN_MODE, value = ALP_BIN_UNINTERRUPTED)
             print('set to ALP_BIN_UNINTERRUPTED, no frame switching.')
-       
-        # Set ALP_PROJ_MODE to ALP_MASTER
-        self.DMD_actuator.DMD.ProjControl(controlType = 2300, value = 2301)
-    
-    def set_repeat_from_BIN_MODE(self):
-        """
-        Set the repeat of projection according to DMD binary mode, as the repeat
-        should be false in ALP_BIN_UNINTERRUPTED mode in which one still image
-        is displayed without darrk phase.
-        """
-        if self.ALP_ALP_BIN_MODE_Combox.currentText() == "ALP_BIN_UNINTERRUPTED":
-            self.repeat_imgseq_button.setChecked(False)
-            self.repeat_imgseq_button.setEnabled(False)
-        elif self.ALP_ALP_BIN_MODE_Combox.currentText() == "ALP_BIN_NORMAL":
-            self.repeat_imgseq_button.setChecked(True)
-            self.repeat_imgseq_button.setEnabled(True)
+      
+
 
     def clear(self):
         self.DMD_actuator.free_memory()

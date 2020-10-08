@@ -93,6 +93,8 @@ class DMDActuator:
         ILLUMINATE_TIME = self.DMD.SeqInquire(inquireType = ALP_ILLUMINATE_TIME)
         BITNUM = self.DMD.SeqInquire(inquireType = ALP_BITNUM)
         BIN_MODE = self.DMD.SeqInquire(inquireType = ALP_BIN_MODE)
+        OFF_TIME = self.DMD.SeqInquire(inquireType = ALP_OFF_TIME)
+        # TRIGGER_TYPE = self.DMD.ProjInquire(inquireType = ALP_PROJ_STEP)
         # PROJ_STEP = self.DMD.ProjInquire(inquireType = ALP_PROJ_MODE)
         # Exception: Error sending request. One of the parameters is invalid.
         
@@ -104,6 +106,11 @@ class DMDActuator:
             print("ALP_BIN_MODE: Normal.")
         elif BIN_MODE == 2016:
             print("ALP_BIN_MODE: No switching.")
+        print("ALP_OFF_TIME: {} μs (total inactive projection time)".format(OFF_TIME))
+        # if TRIGGER_TYPE == 2009:
+        #     print("TRIGGER_TYPE: ALP_EDGE_RISING")
+        # else:
+        #     print("TRIGGER_TYPE: {}".format(TRIGGER_TYPE))
         print("------------------------------------")
         # print("ALP_PROJ_STEP: {} ".format(PROJ_STEP))        
         

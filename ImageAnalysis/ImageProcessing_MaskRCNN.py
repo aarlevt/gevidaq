@@ -192,7 +192,7 @@ class ProcessImageML():
     # ================================================================================================================
     """
 
-    def FluorescenceAnalysis(self, folder, round_num):
+    def FluorescenceAnalysis(self, folder, round_num, save_mask = True):
         """
         # =============================================================================
         # Given the folder and round number, return a dictionary for the round
@@ -212,6 +212,8 @@ class ProcessImageML():
             The directory to folder where the screening data is stored.
         round_num : int.
             The target round number of analysis.
+        save_mask: bool.
+            Whether to save segmentation masks.
             
         Returns
         -------
@@ -259,17 +261,20 @@ class ProcessImageML():
                     results        = self.Detector.detect([image])
                     
                     MLresults      = results[0]
-                    fig, ax = plt.subplots()
-                    # Set class_names = [None,None,None,None] to mute class name display.
-                    visualize.display_instances(image, MLresults['rois'], MLresults['masks'], MLresults['class_ids'],
-                                                    class_names = [None,None,None,None], ax=ax,
-                                                    centre_coors = MLresults['Centre_coor'], Centre_coor_radius = 2, 
-                                                    WhiteSpace = (0, 0))#MLresults['class_ids'],MLresults['scores'], 
-                    # ax.imshow(fig)
-                    fig.tight_layout()
-                    # Save the detection image
-                    fig_name = os.path.join(folder, 'MLimages_{}\{}.tif'.format(round_num, ImgNameInfor))
-                    plt.savefig(fname = fig_name, dpi=200, pad_inches=0.0, bbox_inches='tight')
+                    
+                    if save_mask == True:
+                        fig, ax = plt.subplots()
+                        # Set class_names = [None,None,None,None] to mute class name display.
+                        visualize.display_instances(image, MLresults['rois'], MLresults['masks'], MLresults['class_ids'],
+                                                        class_names = [None,None,None,None], ax=ax,
+                                                        centre_coors = MLresults['Centre_coor'], Centre_coor_radius = 2, 
+                                                        WhiteSpace = (0, 0))#MLresults['class_ids'],MLresults['scores'], 
+                        # ax.imshow(fig)
+                        fig.tight_layout()
+                        # Save the detection image
+                        fig_name = os.path.join(folder, 'MLimages_{}\{}.tif'.format(round_num, ImgNameInfor))
+                        plt.savefig(fname = fig_name, dpi=200, pad_inches=0.0, bbox_inches='tight')
+                    
                     # segmentationImg = Image.fromarray(fig) #generate an image object
                     # segmentationImg.save(os.path.join(folder, 'MLimages_{}\{}.tif'.format(round_num, ImgNameInfor)))#save as tif
                     
@@ -308,6 +313,8 @@ class ProcessImageML():
             cell_Data_1 = cell_Data_1.add_suffix('_Tag')
             cell_Data_2 = cell_Data_2.add_suffix('_Lib')
             cell_merged_num = 0
+            
+            print("Start linking cells...")
             # Assume that cell_Data_1 is the tag protein dataframe, for each of the cell bounding box, find the one with the most intersection from library dataframe.
             for index_Data_1, row_Data_1 in cell_Data_1.iterrows():
                 # For each flat cell in round
@@ -378,6 +385,7 @@ class ProcessImageML():
                         cell_merged_num += 1
               
             Cell_DataFrame_Merged = Cell_DataFrame_Merged.T
+            print("Cell_DataFrame_Merged.")
             
         return Cell_DataFrame_Merged
     

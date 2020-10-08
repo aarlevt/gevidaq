@@ -390,7 +390,9 @@ class MainGUI(QWidget):
         self.DataFrame_sorted = self.ProcessML.Sorting_onTwoaxes(DataFrames_filtered, axis_1 = self.X_axisBox.currentText(), axis_2 = self.Y_axisBox.currentText(), 
                                                                  weight_1 = self.WeightBoxSelectionFactor_1.value(), weight_2 = self.WeightBoxSelectionFactor_2.value())
         
+        print("Save CellsDataframe to Excel...")
         self.SaveCellsDataframetoExcel()
+        
         self.UpdateSelectionScatter()
     #%%
     def UpdateSelectionScatter(self):

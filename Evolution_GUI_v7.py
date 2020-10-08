@@ -249,7 +249,7 @@ class Mainbody(QWidget):
         self.ScanStepsNumTextbox.setValue(10)
         self.ScanStepsNumTextbox.setSingleStep(1)
         ScanSettingLayout.addWidget(self.ScanStepsNumTextbox, 0, 1)
-        ScanSettingLayout.addWidget(QLabel("Scanning step number:"), 0, 0)  
+        ScanSettingLayout.addWidget(QLabel("Stage scanning step number:"), 0, 0)  
 
         self.ScanstepTextbox = QSpinBox(self)
         self.ScanstepTextbox.setMaximum(20000)

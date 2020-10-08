@@ -126,17 +126,20 @@ class CoordinatesWidgetUI(QWidget):
         self.loadMaskFromFileButton.clicked.connect(self.load_mask_from_file)
         
         self.addRoiButton = QPushButton("Add ROI")
-        self.createMaskButton = QPushButton("Create mask")
+        self.createMaskButton = QPushButton("Add mask")
+        self.deleteMaskButton = QPushButton("Delete mask")
         self.removeSelectionButton = cleanButton()
         self.removeSelectionButton.setFixedHeight(25)
         self.removeSelectionButton.setToolTip("Remove rois and output signals")
         self.addRoiButton.clicked.connect(self.add_polygon_roi)
         
         self.createMaskButton.clicked.connect(self.create_mask)
+        self.deleteMaskButton.clicked.connect(self.delete_mask)
         self.removeSelectionButton.clicked.connect(self.remove_selection)
         
         self.maskGeneratorContainerLayout.addWidget(self.addRoiButton, 1, 0)
         self.maskGeneratorContainerLayout.addWidget(self.createMaskButton, 2, 0)
+        self.maskGeneratorContainerLayout.addWidget(self.deleteMaskButton, 2, 1)
         self.maskGeneratorContainerLayout.addWidget(self.removeSelectionButton, 1, 1)
         self.selectionOptionsContainer = roundQGroupBox()
         self.selectionOptionsContainer.setTitle('Options')
@@ -270,26 +273,42 @@ class CoordinatesWidgetUI(QWidget):
         return list_of_rois
         
     def create_mask(self):
+        """
+        Create untransformed binary mask, sent out the signal to DMD widget for
+        further transformation.
+
+        Returns
+        -------
+        None.
+
+        """
         flag_fill_contour = self.fillContourButton.isChecked()
         flag_invert_mode = self.invertMaskButton.isChecked()
         contour_thickness = self.thicknessSpinBox.value()
-        laser = self.transform_for_laser_menu.selectedItems()[0].text()
+        target_laser = self.transform_for_laser_menu.selectedItems()[0].text()
         
         # Get the list of rois from the current ROIitems in "Select" Drawwidget.
         list_of_rois = self.get_list_of_rois()
         
         # Signal to mask requesting widget.
-        self.current_mask_sig = [list_of_rois, flag_fill_contour, contour_thickness, flag_invert_mode, laser]
+        self.current_mask_sig = [list_of_rois, flag_fill_contour, contour_thickness, flag_invert_mode, target_laser]
         
+        #---- This is the roi list sent to DMD to generate final stack of masks.----
         self.sig_to_calling_widget.append(self.current_mask_sig)
         
         # Show the untransformed mask
-        self.mask = ProcessImage.CreateBinaryMaskFromRoiCoordinates(list_of_rois, \
+        self.current_mask = ProcessImage.CreateBinaryMaskFromRoiCoordinates(list_of_rois, \
                                                        fill_contour = flag_fill_contour, \
                                                        contour_thickness = contour_thickness, \
                                                        invert_mask = flag_invert_mode)
         
-        self.mask_view.setImage(self.mask)
+        self.mask_view.setImage(self.current_mask)
+        
+    def delete_mask(self):
+        """
+        Remove the last mask from the list.
+        """
+        del self.current_mask_sig[-1]
         
     def remove_selection(self):
         self.sig_to_calling_widget = []
@@ -320,8 +339,8 @@ class CoordinatesWidgetUI(QWidget):
         try:
             image = plt.imread(self.loadFileName)
             
-            self.mask = image
-            self.mask_view.setImage(self.mask)
+            self.current_mask = image
+            self.mask_view.setImage(self.current_mask)
         except:
             print('fail to load file.')
     

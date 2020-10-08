@@ -164,7 +164,7 @@ class Mainbody(QWidget):
         
         self.LEDButton = StylishQT.checkableButton(Icon_path = './Icons/LED.png')
         self.LEDButton.clicked.connect(self.LEDaction)
-        self.LEDButton.setToolTip("Trun on/off LED")
+        self.LEDButton.setToolTip("Turn on/off LED")
         
         self.shutter2PButton.setGraphicsEffect(QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2))
         self.LEDButton.setGraphicsEffect(QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2))

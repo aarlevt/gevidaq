@@ -237,8 +237,10 @@ class DAQmission(QThread): # For all-purpose Nidaq tasks, use "Dev1/ai22" as ref
         # need to send int number corresponding to the channel binary value, 
         # like write 8(2^3, 0001) to channel 4.
         # The same as (0b1 << n)
-        Digital_samples_to_write = np.array(Digital_samples_to_write, dtype = 'uint32')        
+        Digital_samples_to_write = np.array(Digital_samples_to_write, dtype = 'uint32')    
+
         for i in range(Digital_channel_number):
+            
             convernum = int(self.channel_LUT[digital_signals['Sepcification'][i]]
                             [self.channel_LUT[digital_signals['Sepcification'][i]].index('line')+
                              4:len(self.channel_LUT[digital_signals['Sepcification'][i]])])

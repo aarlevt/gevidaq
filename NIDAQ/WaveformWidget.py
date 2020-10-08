@@ -673,6 +673,7 @@ class WaveformGenerator(QWidget):
         
         self.pw_PlotItem = self.pw.getPlotItem()
         self.pw_PlotItem.addLegend()
+        self.pw_PlotItem.setDownsampling(auto = True, mode='mean')
         #------------------------------------------------------------------------------------------------------------------
         #----------------------------------------------------------Data win-------------------------------------------------
         #------------------------------------------------------------------------------------------------------------------  
@@ -791,7 +792,7 @@ class WaveformGenerator(QWidget):
             self.generate_graphy(channel_keyword, rectified_waveform)
         else:
             self.generate_graphy(channel_keyword, self.waveform_data_dict[channel_keyword])
-
+        
     def del_waveform_digital(self):    
         
         channel_keyword = self.Digital_channel_combox.currentText()
@@ -1122,11 +1123,9 @@ class WaveformGenerator(QWidget):
         current_PlotDataItem.setPen(self.color_dictionary[channel])
         
         self.pw_PlotItem.addItem(current_PlotDataItem)
-        self.pw_PlotItem.setDownsampling(auto = True, mode='mean')
         
         self.PlotDataItem_dict[channel] = current_PlotDataItem
         
-        print(self.waveform_data_dict.keys())
         
       #%%
 
@@ -1164,12 +1163,18 @@ class WaveformGenerator(QWidget):
             del self.waveform_data_dict['galvos_contour']   
             
         #---------------Get all waveforms the same length.---------------------
+        x_label = np.arange(self.reference_length)/self.uiDaq_sample_rate
         for waveform_key in self.waveform_data_dict:
+            # Cut or append 0 to the data for non-reference waveforms.
             if len(self.waveform_data_dict[waveform_key]) >= self.reference_length:
                 self.waveform_data_dict[waveform_key] = self.waveform_data_dict[waveform_key][0:self.reference_length]
+                
             else:
                 append_waveforms = np.zeros(self.reference_length-len(self.waveform_data_dict[waveform_key]))
                 self.waveform_data_dict[waveform_key] = np.append(self.waveform_data_dict[waveform_key], append_waveforms)
+                
+            # Reset the PlotDataItem
+            self.PlotDataItem_dict[waveform_key].setData(x_label, self.waveform_data_dict[waveform_key], name = waveform_key)
                 
         # Structured array to contain 
         # https://stackoverflow.com/questions/39622533/numpy-array-as-datatype-in-a-structured-array
@@ -1185,14 +1190,20 @@ class WaveformGenerator(QWidget):
         self.analog_array = np.zeros(analog_line_num, dtype = dataType_analog)
         self.digital_array = np.zeros(digital_line_num, dtype = dataType_digital)
         
-        line_num = 0
+        digital_line_num = 0
+        analog_line_num = 0
         for waveform_key in self.waveform_data_dict:
+            
+            if waveform_key in self.AnalogChannelList:
 
-            if self.waveform_data_dict[waveform_key].dtype == "float":
-                self.analog_array[line_num] = np.array([(self.waveform_data_dict[waveform_key], waveform_key)], dtype = dataType_analog)
-            else:
-                self.digital_array[line_num] = np.array([(self.waveform_data_dict[waveform_key], waveform_key)], dtype = dataType_digital)
+                self.analog_array[analog_line_num] = np.array([(self.waveform_data_dict[waveform_key], waveform_key)], dtype = dataType_analog)
+                analog_line_num += 1
+                
+            elif waveform_key in self.DigitalChannelList:
 
+                self.digital_array[digital_line_num] = np.array([(self.waveform_data_dict[waveform_key], waveform_key)], dtype = dataType_digital)
+                digital_line_num += 1
+            
         #-----------------Saving configed waveforms---------------------------
         if self.checkbox_saveWaveforms.isChecked():
 
