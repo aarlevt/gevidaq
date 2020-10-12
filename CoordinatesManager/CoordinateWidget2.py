@@ -26,7 +26,7 @@ from NIDAQ.DAQoperator import DAQmission
 from NIDAQ.wavegenerator import waveRecPic
 
 from ImageAnalysis.ImageProcessing import ProcessImage
-from HamamatsuCam.HamamatsuActuator import CamActuator
+from HamamatsuCam import HamamatsuUI
 from GalvoWidget.pmt_thread import pmtimagingTest_contour
 
 # UI
@@ -69,6 +69,8 @@ class CoordinatesWidgetUI(QWidget):
         self.main_application = parent
         self.init_gui()
         self.sig_to_calling_widget = []
+
+        # HamamatsuUI.CameraUI.signal_SnapImg.connect(self.receive_image_from_camera)
         
     def closeEvent(self, event):
         try:
@@ -168,7 +170,8 @@ class CoordinatesWidgetUI(QWidget):
         self.selectionOptionsContainer.setLayout(self.selectionOptionsLayout)
         
         self.snapFovButton = QPushButton('Image FOV')
-        self.snapFovButton.clicked.connect(self.snap_fov)
+        self.snapFovButton.setCheckable(True)
+        self.snapFovButton.setChecked(True)
         
         self.maskGeneratorContainerLayout.addWidget(self.snapFovButton, 0, 0, 1, 1)
         self.maskGeneratorContainerLayout.addWidget(self.loadMaskFromFileButton, 0, 1, 1, 1)
@@ -217,20 +220,14 @@ class CoordinatesWidgetUI(QWidget):
         self.GalvoWidget.save_transformation()
         
     def cast_camera_image(self):
+        """ Send out the image in the image view to ManualRegistration """
         image = self.selection_view.image
         if type(image) == np.ndarray:
             self.sig_cast_camera_image.emit(image)
         
-    def snap_fov(self):
-        self.DMDWidget.interupt_projection()
-        
-        self.DMDWidget.project_full_white()
-        
-        self.cam = CamActuator()
-        self.cam.initializeCamera()
-        image = self.cam.SnapImage(0.04)
-        self.cam.Exit()
-        self.selection_view.setImage(image)
+    def receive_image_from_camera(self, snap_from_camera):
+        """ Receive the emitted snap image singal from camera. """
+        self.selection_view.setImage(snap_from_camera)
         
     def cast_mask_coordinates(self, receiver):
         """
@@ -314,8 +311,6 @@ class CoordinatesWidgetUI(QWidget):
         self.sig_to_calling_widget = []
         self.selection_view.clear_rois()
     
-    def set_camera_image(self, sig):
-        self.selection_view.setImage(sig)
 
     def add_polygon_roi(self):
         view = self.selection_view

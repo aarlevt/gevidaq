@@ -57,6 +57,7 @@ class CameraUI(QMainWindow):
         self.ShowROIImgSwitch = False
         self.ROIselector_ispresented = False
         self.Live_sleeptime = 0.04 # default 25 camera live fps
+        self.default_folder = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data"
         #----------------------------------------------------------------------
         #----------------------------------GUI---------------------------------
         #----------------------------------------------------------------------
@@ -425,7 +426,22 @@ class CameraUI(QMainWindow):
         CamSpecContainer.setLayout(CamSpectLayout)
         CameraAcquisitionLayout.addWidget(CamSpecContainer, 0, 0)
         
+        #-----------------------Saving directory -----------------------------
+        dir_container = StylishQT.roundQGroupBox()
+        dir_container_layout = QGridLayout()
         
+        self.BrowseStreamFileButton = QPushButton()
+        self.BrowseStreamFileButton.setIcon(QIcon('./Icons/Browse.png')) 
+        self.BrowseStreamFileButton.clicked.connect(lambda: self.SetSavingDirectory())
+        dir_container_layout.addWidget(self.BrowseStreamFileButton, 0, 0)
+
+        self.CamSaving_directory_textbox = QLineEdit(self)
+        self.CamSaving_directory_textbox.setPlaceholderText('Saving directory')
+        dir_container_layout.addWidget(self.CamSaving_directory_textbox, 0, 1)
+        
+        dir_container.setLayout(dir_container_layout)
+        
+        CameraAcquisitionLayout.addWidget(dir_container, 1, 0)
         #----------------------------------------------------------------------
         self.AcquisitionROIstackedWidget =  QStackedWidget()
         
@@ -528,14 +544,6 @@ class CameraUI(QMainWindow):
         CamStreamActionLayout.addWidget(self.StreamMemMethodComBox, 2, 0)
         
         #----------------------------------------------------------------------
-        self.Streamdirectorytextbox = QLineEdit(self)
-        self.Streamdirectorytextbox.setPlaceholderText('Stream File')
-        CameraAcquisitionTab_2.layout.addWidget(self.Streamdirectorytextbox, 5, 0)
-        
-        self.BrowseStreamFileButton = QPushButton()
-        self.BrowseStreamFileButton.setIcon(QIcon('./Icons/Browse.png')) 
-        self.BrowseStreamFileButton.clicked.connect(lambda: self.SetStreamFileName())
-        CameraAcquisitionTab_2.layout.addWidget(self.BrowseStreamFileButton, 5, 1)
         
         ApplyStreamSettingButton = StylishQT.FancyPushButton(50, 22)
         ApplyStreamSettingButton.setText("Apply")
@@ -638,7 +646,7 @@ class CameraUI(QMainWindow):
         self.AcquisitionROIstackedWidget.addWidget(ShowROIWidgetContainer)
         #----------------------------------------------------------------------
         self.AcquisitionROIstackedWidget.setCurrentIndex(0)
-        CameraAcquisitionLayout.addWidget(self.AcquisitionROIstackedWidget, 1, 0)
+        CameraAcquisitionLayout.addWidget(self.AcquisitionROIstackedWidget, 2, 0)
         
         CameraAcquisitionContainer.setLayout(CameraAcquisitionLayout)
         MainWinCentralWidget.layout.addWidget(CameraAcquisitionContainer, 1, 0)
@@ -1224,13 +1232,8 @@ class CameraUI(QMainWindow):
         
     def SaveLiveImg(self):
 
-        files_types = "Tif (*.tif);;Pickle (*.pickle);;YAML (*.yml)"
-        options = QFileDialog.Options()
-        filename, _ = QFileDialog.getSaveFileName(
-                    self, 'Save as... File', 'InterFps_{}.tif'.format(int(self.internal_frame_rate)), filter=files_types,options=options)
-        if len(filename) > 3:
-            with skimtiff.TiffWriter(filename, append = False, imagej = False)as tif:
-                tif.save(self.Live_image, description=self.metaData, compress=0)
+        with skimtiff.TiffWriter(self.saving_path, append = False, imagej = False)as tif:
+            tif.save(self.Live_image, description=self.metaData, compress=0)
         
     def UpdateScreen(self, image):
         if self.Live_item_autolevel == True:
@@ -1290,6 +1293,8 @@ class CameraUI(QMainWindow):
             
             self.signal_SnapImg.emit(self.SnapImage)
             
+            self.Live_image = self.SnapImage
+            
         elif self.isStreaming == False and self.isLiving == True:
             
             self.hcam.stopAcquisition()
@@ -1299,7 +1304,10 @@ class CameraUI(QMainWindow):
             self.UpdateScreen(self.SnapImage)
             
             self.signal_SnapImg.emit(self.SnapImage)
-            
+        
+        # Reset the live switch button.
+        self.LiveButton.setChecked(False)
+        
     def ResetLiveImgView(self):
         """Closes the widget nicely, making sure to clear the graphics scene and release memory."""
         self.LiveWidget.close()
@@ -1331,19 +1339,6 @@ class CameraUI(QMainWindow):
         #                              STREAM functions
         # =============================================================================
         """           
-    def SetStreamFileName(self):
-
-        files_types = "Tif (*.tif);;Pickle (*.pickle);;YAML (*.yml)"
-        options = QFileDialog.Options()
-        self.Streamfilename, _ = QFileDialog.getSaveFileName(
-                    self, 'Save as... File', 'InternalFps_{}.tif'.format(int(self.internal_frame_rate)), filter=files_types,options=options)
-        
-#        self.Streamdirectorytextbox.setEnabled(True)
-        
-        if len(self.Streamfilename) > 35:
-            self.Streamdirectorytextbox.setText('...' + self.Streamfilename[len(self.Streamfilename)-35:len(self.Streamfilename)])
-        elif len(self.Streamfilename) > 1:
-            self.Streamdirectorytextbox.setText(self.Streamfilename)
             
     def UpdateBufferNumber(self):
         self.BufferNumber = self.EstFPS_spinbox.value() * self.StreamTotalTime_spinbox.value()
@@ -1354,10 +1349,10 @@ class CameraUI(QMainWindow):
         
         if self.CamStreamActionContainer.isEnabled():
             self.CamStreamActionContainer.setEnabled(False)
-            self.Streamdirectorytextbox.setEnabled(False)
+            self.CamSaving_directory_textbox.setEnabled(False)
         else:
             self.CamStreamActionContainer.setEnabled(True)
-            self.Streamdirectorytextbox.setEnabled(True)      
+            self.CamSaving_directory_textbox.setEnabled(True)      
             
         # Set the number of buffers get prepared.
         self.BufferNumber = self.StreamBufferTotalFrames_spinbox.value()
@@ -1460,7 +1455,7 @@ class CameraUI(QMainWindow):
         
         if saveFile == True:
             # Save the file.
-            with skimtiff.TiffWriter(self.Streamfilename, append = True, imagej = True)\
+            with skimtiff.TiffWriter(self.saving_path, append = True, imagej = True)\
             as tif:                
                 write_starttime = time.time()
                 for eachframe in range(self.imageCount): 
@@ -1479,6 +1474,18 @@ class CameraUI(QMainWindow):
         self.StreamStatusStackedWidget.setCurrentIndex(0)
         self.CamStreamIsFree.setText("Acquisition done. Frames acquired: {}.".format(self.imageCount))
         
+    def SetSavingDirectory(self):
+
+        files_types = "Tif (*.tif);;Pickle (*.pickle);;YAML (*.yml)"
+        options = QFileDialog.Options()
+        self.saving_path, _ = QFileDialog.getSaveFileName(
+                    self, 'Save as... File', directory = self.default_folder, filter=files_types,options=options)
+        
+        self.CamSaving_directory_textbox.setText(self.saving_path)
+        # if len(self.saving_path) > 35:
+        #     self.CamSaving_directory_textbox.setText('...' + self.saving_path[len(self.saving_path)-35:len(self.saving_path)])
+        # elif len(self.saving_path) > 1:
+        #     self.CamSaving_directory_textbox.setText(self.saving_path)
         
 if __name__ == "__main__":
     def run_app():

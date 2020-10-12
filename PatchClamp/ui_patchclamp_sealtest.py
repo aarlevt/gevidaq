@@ -17,6 +17,7 @@ import pyqtgraph.exporters
 
 import pyqtgraph as pg
 import time
+import os
 import sys
 sys.path.append('../')
 import numpy as np
@@ -561,7 +562,7 @@ class PatchclampSealTestUI(QWidget):
         exporter.parameters()['width'] = 500   # (note this also affects height parameter)
         
         # save to file
-        exporter.export(self.saving_dir + "//" + self.patch_parameters + '_sealtest.png')        
+        exporter.export(os.path.join(self.saving_dir, 'SealTest_' + self.patch_parameters + '.png'))       
 
 if __name__ == "__main__":
     def run_app():

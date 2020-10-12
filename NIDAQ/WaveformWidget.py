@@ -772,7 +772,17 @@ class WaveformGenerator(QWidget):
         self.pw_PlotItem.removeItem(self.PlotDataItem_dict[channel_keyword])
         
         del self.PlotDataItem_dict[channel_keyword]
-        del self.waveform_data_dict[channel_keyword]
+        
+        if "galvos" in channel_keyword:
+            # As galvos key is changed, need to delete with adapted key name.
+            galvo_key_to_delete = []
+            for keys in self.waveform_data_dict:
+                if "galvos" in keys:
+                    galvo_key_to_delete.append(keys)
+            for key in galvo_key_to_delete:
+                del self.waveform_data_dict[key]
+        else:
+            del self.waveform_data_dict[channel_keyword]
 
         
     #%%
@@ -1117,7 +1127,7 @@ class WaveformGenerator(QWidget):
         
         if waveform.dtype == "bool":
             waveform = waveform.astype(int)
-            
+        
         x_label = np.arange(len(waveform))/self.uiDaq_sample_rate    
         current_PlotDataItem = PlotDataItem(x_label, waveform, name = channel)        
         current_PlotDataItem.setPen(self.color_dictionary[channel])
@@ -1151,6 +1161,37 @@ class WaveformGenerator(QWidget):
             self.reference_length = len(reference_wave)
         print('reference_length: '+str(self.reference_length))
 
+        #---------------Get all waveforms the same length.---------------------
+        x_label = np.arange(self.reference_length)/self.uiDaq_sample_rate
+        for waveform_key in self.waveform_data_dict:
+            
+            if self.waveform_data_dict[waveform_key].ndim ==1:
+                # Cut or append 0 to the data for non-reference waveforms.
+                if len(self.waveform_data_dict[waveform_key]) >= self.reference_length:
+                    self.waveform_data_dict[waveform_key] = self.waveform_data_dict[waveform_key][0:self.reference_length]
+                    
+                else:
+                    append_waveforms = np.zeros(self.reference_length-len(self.waveform_data_dict[waveform_key]))
+                    self.waveform_data_dict[waveform_key] = np.append(self.waveform_data_dict[waveform_key], append_waveforms)
+                    
+                # Reset the PlotDataItem
+                self.PlotDataItem_dict[waveform_key].setData(x_label, self.waveform_data_dict[waveform_key], name = waveform_key)
+                
+            else: # In case of galvos which has dimention 2.
+
+                # Cut or append 0 to the data for non-reference waveforms.
+                if len(self.waveform_data_dict[waveform_key][0,:]) >= self.reference_length:
+                    self.waveform_data_dict[waveform_key][0,:] = self.waveform_data_dict[waveform_key][0,:][0:self.reference_length]
+                    self.waveform_data_dict[waveform_key][1,:] = self.waveform_data_dict[waveform_key][1,:][0:self.reference_length]
+                        
+                else:
+                    append_waveforms = np.zeros(self.reference_length-len(self.waveform_data_dict[waveform_key][0,:]))
+                    self.waveform_data_dict['galvos'] = \
+                    np.stack((np.append(self.waveform_data_dict[waveform_key][0,:], append_waveforms), np.append(self.waveform_data_dict[waveform_key][1,:], append_waveforms)))
+
+                    # Reset the PlotDataItem
+                    self.PlotDataItem_dict[waveform_key].setData(x_label, self.waveform_data_dict[waveform_key][1,:], name = waveform_key)                    
+        
         #------------------Set galvos sampele stack apart----------------------
         if 'galvos' in self.waveform_data_dict:
             self.waveform_data_dict['galvosx'+'avgnum_'+str(int(self.GalvoAvgNumTextbox.value()))] = self.waveform_data_dict['galvos'][0, :]
@@ -1160,22 +1201,8 @@ class WaveformGenerator(QWidget):
         if 'galvos_contour' in self.waveform_data_dict:
             self.waveform_data_dict['galvos_X'+'_contour'] = self.waveform_data_dict['galvos_contour'][0, :]
             self.waveform_data_dict['galvos_Y'+'_contour'] = self.waveform_data_dict['galvos_contour'][1, :]
-            del self.waveform_data_dict['galvos_contour']   
+            del self.waveform_data_dict['galvos_contour'] 
             
-        #---------------Get all waveforms the same length.---------------------
-        x_label = np.arange(self.reference_length)/self.uiDaq_sample_rate
-        for waveform_key in self.waveform_data_dict:
-            # Cut or append 0 to the data for non-reference waveforms.
-            if len(self.waveform_data_dict[waveform_key]) >= self.reference_length:
-                self.waveform_data_dict[waveform_key] = self.waveform_data_dict[waveform_key][0:self.reference_length]
-                
-            else:
-                append_waveforms = np.zeros(self.reference_length-len(self.waveform_data_dict[waveform_key]))
-                self.waveform_data_dict[waveform_key] = np.append(self.waveform_data_dict[waveform_key], append_waveforms)
-                
-            # Reset the PlotDataItem
-            self.PlotDataItem_dict[waveform_key].setData(x_label, self.waveform_data_dict[waveform_key], name = waveform_key)
-                
         # Structured array to contain 
         # https://stackoverflow.com/questions/39622533/numpy-array-as-datatype-in-a-structured-array
         dataType_analog = np.dtype([('Waveform', float, (self.reference_length,)), ('Sepcification', 'U20')])
@@ -1203,7 +1230,7 @@ class WaveformGenerator(QWidget):
 
                 self.digital_array[digital_line_num] = np.array([(self.waveform_data_dict[waveform_key], waveform_key)], dtype = dataType_digital)
                 digital_line_num += 1
-            
+        print("Writing channels: {}".format(self.waveform_data_dict.keys()))
         #-----------------Saving configed waveforms---------------------------
         if self.checkbox_saveWaveforms.isChecked():
 
@@ -1266,6 +1293,7 @@ class WaveformGenerator(QWidget):
         self.adcollector.save_as_binary(self.savedirectory)
         
         self.button_execute.setEnabled(False)
+        
     def load_waveforms(self, WaveformTuple):
         self.WaveformSamplingRate = WaveformTuple[0]
         self.WaveformAnalogContainer = WaveformTuple[1]

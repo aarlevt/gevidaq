@@ -23,7 +23,6 @@ Created on Sat Aug 10 20:54:40 2019
 from __future__ import division
 import os
 import sys
-sys.path.append('../')
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt, pyqtSignal, QRectF, QPoint, QRect, QObject, QSize
 from PyQt5.QtGui import QColor, QPen, QPixmap, QIcon, QTextCursor, QFont, QPalette, QBrush, QImage
@@ -46,8 +45,8 @@ import ThorlabsFilterSlider.FilterSliderWidget
 import PI_ObjectiveMotor.ObjMotorWidget
 import ThorlabsKCube.KCubeWidget
 import InsightX3.TwoPhotonLaserUI
-import Weather_GUI
-import Evolution_GUI_v7
+import GeneralWidgets.Weather_GUI
+import ScreeningWidget.Evolution_GUI_v7
 
 import pyqtgraph.console
 import HamamatsuCam.HamamatsuUI
@@ -179,7 +178,7 @@ class Mainbody(QWidget):
         # =============================================================================
         #         GUI for weather
         # =============================================================================
-        self.layout.addWidget(Weather_GUI.WeatherUI(), 1, 0)
+        self.layout.addWidget(GeneralWidgets.Weather_GUI.WeatherUI(), 1, 0)
         
         # =============================================================================
         #         GUI for Thorlabs motor
@@ -305,10 +304,17 @@ class Mainbody(QWidget):
     def set_saving_directory(self):
         self.savedirectory = str(QtWidgets.QFileDialog.getExistingDirectory())
         self.savedirectorytextbox.setText(self.savedirectory)
+        
+        # Assert saving directories in other widgets
         self.Galvo_WidgetInstance.savedirectory = self.savedirectory        
         self.Waveformer_WidgetInstance.savedirectory = self.savedirectory        
         self.Analysis_WidgetInstance.savedirectory = self.savedirectory
         self.PatchClamp_WidgetInstance.saving_dir = self.savedirectory
+        
+        try:
+            self.camWindow.default_folder = self.savedirectory
+        except:
+            pass
         
         self.set_prefix()
     
@@ -337,7 +343,7 @@ class Mainbody(QWidget):
         else:
             daq.sendSingleDigital('LED', False)        
     # =============================================================================
-    #    Fucs for camera options
+    #    Fucs for external windows
     # =============================================================================
     def open_camera(self):
         self.camWindow = HamamatsuCam.HamamatsuUI.CameraUI()
@@ -345,14 +351,16 @@ class Mainbody(QWidget):
         
         # Connect camera with DMD widget, so that snapped images are shown in 
         # DMD widget.
-        self.camWindow.signal_SnapImg.connect(self.Coordinate_WidgetInstance.set_camera_image)
+        self.camWindow.signal_SnapImg.connect(self.Coordinate_WidgetInstance.receive_image_from_camera)
+        
+        self.camWindow.default_folder = self.savedirectory
         
     def open_Insight_UI(self):
         self.open_Insight_UIWindow = InsightX3.TwoPhotonLaserUI.InsightWidgetUI()
         self.open_Insight_UIWindow.show()
         
     def open_screening(self):
-        self.open_screening_UIWindow = Evolution_GUI_v7.Mainbody()
+        self.open_screening_UIWindow = ScreeningWidget.Evolution_GUI_v7.Mainbody()
         self.open_screening_UIWindow.show()
     # =============================================================================
     #     Fucs for console display

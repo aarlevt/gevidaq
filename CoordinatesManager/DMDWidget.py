@@ -148,13 +148,15 @@ class DMDWidget(QWidget):
         self.frame_rate_textbox = QLineEdit()
         self.frame_rate_textbox.setValidator(QtGui.QIntValidator())
         self.frame_rate_textbox.setText('1000000') # Default 33334
-        self.frame_rate_textbox.setToolTip
-        ("Display time of a single image of the sequence in microseconds. PictureTime is set to minimize the dark time according illuminationTime.")
         
         self.repeat_imgseq_button = QCheckBox()
         self.repeat_imgseq_button.setChecked(True)
+        self.repeat_imgseq_button.setToolTip("Repeat the sequence.")
         
-        settings_container_layout.addWidget(QLabel(u"Illumination time(µs):"), 4, 0)
+        Illumination_time_label = QLabel(u"Illumination time(µs):")
+        Illumination_time_label.setToolTip("Display time of a single image of the sequence in microseconds. PictureTime is set to minimize the dark time according to illuminationTime, +44 us e.g.")
+
+        settings_container_layout.addWidget(Illumination_time_label, 4, 0)
         settings_container_layout.addWidget(self.frame_rate_textbox, 4, 1)
         settings_container_layout.addWidget(QLabel('Repeat sequence:'), 5, 0)
         settings_container_layout.addWidget(self.repeat_imgseq_button, 5, 1)

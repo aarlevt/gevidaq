@@ -22,6 +22,10 @@ from skimage.io import imread
 from skimage.transform import rotate
 import threading
 import os
+if __name__ == "__main__":
+    abspath = os.path.abspath(__file__)
+    dname = os.path.dirname(abspath)
+    os.chdir(dname+'/../')
 import copy
 import time
 from datetime import datetime, date
@@ -30,7 +34,7 @@ import matplotlib.patches as mpatches
 import plotly.express as px
 from NIDAQ.constants import HardwareConstants
 import NIDAQ.WaveformWidget
-from EvolutionScanningThread import ScanningExecutionThread # This is the thread file for execution.
+from ScreeningWidget.EvolutionScanningThread import ScanningExecutionThread # This is the thread file for execution.
 from SampleStageControl.stage import LudlStage
 from NIDAQ.DAQoperator import DAQmission
 
@@ -808,8 +812,8 @@ class Mainbody(QWidget):
         self.show_pipline_infor()
         
     def auto_saving_directory(self):
-        self.savedirectory = r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\{}_{}'.format \
-                            (date.today(), str(self.prefixtextbox.text()))
+        self.savedirectory = r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\{}_{}_{}'.format \
+                            (date.today(), datetime.now().strftime('%Y-%m-%d_%H-%M-%S'), str(self.prefixtextbox.text()))
         
         os.mkdir(self.savedirectory) # Create the folder
             
