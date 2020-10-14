@@ -51,7 +51,7 @@ class KCubeWidgetUI(QWidget):
         KCubeContainerLayout.addWidget(self.connectButton, 0, 0)
         self.connectButton.clicked.connect(lambda: self.buildCommunication())
         
-        self.PosSwitchButton = StylishQT.MySwitch('PMT pos.', 'lemon chiffon', 'Camera pos.', 'lavender', width = 60)
+        self.PosSwitchButton = StylishQT.MySwitch('PMT pos.', 'lemon chiffon', 'Camera pos.', 'lavender', width = 70)
         self.PosSwitchButton.setChecked(False)
         self.PosSwitchButton.clicked.connect(self.PosSwitchEvent)
         KCubeContainerLayout.addWidget(self.PosSwitchButton, 0, 1)

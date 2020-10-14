@@ -213,7 +213,7 @@ class Mainbody(QWidget):
         # =============================================================================
         #         GUI for camera button       
         # =============================================================================
-        self.open_cam = StylishQT.FancyPushButton(55, 25, color1=(255,153,255), color2=(204,208,255))
+        self.open_cam = StylishQT.FancyPushButton(55, 30, color1=(255,153,255), color2=(204,208,255))
         self.open_cam.setIcon(QIcon('./Icons/Hamamatsu.png'))
         self.open_cam.setToolTip("Open camera widget")
         self.open_cam.setIconSize(QSize(100, 100))

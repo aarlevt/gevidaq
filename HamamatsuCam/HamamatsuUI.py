@@ -93,18 +93,8 @@ class CameraUI(QMainWindow):
         #         Camera settings container.
         # =============================================================================
         """
-        CameraSettingContainer = QGroupBox('General settings')
-        CameraSettingContainer.setStyleSheet("QGroupBox {\
-                                        font: bold;\
-                                        border: 1px solid silver;\
-                                        border-radius: 6px;\
-                                        margin-top: 10px;\
-                                        color:Navy}\
-                                        font-size: 14px;\
-                                        QGroupBox::title{subcontrol-origin: margin;\
-                                                         left: 7px;\
-                                                         padding: 5px 5px 5px 5px;}")
-        CameraSettingContainer.setMaximumHeight(400)
+        CameraSettingContainer = StylishQT.roundQGroupBox(title = 'General settings')
+        CameraSettingContainer.setFixedHeight(380)
         CameraSettingContainer.setMaximumWidth(365)
         CameraSettingLayout = QGridLayout()
         
@@ -124,7 +114,12 @@ class CameraUI(QMainWindow):
         CameraSettingTab_1 = QWidget()
         CameraSettingTab_1.layout = QGridLayout()
         
-        CameraSettingTab_1.layout.addWidget(QLabel("Readout speed:"), 2, 0)
+        Label_readoutspeed = QLabel("Readout speed")
+        Label_readoutspeed.setToolTip\
+        ("The standard scan readout speed can achieve a frame rate of 100 fps for full resolution with low noise (1.0 electrons (median),\
+        1.6 electrons (r.m.s.)), and the slow scan readout speed can achieve even lower noise (0.8 electrons (median), 1.4 electrons (r.m.s.))\
+        with a frame rate of 30 fps for full resolution.")
+        CameraSettingTab_1.layout.addWidget(Label_readoutspeed, 2, 0)
         self.ReadoutSpeedSwitchButton = StylishQT.MySwitch('Normal', 'yellow', 'Fast', 'cyan', width = 50)
         self.ReadoutSpeedSwitchButton.clicked.connect(self.ReadoutSpeedSwitchEvent)
         CameraSettingTab_1.layout.addWidget(self.ReadoutSpeedSwitchButton, 2, 1, 1, 2)
@@ -134,6 +129,10 @@ class CameraUI(QMainWindow):
         self.DefectCorrectionButton.setCheckable(True)
         self.DefectCorrectionButton.setChecked(True)
         self.DefectCorrectionButton.clicked.connect(self.DefectCorrectionSwitchEvent)
+        self.DefectCorrectionButton.setToolTip\
+        ("There are a few pixels in CMOS image sensor that have slightly higher readout noise performance compared to surrounding pixels.\
+        And the extended exposures may cause a few white spots which is caused by failure in part of the silicon wafer in CMOS image sensor.\
+        The camera has real-time variant pixel correction features to improve image quality.")
         CameraSettingTab_1.layout.addWidget(self.DefectCorrectionButton, 2, 3)
         
         #----------------------------------------------------------------------
@@ -155,7 +154,9 @@ class CameraUI(QMainWindow):
         self.BinningButtongroup.setExclusive(True)
         self.BinningButtongroup.buttonClicked[int].connect(self.SetBinning)
         
-        CameraImageFormatLayout.addWidget(QLabel("Binning:"), 0, 0)
+        Label_binning = QLabel("Binning:")
+        Label_binning.setToolTip("Binning readout is a method for achieving high sensitivity in exchange for losing resolution.")
+        CameraImageFormatLayout.addWidget(Label_binning, 0, 0)
         CameraImageFormatLayout.addWidget(self.BinningButton_1, 0, 1)  
         CameraImageFormatLayout.addWidget(self.BinningButton_2, 0, 2) 
         CameraImageFormatLayout.addWidget(self.BinningButton_4, 0, 3)
@@ -174,7 +175,7 @@ class CameraUI(QMainWindow):
         self.PixelTypeButtongroup.setExclusive(True)
         self.PixelTypeButtongroup.buttonClicked[int].connect(self.SetPixelType)
         
-        CameraImageFormatLayout.addWidget(QLabel("Pixel type:"), 1, 0)
+        CameraImageFormatLayout.addWidget(QLabel("Pixel bit depth:"), 1, 0)
         CameraImageFormatLayout.addWidget(self.PixelTypeButton_1, 1, 1)  
         CameraImageFormatLayout.addWidget(self.PixelTypeButton_2, 1, 2) 
         CameraImageFormatLayout.addWidget(self.PixelTypeButton_3, 1, 3)
@@ -188,10 +189,11 @@ class CameraUI(QMainWindow):
         self.CamExposureBox.setDecimals(6)
         self.CamExposureBox.setMinimum(0)
         self.CamExposureBox.setMaximum(100)
-        self.CamExposureBox.setValue(0.001501)
+        # self.CamExposureBox.setValue(0.001501)
         self.CamExposureBox.setSingleStep(0.001)  
         CameraSettingTab_1.layout.addWidget(self.CamExposureBox, 4, 2, 1, 2)  
         CameraSettingTab_1.layout.addWidget(QLabel("Exposure time:"), 4, 0, 1, 2)
+        self.CamExposureBox.setToolTip("The exposure time setting can be done by the units of seconds.")
         
         self.CamExposureBox.setKeyboardTracking(False)
         self.CamExposureBox.valueChanged.connect(self.SetExposureTime)
@@ -205,7 +207,9 @@ class CameraUI(QMainWindow):
         CameraSettingTab_2 = QWidget()
         CameraSettingTab_2.layout = QGridLayout()
         
-        CameraSettingTab_2.layout.addWidget(QLabel("Sub Array:"), 0, 0)
+        Label_suarray = QLabel("Readout region:")
+        Label_suarray.setToolTip("Sub-array readout is a procedure only a region of interest is scanned; while full size images whole frame.")
+        CameraSettingTab_2.layout.addWidget(Label_suarray, 0, 0)
         self.SubArrayModeSwitchButton = StylishQT.MySwitch('Sub Array Mode', 'lemon chiffon', 'Full Image Size', 'lavender', width = 100)
         self.SubArrayModeSwitchButton.setChecked(False)
         self.SubArrayModeSwitchButton.clicked.connect(self.SubArrayModeSwitchEvent)
@@ -213,7 +217,8 @@ class CameraUI(QMainWindow):
         
         # Adapted from Douwe's ROI part.
         self.center_roiButton = QPushButton()
-        self.center_roiButton.setText("Symmetric to Center Line")        
+        self.center_roiButton.setText("Symmetric to Center Line")
+        self.center_roiButton.setToolTip("In normal configuration, place ROI symmetric to chip center line to achieve fastest frame rate.")
         self.center_roiButton.clicked.connect(lambda: self.set_roi_flag())
         '''
         set_roi_flag checks whether the centering button is pushed and 
@@ -249,9 +254,9 @@ class CameraUI(QMainWindow):
         CameraROIPosLayout = QGridLayout()
         
         OffsetLabel = QLabel("Offset")
-        OffsetLabel.setFixedHeight(30)
+        OffsetLabel.setFixedHeight(20)
         ROISizeLabel = QLabel("Size")
-        ROISizeLabel.setFixedHeight(30)
+        ROISizeLabel.setFixedHeight(20)
         
         CameraROIPosLayout.addWidget(OffsetLabel, 0, 1)
         CameraROIPosLayout.addWidget(ROISizeLabel, 0, 2)
@@ -292,7 +297,7 @@ class CameraUI(QMainWindow):
         CameraROIPosLayout.addWidget(QLabel("Vertical"), 2, 0)
         
         CameraROIPosContainer.setLayout(CameraROIPosLayout)
-        CameraROIPosContainer.setFixedHeight(105)
+        CameraROIPosContainer.setFixedHeight(100)
         CameraSettingTab_2.layout.addWidget(CameraROIPosContainer, 3, 0, 1, 4)
         
         self.ApplyROIButton = QPushButton()
@@ -459,18 +464,19 @@ class CameraUI(QMainWindow):
         CamLiveActionContainer.setStyleSheet("QGroupBox { background-color:#F5F5F5;}")
         CamLiveActionLayout = QGridLayout()
         
-        self.LiveSwitchLabel = QLabel("Live switch:")
-        self.LiveSwitchLabel.setStyleSheet("QLabel { color : navy; font-size: 10pt; }")
-        self.LiveSwitchLabel.setFixedHeight(45)
-        self.LiveSwitchLabel.setAlignment(Qt.AlignCenter)
-        CamLiveActionLayout.addWidget(self.LiveSwitchLabel, 0, 0)
-        self.LiveButton = StylishQT.MySwitch('LIVING', 'spring green', 'STOPPED', 'indian red', width = 60)
+        # self.LiveSwitchLabel = QLabel("Live switch:")
+        # self.LiveSwitchLabel.setStyleSheet("QLabel { color : navy; font-size: 10pt; }")
+        # self.LiveSwitchLabel.setFixedHeight(45)
+        # self.LiveSwitchLabel.setAlignment(Qt.AlignCenter)
+        # CamLiveActionLayout.addWidget(self.LiveSwitchLabel, 0, 0)
+        self.LiveButton = StylishQT.MySwitch('End live', 'indian red', 'Start live', 'spring green', width = 100, font_size = 10)
         self.LiveButton.clicked.connect(self.LiveSwitchEvent)
         CamLiveActionLayout.addWidget(self.LiveButton, 0, 1, 1, 2)
         
         SnapImgButton = StylishQT.FancyPushButton(23, 32, color1=(255,204,229), color2=(153,153,255))
         SnapImgButton.setIcon(QIcon('./Icons/snap.png'))
         SnapImgButton.clicked.connect(self.SnapImg)
+        SnapImgButton.setToolTip("Snap an image.")
         CamLiveActionLayout.addWidget(SnapImgButton, 1, 1, 1, 1)         
         
         SaveLiveImgButton = StylishQT.saveButton()
@@ -478,23 +484,23 @@ class CameraUI(QMainWindow):
         CamLiveActionLayout.addWidget(SaveLiveImgButton, 1, 2, 1, 1)
         
         CamLiveActionContainer.setLayout(CamLiveActionLayout)
-        CameraAcquisitionTab_1.layout.addWidget(CamLiveActionContainer, 0, 0, 1, 4)
+        CameraAcquisitionTab_1.layout.addWidget(CamLiveActionContainer, 0, 1, 2, 4)
         
         self.LiveImgViewResetButton = QPushButton()
         self.LiveImgViewResetButton.setText("Reset ImageView")
+        self.LiveImgViewResetButton.setToolTip("Restart the view window in case it gets stuck.")
         self.LiveImgViewResetButton.clicked.connect(self.ResetLiveImgView)
-        CameraAcquisitionTab_1.layout.addWidget(self.LiveImgViewResetButton, 1, 0, 1, 2)
+        CameraAcquisitionTab_1.layout.addWidget(self.LiveImgViewResetButton, 0, 0, 1, 1)
         
         self.LiveAutoLevelSwitchButton = QPushButton()
         self.LiveAutoLevelSwitchButton.setText("Auto Level(A)")
+        self.LiveAutoLevelSwitchButton.setToolTip("Automatically adjust the contrast of image.")
         self.LiveAutoLevelSwitchButton.setShortcut('a')
         self.LiveAutoLevelSwitchButton.clicked.connect(self.AutoLevelSwitchEvent)
         self.LiveAutoLevelSwitchButton.setCheckable(True)
         self.LiveAutoLevelSwitchButton.setChecked(True)
-        CameraAcquisitionTab_1.layout.addWidget(self.LiveAutoLevelSwitchButton, 1, 2, 1, 2)
-        
+        CameraAcquisitionTab_1.layout.addWidget(self.LiveAutoLevelSwitchButton, 1, 0, 1, 1)
 
-        
         CameraAcquisitionTab_1.setLayout(CameraAcquisitionTab_1.layout)
         
         """
@@ -504,18 +510,21 @@ class CameraUI(QMainWindow):
         CameraAcquisitionTab_2.layout = QGridLayout()
         
         self.CamStreamActionContainer = QGroupBox()
-        self.CamStreamActionContainer.setFixedHeight(120)
+        # self.CamStreamActionContainer.setFixedHeight(120)
         CamStreamActionLayout = QGridLayout()
         
         self.StreamStopSingalComBox = QComboBox()
 #        self.StreamStopSingalComBox.lineEdit().setAlignment(Qt.AlignCenter)
         self.StreamStopSingalComBox.addItems(['Stop signal: Frames', 'Stop signal: Time'])
+        self.StreamStopSingalComBox.setToolTip("End acquisition after getting certain number of frames or pre-set time is past.")
         CamStreamActionLayout.addWidget(self.StreamStopSingalComBox, 1, 0)
 
         EstFPSLabel = QLabel("Estimated FPS")
-        EstFPSLabel.setFixedHeight(30)
-        TotalTimeLabel = QLabel("Total time(s)")
-        TotalTimeLabel.setFixedHeight(30)
+        # EstFPSLabel.setFixedHeight(11)
+        EstFPSLabel.setToolTip("Estimated frame rate of video.")
+        TotalTimeLabel = QLabel("Total time")
+        TotalTimeLabel.setToolTip("Length of the video.")
+        # TotalTimeLabel.setFixedHeight(11)
         
         CamStreamActionLayout.addWidget(EstFPSLabel, 0, 1)
         CamStreamActionLayout.addWidget(TotalTimeLabel, 0, 2)
@@ -536,7 +545,9 @@ class CameraUI(QMainWindow):
         self.StreamBufferTotalFrames_spinbox.setMaximum(120000)
         self.StreamBufferTotalFrames_spinbox.setValue(0)
         CamStreamActionLayout.addWidget(self.StreamBufferTotalFrames_spinbox, 2, 2)
-        CamStreamActionLayout.addWidget(QLabel("Buffers:"), 2, 1)
+        Label_buffernumber = QLabel("Buffer size:")
+        Label_buffernumber.setToolTip("Amount of frames to allocate in buffer to store the video.")
+        CamStreamActionLayout.addWidget(Label_buffernumber, 2, 1)
         
         self.StreamMemMethodComBox = QComboBox()
 #        self.StreamStopSingalComBox.lineEdit().setAlignment(Qt.AlignCenter)

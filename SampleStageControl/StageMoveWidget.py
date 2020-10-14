@@ -59,6 +59,8 @@ class StageWidgetUI(QWidget):
         self.stagecontrolLayout = QGridLayout()
         
         self.stage_upwards = QPushButton()
+        self.stage_upwards.setStyleSheet("QPushButton {color:white;background-color: #FFCCE5;}"
+                              "QPushButton:hover:!pressed {color:white;background-color: #CCFFFF;}")
         self.stage_upwards.setToolTip("Click arrow to enable WASD keyboard control")
         self.stage_upwards.setFixedWidth(40)
         self.stage_upwards.setFixedHeight(40)
@@ -69,6 +71,8 @@ class StageWidgetUI(QWidget):
         self.stage_upwards.setShortcut('w')
         
         self.stage_left = QPushButton()
+        self.stage_left.setStyleSheet("QPushButton {color:white;background-color: #FFCCE5;}"
+                                      "QPushButton:hover:!pressed {color:white;background-color: #CCFFFF;}")
         self.stage_left.setToolTip("Click arrow to enable WASD keyboard control")
         self.stage_left.setFixedWidth(40)
         self.stage_left.setFixedHeight(40)
@@ -80,6 +84,8 @@ class StageWidgetUI(QWidget):
         self.stage_left.setShortcut('a')
         
         self.stage_right = QPushButton()
+        self.stage_right.setStyleSheet("QPushButton {color:white;background-color: #FFCCE5;}"
+                              "QPushButton:hover:!pressed {color:white;background-color: #CCFFFF;}")
         self.stage_right.setToolTip("Click arrow to enable WASD keyboard control")
         self.stage_right.setFixedWidth(40)
         self.stage_right.setFixedHeight(40)
@@ -90,6 +96,8 @@ class StageWidgetUI(QWidget):
         self.stage_right.setShortcut('d')
         
         self.stage_down = QPushButton()
+        self.stage_down.setStyleSheet("QPushButton {color:white;background-color: #FFCCE5;}"
+                              "QPushButton:hover:!pressed {color:white;background-color: #CCFFFF;}")
         self.stage_down.setToolTip("Click arrow to enable WASD keyboard control")
         self.stage_down.setFixedWidth(40)
         self.stage_down.setFixedHeight(40)

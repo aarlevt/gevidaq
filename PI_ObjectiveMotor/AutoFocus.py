@@ -161,7 +161,7 @@ class FocusFinder():
             plt.figure()
             plt.imshow(image)
             plt.show()
-        degree_of_focus = ProcessImage.variance_of_laplacian(image)
+        degree_of_focus = ProcessImage.local_entropy(image)
         time.sleep(0.2)
         
         return degree_of_focus

@@ -9,7 +9,7 @@ from __future__ import division
 import sys
 
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import Qt, pyqtSignal, QRectF, QPoint, QRect, QObject
+from PyQt5.QtCore import Qt, pyqtSignal, QRectF, QPoint, QRect, QObject, QSize
 from PyQt5.QtGui import QColor, QPen, QPixmap, QIcon, QTextCursor, QFont
 
 from PyQt5.QtWidgets import (QWidget, QButtonGroup, QLabel, QSlider, QSpinBox, QDoubleSpinBox, QGridLayout, QPushButton, QGroupBox, 
@@ -77,18 +77,22 @@ class ObjMotorWidgetUI(QWidget):
         # self.ObjMotor_disconnect.clicked.connect(lambda: self.DisconnectMotor()) 
         # self.ObjMotor_disconnect.setEnabled(False)
         
-        self.ObjMotor_upwards = QPushButton("↑")
-        self.ObjMotor_upwards.setStyleSheet("QPushButton {color:white;background-color: teal; border-style: outset;border-radius: 10px;border-width: 2px;font: bold 14px;padding: 6px}"
-                                            "QPushButton:pressed {color:red;background-color: white; border-style: outset;border-radius: 10px;border-width: 2px;font: bold 14px;padding: 6px}"
-                                            "QPushButton:hover:!pressed {color:gray;background-color: teal; border-style: outset;border-radius: 10px;border-width: 2px;font: bold 14px;padding: 6px}")        
+        self.ObjMotor_upwards = QPushButton()
+        self.ObjMotor_upwards.setStyleSheet("QPushButton {color:white;background-color: #FFCCE5;}"
+                              "QPushButton:hover:!pressed {color:white;background-color: #CCFFFF;}")
+
+        self.ObjMotor_upwards.setIcon(QIcon('./Icons/UpArrow.png')) 
+        self.ObjMotor_upwards.setIconSize(QSize(20,20))
         self.ObjMotorcontrolLayout.addWidget(self.ObjMotor_upwards, 2, 3)
         self.ObjMotor_upwards.clicked.connect(lambda: self.MovingMotorThread("Motor_move_upwards"))
 #        self.ObjMotor_upwards.setShortcut('w')
         
-        self.ObjMotor_down = QPushButton("↓")
-        self.ObjMotor_down.setStyleSheet("QPushButton {color:white;background-color: teal; border-style: outset;border-radius: 10px;border-width: 2px;font: bold 14px;padding: 6px}"
-                                            "QPushButton:pressed {color:red;background-color: white; border-style: outset;border-radius: 10px;border-width: 2px;font: bold 14px;padding: 6px}"
-                                            "QPushButton:hover:!pressed {color:gray;background-color: teal; border-style: outset;border-radius: 10px;border-width: 2px;font: bold 14px;padding: 6px}")        
+        self.ObjMotor_down = QPushButton()
+        self.ObjMotor_down.setStyleSheet("QPushButton {color:white;background-color: #FFCCE5;}"
+                              "QPushButton:hover:!pressed {color:white;background-color: #CCFFFF;}")
+
+        self.ObjMotor_down.setIcon(QIcon('./Icons/DownArrow.png')) 
+        self.ObjMotor_down.setIconSize(QSize(20,20))
         self.ObjMotorcontrolLayout.addWidget(self.ObjMotor_down, 3, 3)
         self.ObjMotor_down.clicked.connect(lambda: self.MovingMotorThread("Motor_move_downwards"))
 #        self.stage_down.setShortcut('s')

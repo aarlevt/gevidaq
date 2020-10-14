@@ -873,11 +873,11 @@ class Mainbody(QWidget):
         # Refresh the focus correction
         self.GeneralSettingDict['FocusCorrectionMatrixDict'] = FocusCorrectionMatrixDict
 
-        # if saving directory is re-configured, refresh it, otherwise keep as it is.
-        if len(self.savedirectorytextbox.text()) >= 1:
-            self.GeneralSettingDict['savedirectory'] = self.savedirectory
-        else:
-            self.auto_saving_directory()
+        # # if saving directory is re-configured, refresh it, otherwise keep as it is.
+        # if len(self.savedirectorytextbox.text()) >= 1:
+        #     self.GeneralSettingDict['savedirectory'] = self.savedirectory
+        # else:
+        self.auto_saving_directory()
         
         self.normalOutputWritten('Pipeline loaded.\n')
         print('Pipeline loaded.')

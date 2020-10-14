@@ -103,7 +103,7 @@ class MySwitch(QtWidgets.QPushButton):
     """
     General switch button widget.
     """
-    def __init__(self, label_1, color_1, label_2, color_2, width, parent = None):
+    def __init__(self, label_1, color_1, label_2, color_2, width, font_size = 8, parent = None):
         super().__init__(parent)
         self.setCheckable(True)
         self.setMinimumWidth(66)
@@ -113,7 +113,9 @@ class MySwitch(QtWidgets.QPushButton):
         self.switch_color_1 = color_1
         self.switch_color_2 = color_2
         self.width = width
-        self.setGraphicsEffect(QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2))        
+        self.font_size = font_size
+        self.setGraphicsEffect(QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2))  
+        
     def paintEvent(self, event):
         label = self.switch_label_1 if self.isChecked() else self.switch_label_2
         
@@ -141,6 +143,7 @@ class MySwitch(QtWidgets.QPushButton):
         if not self.isChecked():
             sw_rect.moveLeft(-width)
         painter.drawRoundedRect(sw_rect, radius, radius)
+        painter.setFont(QFont("Arial", self.font_size, QFont.Bold))
         painter.drawText(sw_rect, Qt.AlignCenter, label)
 
 class runButton(QtWidgets.QPushButton):

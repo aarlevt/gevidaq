@@ -225,6 +225,8 @@ class ProcessImageML():
         
         for EachRound in RoundNumberList:
             
+            cells_counted_in_round = 0
+            
             if EachRound == round_num:
                 
                 # Start numbering cells at each round
@@ -279,12 +281,17 @@ class ProcessImageML():
                     # segmentationImg.save(os.path.join(folder, 'MLimages_{}\{}.tif'.format(round_num, ImgNameInfor)))#save as tif
                     
                     if self.cell_counted_inRound == 0:
-                        cell_Data, self.cell_counted_inRound = ProcessImage.retrieveDataFromML(Rawimage, MLresults, str(ImgNameInfor), self.cell_counted_inRound)
+                        cell_Data, self.cell_counted_inRound, total_cells_counted_in_coord = ProcessImage.retrieveDataFromML(Rawimage, MLresults, str(ImgNameInfor), self.cell_counted_inRound)
                     else:                       
-                        Cell_Data_new, self.cell_counted_inRound = ProcessImage.retrieveDataFromML(Rawimage, MLresults, str(ImgNameInfor), self.cell_counted_inRound)
+                        Cell_Data_new, self.cell_counted_inRound, total_cells_counted_in_coord = ProcessImage.retrieveDataFromML(Rawimage, MLresults, str(ImgNameInfor), self.cell_counted_inRound)
                         if len(Cell_Data_new) > 0:
                             cell_Data = cell_Data.append(Cell_Data_new)
                     
+                    # Count in total how many flat and round cells are identified.
+                    cells_counted_in_round += total_cells_counted_in_coord
+                    
+                print("Number of round/flat cells in this round: {}".format(cells_counted_in_round))
+                
         return cell_Data
                 
     

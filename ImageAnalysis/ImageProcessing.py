@@ -1241,6 +1241,8 @@ class ProcessImage():
         ROInumber = len(MLresults['scores']) 
         cell_counted_inImage = 0
         
+        total_cells_alive = 0 # Round or flat cell number
+        
         for eachROI in range(ROInumber):
             if MLresults['class_ids'][eachROI] == 3:
                 ROIlist = MLresults['rois'][eachROI]
@@ -1289,11 +1291,18 @@ class ProcessImage():
                     
                 cell_counted_number += 1
                 cell_counted_inImage += 1
+                
+                total_cells_alive += 1
+                
+            elif MLresults['class_ids'][eachROI] == 2: # Round cells
+            
+                total_cells_alive += 1
+                
         
         if cell_counted_inImage == 0:
-            return pd.DataFrame(), cell_counted_number
+            return pd.DataFrame(), cell_counted_number, total_cells_alive
         else:
-            return Cell_DataFrame, cell_counted_number
+            return Cell_DataFrame, cell_counted_number, total_cells_alive
         
         
     def Convert2Unit8(Imagepath, Rawimage):
@@ -1312,6 +1321,7 @@ class ProcessImage():
         
         else:
             return Rawimage
+          
         
     #%%
     # =============================================================================
@@ -1552,6 +1562,35 @@ class ProcessImage():
             
         return sharpness
     
+    def local_entropy(image, amax = 3, disk_size = 20):
+        """
+        Calculate the local entropy of input image.
+
+        Parameters
+        ----------
+        image : TYPE
+            DESCRIPTION.
+        amax : float, optional
+            Ceiling value for normalization. The default is 3.
+            If set to None, the ceiling will be the maximum.
+        disk_size : int, optional
+            Disk size when calculating entropy. The default is 20.
+
+        Returns
+        -------
+        TYPE
+            DESCRIPTION.
+
+        """
+        if amax == None:
+            image_uint8 = skimage.img_as_ubyte(image/np.amax(image))
+        else:
+            image = np.where(image >= amax, amax, image)
+            image_uint8 = skimage.img_as_ubyte(image/amax)
+        entropy_image = entropy(image_uint8, disk(disk_size))
+        
+        return np.mean(entropy_image)
+        
     #%%
 if __name__ == "__main__":
     

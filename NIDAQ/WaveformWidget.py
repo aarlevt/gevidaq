@@ -798,7 +798,7 @@ class WaveformGenerator(QWidget):
         
         if channel_keyword == "cameratrigger":
             # For camera triggers, set to zeros so that it does not block canvas.
-            rectified_waveform = np.zeros(len(self.waveform_data_dict[channel_keyword]))
+            rectified_waveform = np.zeros(len(self.waveform_data_dict[channel_keyword]), dtype = bool)
             self.generate_graphy(channel_keyword, rectified_waveform)
         else:
             self.generate_graphy(channel_keyword, self.waveform_data_dict[channel_keyword])
@@ -1171,11 +1171,20 @@ class WaveformGenerator(QWidget):
                     self.waveform_data_dict[waveform_key] = self.waveform_data_dict[waveform_key][0:self.reference_length]
                     
                 else:
-                    append_waveforms = np.zeros(self.reference_length-len(self.waveform_data_dict[waveform_key]))
+                    if self.waveform_data_dict[waveform_key].dtype == "float64":
+                        append_waveforms = np.zeros(self.reference_length-len(self.waveform_data_dict[waveform_key]))
+                    else:
+                        append_waveforms = np.zeros(self.reference_length-len(self.waveform_data_dict[waveform_key]), dtype=bool)
+                        
                     self.waveform_data_dict[waveform_key] = np.append(self.waveform_data_dict[waveform_key], append_waveforms)
                     
                 # Reset the PlotDataItem
-                self.PlotDataItem_dict[waveform_key].setData(x_label, self.waveform_data_dict[waveform_key], name = waveform_key)
+                if self.waveform_data_dict[waveform_key].dtype == "float64":
+                    
+                    self.PlotDataItem_dict[waveform_key].setData(x_label, self.waveform_data_dict[waveform_key], name = waveform_key)
+                else:
+                    # In case of digital boolen signals, convert to int before ploting.
+                    self.PlotDataItem_dict[waveform_key].setData(x_label, self.waveform_data_dict[waveform_key].astype(int), name = waveform_key)
                 
             else: # In case of galvos which has dimention 2.
 
