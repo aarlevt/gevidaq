@@ -138,7 +138,7 @@ class DAQmission(QThread): # For all-purpose Nidaq tasks, use "Dev1/ai22" as ref
         # Get the average number and y pixel number information from data
         self.galvosx_originalkey = 'galvosx'
         self.galvosy_originalkey = 'galvosy'
-        
+
         # If there are kyes with information like 'galvosxavgnum', extract the 
         # information and then convert the key to 'galvosx'.
         if Analog_channel_number != 0:
@@ -154,9 +154,11 @@ class DAQmission(QThread): # For all-purpose Nidaq tasks, use "Dev1/ai22" as ref
                 elif 'galvos_X_contour' in analog_signals['Sepcification'][i]:
                     self.galvosx_originalkey = analog_signals['Sepcification'][i]
                     analog_signals['Sepcification'][i] = 'galvosx'
+                    
                 elif 'galvos_Y_contour' in analog_signals['Sepcification'][i]:
                     self.galvosy_originalkey = analog_signals['Sepcification'][i]
                     analog_signals['Sepcification'][i] = 'galvosy'
+                    
         #----------------------------------------------------------------------
         
         #-------------------Devide samples from Dev1 or 2----------------------
@@ -165,7 +167,7 @@ class DAQmission(QThread): # For all-purpose Nidaq tasks, use "Dev1/ai22" as ref
         
         Dev1_analog_waveforms_list = []
         Dev2_analog_waveforms_list = []
-        
+
         if Analog_channel_number != 0:
             if len(analog_signals['Waveform']) != 0:
                 num_rows, num_cols = analog_signals['Waveform'].shape

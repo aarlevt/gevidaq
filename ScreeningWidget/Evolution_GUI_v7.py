@@ -210,21 +210,21 @@ class Mainbody(QWidget):
         self.RoundOrderBox.setValue(1)
         self.RoundOrderBox.setSingleStep(1)
         self.RoundOrderBox.setMaximumWidth(30)
-        self.PipelineContainerLayout.addWidget(self.RoundOrderBox, 0, 1)
-        self.PipelineContainerLayout.addWidget(QLabel("Round sequence:"), 0, 0)
+        self.PipelineContainerLayout.addWidget(self.RoundOrderBox, 1, 1)
+        self.PipelineContainerLayout.addWidget(QLabel("Round sequence:"), 1, 0)
                 
         ButtonAddRound = StylishQT.addButton()
         ButtonDeleteRound = StylishQT.stop_deleteButton()
         
-        self.PipelineContainerLayout.addWidget(ButtonAddRound, 0, 2)
+        self.PipelineContainerLayout.addWidget(ButtonAddRound, 1, 2)
         ButtonAddRound.clicked.connect(self.AddFreshRound)
         ButtonAddRound.clicked.connect(self.GenerateScanCoords)
         
-        self.PipelineContainerLayout.addWidget(ButtonDeleteRound, 0, 3)
+        self.PipelineContainerLayout.addWidget(ButtonDeleteRound, 1, 3)
         ButtonDeleteRound.clicked.connect(self.DeleteFreshRound)
         
         ButtonClearRound = StylishQT.cleanButton()        
-        self.PipelineContainerLayout.addWidget(ButtonClearRound, 0, 4)
+        self.PipelineContainerLayout.addWidget(ButtonClearRound, 1, 4)
         ButtonClearRound.clicked.connect(self.ClearRoundQueue)
         
         self.ScanRepeatTextbox = QSpinBox(self)
@@ -232,13 +232,13 @@ class Mainbody(QWidget):
         self.ScanRepeatTextbox.setValue(1)
         self.ScanRepeatTextbox.setMaximum(100000)
         self.ScanRepeatTextbox.setSingleStep(1)
-        self.PipelineContainerLayout.addWidget(self.ScanRepeatTextbox, 0, 7)
-        self.PipelineContainerLayout.addWidget(QLabel("Meshgrid:"), 0, 6)  
+        self.PipelineContainerLayout.addWidget(self.ScanRepeatTextbox, 0, 1)
+        self.PipelineContainerLayout.addWidget(QLabel("Meshgrid:"), 0, 0)  
         
         self.OpenTwoPLaserShutterCheckbox = QCheckBox("Open shutter first")
         self.OpenTwoPLaserShutterCheckbox.setStyleSheet('color:blue;font:bold "Times New Roman"')
         self.OpenTwoPLaserShutterCheckbox.setChecked(True)
-        self.PipelineContainerLayout.addWidget(self.OpenTwoPLaserShutterCheckbox, 0, 8)  
+        self.PipelineContainerLayout.addWidget(self.OpenTwoPLaserShutterCheckbox, 0, 2)  
 
         #**************************************************************************************************************************************
         #-----------------------------------------------------------GUI for StageScanContainer-------------------------------------------------
@@ -338,7 +338,7 @@ class Mainbody(QWidget):
         self.RoundGeneralSettingTabs.addTab(ScanContainer,"Scanning settings")
         self.RoundGeneralSettingTabs.addTab(TwoPLaserContainer,"Pulse laser/Filter settings")
 
-        self.PipelineContainerLayout.addWidget(self.RoundGeneralSettingTabs, 2, 0, 1, 10)
+        self.PipelineContainerLayout.addWidget(self.RoundGeneralSettingTabs, 3, 0, 1, 10)
         
         
         self.WaveformOrderBox = QSpinBox(self)
@@ -347,17 +347,17 @@ class Mainbody(QWidget):
         self.WaveformOrderBox.setValue(1)
         self.WaveformOrderBox.setSingleStep(1)
         self.WaveformOrderBox.setMaximumWidth(30)
-        self.PipelineContainerLayout.addWidget(self.WaveformOrderBox, 3, 1)
-        self.PipelineContainerLayout.addWidget(QLabel("Waveform/Camera sequence:"), 3, 0)
+        self.PipelineContainerLayout.addWidget(self.WaveformOrderBox, 4, 1)
+        self.PipelineContainerLayout.addWidget(QLabel("Waveform/Camera sequence:"), 4, 0)
         
         ButtonAddWaveform = StylishQT.addButton()
         ButtonDeleteWaveform = StylishQT.stop_deleteButton()
         
         ButtonClearWaveform = StylishQT.cleanButton()
 
-        self.PipelineContainerLayout.addWidget(ButtonAddWaveform, 3, 3)
-        self.PipelineContainerLayout.addWidget(ButtonDeleteWaveform, 3, 4)
-        self.PipelineContainerLayout.addWidget(ButtonClearWaveform, 3, 5)
+        self.PipelineContainerLayout.addWidget(ButtonAddWaveform, 4, 2)
+        self.PipelineContainerLayout.addWidget(ButtonDeleteWaveform, 4, 3)
+        self.PipelineContainerLayout.addWidget(ButtonClearWaveform, 4, 4)
         
         ButtonAddWaveform.clicked.connect(self.AddFreshWaveform)
         ButtonAddWaveform.clicked.connect(self.AddCameraOperation)
@@ -472,7 +472,7 @@ class Mainbody(QWidget):
         self.EachCoordDwellSettingTabs.addTab(waveformTab,"Waveforms settings")
         self.EachCoordDwellSettingTabs.addTab(CameraDwellTab,"Camera operations")
 
-        self.PipelineContainerLayout.addWidget(self.EachCoordDwellSettingTabs, 4, 0, 4, 10)    
+        self.PipelineContainerLayout.addWidget(self.EachCoordDwellSettingTabs, 5, 0, 4, 10)    
         
         self.PipelineContainer.setLayout(self.PipelineContainerLayout)
         
@@ -814,6 +814,8 @@ class Mainbody(QWidget):
     def auto_saving_directory(self):
         self.savedirectory = r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\{}_{}_{}'.format \
                             (date.today(), datetime.now().strftime('%Y-%m-%d_%H-%M-%S'), str(self.prefixtextbox.text()))
+        
+        self.GeneralSettingDict['savedirectory'] = self.savedirectory
         
         os.mkdir(self.savedirectory) # Create the folder
             

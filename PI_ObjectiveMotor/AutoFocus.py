@@ -77,7 +77,7 @@ class FocusFinder():
         # The input source of image.
         self.source_of_image = source_of_image
         if source_of_image == "PMT":
-            self.galvo = RasterScan(Daq_sample_rate = 500000, edge_volt = 3)
+            self.galvo = RasterScan(Daq_sample_rate = 500000, edge_volt = 5)
         
     def bisection(self):
         # The upper edge in which we run bisection.

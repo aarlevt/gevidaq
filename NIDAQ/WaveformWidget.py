@@ -62,7 +62,7 @@ class WaveformGenerator(QWidget):
         self.handle_viewbox_coordinate_position_array_expanded_y = None
         self.Daq_sample_rate_pmt = None
         
-        self.AnalogChannelList = ['galvos', '640AO', '532AO', '488AO', 'patchAO']
+        self.AnalogChannelList = ['galvos', 'galvos_contour', '640AO', '532AO', '488AO', 'patchAO']
         self.DigitalChannelList = ['cameratrigger',
                                   'galvotrigger',
                                   'DMD_trigger',
@@ -546,7 +546,7 @@ class WaveformGenerator(QWidget):
         self.GalvoAvgNumTextbox = QSpinBox(self)
         self.GalvoAvgNumTextbox.setMinimum(1)
         self.GalvoAvgNumTextbox.setMaximum(20)
-        self.GalvoAvgNumTextbox.setValue(1)
+        self.GalvoAvgNumTextbox.setValue(2)
         self.GalvoAvgNumTextbox.setSingleStep(1)
         self.galvo_raster_tablayout.addWidget(self.GalvoAvgNumTextbox, 2, 5)
         self.galvo_raster_tablayout.addWidget(QLabel("average over:"), 2, 4)        
@@ -754,16 +754,14 @@ class WaveformGenerator(QWidget):
         #----------------------------Galvo scanning---------------------------
         if self.wavetabs.currentIndex() == 3:
             if self.galvos_tabs.currentIndex() == 0:
-                if channel_keyword == 'galvos':
 
-                    self.waveform_data_dict[channel_keyword] = self.generate_galvos()
-                    self.generate_graphy(channel_keyword, self.waveform_data_dict[channel_keyword][1, :])
+                self.waveform_data_dict[channel_keyword] = self.generate_galvos()
+                self.generate_graphy(channel_keyword, self.waveform_data_dict[channel_keyword][1, :])
                     
             elif self.galvos_tabs.currentIndex() == 1:# For contour
-                if channel_keyword == 'galvos':
                     
-                    self.waveform_data_dict['galvos_contour'] = self.generate_contour_for_waveform()
-                    self.generate_graphy('galvos_contour', self.waveform_data_dict['galvos_contour'][1, :])
+                self.waveform_data_dict['galvos_contour'] = self.generate_contour_for_waveform()
+                self.generate_graphy('galvos_contour', self.waveform_data_dict['galvos_contour'][1, :])
             
     def del_waveform_analog(self):
         
@@ -1124,7 +1122,7 @@ class WaveformGenerator(QWidget):
     
     #%%
     def generate_graphy(self, channel, waveform):
-        
+        self.uiDaq_sample_rate = int(self.SamplingRateTextbox.value())
         if waveform.dtype == "bool":
             waveform = waveform.astype(int)
         
@@ -1180,8 +1178,13 @@ class WaveformGenerator(QWidget):
                     
                 # Reset the PlotDataItem
                 if self.waveform_data_dict[waveform_key].dtype == "float64":
-                    
-                    self.PlotDataItem_dict[waveform_key].setData(x_label, self.waveform_data_dict[waveform_key], name = waveform_key)
+                    # In case of galvos re-drawing
+                    if 'galvos_' in waveform_key:
+                        self.PlotDataItem_dict["galvos_contour"].setData(x_label, self.waveform_data_dict[waveform_key], name = waveform_key)
+                    elif 'galvosx' in waveform_key or 'galvosy' in waveform_key:
+                        self.PlotDataItem_dict["galvos"].setData(x_label, self.waveform_data_dict[waveform_key], name = waveform_key)
+                    else:
+                        self.PlotDataItem_dict[waveform_key].setData(x_label, self.waveform_data_dict[waveform_key], name = waveform_key)
                 else:
                     # In case of digital boolen signals, convert to int before ploting.
                     self.PlotDataItem_dict[waveform_key].setData(x_label, self.waveform_data_dict[waveform_key].astype(int), name = waveform_key)
@@ -1195,14 +1198,14 @@ class WaveformGenerator(QWidget):
                         
                 else:
                     append_waveforms = np.zeros(self.reference_length-len(self.waveform_data_dict[waveform_key][0,:]))
-                    self.waveform_data_dict['galvos'] = \
+                    self.waveform_data_dict[waveform_key] = \
                     np.stack((np.append(self.waveform_data_dict[waveform_key][0,:], append_waveforms), np.append(self.waveform_data_dict[waveform_key][1,:], append_waveforms)))
 
                     # Reset the PlotDataItem
                     self.PlotDataItem_dict[waveform_key].setData(x_label, self.waveform_data_dict[waveform_key][1,:], name = waveform_key)                    
         
         #------------------Set galvos sampele stack apart----------------------
-        if 'galvos' in self.waveform_data_dict:
+        if 'galvos' in self.waveform_data_dict and 'galvos_contour' not in self.waveform_data_dict:
             self.waveform_data_dict['galvosx'+'avgnum_'+str(int(self.GalvoAvgNumTextbox.value()))] = self.waveform_data_dict['galvos'][0, :]
             self.waveform_data_dict['galvosy'+'ypixels_'+str(int(self.GalvoYpixelNumTextbox.currentText()))] = self.waveform_data_dict['galvos'][1, :]
             del self.waveform_data_dict['galvos']
@@ -1230,7 +1233,7 @@ class WaveformGenerator(QWidget):
         analog_line_num = 0
         for waveform_key in self.waveform_data_dict:
             
-            if waveform_key in self.AnalogChannelList:
+            if waveform_key in self.AnalogChannelList or 'galvos' in waveform_key:
 
                 self.analog_array[analog_line_num] = np.array([(self.waveform_data_dict[waveform_key], waveform_key)], dtype = dataType_analog)
                 analog_line_num += 1

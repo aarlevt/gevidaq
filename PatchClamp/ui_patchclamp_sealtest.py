@@ -12,7 +12,8 @@ from __future__ import division
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QColor, QPen, QPixmap
-from PyQt5.QtWidgets import QWidget, QLabel, QGridLayout, QDoubleSpinBox, QPushButton, QGroupBox, QVBoxLayout, QHBoxLayout, QComboBox, QMessageBox, QSpinBox
+from PyQt5.QtWidgets import QWidget, QLabel, QGridLayout, QDoubleSpinBox, QPushButton, QGroupBox, QLineEdit,\
+                            QVBoxLayout, QHBoxLayout, QComboBox, QMessageBox, QSpinBox
 import pyqtgraph.exporters
 
 import pyqtgraph as pg
@@ -286,6 +287,11 @@ class PatchclampSealTestUI(QWidget):
         self.valueLayout.addWidget(self.resistanceLabel)
         self.valueLayout.addWidget(self.capacitanceLabel)
         self.valueLayout.addWidget(self.ratioLabel)
+        
+        self.pipette_resistance = QLineEdit(self)
+        self.pipette_resistance.setPlaceholderText('Pipette resistance')
+        self.pipette_resistance.setFixedWidth(100)
+        self.valueLayout.addWidget(self.pipette_resistance)
         
         self.savedataButton = QPushButton("Save figure")
         self.savedataButton.clicked.connect(lambda: self.savePatchfigure())
@@ -562,7 +568,7 @@ class PatchclampSealTestUI(QWidget):
         exporter.parameters()['width'] = 500   # (note this also affects height parameter)
         
         # save to file
-        exporter.export(os.path.join(self.saving_dir, 'SealTest_' + self.patch_parameters + '.png'))       
+        exporter.export(os.path.join(self.saving_dir, 'SealTest_' + "Rpip_" + self.pipette_resistance.text() + "Mohm_"+ self.patch_parameters + '.png'))       
 
 if __name__ == "__main__":
     def run_app():

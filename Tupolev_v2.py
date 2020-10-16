@@ -45,7 +45,7 @@ import ThorlabsFilterSlider.FilterSliderWidget
 import PI_ObjectiveMotor.ObjMotorWidget
 import ThorlabsKCube.KCubeWidget
 import InsightX3.TwoPhotonLaserUI
-import GeneralWidgets.Weather_GUI
+# import GeneralWidgets.Weather_GUI
 import ScreeningWidget.Evolution_GUI_v7
 
 import pyqtgraph.console
@@ -59,10 +59,6 @@ import CoordinatesManager.CoordinateWidget2
 #pg.setConfigOption('useOpenGL', True)
 #pg.setConfigOption('leftButtonPan', False)
 #""" 
-#class EmittingStream(QObject): #https://stackoverflow.com/questions/8356336/how-to-capture-output-of-pythons-interpreter-and-show-in-a-text-widget
-#    textWritten = pyqtSignal(str)
-#    def write(self, text):
-#        self.textWritten.emit(str(text)) # For updating notice from console.   
 
 class Mainbody(QWidget):
     
@@ -76,14 +72,10 @@ class Mainbody(QWidget):
             os.chdir(os.path.dirname(sys.argv[0]))
         except:
             pass
-            # os.chdir(sys.path[0])
-                
-#        os.chdir(os.path.dirname(sys.argv[0]))# Set directory to current folder.
             
         self.setWindowIcon(QIcon('./Icons/Icon.png'))
         self.setFont(QFont("Arial"))
-#        blur_effect = QtWidgets.QGraphicsBlurEffect(blurRadius=5)
-#        self.setGraphicsEffect(blur_effect)
+
         self.OC = 0.1
         
         #----------------------------------------------------------------------
@@ -129,7 +121,7 @@ class Mainbody(QWidget):
         self.savedirectorytextbox = QLineEdit(self)
         self.savedirectorytextbox.setPlaceholderText('Saving directory')
         self.savedirectorytextbox.returnPressed.connect(self.update_saving_directory)
-        self.setdirectorycontrolLayout.addWidget(self.savedirectorytextbox, 0, 1)
+        self.setdirectorycontrolLayout.addWidget(self.savedirectorytextbox, 0, 1, 1, 2)
         
         self.prefixtextbox = QLineEdit(self)
         self.prefixtextbox.setPlaceholderText('Prefix')
@@ -143,19 +135,45 @@ class Mainbody(QWidget):
         self.toolButtonOpenDialog.setObjectName("toolButtonOpenDialog")
         self.toolButtonOpenDialog.clicked.connect(self.set_saving_directory)
         
-        self.setdirectorycontrolLayout.addWidget(self.toolButtonOpenDialog, 0, 2)
+        self.setdirectorycontrolLayout.addWidget(self.toolButtonOpenDialog, 0, 3)
+        
+        # =============================================================================
+        #         Console massage    
+        # =============================================================================
+        self.console_text_edit = QTextEdit()
+        self.console_text_edit.setFontItalic(True)
+        self.console_text_edit.setPlaceholderText('Notice board from console.')
+        self.console_text_edit.setFixedHeight(150)
+        self.setdirectorycontrolLayout.addWidget(self.console_text_edit, 1, 0, 5, 3)
+        
+        self.setMetaTextButton = QtWidgets.QPushButton()
+        self.setMetaTextButton.setIcon(QIcon('./Icons/Browse.png')) 
+        self.setMetaTextButton.setObjectName("Set Meta Text")
+        self.setdirectorycontrolLayout.addWidget(self.console_text_edit, 1, 4, 1, 1)
+        # self.setMetaTextButton.clicked.connect(self.set_saving_directory)       
         
         setdirectoryContainer.setLayout(self.setdirectorycontrolLayout)
-        setdirectoryContainer.setMaximumHeight(70)
+        setdirectoryContainer.setMaximumHeight(220)
         setdirectoryContainer.setMaximumWidth(420)
         
-        self.layout.addWidget(setdirectoryContainer, 0, 0, 1, 2)
+        self.layout.addWidget(setdirectoryContainer, 2, 0, 1, 4)
         
         # =============================================================================
         #         GUI for toolbox
         # =============================================================================
-        toolboxContainer = StylishQT.roundQGroupBox(title="Toolbox")
-        self.toolboxContainerlLayout = QGridLayout()
+        # toolboxContainer = StylishQT.roundQGroupBox(title="Toolbox")
+        # self.toolboxContainerlLayout = QGridLayout()
+        
+        # toolboxContainer.setFixedHeight(140)
+        # toolboxContainer.setFixedWidth(80)
+        
+        # toolboxContainer.setLayout(self.toolboxContainerlLayout)
+
+        # self.layout.addWidget(toolboxContainer, 3, 2, 1, 2)
+
+        # =============================================================================
+        #         GUI for general buttons
+        # =============================================================================
         
         self.shutter2PButton = StylishQT.checkableButton(Icon_path = './Icons/shutter.png')
         self.shutter2PButton.clicked.connect(self.shutter2Paction)        
@@ -168,47 +186,43 @@ class Mainbody(QWidget):
         self.shutter2PButton.setGraphicsEffect(QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2))
         self.LEDButton.setGraphicsEffect(QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2))
         
-        self.toolboxContainerlLayout.addWidget(self.shutter2PButton, 0, 1)
-        self.toolboxContainerlLayout.addWidget(self.LEDButton, 0, 2)
-        
-        toolboxContainer.setLayout(self.toolboxContainerlLayout)
-
-        self.layout.addWidget(toolboxContainer, 1, 1)
+        self.layout.addWidget(self.shutter2PButton, 4, 2)
+        self.layout.addWidget(self.LEDButton, 4, 3)
         
         # =============================================================================
         #         GUI for weather
         # =============================================================================
-        self.layout.addWidget(GeneralWidgets.Weather_GUI.WeatherUI(), 1, 0)
+        # self.layout.addWidget(GeneralWidgets.Weather_GUI.WeatherUI(), 1, 0)
         
         # =============================================================================
         #         GUI for Thorlabs motor
         # =============================================================================
         self.KCubeWidgetInstance = SampleStageControl.StageMoveWidget.StageWidgetUI()
-        self.layout.addWidget(self.KCubeWidgetInstance, 4, 0, 1, 2)
+        self.layout.addWidget(self.KCubeWidgetInstance, 6, 0, 1, 4)
         
         # =============================================================================
         #         GUI for sample stage
         # =============================================================================
         self.StageMoveWidgetInstance = ThorlabsKCube.KCubeWidget.KCubeWidgetUI()
-        self.layout.addWidget(self.StageMoveWidgetInstance, 6, 0, 1, 2)
+        self.layout.addWidget(self.StageMoveWidgetInstance, 8, 0, 1, 4)
 
         # =============================================================================
         #         GUI for AOTF
         # =============================================================================             
         self.AOTFWidgetInstance = NIDAQ.AOTFWidget.AOTFWidgetUI()
-        self.layout.addWidget(self.AOTFWidgetInstance, 5, 0, 1, 2)
+        self.layout.addWidget(self.AOTFWidgetInstance, 7, 0, 1, 4)
 
         # =============================================================================
         #         GUI for fliter silder
         # =============================================================================        
         FilterSliderWidgetInstance = ThorlabsFilterSlider.FilterSliderWidget.FilterSliderWidgetUI()
-        self.layout.addWidget(FilterSliderWidgetInstance, 8, 0, 1, 2)    
+        self.layout.addWidget(FilterSliderWidgetInstance, 10, 0, 1, 4)    
 
         # =============================================================================
         #         GUI for objective motor
         # =============================================================================        
         ObjMotorInstance = PI_ObjectiveMotor.ObjMotorWidget.ObjMotorWidgetUI()
-        self.layout.addWidget(ObjMotorInstance, 7, 0, 1, 2)         
+        self.layout.addWidget(ObjMotorInstance, 9, 0, 1, 4)         
 
         # =============================================================================
         #         GUI for camera button       
@@ -218,7 +232,7 @@ class Mainbody(QWidget):
         self.open_cam.setToolTip("Open camera widget")
         self.open_cam.setIconSize(QSize(100, 100))
         self.open_cam.clicked.connect(self.open_camera)
-        self.layout.addWidget(self.open_cam, 2, 0, 1, 2)
+        self.layout.addWidget(self.open_cam, 4, 0, 1, 2)
         self.open_cam.setGraphicsEffect(QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2))
         # =============================================================================
         #         GUI for Insight X3      
@@ -228,7 +242,7 @@ class Mainbody(QWidget):
         self.open_Insight.setToolTip("Open 2-p laser widget")
         self.open_Insight.setIconSize(QSize(40, 40))
         self.open_Insight.clicked.connect(self.open_Insight_UI)
-        self.layout.addWidget(self.open_Insight, 3, 0, 1, 1)
+        self.layout.addWidget(self.open_Insight, 5, 0, 1, 1)
         self.open_Insight.setGraphicsEffect(QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2))
         # =============================================================================
         #         GUI for evolution screening     
@@ -238,21 +252,13 @@ class Mainbody(QWidget):
         self.open_screening_button.setToolTip("Open screening widget")
         self.open_screening_button.setIconSize(QSize(45, 45))
         self.open_screening_button.clicked.connect(self.open_screening)
-        self.layout.addWidget(self.open_screening_button, 3, 1, 1, 1)
+        self.layout.addWidget(self.open_screening_button, 5, 1, 1, 1)
         self.open_screening_button.setGraphicsEffect(QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2))
-        # =============================================================================
-        #         Console massage    
-        # =============================================================================
-        self.console_text_edit = QTextEdit()
-        self.console_text_edit.setFontItalic(True)
-        self.console_text_edit.setPlaceholderText('Notice board from console.')
-        self.console_text_edit.setFixedHeight(200)
-        self.layout.addWidget(self.console_text_edit, 9, 0, 1, 2)
         
         #**************************************************************************************************************************************        
         #self.setLayout(pmtmaster)
             
-        self.layout.addWidget(self.tabs, 0, 2, 10, 4)
+        self.layout.addWidget(self.tabs, 0, 4, 12, 4)
         self.setLayout(self.layout)
         
         # =============================================================================

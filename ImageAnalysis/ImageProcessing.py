@@ -11,7 +11,7 @@ import matplotlib.patches as mpatches
 import math
 import time
 
-from skimage import data
+from skimage import data, img_as_ubyte
 from skimage.filters import threshold_otsu, threshold_local
 from skimage.filters.rank import entropy
 from skimage.segmentation import clear_border
@@ -1583,10 +1583,10 @@ class ProcessImage():
 
         """
         if amax == None:
-            image_uint8 = skimage.img_as_ubyte(image/np.amax(image))
+            image_uint8 = img_as_ubyte(image/np.amax(image))
         else:
             image = np.where(image >= amax, amax, image)
-            image_uint8 = skimage.img_as_ubyte(image/amax)
+            image_uint8 = img_as_ubyte(image/amax)
         entropy_image = entropy(image_uint8, disk(disk_size))
         
         return np.mean(entropy_image)
