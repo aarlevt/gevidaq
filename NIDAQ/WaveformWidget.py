@@ -77,6 +77,8 @@ class WaveformGenerator(QWidget):
                                   '2Pshutter']
         
         self.color_dictionary = {'galvos':[255,255,255],
+                                'galvos_X_contour':[255,255,255],
+                                'galvos_Y_contour':[255,255,255],
                                 'galvos_contour':[255,255,255],
                                 '640AO':[255,0,0],
                                 '488AO':[0,0,255],
@@ -116,7 +118,7 @@ class WaveformGenerator(QWidget):
         self.current_Analog_channel = QComboBox()
         self.current_Analog_channel.addItems(self.AnalogChannelList)
         self.AnalogLayout.addWidget(self.current_Analog_channel, 3, 0)
-        self.current_Analog_channel.setCurrentIndex(1)
+        self.current_Analog_channel.setCurrentIndex(2)
         
         self.add_waveform_button = StylishQT.addButton()
         self.add_waveform_button.setFixedHeight(32)
@@ -725,9 +727,10 @@ class WaveformGenerator(QWidget):
             
             channel_keyword = temp_loaded_container[i]['Sepcification']
             
-            self.waveform_data_dict[channel_keyword] = temp_loaded_container[i]['Waveform']
-            self.generate_graphy(channel_keyword, self.waveform_data_dict[channel_keyword])                
-        
+            if channel_keyword != "galvos_X_contour" and channel_keyword != "galvos_Y_contour":
+                self.waveform_data_dict[channel_keyword] = temp_loaded_container[i]['Waveform']
+                self.generate_graphy(channel_keyword, self.waveform_data_dict[channel_keyword])                
+            
     
     #%%
     def add_waveform_analog(self):
@@ -1205,6 +1208,7 @@ class WaveformGenerator(QWidget):
                     self.PlotDataItem_dict[waveform_key].setData(x_label, self.waveform_data_dict[waveform_key][1,:], name = waveform_key)                    
         
         #------------------Set galvos sampele stack apart----------------------
+        # Keys for contour scanning in waveform_data_dict change to "galvos_X_contour" and "galvos_Y_contour"
         if 'galvos' in self.waveform_data_dict and 'galvos_contour' not in self.waveform_data_dict:
             self.waveform_data_dict['galvosx'+'avgnum_'+str(int(self.GalvoAvgNumTextbox.value()))] = self.waveform_data_dict['galvos'][0, :]
             self.waveform_data_dict['galvosy'+'ypixels_'+str(int(self.GalvoYpixelNumTextbox.currentText()))] = self.waveform_data_dict['galvos'][1, :]

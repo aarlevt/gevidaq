@@ -15,6 +15,7 @@ import os
 from datetime import datetime
 import math
 from skimage.io import imread
+import skimage.external.tifffile as skimtiff
 import threading
 
 from NIDAQ.DAQoperator import DAQmission
@@ -58,7 +59,7 @@ class ScanningExecutionThread(QThread):
         self.pi_device_instance = PIMotor()
         print('Objective motor connected.')
         self.errornum = 0
-        # self.ObjCurrentPos = self.pi_device_instance.pidevice.qPOS(self.pi_device_instance.pidevice.axes)
+        # self.auto_focus_position = self.pi_device_instance.pidevice.qPOS(self.pi_device_instance.pidevice.axes)
 
         """
         # =============================================================================
@@ -221,8 +222,8 @@ class ScanningExecutionThread(QThread):
                     #         Unpack the focus stack information, conduct auto-focusing if set.
                     # =============================================================================
                     """
-                    self.ZStackNum, ZStackPosList = self.unpack_focus_stack(EachGrid, EachRound, EachCoord)
-                    
+                    self.ZStackNum = self.unpack_focus_stack(EachGrid, EachRound, EachCoord)
+                    print("zstacknum{}".format(self.ZStackNum))
                 
                     print('*******************************************Round {}. Current index: {}.**************************************************'.format\
                           (EachRound+1, [RowIndex,ColumnIndex]))
@@ -237,16 +238,17 @@ class ScanningExecutionThread(QThread):
                         print('--------------------------------------------Stack {}--------------------------------------------------'.format(EachZStackPos+1))
                         if self.ZStackNum > 1:
                             self.ZStackOrder = int(EachZStackPos +1) # Here the first one is 1, not starting from 0.
-                            FocusPos = ZStackPosList[EachZStackPos]
-                            print('Target focus pos: {}'.format(FocusPos))
+                            self.FocusPos = self.ZStackPosList[EachZStackPos]
+                            print('Target focus pos: {}'.format(self.FocusPos))
     
-                            self.pi_device_instance.move(FocusPos)
-                            # self.ObjCurrentPosInStack = self.pi_device_instance.pidevice.qPOS(self.pi_device_instance.pidevice.axes)
-                            # print("Current position: {:.4f}".format(self.ObjCurrentPosInStack['1']))
+                            self.pi_device_instance.move(self.FocusPos)
+                            # self.auto_focus_positionInStack = self.pi_device_instance.pidevice.qPOS(self.pi_device_instance.pidevice.axes)
+                            # print("Current position: {:.4f}".format(self.auto_focus_positionInStack['1']))
                             
                             time.sleep(0.3)
                         else:
                             self.ZStackOrder = 1
+                            self.FocusPos = self.ZStackPosList[0]
                         """
                         # =============================================================================
                         #         Execute waveform packages
@@ -559,41 +561,45 @@ class ScanningExecutionThread(QThread):
                 if self.coord_array['focus_position'] == -1.:
                     instance_FocusFinder = FocusFinder(motor_handle = self.pi_device_instance)
                     print("--------------Start auto-focusing-----------------")
-                    self.ObjCurrentPos = instance_FocusFinder.bisection()
+                    self.auto_focus_position = instance_FocusFinder.bisection()
                     
                     try:
-                        if self.ObjCurrentPos[0] == False: # If there's no cell in FOV
+                        if self.auto_focus_position[0] == False: # If there's no cell in FOV
                         # Skip?  mid_position = [False, self.current_pos]
-                            self.ObjCurrentPos = self.ObjCurrentPos[1]
+                            self.auto_focus_position = self.auto_focus_position[1]
                     except:
                         pass
                         
                     print("--------------End of auto-focusing----------------")
                     time.sleep(1)
                     
+
+            
                     # Record the position, try to write it in the NEXT round dict.
                     try:
-                        self.RoundCoordsDict['CoordsPackage_{}'.format(EachRound + 2)][EachCoord]['focus_position'] = self.ObjCurrentPos
+                        self.RoundCoordsDict['CoordsPackage_{}'.format(EachRound + 2)][EachCoord]['focus_position'] = self.auto_focus_position
                     except:# If it's already the last round, skip.
                         pass
                     
                 else: # If there's already position from last round, move to it.
-                    recorded_pos = self.RoundCoordsDict['CoordsPackage_{}'.format(EachRound+1)][EachCoord]['focus_position']
+                    self.auto_focus_position = self.RoundCoordsDict['CoordsPackage_{}'.format(EachRound+1)][EachCoord]['focus_position']
                     print("=====================Move to last recorded position=================")
-                    self.pi_device_instance.move(recorded_pos)
+                    # self.pi_device_instance.move(self.auto_focus_position)
+                
+                # Generate position list.
+                ZStacklinspaceStart = self.auto_focus_position - (math.floor(ZStackNum/2)) * ZStackStep
+                ZStacklinspaceEnd = self.auto_focus_position + (ZStackNum - math.floor(ZStackNum/2)-1) * ZStackStep
+                       
+                self.ZStackPosList = np.linspace(ZStacklinspaceStart, ZStacklinspaceEnd, num = ZStackNum)
+                print('ZStackPos is : {}'.format(self.ZStackPosList))   
             #------------------------------------------------------------------
             # If not auto focus, stay where it is.
             else:
-                self.ObjCurrentPos = self.pi_device_instance.GetCurrentPos()
+                pass
                 
-            ZStacklinspaceStart = self.ObjCurrentPos - (math.floor(ZStackNum/2)) * ZStackStep
-            ZStacklinspaceEnd = self.ObjCurrentPos + (ZStackNum - math.floor(ZStackNum/2)-1) * ZStackStep
-                   
-            
-        ZStackPosList = np.linspace(ZStacklinspaceStart, ZStacklinspaceEnd, num = ZStackNum)
-        print('ZStackPos is : {}'.format(ZStackPosList))
+
         
-        return ZStackNum, ZStackPosList
+        return ZStackNum
         
     def inidividual_coordinate_operation(self, EachRound, EachWaveform, RowIndex, ColumnIndex):
         """
@@ -706,6 +712,7 @@ class ScanningExecutionThread(QThread):
                         else:
                             self.PMT_image_reconstructed_stack = np.concatenate((self.PMT_image_reconstructed_stack, self.PMT_image_reconstructed[np.newaxis, :, :]), axis=0)
                             print(self.PMT_image_reconstructed_stack.shape)
+                            
                         #---------------------------------------------Calculate the z max projection-----------------------------------------------------------------------
                         if self.repeatnum == 1: # Consider one repeat image situlation 
                             if self.ZStackNum > 1:
@@ -718,15 +725,21 @@ class ScanningExecutionThread(QThread):
 
                             else:
                                 self.PMT_image_maxprojection_stack = self.PMT_image_reconstructed[np.newaxis, :, :]
+                                
                         # Save the max projection image
                         if self.ZStackOrder == self.ZStackNum:
                             self.PMT_image_maxprojection = np.max(self.PMT_image_maxprojection_stack, axis=0)
                             
-                            LocalimgZprojection = Image.fromarray(self.PMT_image_maxprojection) #generate an image object
-                            LocalimgZprojection.save(os.path.join(self.scansavedirectory, 'Round'+str(self.RoundWaveformIndex[0])+'_Coords'+str(self.currentCoordsSeq)+'_R'+str(self.CurrentPosIndex[0])+'C'+str(self.CurrentPosIndex[1])+'_PMT_'+str(imageSequence)+'Zmax'+'.tif')) #save as tif                            
-#                            
-                        Localimg = Image.fromarray(self.PMT_image_reconstructed) #generate an image object
-                        Localimg.save(os.path.join(self.scansavedirectory, 'Round'+str(self.RoundWaveformIndex[0])+'_Coords'+str(self.currentCoordsSeq)+'_R'+str(self.CurrentPosIndex[0])+'C'+str(self.CurrentPosIndex[1])+'_PMT_'+str(imageSequence)+'Zpos'+str(self.ZStackOrder)+'.tif')) #save as tif
+                            # Save the zmax file.
+                            with skimtiff.TiffWriter(os.path.join(self.scansavedirectory, 'Round'+str(self.RoundWaveformIndex[0])+'_Coords'+str(self.currentCoordsSeq)+'_R'+str(self.CurrentPosIndex[0])+'C'+str(self.CurrentPosIndex[1])+'_PMT_'+str(imageSequence)+'Zmax'+'.tif'), imagej = True) as tif:                
+                                tif.save(self.PMT_image_maxprojection.astype('float32'), compress=0, metadata = {"FocusPos: " : str(self.FocusPos)})
+
+                        # Save the individual file.
+                        with skimtiff.TiffWriter(os.path.join(self.scansavedirectory, 'Round'+str(self.RoundWaveformIndex[0])+'_Coords'+str(self.currentCoordsSeq)+'_R'+str(self.CurrentPosIndex[0])+'C'+str(self.CurrentPosIndex[1])+'_PMT_'+str(imageSequence)+'Zpos'+str(self.ZStackOrder)+'.tif'), imagej = True) as tif:                
+                            tif.save(self.PMT_image_reconstructed.astype('float32'), compress=0, metadata = {"FocusPos: " : str(self.FocusPos)})
+                                
+                        # Localimg = Image.fromarray(self.PMT_image_reconstructed) #generate an image object
+                        # Localimg.save(os.path.join(self.scansavedirectory, 'Round'+str(self.RoundWaveformIndex[0])+'_Coords'+str(self.currentCoordsSeq)+'_R'+str(self.CurrentPosIndex[0])+'C'+str(self.CurrentPosIndex[1])+'_PMT_'+str(imageSequence)+'Zpos'+str(self.ZStackOrder)+'.tif')) #save as tif
                         
                         plt.figure()
                         plt.imshow(self.PMT_image_reconstructed, cmap = plt.cm.gray) # For reconstructed image we pull out the first layer, getting 2d img.
@@ -772,13 +785,15 @@ class ScanningExecutionThread(QThread):
                         # Save the max projection image
                         if self.ZStackOrder == self.ZStackNum:
                             self.PMT_image_maxprojection = np.max(self.PMT_image_maxprojection_stack, axis=0)
+
+                            # Save the zmax file.
+                            with skimtiff.TiffWriter(os.path.join(self.scansavedirectory, 'Round'+str(self.RoundWaveformIndex[0])+'_Coords'+str(self.currentCoordsSeq)+'_R'+str(self.CurrentPosIndex[0])+'C'+str(self.CurrentPosIndex[1])+'_PMT_'+str(imageSequence)+'Zmax'+'.tif'), imagej = True) as tif:                
+                                tif.save(self.PMT_image_maxprojection.astype('float32'), compress=0, metadata = {"FocusPos: " : str(self.FocusPos)})
+
+                        # Save the file.
+                        with skimtiff.TiffWriter(os.path.join(self.scansavedirectory, 'Round'+str(self.RoundWaveformIndex[0])+'_Coords'+str(self.currentCoordsSeq)+'_R'+str(self.CurrentPosIndex[0])+'C'+str(self.CurrentPosIndex[1])+'_PMT_'+str(imageSequence)+'Zpos'+str(self.ZStackOrder)+'.tif'), imagej = True) as tif:                
+                            tif.save(self.PMT_image_reconstructed.astype('float32'), compress=0, metadata = {"FocusPos: " : str(self.FocusPos)})
                             
-                            LocalimgZprojection = Image.fromarray(self.PMT_image_maxprojection) #generate an image object
-                            LocalimgZprojection.save(os.path.join(self.scansavedirectory, 'Round'+str(self.RoundWaveformIndex[0])+'_Coords'+str(self.currentCoordsSeq)+'_R'+str(self.CurrentPosIndex[0])+'C'+str(self.CurrentPosIndex[1])+'_PMT_'+str(imageSequence)+'Zmax'+'.tif')) #save as tif                            
-                        
-                        Localimg = Image.fromarray(self.PMT_image_reconstructed) #generate an image object
-                        Localimg.save(os.path.join(self.scansavedirectory, 'Round'+str(self.RoundWaveformIndex[0])+'_Coords'+str(self.currentCoordsSeq)+'_R'+str(self.CurrentPosIndex[0])+'C'+str(self.CurrentPosIndex[1])+'_PMT_'+str(imageSequence)+'Zpos'+str(self.ZStackOrder)+'.tif')) #save as tif
-                        
                         plt.figure()
                         plt.imshow(self.PMT_image_reconstructed, cmap = plt.cm.gray)
                         plt.show()
@@ -786,140 +801,7 @@ class ScanningExecutionThread(QThread):
                         print('No.{} image failed to generate.'.format(imageSequence))
 
         print('ProcessData executed.')
-    #--------------------------------------------------------------Reconstruct and save images from 1D recorded array.--------------------------------------------------------------------------------       
-#     def ProcessData(self, data_waveformreceived):    
-#         """
-#         Process the singal collected by Daq recording channels.
 
-#         Parameters
-#         ----------
-#         data_waveformreceived : TYPE
-#             Output from DAQmission collected_data signal.
-
-#         Returns
-#         -------
-#         None.
-
-#         """
-#         print('ZStackOrder is:'+str(self.ZStackOrder)+'numis_'+str(self.ZStackNum))
-#         self.adcollector.save_as_binary(self.scansavedirectory)
-        
-#         self.channel_number = len(data_waveformreceived)
-#         if self.channel_number == 1:            
-#             if 'Vp' in self.readinchan:
-#                 pass
-#             elif 'Ip' in self.readinchan:
-#                 pass
-#             elif 'PMT' in self.readinchan:  # repeatnum, PMT_data_index_array, averagenum, ScanArrayXnum
-
-#                 self.data_collected_0 = data_waveformreceived[0]*-1
-#                 self.data_collected_0 = self.data_collected_0[0:len(self.data_collected_0)-1]
-#                 print(len(self.data_collected_0))                
-#                 for imageSequence in range(self.repeatnum):
-                    
-#                     try:
-#                         self.PMT_image_reconstructed_array = self.data_collected_0[np.where(self.PMT_data_index_array == imageSequence+1)]
-# #                        if imageSequence == int(self.repeatnum)-1:
-# #                            self.PMT_image_reconstructed_array = self.PMT_image_reconstructed_array[0:len(self.PMT_image_reconstructed_array)-1] # Extra one sample at the end.
-# #                        print(self.PMT_image_reconstructed_array.shape)
-#                         Dataholder_average = np.mean(self.PMT_image_reconstructed_array.reshape(self.averagenum, -1), axis=0)
-# #                        print(Dataholder_average.shape)
-#                         Value_yPixels = int(self.lenSample_1/self.ScanArrayXnum)
-#                         self.PMT_image_reconstructed = np.reshape(Dataholder_average, (Value_yPixels, self.ScanArrayXnum))
-                        
-#                         self.PMT_image_reconstructed = self.PMT_image_reconstructed[:, 50:550] 
-#                         # Crop size based on: M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Xin\2019-12-30 2p beads area test 4um
-# #                        self.PMT_image_reconstructed = self.PMT_image_reconstructed[:, 70:326] # for 256*256 images
-#                         #---------------------------------------------For multiple images in one z pos, Stack the arrays into a 3d array-------------------------------------------------
-#                         if imageSequence == 0:
-#                             self.PMT_image_reconstructed_stack = self.PMT_image_reconstructed[np.newaxis, :, :] # Turns into 3d array
-#                         else:
-#                             self.PMT_image_reconstructed_stack = np.concatenate((self.PMT_image_reconstructed_stack, self.PMT_image_reconstructed[np.newaxis, :, :]), axis=0)
-#                             print(self.PMT_image_reconstructed_stack.shape)
-#                         #---------------------------------------------Calculate the z max projection-----------------------------------------------------------------------
-#                         if self.repeatnum == 1: # Consider one repeat image situlation 
-#                             if self.ZStackNum > 1:
-#                                 if self.ZStackOrder == 1:
-#                                     self.PMT_image_maxprojection_stack = self.PMT_image_reconstructed[np.newaxis, :, :]
-
-#                                 else:
-
-#                                     self.PMT_image_maxprojection_stack = np.concatenate((self.PMT_image_maxprojection_stack, self.PMT_image_reconstructed[np.newaxis, :, :]), axis=0)
-
-#                             else:
-#                                 self.PMT_image_maxprojection_stack = self.PMT_image_reconstructed[np.newaxis, :, :]
-#                         # Save the max projection image
-#                         if self.ZStackOrder == self.ZStackNum:
-#                             self.PMT_image_maxprojection = np.max(self.PMT_image_maxprojection_stack, axis=0)
-                            
-#                             LocalimgZprojection = Image.fromarray(self.PMT_image_maxprojection) #generate an image object
-#                             img_text =  "_PMT_"+str(imageSequence)+"Zmax" 
-#                             LocalimgZprojection.save(self.generate_tif_name(extra_text = img_text)) #save as tif                            
-                        
-#                         Localimg = Image.fromarray(self.PMT_image_reconstructed) #generate an image object
-#                         img_text =  "_PMT_"+str(imageSequence)+"Zpos" + str(self.ZStackOrder)
-#                         Localimg.save(self.generate_tif_name(extra_text = img_text)) #save as tif
-                        
-#                         plt.figure()
-#                         plt.imshow(self.PMT_image_reconstructed, cmap = plt.cm.gray) # For reconstructed image we pull out the first layer, getting 2d img.
-#                         plt.show()
-#                     except:
-#                         print('No.{} image failed to generate.'.format(imageSequence))
-                    
-#         elif self.channel_number == 2: 
-#             if 'PMT' not in self.readinchan:
-#                 pass
-#             elif 'PMT' in self.readinchan:
-
-#                 self.data_collected_0 = data_waveformreceived[0]*-1
-#                 self.data_collected_0 = self.data_collected_0[0:len(self.data_collected_0)-1]
-#                 print(len(self.data_collected_0)) 
-#                 for imageSequence in range(self.repeatnum):
-#                     try:
-#                         self.PMT_image_reconstructed_array = self.data_collected_0[np.where(self.PMT_data_index_array == imageSequence+1)]
-#                         if imageSequence == int(self.repeatnum)-1:
-#                             self.PMT_image_reconstructed_array = self.PMT_image_reconstructed_array[0:len(self.PMT_image_reconstructed_array)-1] # Extra one sample at the end.
-
-#                         Dataholder_average = np.mean(self.PMT_image_reconstructed_array.reshape(self.averagenum, -1), axis=0)
-#                         Value_yPixels = int(self.lenSample_1/self.ScanArrayXnum)
-#                         self.PMT_image_reconstructed = np.reshape(Dataholder_average, (Value_yPixels, self.ScanArrayXnum))
-                        
-#                         self.PMT_image_reconstructed = self.PMT_image_reconstructed[:, 50:550]
-                        
-#                         # Stack the arrays into a 3d array
-#                         if imageSequence == 0:
-#                             self.PMT_image_reconstructed_stack = self.PMT_image_reconstructed[np.newaxis, :, :]
-#                         else:
-#                             self.PMT_image_reconstructed_stack = np.concatenate((self.PMT_image_reconstructed_stack, self.PMT_image_reconstructed[np.newaxis, :, :]), axis=0)
-                        
-#                         #---------------------------------------------Calculate the z max projection-----------------------------------------------------------------------
-#                         if self.repeatnum == 1: # Consider one repeat image situlation 
-#                             if self.ZStackNum > 1:
-#                                 if self.ZStackOrder == 1:
-#                                     self.PMT_image_maxprojection_stack = self.PMT_image_reconstructed[np.newaxis, :, :]
-#                                 else:
-#                                     self.PMT_image_maxprojection_stack = np.concatenate((self.PMT_image_maxprojection_stack, self.PMT_image_reconstructed[np.newaxis, :, :]), axis=0)
-#                             else:
-#                                 self.PMT_image_maxprojection_stack = self.PMT_image_reconstructed[np.newaxis, :, :]
-#                         # Save the max projection image
-#                         if self.ZStackOrder == self.ZStackNum:
-#                             self.PMT_image_maxprojection = np.max(self.PMT_image_maxprojection_stack, axis=0)
-                            
-#                             LocalimgZprojection = Image.fromarray(self.PMT_image_maxprojection) #generate an image object
-#                             img_text =  "_PMT_"+str(imageSequence)+"Zmax" 
-#                             LocalimgZprojection.save(self.generate_tif_name(extra_text = img_text)) #save as tif                            
-                        
-#                         Localimg = Image.fromarray(self.PMT_image_reconstructed) #generate an image object
-#                         img_text =  "_PMT_"+str(imageSequence)+"Zpos" + str(self.ZStackOrder)
-#                         Localimg.save(self.generate_tif_name(extra_text = img_text)) #save as tif
-                        
-#                         plt.figure()
-#                         plt.imshow(self.PMT_image_reconstructed, cmap = plt.cm.gray)
-#                         plt.show()
-#                     except:
-#                         print('No.{} image failed to generate.'.format(imageSequence))
-
-#         print('ProcessData executed.')
         
         def generate_tif_name(self, extra_text = "_"):
             

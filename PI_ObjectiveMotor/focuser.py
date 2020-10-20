@@ -6,6 +6,7 @@ Created on Thu Mar 21 14:41:41 2019
 """
 import sys
 import os
+import time
 
 if __name__ == "__main__":
     abspath = os.path.abspath(__file__)
@@ -66,9 +67,10 @@ class PIMotor:
         targets = [target_pos]
         self.pidevice.MOV(self.pidevice.axes, targets)
         pitools.waitontarget(self.pidevice)
+        time.sleep(0.3)
         positions = self.pidevice.qPOS(self.pidevice.axes)
         for axis in self.pidevice.axes:
-            print('position of axis {} = {:.4f}'.format(axis, positions[axis]))
+            print('position of axis {} = {:.5f}'.format(axis, positions[axis]))
             
     
     def GetCurrentPos(self):

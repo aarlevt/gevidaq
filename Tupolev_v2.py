@@ -141,16 +141,22 @@ class Mainbody(QWidget):
         #         Console massage    
         # =============================================================================
         self.console_text_edit = QTextEdit()
-        self.console_text_edit.setFontItalic(True)
+        # self.console_text_edit.setFontItalic(True)
         self.console_text_edit.setPlaceholderText('Notice board from console.')
         self.console_text_edit.setFixedHeight(150)
         self.setdirectorycontrolLayout.addWidget(self.console_text_edit, 1, 0, 5, 3)
         
         self.setMetaTextButton = QtWidgets.QPushButton()
-        self.setMetaTextButton.setIcon(QIcon('./Icons/Browse.png')) 
-        self.setMetaTextButton.setObjectName("Set Meta Text")
-        self.setdirectorycontrolLayout.addWidget(self.console_text_edit, 1, 4, 1, 1)
-        # self.setMetaTextButton.clicked.connect(self.set_saving_directory)       
+        self.setMetaTextButton.setIcon(QIcon('./Icons/write.png')) 
+        self.setMetaTextButton.setObjectName("Init. Meta Text")
+        self.setdirectorycontrolLayout.addWidget(self.setMetaTextButton, 1, 3, 1, 1)
+        self.setMetaTextButton.clicked.connect(self.Init_Meta_Text)
+        
+        self.saveMetaTextButton = QtWidgets.QPushButton()
+        self.saveMetaTextButton.setIcon(QIcon('./Icons/save.png')) 
+        self.saveMetaTextButton.setObjectName("Save Meta Text")
+        self.setdirectorycontrolLayout.addWidget(self.saveMetaTextButton, 2, 3, 1, 1)
+        self.saveMetaTextButton.clicked.connect(self.Save_Meta_Text) 
         
         setdirectoryContainer.setLayout(self.setdirectorycontrolLayout)
         setdirectoryContainer.setMaximumHeight(220)
@@ -280,6 +286,8 @@ class Mainbody(QWidget):
         ***************************************************************************************************************************************
         ************************************************************END of GUI*****************************************************************
         '''
+        
+        self.Init_Meta_Text()
     #%%
     def __del__(self):
         # Restore sys.stdout
@@ -380,6 +388,21 @@ class Mainbody(QWidget):
         self.console_text_edit.setTextCursor(cursor)
         self.console_text_edit.ensureCursorVisible()
         
+    def Init_Meta_Text(self):
+        Init_Meta_Text = \
+        "=========Meta Text========\n\
+Construct: \n\nTwo-photon wavelength: \nTwo-photon power: \nTwo-photon ND value: \nPMT amplification: \n\
+=======================\n"
+        
+        self.console_text_edit.clear()
+        self.console_text_edit.setPlainText(Init_Meta_Text)
+        
+    def Save_Meta_Text(self):
+        
+        meta_text = self.console_text_edit.toPlainText()
+        with open(os.path.join(self.savedirectory, "meta_text.txt"), 'w') as output_file:
+            output_file.write(meta_text)
+    
     def closeEvent(self, event):
         QtWidgets.QApplication.quit()
         event.accept()
