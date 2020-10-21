@@ -696,16 +696,15 @@ class ScanningExecutionThread(QThread):
                     
                     try:
                         self.PMT_image_reconstructed_array = self.data_collected_0[np.where(self.PMT_data_index_array == imageSequence+1)]
-#                        if imageSequence == int(self.repeatnum)-1:
-#                            self.PMT_image_reconstructed_array = self.PMT_image_reconstructed_array[0:len(self.PMT_image_reconstructed_array)-1] # Extra one sample at the end.
-#                        print(self.PMT_image_reconstructed_array.shape)
+
                         Dataholder_average = np.mean(self.PMT_image_reconstructed_array.reshape(self.averagenum, -1), axis=0)
-#                        print(Dataholder_average.shape)
+
                         Value_yPixels = int(self.lenSample_1/self.ScanArrayXnum)
                         self.PMT_image_reconstructed = np.reshape(Dataholder_average, (Value_yPixels, self.ScanArrayXnum))
                         
                         self.PMT_image_reconstructed = self.PMT_image_reconstructed[:, 50:550] # Crop size based on: M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Xin\2019-12-30 2p beads area test 4um
 #                        self.PMT_image_reconstructed = self.PMT_image_reconstructed[:, 70:326] # for 256*256 images
+
                         #---------------------------------------------For multiple images in one z pos, Stack the arrays into a 3d array--------------------------------------------------------------------------
                         if imageSequence == 0:
                             self.PMT_image_reconstructed_stack = self.PMT_image_reconstructed[np.newaxis, :, :] # Turns into 3d array
@@ -737,10 +736,7 @@ class ScanningExecutionThread(QThread):
                         # Save the individual file.
                         with skimtiff.TiffWriter(os.path.join(self.scansavedirectory, 'Round'+str(self.RoundWaveformIndex[0])+'_Coords'+str(self.currentCoordsSeq)+'_R'+str(self.CurrentPosIndex[0])+'C'+str(self.CurrentPosIndex[1])+'_PMT_'+str(imageSequence)+'Zpos'+str(self.ZStackOrder)+'.tif'), imagej = True) as tif:                
                             tif.save(self.PMT_image_reconstructed.astype('float32'), compress=0, metadata = {"FocusPos: " : str(self.FocusPos)})
-                                
-                        # Localimg = Image.fromarray(self.PMT_image_reconstructed) #generate an image object
-                        # Localimg.save(os.path.join(self.scansavedirectory, 'Round'+str(self.RoundWaveformIndex[0])+'_Coords'+str(self.currentCoordsSeq)+'_R'+str(self.CurrentPosIndex[0])+'C'+str(self.CurrentPosIndex[1])+'_PMT_'+str(imageSequence)+'Zpos'+str(self.ZStackOrder)+'.tif')) #save as tif
-                        
+                       
                         plt.figure()
                         plt.imshow(self.PMT_image_reconstructed, cmap = plt.cm.gray) # For reconstructed image we pull out the first layer, getting 2d img.
                         plt.show()

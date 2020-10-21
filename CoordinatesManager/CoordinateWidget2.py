@@ -35,6 +35,7 @@ from CoordinatesManager.ui_widgets.DrawingWidget import DrawingWidget
 from CoordinatesManager.ui_widgets.SelectPointImageView import SelectPointImageView
 
 from PyQt5 import QtWidgets, QtCore
+from PyQt5.QtGui import QColor, QPen, QPixmap, QIcon, QTextCursor, QFont
 from PyQt5.QtWidgets import (QWidget, QPushButton, QRadioButton, QVBoxLayout, 
                              QCheckBox, QGridLayout, QHBoxLayout, QVBoxLayout, 
                              QGroupBox, QTabWidget, QGraphicsView, QGraphicsScene, 
@@ -68,7 +69,7 @@ class CoordinatesWidgetUI(QWidget):
         
         self.main_application = parent
         self.init_gui()
-        self.sig_to_calling_widget = []
+        self.sig_to_calling_widget = {}
 
         # HamamatsuUI.CameraUI.signal_SnapImg.connect(self.receive_image_from_camera)
         
@@ -124,8 +125,8 @@ class CoordinatesWidgetUI(QWidget):
         self.maskGeneratorLayout = QGridLayout()
         self.maskGeneratorContainer.setLayout(self.maskGeneratorContainerLayout)
         
-        self.loadMaskFromFileButton = QPushButton('Open mask')
-        self.loadMaskFromFileButton.clicked.connect(self.load_mask_from_file)
+        # self.loadMaskFromFileButton = QPushButton('Load mask')
+        # self.loadMaskFromFileButton.clicked.connect(self.load_mask_from_file)
         
         self.addRoiButton = QPushButton("Add ROI")
         self.createMaskButton = QPushButton("Add mask")
@@ -139,10 +140,38 @@ class CoordinatesWidgetUI(QWidget):
         self.deleteMaskButton.clicked.connect(self.delete_mask)
         self.removeSelectionButton.clicked.connect(self.remove_selection)
         
-        self.maskGeneratorContainerLayout.addWidget(self.addRoiButton, 1, 0)
+        self.maskGeneratorContainerLayout.addWidget(self.addRoiButton, 0, 0)
         self.maskGeneratorContainerLayout.addWidget(self.createMaskButton, 2, 0)
-        self.maskGeneratorContainerLayout.addWidget(self.deleteMaskButton, 2, 1)
-        self.maskGeneratorContainerLayout.addWidget(self.removeSelectionButton, 1, 1)
+        self.maskGeneratorContainerLayout.addWidget(self.deleteMaskButton, 2, 2)
+        self.maskGeneratorContainerLayout.addWidget(self.removeSelectionButton, 2, 3)
+        # self.maskGeneratorContainerLayout.addWidget(self.loadMaskFromFileButton, 2, 1)
+        
+        self.clearRoiButton = QPushButton("Clear ROI")
+        self.clearRoiButton.clicked.connect(lambda: self.selection_view.clear_rois())
+        self.maskGeneratorContainerLayout.addWidget(self.clearRoiButton, 0, 1)
+        
+        self.maskGeneratorContainerLayout.addWidget(QLabel("Mask index:"), 1, 0)
+        self.mask_index_spinbox = QSpinBox()
+        self.mask_index_spinbox.setMinimum(1)
+        self.mask_index_spinbox.setValue(1)        
+        self.maskGeneratorContainerLayout.addWidget(self.mask_index_spinbox, 1, 1)
+        
+        self.previous_mask_button = QPushButton()
+        self.previous_mask_button.setStyleSheet("QPushButton {color:white;background-color: #FFCCE5;}"
+                                      "QPushButton:hover:!pressed {color:white;background-color: #CCFFFF;}")
+        self.previous_mask_button.setToolTip("Click arrow to enable WASD keyboard control")
+        self.previous_mask_button.setFixedWidth(60)
+        self.previous_mask_button.setIcon(QIcon('./Icons/LeftArrow.png'))        
+        self.maskGeneratorContainerLayout.addWidget(self.previous_mask_button, 1, 2)
+        
+        self.next_mask_button = QPushButton()
+        self.next_mask_button.setStyleSheet("QPushButton {color:white;background-color: #FFCCE5;}"
+                                      "QPushButton:hover:!pressed {color:white;background-color: #CCFFFF;}")
+        self.next_mask_button.setToolTip("Click arrow to enable WASD keyboard control")
+        self.next_mask_button.setFixedWidth(60)
+        self.next_mask_button.setIcon(QIcon('./Icons/RightArrow.png'))        
+        self.maskGeneratorContainerLayout.addWidget(self.next_mask_button, 1, 3)
+                
         self.selectionOptionsContainer = roundQGroupBox()
         self.selectionOptionsContainer.setTitle('Options')
         self.selectionOptionsLayout = QGridLayout()
@@ -168,14 +197,8 @@ class CoordinatesWidgetUI(QWidget):
         self.selectionOptionsLayout.addWidget(self.transform_for_laser_menu, 1, 2)
         
         self.selectionOptionsContainer.setLayout(self.selectionOptionsLayout)
-        
-        self.snapFovButton = QPushButton('Image FOV')
-        self.snapFovButton.setCheckable(True)
-        self.snapFovButton.setChecked(True)
-        
-        self.maskGeneratorContainerLayout.addWidget(self.snapFovButton, 0, 0, 1, 1)
-        self.maskGeneratorContainerLayout.addWidget(self.loadMaskFromFileButton, 0, 1, 1, 1)
-        self.maskGeneratorContainerLayout.addWidget(self.selectionOptionsContainer, 3, 0, 2, 2)
+
+        self.maskGeneratorContainerLayout.addWidget(self.selectionOptionsContainer, 3, 0, 2, 4)
         
         self.layout.addWidget(self.maskGeneratorContainer, 0, 1)
         
@@ -288,10 +311,10 @@ class CoordinatesWidgetUI(QWidget):
         list_of_rois = self.get_list_of_rois()
         
         # Signal to mask requesting widget.
-        self.current_mask_sig = [list_of_rois, flag_fill_contour, contour_thickness, flag_invert_mode, target_laser]
+        current_mask_sig = [list_of_rois, flag_fill_contour, contour_thickness, flag_invert_mode, target_laser]
         
         #---- This is the roi list sent to DMD to generate final stack of masks.----
-        self.sig_to_calling_widget.append(self.current_mask_sig)
+        self.sig_to_calling_widget["mask_{}".format(self.mask_index_spinbox.value())] = current_mask_sig
         
         # Show the untransformed mask
         self.current_mask = ProcessImage.CreateBinaryMaskFromRoiCoordinates(list_of_rois, \
@@ -301,14 +324,19 @@ class CoordinatesWidgetUI(QWidget):
         
         self.mask_view.setImage(self.current_mask)
         
+        for each_mask in self.sig_to_calling_widget:
+            plt.figure()
+            plt.imshow(self.sig_to_calling_widget[each_mask])
+            plt.show()
+            
     def delete_mask(self):
         """
         Remove the last mask from the list.
         """
-        del self.current_mask_sig[-1]
+        del self.sig_to_calling_widget["mask_{}".format(self.mask_index_spinbox.value())]
         
     def remove_selection(self):
-        self.sig_to_calling_widget = []
+        self.sig_to_calling_widget = {}
         self.selection_view.clear_rois()
     
 
@@ -330,12 +358,14 @@ class CoordinatesWidgetUI(QWidget):
         """
         Open a file manager to browse through files, load image file
         """
-        self.loadFileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, 'Select file', './CoordinateManager/Images/',"(*.png, *.tiff, *.jpg)")
+        self.loadFileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, 'Select file', './CoordinateManager/Images/',"Image files (*.jpg *.tif *.png)")
         try:
             image = plt.imread(self.loadFileName)
             
             self.current_mask = image
             self.mask_view.setImage(self.current_mask)
+            
+                      
         except:
             print('fail to load file.')
     

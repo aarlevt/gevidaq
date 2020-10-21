@@ -140,7 +140,7 @@ class DMDWidget(QWidget):
         
         settings_container_layout.addWidget(QLabel('ALP_BIN_MODE'), 3, 0)
         self.ALP_ALP_BIN_MODE_Combox = QComboBox()
-        self.ALP_ALP_BIN_MODE_Combox.addItems(['ALP_BIN_NORMAL', 'ALP_BIN_UNINTERRUPTED'])
+        self.ALP_ALP_BIN_MODE_Combox.addItems(['ALP_BIN_UNINTERRUPTED', 'ALP_BIN_NORMAL'])
         self.ALP_ALP_BIN_MODE_Combox.setToolTip("Binary mode: select from ALP_BIN_NORMAL and ALP_BIN_UNINTERRUPTED (No dark phase between frames)")
         # self.ALP_ALP_BIN_MODE_Combox.currentIndexChanged.connect(self.set_repeat_from_BIN_MODE)
         settings_container_layout.addWidget(self.ALP_ALP_BIN_MODE_Combox, 3, 1)
@@ -275,13 +275,13 @@ class DMDWidget(QWidget):
                 Signal sent out from CoordinateWidget which contains list of ROIs 
                 and other parameters for transformation and mask generation.
         """
-        for each_roi_index in range(len(sig_from_CoordinateWidget)):
+        for each_mask_key in sig_from_CoordinateWidget:
             print(f'len {len(sig_from_CoordinateWidget)}')
-            list_of_rois = sig_from_CoordinateWidget[each_roi_index][0]
-            flag_fill_contour = sig_from_CoordinateWidget[each_roi_index][1]
-            contour_thickness = sig_from_CoordinateWidget[each_roi_index][2]
-            flag_invert_mode = sig_from_CoordinateWidget[each_roi_index][3]
-            for_which_laser = sig_from_CoordinateWidget[each_roi_index][4]
+            list_of_rois = sig_from_CoordinateWidget[each_mask_key][0]
+            flag_fill_contour = sig_from_CoordinateWidget[each_mask_key][1]
+            contour_thickness = sig_from_CoordinateWidget[each_mask_key][2]
+            flag_invert_mode = sig_from_CoordinateWidget[each_mask_key][3]
+            for_which_laser = sig_from_CoordinateWidget[each_mask_key][4]
             
             list_of_rois_transformed = self.transform_coordinates(list_of_rois, for_which_laser)
             
@@ -294,7 +294,7 @@ class DMDWidget(QWidget):
             axs.imshow(mask_single_frame)
             
             # Here the self.mask is always a 3-dimentional np array with the 3rd axis being number of images.
-            if each_roi_index == 0:
+            if each_mask_key == "mask_1":
                 self.mask = mask_single_frame[:,:, np.newaxis]
             else:
                 self.mask = np.concatenate((self.mask, mask_single_frame[:,:, np.newaxis]), axis=2)
