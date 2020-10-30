@@ -48,7 +48,7 @@ class StageWidget(QWidget):
     def init_gui(self):
         layout = QGridLayout()
         
-        self.setFixedSize(320,100)
+        # self.setFixedSize(320,100)
         
         self.box = roundQGroupBox()
         self.box.setTitle("Stage")

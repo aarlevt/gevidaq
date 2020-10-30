@@ -265,7 +265,7 @@ class ManualRegistrationWidget(QWidget):
         self.init_gui()
         
     def init_gui(self):
-        self.setFixedSize(325,100)
+        # self.setFixedSize(325,100)
         
         layout = QGridLayout()
         self.setLayout(layout)

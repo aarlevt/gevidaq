@@ -316,7 +316,7 @@ class Mainbody(QWidget):
         TwoPLaserSettingLayout.addWidget(NDfilterlabel, 0, 3)
         NDfilterlabel.setAlignment(Qt.AlignRight)
         self.NDfilterCombox = QComboBox()
-        self.NDfilterCombox.addItems(['1', '2', '2.3', '2.5', '3', '0.5'])
+        self.NDfilterCombox.addItems(['1', '0.3', '0.5', '2', '2.3', '2.5', '3'])
         TwoPLaserSettingLayout.addWidget(self.NDfilterCombox, 0, 4)
         
         Emifilterlabel = QLabel("Emission filter:")

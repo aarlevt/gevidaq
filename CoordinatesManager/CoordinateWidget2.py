@@ -55,7 +55,15 @@ import numpy as np
 import time
 import datetime
 import matplotlib.pyplot as plt
+from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
+from matplotlib.figure import Figure
 
+try:
+    from ImageAnalysis.ImageProcessing_MaskRCNN import ProcessImageML
+except:
+    print('None MaskRCNN environment.')
+        
 class CoordinatesWidgetUI(QWidget):
     
     sig_cast_mask_coordinates_to_dmd = pyqtSignal(list)
@@ -93,6 +101,7 @@ class CoordinatesWidgetUI(QWidget):
         
         self.image_mask_stack = QTabWidget()
         
+        #---------------------------ROIs win----------------------------------
         self.selection_view = DrawingWidget(self)
         self.selection_view.enable_drawing(True)
         self.selection_view.getView().setLimits(xMin = 0, xMax = 2048, yMin = 0, yMax = 2048, minXRange = 2048, minYRange = 2048, maxXRange = 2048, maxYRange = 2048)
@@ -102,6 +111,7 @@ class CoordinatesWidgetUI(QWidget):
         self.selection_view.ui.roiPlot.hide()
         # self.selection_view.setImage(plt.imread('CoordinatesManager/Registration_Images/StageRegistration/Distance200_Offset0/A1.png'))
         
+        #---------------------------Mask win----------------------------------
         self.mask_view = SquareImageView()
         self.mask_view.getView().setLimits(xMin = 0, xMax = 2048, yMin = 0, yMax = 2048, minXRange = 2048, minYRange = 2048, maxXRange = 2048, maxYRange = 2048)
         self.mask_view.ui.roiBtn.hide()
@@ -110,10 +120,28 @@ class CoordinatesWidgetUI(QWidget):
         self.mask_view.ui.roiPlot.hide()
         self.mask_view.ui.histogram.hide()
         
+        #-------------------------MAsk RCNN-----------------------------------
+        MLmaskviewBox = QWidget()
+        MLmaskviewBoxLayout = QGridLayout() 
+        
+        self.Matdisplay_Figure = Figure()
+        self.Matdisplay_Canvas = FigureCanvas(self.Matdisplay_Figure)
+        self.Matdisplay_Canvas.setFixedWidth(500)
+        self.Matdisplay_Canvas.setFixedHeight(500)
+        self.Matdisplay_Canvas.mpl_connect('button_press_event', self._onclick)
+        
+        self.Matdisplay_toolbar = NavigationToolbar(self.Matdisplay_Canvas, self)
+        
+        MLmaskviewBoxLayout.addWidget(self.Matdisplay_toolbar, 0, 0)  
+        MLmaskviewBoxLayout.addWidget(self.Matdisplay_Canvas, 1, 0) 
+        
+        MLmaskviewBox.setLayout(MLmaskviewBoxLayout)
+        
         self.image_mask_stack.addTab(self.selection_view, 'Select')
         self.image_mask_stack.addTab(self.mask_view, 'Mask')
+        self.image_mask_stack.addTab(MLmaskviewBox, 'Mask-RCNN')
         
-        self.layout.addWidget(self.image_mask_stack, 0, 0, 5, 1)
+        self.layout.addWidget(self.image_mask_stack, 0, 0, 4, 7)
         
         # ---------------------- Mask generation Container  --------------
         
@@ -198,12 +226,33 @@ class CoordinatesWidgetUI(QWidget):
         
         self.selectionOptionsContainer.setLayout(self.selectionOptionsLayout)
 
-        self.maskGeneratorContainerLayout.addWidget(self.selectionOptionsContainer, 3, 0, 2, 4)
+        self.maskGeneratorContainerLayout.addWidget(self.selectionOptionsContainer, 3, 0, 2, 3)
         
-        self.layout.addWidget(self.maskGeneratorContainer, 0, 1)
+        self.MLOptionsContainer = roundQGroupBox()
+        self.MLOptionsContainer.setTitle('Mask-RCNN')
+        self.MLOptionsContainerLayout = QGridLayout()
+        
+        self.init_ML_button = QPushButton('Init. ML', self)
+        self.MLOptionsContainerLayout.addWidget(self.init_ML_button, 0, 0)
+        self.init_ML_button.clicked.connect(lambda: self.run_in_thread(self.init_ML))  
+        
+        self.run_ML_button = QPushButton('Analysis', self)
+        self.MLOptionsContainerLayout.addWidget(self.run_ML_button, 1, 0)
+        self.run_ML_button.clicked.connect(self.run_ML_onImg_and_display)
+        
+        self.generate_MLmask_button = QPushButton('To ROIs', self)
+        self.MLOptionsContainerLayout.addWidget(self.generate_MLmask_button, 2, 0)
+        self.generate_MLmask_button.clicked.connect(self.generate_MLmask)
+        
+        self.MLOptionsContainer.setLayout(self.MLOptionsContainerLayout)
+
+        self.maskGeneratorContainerLayout.addWidget(self.MLOptionsContainer, 3, 3, 2, 1)
+        
+        
+        self.layout.addWidget(self.maskGeneratorContainer, 0, 8, 1, 3)
         
         self.DMDWidget = DMDWidget.DMDWidget()
-        self.layout.addWidget(self.DMDWidget, 1, 1)
+        self.layout.addWidget(self.DMDWidget, 1, 8, 1, 3)
         
         """--------------------------------------------------------------------
         # Singal sent out from DMDWidget to ask for mask generated here.
@@ -217,7 +266,7 @@ class CoordinatesWidgetUI(QWidget):
         self.DMDWidget.sig_finished_registration.connect(lambda: self.sig_finished_registration.emit())
         
         self.GalvoWidget = GalvoWidget.GalvoWidget()
-        self.layout.addWidget(self.GalvoWidget, 2, 1)
+        self.layout.addWidget(self.GalvoWidget, 2, 8, 2, 2)
         
         self.GalvoWidget.sig_request_mask_coordinates.connect(lambda: self.cast_mask_coordinates('galvo'))
         self.sig_cast_mask_coordinates_to_galvo.connect(self.GalvoWidget.receive_mask_coordinates)
@@ -228,10 +277,10 @@ class CoordinatesWidgetUI(QWidget):
         self.ManualRegistrationWidget.sig_request_camera_image.connect(self.cast_camera_image)
         self.sig_cast_camera_image.connect(self.ManualRegistrationWidget.receive_camera_image)
         
-        self.layout.addWidget(self.ManualRegistrationWidget, 3, 1)
+        self.layout.addWidget(self.ManualRegistrationWidget, 2, 10, 1, 1)
         
         self.StageRegistrationWidget = StageRegistrationWidget.StageWidget(self)
-        self.layout.addWidget(self.StageRegistrationWidget, 4, 1)
+        self.layout.addWidget(self.StageRegistrationWidget, 3, 10, 1, 1)
     #%%
         
     def cast_transformation_to_DMD(self, transformation, laser):
@@ -368,6 +417,165 @@ class CoordinatesWidgetUI(QWidget):
                       
         except:
             print('fail to load file.')
+    
+    # =============================================================================
+    #     MaskRCNN detection part
+    # =============================================================================    
+
+    def init_ML(self):
+        # Initialize the detector instance and load the model.
+        self.ProcessML = ProcessImageML()
+        
+    def run_ML_onImg_and_display(self):
+        """Run MaskRCNN on input image"""
+        self.Matdisplay_Figure.clear()
+        self.Matdisplay_Figure_axis = self.Matdisplay_Figure.add_subplot(111)
+        
+        self.MLtargetedImg = self.selection_view.image
+        print(self.MLtargetedImg.shape)
+        
+        # Depends on show_mask or not, the returned figure will be input raw image with mask or not.
+        self.MLresults = self.ProcessML.DetectionOnImage(self.MLtargetedImg, axis = self.Matdisplay_Figure_axis, show_mask=False, show_bbox=False)        
+        self.Mask              = self.MLresults['masks']
+        self.Label             = self.MLresults['class_ids']
+        self.Score             = self.MLresults['scores']
+        self.Bbox              = self.MLresults['rois']
+
+        self.SelectedCellIndex = 0
+        self.NumCells          = int(len(self.Label))
+        self.selected_ML_Index = []
+        self.selected_cells_infor_dict = {}
+        
+        self.Matdisplay_Figure_axis.imshow(self.MLtargetedImg.astype(np.uint8))
+        
+        self.Matdisplay_Figure.tight_layout()
+        self.Matdisplay_Canvas.draw()  
+        
+    #%%
+    # =============================================================================
+    #     Configure click event to add clicked cell mask
+    # =============================================================================       
+    
+    def _onclick(self,event):
+        """Highlights the cell selected in the figure by the user when clicked on"""
+        if self.NumCells > 0:
+            ShapeMask = np.shape(self.Mask)
+            # get coorinates at selected location in image coordinates
+            if event.xdata == None or event.ydata == None:
+                return
+            xcoor = min(max(int(event.xdata),0),ShapeMask[1])
+            ycoor = min(max(int(event.ydata),0),ShapeMask[0])
+            
+            # search for the mask coresponding to the selected cell
+            for EachCell in range(self.NumCells):
+                if self.Mask[ycoor,xcoor,EachCell]:
+                    self.SelectedCellIndex = EachCell
+                    break
+                
+            # highlight selected cell
+            if self.SelectedCellIndex not in self.selected_ML_Index:
+                # Get the selected cell's contour coordinates and mask patch
+                self.contour_verts, self.Cell_patch = self.get_cell_polygon(self.Mask[:,:,self.SelectedCellIndex])
+                
+                self.Matdisplay_Figure_axis.add_patch(self.Cell_patch)
+                self.Matdisplay_Canvas.draw()
+                
+                self.selected_ML_Index.append(self.SelectedCellIndex)
+                self.selected_cells_infor_dict['cell{}_verts'.format(str(self.SelectedCellIndex))] = self.contour_verts
+            else:
+                # If click on the same cell
+                self.Cell_patch.remove()
+                self.Matdisplay_Canvas.draw()
+                self.selected_ML_Index.remove(self.SelectedCellIndex)
+                self.selected_cells_infor_dict.pop('cell{}_verts'.format(str(self.SelectedCellIndex)))
+                
+    def get_cell_polygon(self, mask):  
+        # Mask Polygon
+        # Pad to ensure proper polygons for masks that touch image edges.
+        padded_mask = np.zeros(
+            (mask.shape[0] + 2, mask.shape[1] + 2), dtype=np.uint8)
+        padded_mask[1:-1, 1:-1] = mask
+        contours = find_contours(padded_mask, 0.5)
+        for verts in contours:
+            # Subtract the padding and flip (y, x) to (x, y)
+            verts = np.fliplr(verts) - 1
+            contour_polygon = mpatches.Polygon(verts, facecolor=self.random_colors(1)[0])
+        
+        return contours, contour_polygon
+        
+        
+    def random_colors(self, N, bright=True):
+        """
+        Generate random colors.
+        To get visually distinct colors, generate them in HSV space then
+        convert to RGB.
+        """
+        brightness = 1.0 if bright else 0.7
+        hsv = [(i / N, 1, brightness) for i in range(N)]
+        colors = list(map(lambda c: colorsys.hsv_to_rgb(*c), hsv))
+        random.shuffle(colors)
+        return colors
+
+    #%%
+    # =============================================================================
+    #     For mask generation
+    # =============================================================================
+    
+    def generate_MLmask(self):
+        """ Generate binary mask with all selected cells"""
+        self.MLmask = np.zeros((self.MLtargetedImg.shape[0], self.MLtargetedImg.shape[1]))
+        
+        if len(self.selected_ML_Index) > 0:
+            for selected_index in self.selected_ML_Index:
+                self.MLmask = np.add(self.MLmask, self.Mask[:,:,selected_index])
+            
+            self.add_rois_of_selected()
+            
+    def add_rois_of_selected(self):
+        """
+        Generate ROI items from ML selected mask.
+        Using find_contours to get list of contour coordinates in the binary mask, and then generate polygon rois based on these coordinates.
+        """
+        
+        for selected_index in self.selected_ML_Index:
+
+            contours = self.selected_cells_infor_dict['cell{}_verts'.format(str(selected_index))]
+#            contours = find_contours(self.Mask[:,:,selected_index], 0.5) # Find iso-valued contours in a 2D array for a given level value.
+                
+            for n, contour in enumerate(contours):
+                contour_coord_array = contours[n]
+                #Swap columns
+                contour_coord_array[:, 0], contour_coord_array[:, 1] = contour_coord_array[:, 1], contour_coord_array[:, 0].copy()
+    
+                #Down sample the coordinates otherwise it will be too dense.
+                contour_coord_array_del = np.delete(contour_coord_array, np.arange(2, contour_coord_array.shape[0]-3, 2), 0)
+                
+                self.selected_cells_infor_dict['cell{}_ROIitem'.format(str(selected_index))] = \
+                pg.PolyLineROI(positions=contour_coord_array_del, closed=True)
+                
+                self.selection_view.getView().addItem(self.selected_cells_infor_dict['cell{}_ROIitem'.format(str(selected_index))])
+
+
+    def run_in_thread(self, fn, *args, **kwargs):
+        """
+        Send target function to thread.
+        Usage: lambda: self.run_in_thread(self.fn)
+        
+        Parameters
+        ----------
+        fn : function
+            Target function to put in thread.
+
+        Returns
+        -------
+        thread : TYPE
+            Threading handle.
+
+        """
+        thread = threading.Thread(target=fn, args=args, kwargs=kwargs)
+        thread.start()
+        
+        return thread
     
 if __name__ == "__main__":
     def run_app():

@@ -172,10 +172,10 @@ class MainGUI(QWidget):
         operationContainerLayout.addWidget(self.update_MLmask_button, 3, 0)
         self.update_MLmask_button.clicked.connect(self.update_mask)
         
-        self.enable_modify_MLmask_button = QPushButton('Enable free-hand', self)
-        self.enable_modify_MLmask_button.setCheckable(True)
-        operationContainerLayout.addWidget(self.enable_modify_MLmask_button, 4, 0)
-        self.enable_modify_MLmask_button.clicked.connect(self.enable_free_hand)
+        # self.enable_modify_MLmask_button = QPushButton('Enable free-hand', self)
+        # self.enable_modify_MLmask_button.setCheckable(True)
+        # operationContainerLayout.addWidget(self.enable_modify_MLmask_button, 4, 0)
+        # self.enable_modify_MLmask_button.clicked.connect(self.enable_free_hand)
         
 #        self.modify_MLmask_button = QPushButton('Add patch', self)
 #        operationContainerLayout.addWidget(self.modify_MLmask_button, 4, 1)
@@ -268,7 +268,7 @@ class MainGUI(QWidget):
             
             self.MLtargetedImg_raw = self.Rawimage.copy()
             
-            self.MLtargetedImg = self.convert_for_MaskRCNN(self.MLtargetedImg_raw)
+            self.MLtargetedImg = self.MLtargetedImg_raw
             
             self.show_raw_image(self.MLtargetedImg)
             
@@ -291,21 +291,6 @@ class MainGUI(QWidget):
         
         RGB_image = gray2rgb(image)
         self.Mask_edit_viewItem.setImage(RGB_image)
-        
-    def convert_for_MaskRCNN(self, input_img):
-        """Convert the image size and bit-depth to make it suitable for MaskRCNN detection."""
-        if input_img.shape[0] > 1024 or input_img.shape[1] > 1024:
-            resized_img = resize(input_img,[1024,1024],preserve_range=True).astype(input_img.dtype)
-        
-        minval = np.min(resized_img)
-        maxval = np.max(resized_img)
-        
-        output_image = ((resized_img-minval)/(maxval-minval)*255).astype(np.uint8)+1
-        
-        if len(np.shape(output_image)) == 2:
-            output_image = gray2rgb(output_image)
-
-        return output_image 
        
         
     def run_ML_onImg_and_display(self):
@@ -407,9 +392,10 @@ class MainGUI(QWidget):
             for selected_index in self.selected_ML_Index:
                 self.MLmask = np.add(self.MLmask, self.Mask[:,:,selected_index])
             
+            self.add_rois_of_selected()            
+            
             self.intergrate_into_final_mask()
             
-            self.add_rois_of_selected()
             
         else:
             self.intergrate_into_final_mask()
@@ -417,6 +403,7 @@ class MainGUI(QWidget):
 
     def add_rois_of_selected(self):
         """
+        Generate ROI items from ML selected mask.
         Using find_contours to get list of contour coordinates in the binary mask, and then generate polygon rois based on these coordinates.
         """
         
@@ -465,14 +452,7 @@ class MainGUI(QWidget):
         
         self.intergrate_into_final_mask()
         
-#        if type(self.roi_list_freehandl_added) is list:
-#            for ROIitem in self.roi_list_freehandl_added:
-#                
-#                ROIitem.sigHoverEvent.connect(lambda: self.show_roi_detail(ROIitem))
-#                
-#        plt.figure()
-#        plt.imshow(self.addedROIitemMask)
-#        plt.show()
+
     # =============================================================================
     #     For free-hand rois
     # =============================================================================
@@ -509,6 +489,14 @@ class MainGUI(QWidget):
 
         
     def intergrate_into_final_mask(self):
+        """
+        Add together the ML selected masks and free-hand drawing masks.
+
+        Returns
+        -------
+        None.
+
+        """
         # Binary mask of added rois
         self.addedROIitemMask = ProcessImage.ROIitem2Mask(self.roi_list_freehandl_added, mask_resolution = (self.MLtargetedImg.shape[0], self.MLtargetedImg.shape[1]))
         #Display the RGB mask, ML mask plus free-hand added.
@@ -529,15 +517,7 @@ class MainGUI(QWidget):
     # =============================================================================
     # For DMD transformation and mask generation
     # =============================================================================
-#    def generate_transformed_mask(self):
-#        self.read_transformations_from_file()
-##        self.transform_to_DMD_mask(laser = self.maskLaserComboBox.currentText(), dict_transformations = self.dict_transformations)
-#        target_laser = self.maskLaserComboBox.currentText()
-#        self.final_DMD_mask = self.finalmask_to_DMD_mask(laser = target_laser, dict_transformations = self.dict_transformations)
-#        
-#        plt.figure()
-#        plt.imshow(self.final_DMD_mask)
-#        plt.show()
+
     
     def emit_mask_contour(self):
         """Use find_contours to get a list of (n,2)-ndarrays consisting of n (row, column) coordinates along the contour,
@@ -550,64 +530,7 @@ class MainGUI(QWidget):
         
         self.signal_DMDcontour.emit(sig)
         
-#    def emit_mask(self):
-#        target_laser = self.maskLaserComboBox.currentText()
-#        final_DMD_mask_dict = {}
-#        final_DMD_mask_dict['camera-dmd-'+target_laser] = self.final_DMD_mask
-#        
-#        self.signal_DMDmask.emit(final_DMD_mask_dict)  
 
-        
-#    def read_transformations_from_file(self):    
-#        try:
-#            with open(r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\People\Xin Meng\Code\Python_test\DMDManager\Registration\transformation.txt', 'r') as json_file:
-#                self.dict_transformations = json.load(json_file)    
-#        except:
-#            print('No transformation could be loaded from previous registration run.')
-#            return
-    
-    
-#    def transform_to_DMD_mask(self, laser, dict_transformations, flag_fill_contour = True, contour_thickness = 1, flag_invert_mode = False, mask_resolution = (1024, 768)):
-#        """
-#        Get roi vertices from all roi items and perform the transformation, and then create the mask for DMD.
-#        """
-#        
-#        #list of roi vertices each being (n,2) numpy array for added rois
-#        if len(self.roi_list_freehandl_added) > 0:
-#            self.addedROIitem_vertices = ProcessImage.ROIitem2Vertices(self.roi_list_freehandl_added)
-#            #addedROIitem_vertices needs to be seperated to be inidividual (n,2) np.array
-#                self.ROIitems_mask_transformed = ProcessImage.vertices_to_DMD_mask(self.addedROIitem_vertices, laser, dict_transformations, flag_fill_contour = True, contour_thickness = 1,\
-#                                                                          flag_invert_mode = False, mask_resolution = (1024, 768))
-#        
-#        #Dictionary with (n,2) numpy array for clicked cells
-#        if len(self.selected_cells_infor_dict) > 0:
-#            #Convert dictionary to np.array
-#            for roiItemkey in self.selected_cells_infor_dict:
-#                #Each one is 'contours' from find_contour
-#                if '_verts' in roiItemkey:
-#                    self.selected_cells_infor_dict[roiItemkey]
-#                    
-#            self.MLitems_mask_transformed = ProcessImage.vertices_to_DMD_mask(self.selected_cells_infor_dict, laser, dict_transformations, flag_fill_contour = True, contour_thickness = 1,\
-#                                                                      flag_invert_mode = False, mask_resolution = (1024, 768))
-#        
-#        if len(self.roi_list_freehandl_added) > 0:
-#            self.final_DMD_mask = self.ROIitems_mask_transformed + self.MLitems_mask_transformed
-#            self.final_DMD_mask[self.final_DMD_mask>1] = 1
-#        else:
-#            self.final_DMD_mask = self.MLitems_mask_transformed
-#        
-#        return self.final_DMD_mask
-        
-#    def finalmask_to_DMD_mask(self, laser, dict_transformations, flag_fill_contour = True, contour_thickness = 1, flag_invert_mode = False, mask_resolution = (1024, 768)):
-#        """
-#        Same goal as transform_to_DMD_mask, with input being the final binary mask and using find_contour to get all vertices and perform transformation,
-#        and then coordinates to mask.
-#        """
-#
-#        self.final_DMD_mask = ProcessImage.binarymask_to_DMD_mask(self.final_mask, laser, dict_transformations, flag_fill_contour = True, \
-#                                                                  contour_thickness = 1, flag_invert_mode = False, mask_resolution = (1024, 768))
-#         
-#        return self.final_DMD_mask
     
     def closeEvent(self, event):
         QtWidgets.QApplication.quit()

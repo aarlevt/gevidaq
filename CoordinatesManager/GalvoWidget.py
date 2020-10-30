@@ -47,8 +47,8 @@ class GalvoWidget(QWidget):
     def init_gui(self):
         layout = QGridLayout()
         
-        self.setFixedSize(320,200)
-        
+        # self.setFixedSize(240,200)
+        self.setFixedHeight(200)
         self.box = roundQGroupBox()
         self.box.setTitle("Galvo control")
         box_layout = QGridLayout()

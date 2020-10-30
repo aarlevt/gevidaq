@@ -44,7 +44,7 @@ class ScanningExecutionThread(QThread):
         self.scansavedirectory = self.GeneralSettingDict['savedirectory']
         self.meshgridnumber = int(self.GeneralSettingDict['Meshgrid'])
         
-    
+        self.wavelength_offset = 0 # An offset of 0.002 mm is observed between 900 and 1280 nm.
     #%%
     def run(self):
         """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -59,7 +59,8 @@ class ScanningExecutionThread(QThread):
         self.pi_device_instance = PIMotor()
         print('Objective motor connected.')
         self.errornum = 0
-        # self.auto_focus_position = self.pi_device_instance.pidevice.qPOS(self.pi_device_instance.pidevice.axes)
+        # self.init_focus_position = self.pi_device_instance.pidevice.qPOS(self.pi_device_instance.pidevice.axes)
+        # print("init_focus_position : {}".format(self.init_focus_position))
 
         """
         # =============================================================================
@@ -238,7 +239,7 @@ class ScanningExecutionThread(QThread):
                         print('--------------------------------------------Stack {}--------------------------------------------------'.format(EachZStackPos+1))
                         if self.ZStackNum > 1:
                             self.ZStackOrder = int(EachZStackPos +1) # Here the first one is 1, not starting from 0.
-                            self.FocusPos = self.ZStackPosList[EachZStackPos]
+                            self.FocusPos = self.ZStackPosList[EachZStackPos]# + self.wavelength_offset
                             print('Target focus pos: {}'.format(self.FocusPos))
     
                             self.pi_device_instance.move(self.FocusPos)
@@ -320,7 +321,7 @@ class ScanningExecutionThread(QThread):
                                 
                             
                         time.sleep(0.6) # Wait for receiving data to be done.
-                    time.sleep(0.3)
+                    time.sleep(0.5)
                     print('*************************************************************************************************************************')
                     
         #%%
@@ -398,8 +399,12 @@ class ScanningExecutionThread(QThread):
                 self.watchdog_flag = False
                 time.sleep(0.5)
                 TargetWavelen = int(InsightText[InsightText.index('To_')+3:len(InsightText)])
-                print(TargetWavelen)
-
+                
+                if TargetWavelen == 1280:
+                    self.wavelength_offset = -0.002 # give an offset if wavelength goes to 1280.
+                elif TargetWavelen == 900:
+                    self.wavelength_offset = 0
+                    
                 self.Laserinstance.SetWavelength(TargetWavelen)
 
                 time.sleep(5)
@@ -418,6 +423,11 @@ class ScanningExecutionThread(QThread):
 
                 self.Laserinstance.SetWavelength(TargetWavelen)
 
+                if TargetWavelen == 1280:
+                    self.wavelength_offset = -0.002 # give an offset if wavelength goes to 1280.
+                elif TargetWavelen == 900:
+                    self.wavelength_offset = 0
+                    
                 time.sleep(5)
 
                 self.Laserinstance.Open_TunableBeamShutter()
@@ -433,6 +443,11 @@ class ScanningExecutionThread(QThread):
                
                 self.Laserinstance.SetWavelength(TargetWavelen)
 
+                if TargetWavelen == 1280:
+                    self.wavelength_offset = -0.002 # give an offset if wavelength goes to 1280.
+                elif TargetWavelen == 900:
+                    self.wavelength_offset = 0
+                    
                 time.sleep(5)
 
                 self.Laserinstance.Close_TunableBeamShutter()
@@ -572,9 +587,7 @@ class ScanningExecutionThread(QThread):
                         
                     print("--------------End of auto-focusing----------------")
                     time.sleep(1)
-                    
-
-            
+      
                     # Record the position, try to write it in the NEXT round dict.
                     try:
                         self.RoundCoordsDict['CoordsPackage_{}'.format(EachRound + 2)][EachCoord]['focus_position'] = self.auto_focus_position
@@ -582,9 +595,31 @@ class ScanningExecutionThread(QThread):
                         pass
                     
                 else: # If there's already position from last round, move to it.
-                    self.auto_focus_position = self.RoundCoordsDict['CoordsPackage_{}'.format(EachRound+1)][EachCoord]['focus_position']
-                    print("=====================Move to last recorded position=================")
-                    # self.pi_device_instance.move(self.auto_focus_position)
+                    self.previous_auto_focus_position = self.RoundCoordsDict['CoordsPackage_{}'.format(EachRound+1)][EachCoord]['focus_position']
+                    self.previous_auto_focus_position = self.auto_focus_position
+                    # print("=====================Move to last recorded position=================")
+                    # self.pi_device_instance.move(self.previous_auto_focus_position)
+                    # time.sleep(0.2)
+                    
+                    # instance_FocusFinder = FocusFinder(motor_handle = self.pi_device_instance)
+                    # print("--------------Start auto-focusing-----------------")
+                    # self.auto_focus_position = instance_FocusFinder.bisection()
+                    
+                    # try:
+                    #     if self.auto_focus_position[0] == False: # If there's no cell in FOV
+                    #     # Skip?  mid_position = [False, self.current_pos]
+                    #         self.auto_focus_position = self.auto_focus_position[1]
+                    # except:
+                    #     pass
+                        
+                    # print("--------------End of auto-focusing----------------")
+                    # time.sleep(1)
+      
+                    # # Record the position, try to write it in the NEXT round dict.
+                    # try:
+                    #     self.RoundCoordsDict['CoordsPackage_{}'.format(EachRound + 2)][EachCoord]['focus_position'] = self.auto_focus_position
+                    # except:# If it's already the last round, skip.
+                    #     pass                    
                 
                 # Generate position list.
                 ZStacklinspaceStart = self.auto_focus_position - (math.floor(ZStackNum/2)) * ZStackStep
@@ -675,7 +710,9 @@ class ScanningExecutionThread(QThread):
             while self.HamamatsuCam.isSaving == True:
                 print('Camera saving...')
                 time.sleep(0.5)
-            time.sleep(1)             
+            time.sleep(1) 
+
+        time.sleep(1.5)            
         #--------------------------------------------------------------Reconstruct and save images from 1D recorded array.--------------------------------------------------------------------------------       
     def ProcessData(self, data_waveformreceived):    
         print('ZStackOrder is:'+str(self.ZStackOrder)+'numis_'+str(self.ZStackNum))

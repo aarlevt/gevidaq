@@ -21,6 +21,7 @@ import threading
 import numpy as np
 import ctypes
 import ctypes.util
+from datetime import datetime, date
 import skimage.external.tifffile as skimtiff
 from skimage.measure import block_reduce
 from PIL import Image
@@ -94,8 +95,8 @@ class CameraUI(QMainWindow):
         # =============================================================================
         """
         CameraSettingContainer = StylishQT.roundQGroupBox(title = 'General settings')
-        CameraSettingContainer.setFixedHeight(380)
-        CameraSettingContainer.setMaximumWidth(365)
+        CameraSettingContainer.setFixedHeight(370)
+        CameraSettingContainer.setMaximumWidth(335)
         CameraSettingLayout = QGridLayout()
         
         self.CamStatusLabel = QLabel('Camera not connected.')
@@ -395,7 +396,7 @@ class CameraUI(QMainWindow):
                                                          left: 7px;\
                                                          padding: 5px 5px 5px 5px;}")
         CameraAcquisitionContainer.setMaximumHeight(438)
-        CameraAcquisitionContainer.setMaximumWidth(365)
+        CameraAcquisitionContainer.setMaximumWidth(335)
         CameraAcquisitionLayout = QGridLayout()
         
         #----------------------------------------------------------------------
@@ -426,7 +427,7 @@ class CameraUI(QMainWindow):
 #        self.CamFPSLabel.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
         CamSpectLayout.addWidget(self.CamReadoutTimeLabel, 2, 0, 1, 1)
         
-        CamSpecContainer.setFixedHeight(130)
+        CamSpecContainer.setFixedHeight(120)
         
         CamSpecContainer.setLayout(CamSpectLayout)
         CameraAcquisitionLayout.addWidget(CamSpecContainer, 0, 0)
@@ -441,8 +442,12 @@ class CameraUI(QMainWindow):
         dir_container_layout.addWidget(self.BrowseStreamFileButton, 0, 0)
 
         self.CamSaving_directory_textbox = QLineEdit(self)
-        self.CamSaving_directory_textbox.setPlaceholderText('Saving directory')
+        self.CamSaving_directory_textbox.setPlaceholderText('Saving folder')
         dir_container_layout.addWidget(self.CamSaving_directory_textbox, 0, 1)
+        
+        self.CamSaving_filename_textbox = QLineEdit(self)
+        self.CamSaving_filename_textbox.setPlaceholderText('Tiff file name')
+        dir_container_layout.addWidget(self.CamSaving_filename_textbox, 0, 2)
         
         dir_container.setLayout(dir_container_layout)
         
@@ -460,7 +465,7 @@ class CameraUI(QMainWindow):
         CameraAcquisitionTab_1.layout = QGridLayout()
         
         CamLiveActionContainer = QGroupBox()
-        CamLiveActionContainer.setFixedHeight(110)
+        # CamLiveActionContainer.setFixedHeight(110)
         CamLiveActionContainer.setStyleSheet("QGroupBox { background-color:#F5F5F5;}")
         CamLiveActionLayout = QGridLayout()
         
@@ -469,7 +474,7 @@ class CameraUI(QMainWindow):
         # self.LiveSwitchLabel.setFixedHeight(45)
         # self.LiveSwitchLabel.setAlignment(Qt.AlignCenter)
         # CamLiveActionLayout.addWidget(self.LiveSwitchLabel, 0, 0)
-        self.LiveButton = StylishQT.MySwitch('End live', 'indian red', 'Start live', 'spring green', width = 100, font_size = 10)
+        self.LiveButton = StylishQT.MySwitch('End live', 'indian red', 'Start live', 'spring green', width = 85, font_size = 10)
         self.LiveButton.clicked.connect(self.LiveSwitchEvent)
         CamLiveActionLayout.addWidget(self.LiveButton, 0, 1, 1, 2)
         
@@ -480,11 +485,12 @@ class CameraUI(QMainWindow):
         CamLiveActionLayout.addWidget(SnapImgButton, 1, 1, 1, 1)         
         
         SaveLiveImgButton = StylishQT.saveButton()
-        SaveLiveImgButton.clicked.connect(lambda: self.SaveLiveImg())
+        SaveLiveImgButton.setToolTip("Save live image directly.")
+        SaveLiveImgButton.clicked.connect(lambda: self.run_in_thread(self.SaveLiveImg()))
         CamLiveActionLayout.addWidget(SaveLiveImgButton, 1, 2, 1, 1)
         
         CamLiveActionContainer.setLayout(CamLiveActionLayout)
-        CameraAcquisitionTab_1.layout.addWidget(CamLiveActionContainer, 0, 1, 2, 4)
+        CameraAcquisitionTab_1.layout.addWidget(CamLiveActionContainer, 0, 1, 4, 4)
         
         self.LiveImgViewResetButton = QPushButton()
         self.LiveImgViewResetButton.setText("Reset ImageView")
@@ -1242,8 +1248,15 @@ class CameraUI(QMainWindow):
         self.hcam.stopAcquisition()
         
     def SaveLiveImg(self):
+        """
+        Save the latest live image from RAM.
 
-        with skimtiff.TiffWriter(self.saving_path, append = False, imagej = False)as tif:
+        Returns
+        -------
+        None.
+
+        """
+        with skimtiff.TiffWriter(self.get_file_dir(), append = False, imagej = False)as tif:
             tif.save(self.Live_image, description=self.metaData, compress=0)
         
     def UpdateScreen(self, image):
@@ -1466,7 +1479,7 @@ class CameraUI(QMainWindow):
         
         if saveFile == True:
             # Save the file.
-            with skimtiff.TiffWriter(self.saving_path, append = True, imagej = True)\
+            with skimtiff.TiffWriter(self.get_file_dir(), append = True, imagej = True)\
             as tif:                
                 write_starttime = time.time()
                 for eachframe in range(self.imageCount): 
@@ -1487,17 +1500,44 @@ class CameraUI(QMainWindow):
         
     def SetSavingDirectory(self):
 
-        files_types = "Tif (*.tif);;Pickle (*.pickle);;YAML (*.yml)"
-        options = QFileDialog.Options()
-        self.saving_path, _ = QFileDialog.getSaveFileName(
-                    self, 'Save as... File', directory = self.default_folder, filter=files_types,options=options)
+        # files_types = "Tif (*.tif);;Pickle (*.pickle);;YAML (*.yml)"
+        # options = QFileDialog.Options()
+        # self.saving_path, _ = QFileDialog.getSaveFileName(
+        #             self, 'Save as... File', directory = self.default_folder, filter=files_types,options=options)
         
+        self.saving_path = str(QtWidgets.QFileDialog.getExistingDirectory(directory = self.default_folder))
         self.CamSaving_directory_textbox.setText(self.saving_path)
         # if len(self.saving_path) > 35:
         #     self.CamSaving_directory_textbox.setText('...' + self.saving_path[len(self.saving_path)-35:len(self.saving_path)])
         # elif len(self.saving_path) > 1:
         #     self.CamSaving_directory_textbox.setText(self.saving_path)
+        print(os.path.join(self.saving_path, \
+                           self.CamSaving_filename_textbox.text() + str(datetime.now().strftime('%Y-%m-%d_%H-%M-%S')) + ".tif"))
+ 
+    def get_file_dir(self):
+        return os.path.join(self.saving_path, self.CamSaving_filename_textbox.text() + str(datetime.now().strftime('%Y-%m-%d_%H-%M-%S')) + ".tif")
+    
+    def run_in_thread(self, fn, *args, **kwargs):
+        """
+        Send target function to thread.
+        Usage: lambda: self.run_in_thread(self.fn)
         
+        Parameters
+        ----------
+        fn : function
+            Target function to put in thread.
+
+        Returns
+        -------
+        thread : TYPE
+            Threading handle.
+
+        """
+        thread = threading.Thread(target=fn, args=args, kwargs=kwargs)
+        thread.start()
+        
+        return thread
+    
 if __name__ == "__main__":
     def run_app():
         app = QtWidgets.QApplication(sys.argv)

@@ -66,7 +66,8 @@ class FocusFinder():
         self.current_pos = self.pi_device_instance.GetCurrentPos()
         
         # Threshold for focus-degree
-        self.focus_degree_thres = 0.00008
+        # self.focus_degree_thres = 0.00008 # Laplacian variance
+        self.focus_degree_thres = 0
 
         # Number of steps already tried.
         self.steps_taken = 0
