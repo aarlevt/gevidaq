@@ -338,13 +338,13 @@ class AnalysisWidgetUI(QWidget):
         Display_Container_tabs_Galvo_WidgetInstance.setLayout(image_display_container_layout)
         
         #----------------------------------------------------------------------
-        self.Display_Container_tabs_Cellselection = QWidget()
-        self.Display_Container_tabs_Cellselection_layout = QGridLayout()
+        # self.Display_Container_tabs_Cellselection = QWidget()
+        # self.Display_Container_tabs_Cellselection_layout = QGridLayout()
         
-        self.show_cellselection_gui_button = QPushButton('show')
-        self.show_cellselection_gui_button.clicked.connect(self.show_cellselection_gui)
-        self.Display_Container_tabs_Cellselection_layout.addWidget(self.show_cellselection_gui_button, 0,0)
-        self.Display_Container_tabs_Cellselection.setLayout(self.Display_Container_tabs_Cellselection_layout)
+        # self.show_cellselection_gui_button = QPushButton('show')
+        # self.show_cellselection_gui_button.clicked.connect(self.show_cellselection_gui)
+        # self.Display_Container_tabs_Cellselection_layout.addWidget(self.show_cellselection_gui_button, 0,0)
+        # self.Display_Container_tabs_Cellselection.setLayout(self.Display_Container_tabs_Cellselection_layout)
         
         Display_Container_tabs_tab4 = QWidget()
         Display_Container_tabs_tab4_layout = QGridLayout()
@@ -363,7 +363,7 @@ class AnalysisWidgetUI(QWidget):
         Display_Container_tabs.addTab(Display_Container_tabs_Galvo_WidgetInstance,"Graph display")
         Display_Container_tabs.addTab(Display_Container_tabs_tab2,"Patch display")        
         Display_Container_tabs.addTab(Display_Container_tabs_tab3,"Patch perfusion")
-        Display_Container_tabs.addTab(self.Display_Container_tabs_Cellselection,"Cell selection")
+        # Display_Container_tabs.addTab(self.Display_Container_tabs_Cellselection,"Cell selection")
         Display_Container_tabs.addTab(Display_Container_tabs_tab4,"show trace")
         
         Display_Layout.addWidget(Display_Container_tabs, 0, 0)  
@@ -922,20 +922,20 @@ class AnalysisWidgetUI(QWidget):
         self.MessageBack.emit(text)
         
         
-    def show_cellselection_gui(self):
+    # def show_cellselection_gui(self):
         
-        try:
-            import CellSelectionGUI_ML
-            self.Cellselection_UI = CellSelectionGUI_ML.MainGUI()
+    #     try:
+    #         import CellSelectionGUI_ML
+    #         self.Cellselection_UI = CellSelectionGUI_ML.MainGUI()
 
-        except:
-            import ImageAnalysis.CellSelectionGUI_ML
-            self.Cellselection_UI = ImageAnalysis.CellSelectionGUI_ML.MainGUI()
+    #     except:
+    #         import ImageAnalysis.CellSelectionGUI_ML
+    #         self.Cellselection_UI = ImageAnalysis.CellSelectionGUI_ML.MainGUI()
         
-        self.show_cellselection_gui_button.hide()
-        self.Display_Container_tabs_Cellselection_layout.addWidget(self.Cellselection_UI, 0,0)
+    #     self.show_cellselection_gui_button.hide()
+    #     self.Display_Container_tabs_Cellselection_layout.addWidget(self.Cellselection_UI, 0,0)
         
-        self.Cellselection_UI.signal_DMDcontour.connect(self.send_DMD_mask_contour)
+    #     self.Cellselection_UI.signal_DMDcontour.connect(self.send_DMD_mask_contour)
         
     def send_DMD_mask_contour(self, contour_from_cellselection):
         self.Cellselection_DMD_mask_contour.emit(contour_from_cellselection)
