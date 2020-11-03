@@ -103,12 +103,12 @@ class DrawingWidget(pg.ImageView):
             # Add new closing segment
             self.selectedroi.addSegment(self.selectedroi.handles[0]['item'], self.selectedroi.handles[-1]['item'])
     
-    def resizeEvent(self, event):
-        """
-        Forces the widget to be square upon resize event
-        """
-        # Create a square base size of 10x10 and scale it to the new size
-        # maintaining aspect ratio.
-        new_size = QSize(10, 10)
-        new_size.scale(event.size(), Qt.KeepAspectRatio)
-        self.resize(new_size)
+    # def resizeEvent(self, event):
+    #     """
+    #     Forces the widget to be square upon resize event
+    #     """
+    #     # Create a square base size of 10x10 and scale it to the new size
+    #     # maintaining aspect ratio.
+    #     new_size = QSize(10, 10)
+    #     new_size.scale(event.size(), Qt.KeepAspectRatio)
+    #     self.resize(new_size)

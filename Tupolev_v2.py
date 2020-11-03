@@ -277,7 +277,7 @@ class Mainbody(QWidget):
         self.Coordinate_WidgetInstance.sig_finished_registration.connect(lambda: self.AOTFWidgetInstance.set_registration_mode(False))
         # self.Coordinate_WidgetInstance.sig_control_laser.connect(self.AOTFWidgetInstance.control_for_registration)
         # self.Coordinate_WidgetInstance.sig_console_print.connect(self.normalOutputWritten)
-        
+        self.Coordinate_WidgetInstance.MessageBack.connect(self.normalOutputWritten)
         # self.AOTFWidgetInstance.sig_lasers_status_changed.connect(self.Coordinate_WidgetInstance.lasers_status_changed)
         
         self.Analysis_WidgetInstance.MessageBack.connect(self.normalOutputWritten)

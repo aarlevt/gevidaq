@@ -51,13 +51,20 @@ from pyqtgraph import QtGui
 # General libraries
 import threading
 import sys
+import colorsys
+import random
+import json
 import numpy as np
 import time
 import datetime
 import matplotlib.pyplot as plt
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
+import matplotlib.patches as mpatches
+from skimage.color import gray2rgb
+from skimage.transform import rotate, resize
+from skimage.measure import find_contours
 
 try:
     from ImageAnalysis.ImageProcessing_MaskRCNN import ProcessImageML
@@ -66,11 +73,13 @@ except:
         
 class CoordinatesWidgetUI(QWidget):
     
-    sig_cast_mask_coordinates_to_dmd = pyqtSignal(list)
+    sig_cast_mask_coordinates_to_dmd = pyqtSignal(dict)
     sig_cast_mask_coordinates_to_galvo = pyqtSignal(list)
     sig_start_registration = pyqtSignal()
     sig_finished_registration = pyqtSignal()
     sig_cast_camera_image = pyqtSignal(np.ndarray)
+    
+    MessageBack = pyqtSignal(str)
     
     def __init__(self, parent=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -78,7 +87,7 @@ class CoordinatesWidgetUI(QWidget):
         self.main_application = parent
         self.init_gui()
         self.sig_to_calling_widget = {}
-
+        self.untransformed_mask_dict = {}
         # HamamatsuUI.CameraUI.signal_SnapImg.connect(self.receive_image_from_camera)
         
     def closeEvent(self, event):
@@ -103,8 +112,10 @@ class CoordinatesWidgetUI(QWidget):
         
         #---------------------------ROIs win----------------------------------
         self.selection_view = DrawingWidget(self)
+        self.selection_view.setMinimumWidth(900)
         self.selection_view.enable_drawing(True)
-        self.selection_view.getView().setLimits(xMin = 0, xMax = 2048, yMin = 0, yMax = 2048, minXRange = 2048, minYRange = 2048, maxXRange = 2048, maxYRange = 2048)
+        # self.selection_view.getView().setLimits(xMin = 0, xMax = 2048, yMin = 0, yMax = 2048, \
+        #                                         minXRange = 2048, minYRange = 2048, maxXRange = 2048, maxYRange = 2048)
         self.selection_view.ui.roiBtn.hide()
         self.selection_view.ui.menuBtn.hide() 
         self.selection_view.ui.normGroup.hide()
@@ -113,7 +124,8 @@ class CoordinatesWidgetUI(QWidget):
         
         #---------------------------Mask win----------------------------------
         self.mask_view = SquareImageView()
-        self.mask_view.getView().setLimits(xMin = 0, xMax = 2048, yMin = 0, yMax = 2048, minXRange = 2048, minYRange = 2048, maxXRange = 2048, maxYRange = 2048)
+        self.mask_view.getView().setLimits(xMin = 0, xMax = 2048, yMin = 0, yMax = 2048, \
+                                           minXRange = 2048, minYRange = 2048, maxXRange = 2048, maxYRange = 2048)
         self.mask_view.ui.roiBtn.hide()
         self.mask_view.ui.menuBtn.hide() 
         self.mask_view.ui.normGroup.hide()
@@ -126,8 +138,8 @@ class CoordinatesWidgetUI(QWidget):
         
         self.Matdisplay_Figure = Figure()
         self.Matdisplay_Canvas = FigureCanvas(self.Matdisplay_Figure)
-        self.Matdisplay_Canvas.setFixedWidth(500)
-        self.Matdisplay_Canvas.setFixedHeight(500)
+        # self.Matdisplay_Canvas.setFixedWidth(900)
+        # self.Matdisplay_Canvas.setFixedHeight(900)
         self.Matdisplay_Canvas.mpl_connect('button_press_event', self._onclick)
         
         self.Matdisplay_toolbar = NavigationToolbar(self.Matdisplay_Canvas, self)
@@ -189,7 +201,8 @@ class CoordinatesWidgetUI(QWidget):
                                       "QPushButton:hover:!pressed {color:white;background-color: #CCFFFF;}")
         self.previous_mask_button.setToolTip("Click arrow to enable WASD keyboard control")
         self.previous_mask_button.setFixedWidth(60)
-        self.previous_mask_button.setIcon(QIcon('./Icons/LeftArrow.png'))        
+        self.previous_mask_button.setIcon(QIcon('./Icons/LeftArrow.png'))
+        self.previous_mask_button.clicked.connect(lambda: self.show_mask_with_index(-1))
         self.maskGeneratorContainerLayout.addWidget(self.previous_mask_button, 1, 2)
         
         self.next_mask_button = QPushButton()
@@ -197,7 +210,8 @@ class CoordinatesWidgetUI(QWidget):
                                       "QPushButton:hover:!pressed {color:white;background-color: #CCFFFF;}")
         self.next_mask_button.setToolTip("Click arrow to enable WASD keyboard control")
         self.next_mask_button.setFixedWidth(60)
-        self.next_mask_button.setIcon(QIcon('./Icons/RightArrow.png'))        
+        self.next_mask_button.setIcon(QIcon('./Icons/RightArrow.png'))   
+        self.next_mask_button.clicked.connect(lambda: self.show_mask_with_index(1))
         self.maskGeneratorContainerLayout.addWidget(self.next_mask_button, 1, 3)
                 
         self.selectionOptionsContainer = roundQGroupBox()
@@ -228,6 +242,7 @@ class CoordinatesWidgetUI(QWidget):
 
         self.maskGeneratorContainerLayout.addWidget(self.selectionOptionsContainer, 3, 0, 2, 3)
         
+        #----------------------------Mask-RCNN--------------------------------
         self.MLOptionsContainer = roundQGroupBox()
         self.MLOptionsContainer.setTitle('Mask-RCNN')
         self.MLOptionsContainerLayout = QGridLayout()
@@ -242,7 +257,7 @@ class CoordinatesWidgetUI(QWidget):
         
         self.generate_MLmask_button = QPushButton('To ROIs', self)
         self.MLOptionsContainerLayout.addWidget(self.generate_MLmask_button, 2, 0)
-        self.generate_MLmask_button.clicked.connect(self.generate_MLmask)
+        self.generate_MLmask_button.clicked.connect(lambda: self.run_in_thread(self.generate_MLmask))
         
         self.MLOptionsContainer.setLayout(self.MLOptionsContainerLayout)
 
@@ -265,22 +280,31 @@ class CoordinatesWidgetUI(QWidget):
         self.DMDWidget.sig_start_registration.connect(lambda: self.sig_start_registration.emit())
         self.DMDWidget.sig_finished_registration.connect(lambda: self.sig_finished_registration.emit())
         
+        #---------------------------Galvo control-----------------------------
         self.GalvoWidget = GalvoWidget.GalvoWidget()
-        self.layout.addWidget(self.GalvoWidget, 2, 8, 2, 2)
+        self.GalvoWidget.setFixedWidth(200)
+        self.GalvoWidget.setFixedHeight(180)
+        self.layout.addWidget(self.GalvoWidget, 2, 8, 2, 1)
         
         self.GalvoWidget.sig_request_mask_coordinates.connect(lambda: self.cast_mask_coordinates('galvo'))
         self.sig_cast_mask_coordinates_to_galvo.connect(self.GalvoWidget.receive_mask_coordinates)
         self.GalvoWidget.sig_start_registration.connect(lambda: self.sig_start_registration.emit())
         self.GalvoWidget.sig_finished_registration.connect(lambda: self.sig_finished_registration.emit())
         
-        self.ManualRegistrationWidget = ManualRegistration.ManualRegistrationWidget(self)
+        #-------------------------Manual registration-------------------------
+        self.ManualRegistrationWidget = ManualRegistration.ManualRegistrationWidget()
+        self.ManualRegistrationWidget.setFixedWidth(100)
         self.ManualRegistrationWidget.sig_request_camera_image.connect(self.cast_camera_image)
         self.sig_cast_camera_image.connect(self.ManualRegistrationWidget.receive_camera_image)
         
-        self.layout.addWidget(self.ManualRegistrationWidget, 2, 10, 1, 1)
+        self.layout.addWidget(self.ManualRegistrationWidget, 2, 9, 1, 1)
         
-        self.StageRegistrationWidget = StageRegistrationWidget.StageWidget(self)
-        self.layout.addWidget(self.StageRegistrationWidget, 3, 10, 1, 1)
+        #-------------------------Stage collect-------------------------------
+        self.StageRegistrationWidget = StageRegistrationWidget.StageWidget()
+        self.StageRegistrationWidget.setFixedWidth(100)
+        self.layout.addWidget(self.StageRegistrationWidget, 3, 9, 1, 1)
+        
+        #=====================================================================
     #%%
         
     def cast_transformation_to_DMD(self, transformation, laser):
@@ -325,6 +349,7 @@ class CoordinatesWidgetUI(QWidget):
         list_of_rois = []
         
         for roi in view.roilist:
+
             roi_handle_positions = roi.getLocalHandlePositions()
             roi_origin = roi.pos()
             
@@ -370,20 +395,38 @@ class CoordinatesWidgetUI(QWidget):
                                                        fill_contour = flag_fill_contour, \
                                                        contour_thickness = contour_thickness, \
                                                        invert_mask = flag_invert_mode)
+        self.untransformed_mask_dict["mask_{}".format(self.mask_index_spinbox.value())] = self.current_mask
         
         self.mask_view.setImage(self.current_mask)
         
-        for each_mask in self.sig_to_calling_widget:
-            plt.figure()
-            plt.imshow(self.sig_to_calling_widget[each_mask])
-            plt.show()
-            
+    
+    def show_mask_with_index(self, direction):
+        """
+        If direction == 1, then show next mask, elif direction == -1, show previous one.
+
+        Parameters
+        ----------
+        direction : TYPE
+            -1: Previous; 1: Next.
+
+        Returns
+        -------
+        None.
+
+        """
+        try:
+            self.mask_index_spinbox.setValue(self.mask_index_spinbox.value() + direction)            
+            self.mask_view.setImage(self.untransformed_mask_dict["mask_{}".format(self.mask_index_spinbox.value())])
+        except:
+            print("show_mask failed.")
+        
     def delete_mask(self):
         """
         Remove the last mask from the list.
         """
         del self.sig_to_calling_widget["mask_{}".format(self.mask_index_spinbox.value())]
-        
+        del self.untransformed_mask_dict["mask_{}".format(self.mask_index_spinbox.value())]
+            
     def remove_selection(self):
         self.sig_to_calling_widget = {}
         self.selection_view.clear_rois()
@@ -413,7 +456,7 @@ class CoordinatesWidgetUI(QWidget):
             
             self.current_mask = image
             self.mask_view.setImage(self.current_mask)
-            
+            self.untransformed_mask_dict["mask_{}".format(self.mask_index_spinbox.value())] = self.current_mask
                       
         except:
             print('fail to load file.')
@@ -425,8 +468,15 @@ class CoordinatesWidgetUI(QWidget):
     def init_ML(self):
         # Initialize the detector instance and load the model.
         self.ProcessML = ProcessImageML()
+        self.MessageBack.emit("Mask-RCNN environment configured.")
         
     def run_ML_onImg_and_display(self):
+        # self.ResetLiveImgView()
+        # For testing
+        snap_from_camera = plt.imread\
+        (r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Vidya\Imaging\Octoscope\2020-10-08 Archon lib V7\V7_gfp_5v_telescope_2.TIF")
+        self.selection_view.setImage(snap_from_camera)
+        
         """Run MaskRCNN on input image"""
         self.Matdisplay_Figure.clear()
         self.Matdisplay_Figure_axis = self.Matdisplay_Figure.add_subplot(111)
@@ -536,6 +586,8 @@ class CoordinatesWidgetUI(QWidget):
         Generate ROI items from ML selected mask.
         Using find_contours to get list of contour coordinates in the binary mask, and then generate polygon rois based on these coordinates.
         """
+        handle_downsample_step = 2 
+        
         
         for selected_index in self.selected_ML_Index:
 
@@ -548,13 +600,16 @@ class CoordinatesWidgetUI(QWidget):
                 contour_coord_array[:, 0], contour_coord_array[:, 1] = contour_coord_array[:, 1], contour_coord_array[:, 0].copy()
     
                 #Down sample the coordinates otherwise it will be too dense.
-                contour_coord_array_del = np.delete(contour_coord_array, np.arange(2, contour_coord_array.shape[0]-3, 2), 0)
+                contour_coord_array_del = np.delete(contour_coord_array, np.arange(2, contour_coord_array.shape[0]-3, handle_downsample_step), 0)
+                for _ in range(3):
+                    contour_coord_array_del = np.delete(contour_coord_array_del, np.arange(2, contour_coord_array_del.shape[0]-3, handle_downsample_step), 0)
                 
                 self.selected_cells_infor_dict['cell{}_ROIitem'.format(str(selected_index))] = \
                 pg.PolyLineROI(positions=contour_coord_array_del, closed=True)
                 
+                # Add ROI item, and append_to_roilist
                 self.selection_view.getView().addItem(self.selected_cells_infor_dict['cell{}_ROIitem'.format(str(selected_index))])
-
+                self.selection_view.append_to_roilist(self.selected_cells_infor_dict['cell{}_ROIitem'.format(str(selected_index))])
 
     def run_in_thread(self, fn, *args, **kwargs):
         """
@@ -576,7 +631,23 @@ class CoordinatesWidgetUI(QWidget):
         thread.start()
         
         return thread
-    
+
+    def ResetLiveImgView(self):
+        """Closes the widget nicely, making sure to clear the graphics scene and release memory."""
+        self.selection_view.close()
+        
+        # Replot the imageview
+        self.selection_view = DrawingWidget(self)
+        self.selection_view.enable_drawing(True)
+        self.selection_view.getView().setLimits(xMin = 0, xMax = 2048, yMin = 0, yMax = 2048, minXRange = 2048, \
+                                                minYRange = 2048, maxXRange = 2048, maxYRange = 2048)
+        self.selection_view.ui.roiBtn.hide()
+        self.selection_view.ui.menuBtn.hide() 
+        self.selection_view.ui.normGroup.hide()
+        self.selection_view.ui.roiPlot.hide()
+        
+        self.image_mask_stack.addTab(self.selection_view, 'Select')
+        
 if __name__ == "__main__":
     def run_app():
         app = QtWidgets.QApplication(sys.argv)

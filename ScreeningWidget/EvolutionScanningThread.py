@@ -594,9 +594,18 @@ class ScanningExecutionThread(QThread):
                     except:# If it's already the last round, skip.
                         pass
                     
+                    # Generate position list.
+                    ZStacklinspaceStart = self.auto_focus_position - (math.floor(ZStackNum/2)) * ZStackStep
+                    ZStacklinspaceEnd = self.auto_focus_position + (ZStackNum - math.floor(ZStackNum/2)-1) * ZStackStep
+                
                 else: # If there's already position from last round, move to it.
                     self.previous_auto_focus_position = self.RoundCoordsDict['CoordsPackage_{}'.format(EachRound+1)][EachCoord]['focus_position']
-                    self.previous_auto_focus_position = self.auto_focus_position
+                    
+                    # Generate position list.
+                    ZStacklinspaceStart = self.previous_auto_focus_position - (math.floor(ZStackNum/2)) * ZStackStep
+                    ZStacklinspaceEnd = self.previous_auto_focus_position + (ZStackNum - math.floor(ZStackNum/2)-1) * ZStackStep
+                    
+                    # self.previous_auto_focus_position = self.auto_focus_position
                     # print("=====================Move to last recorded position=================")
                     # self.pi_device_instance.move(self.previous_auto_focus_position)
                     # time.sleep(0.2)
@@ -621,9 +630,7 @@ class ScanningExecutionThread(QThread):
                     # except:# If it's already the last round, skip.
                     #     pass                    
                 
-                # Generate position list.
-                ZStacklinspaceStart = self.auto_focus_position - (math.floor(ZStackNum/2)) * ZStackStep
-                ZStacklinspaceEnd = self.auto_focus_position + (ZStackNum - math.floor(ZStackNum/2)-1) * ZStackStep
+
                        
                 self.ZStackPosList = np.linspace(ZStacklinspaceStart, ZStacklinspaceEnd, num = ZStackNum)
                 print('ZStackPos is : {}'.format(self.ZStackPosList))   
