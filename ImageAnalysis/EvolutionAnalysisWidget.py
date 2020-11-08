@@ -24,8 +24,8 @@ import threading
 import os
 
 from datetime import datetime
-from matplotlib.backends.backend_qt4agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt4agg import NavigationToolbar2QT as NavigationToolbar
+from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
+from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
@@ -423,7 +423,7 @@ class MainGUI(QWidget):
             self.normalOutputWritten('---- Total cells selected: {}; Total cells: {}----\n'.format(self.TotaNumofCellSelected, self.TotalCellNum))
             
             saving_directory = os.path.join(self.Tag_folder, datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'_Screening scatters.html')
-            self.ProcessML.showPlotlyScatter(self.DataFrame_sorted, x_axis=self.EvaluatingPara_list[0], y_axis=self.EvaluatingPara_list[1], saving_directory = saving_directory)
+            # self.ProcessML.showPlotlyScatter(self.DataFrame_sorted, x_axis=self.EvaluatingPara_list[0], y_axis=self.EvaluatingPara_list[1], saving_directory = saving_directory)
                 
     def GoThroughTopCells(self, direction):
         """

@@ -148,6 +148,7 @@ class ScanningExecutionThread(QThread):
             #:::::::::::::::::::::::::::::::: AT EACH GRID ::::::::::::::::::::::::::::::::
             #------------------------------------------------------------------------------
             """
+            self.Grid_index = EachGrid
             """
             # =============================================================================
             #         For each small repeat unit in the scanning meshgrid
@@ -215,7 +216,7 @@ class ScanningExecutionThread(QThread):
                         self.errornum += 1
                         print('Stage move failed! Error number: {}'.format(int(self.errornum)))
 
-                    time.sleep(0.4)
+                    time.sleep(0.2)
                     
                     """
                     # =============================================================================
@@ -774,11 +775,11 @@ class ScanningExecutionThread(QThread):
                             self.PMT_image_maxprojection = np.max(self.PMT_image_maxprojection_stack, axis=0)
                             
                             # Save the zmax file.
-                            with skimtiff.TiffWriter(os.path.join(self.scansavedirectory, 'Round'+str(self.RoundWaveformIndex[0])+'_Coords'+str(self.currentCoordsSeq)+'_R'+str(self.CurrentPosIndex[0])+'C'+str(self.CurrentPosIndex[1])+'_PMT_'+str(imageSequence)+'Zmax'+'.tif'), imagej = True) as tif:                
+                            with skimtiff.TiffWriter(os.path.join(self.scansavedirectory, 'Round'+str(self.RoundWaveformIndex[0])+ '_Grid' + str(self.Grid_index) + '_Coords'+str(self.currentCoordsSeq)+'_R'+str(self.CurrentPosIndex[0])+'C'+str(self.CurrentPosIndex[1])+'_PMT_'+str(imageSequence)+'Zmax'+'.tif'), imagej = True) as tif:                
                                 tif.save(self.PMT_image_maxprojection.astype('float32'), compress=0, metadata = {"FocusPos: " : str(self.FocusPos)})
 
                         # Save the individual file.
-                        with skimtiff.TiffWriter(os.path.join(self.scansavedirectory, 'Round'+str(self.RoundWaveformIndex[0])+'_Coords'+str(self.currentCoordsSeq)+'_R'+str(self.CurrentPosIndex[0])+'C'+str(self.CurrentPosIndex[1])+'_PMT_'+str(imageSequence)+'Zpos'+str(self.ZStackOrder)+'.tif'), imagej = True) as tif:                
+                        with skimtiff.TiffWriter(os.path.join(self.scansavedirectory, 'Round'+str(self.RoundWaveformIndex[0]) + '_Grid' + str(self.Grid_index) +'_Coords'+str(self.currentCoordsSeq)+'_R'+str(self.CurrentPosIndex[0])+'C'+str(self.CurrentPosIndex[1])+'_PMT_'+str(imageSequence)+'Zpos'+str(self.ZStackOrder)+'.tif'), imagej = True) as tif:                
                             tif.save(self.PMT_image_reconstructed.astype('float32'), compress=0, metadata = {"FocusPos: " : str(self.FocusPos)})
                        
                         plt.figure()
@@ -827,11 +828,11 @@ class ScanningExecutionThread(QThread):
                             self.PMT_image_maxprojection = np.max(self.PMT_image_maxprojection_stack, axis=0)
 
                             # Save the zmax file.
-                            with skimtiff.TiffWriter(os.path.join(self.scansavedirectory, 'Round'+str(self.RoundWaveformIndex[0])+'_Coords'+str(self.currentCoordsSeq)+'_R'+str(self.CurrentPosIndex[0])+'C'+str(self.CurrentPosIndex[1])+'_PMT_'+str(imageSequence)+'Zmax'+'.tif'), imagej = True) as tif:                
+                            with skimtiff.TiffWriter(os.path.join(self.scansavedirectory, 'Round'+str(self.RoundWaveformIndex[0]) + '_Grid' + str(self.Grid_index) +'_Coords'+str(self.currentCoordsSeq)+'_R'+str(self.CurrentPosIndex[0])+'C'+str(self.CurrentPosIndex[1])+'_PMT_'+str(imageSequence)+'Zmax'+'.tif'), imagej = True) as tif:                
                                 tif.save(self.PMT_image_maxprojection.astype('float32'), compress=0, metadata = {"FocusPos: " : str(self.FocusPos)})
 
                         # Save the file.
-                        with skimtiff.TiffWriter(os.path.join(self.scansavedirectory, 'Round'+str(self.RoundWaveformIndex[0])+'_Coords'+str(self.currentCoordsSeq)+'_R'+str(self.CurrentPosIndex[0])+'C'+str(self.CurrentPosIndex[1])+'_PMT_'+str(imageSequence)+'Zpos'+str(self.ZStackOrder)+'.tif'), imagej = True) as tif:                
+                        with skimtiff.TiffWriter(os.path.join(self.scansavedirectory, 'Round'+str(self.RoundWaveformIndex[0]) + '_Grid' + str(self.Grid_index) +'_Coords'+str(self.currentCoordsSeq)+'_R'+str(self.CurrentPosIndex[0])+'C'+str(self.CurrentPosIndex[1])+'_PMT_'+str(imageSequence)+'Zpos'+str(self.ZStackOrder)+'.tif'), imagej = True) as tif:                
                             tif.save(self.PMT_image_reconstructed.astype('float32'), compress=0, metadata = {"FocusPos: " : str(self.FocusPos)})
                             
                         plt.figure()

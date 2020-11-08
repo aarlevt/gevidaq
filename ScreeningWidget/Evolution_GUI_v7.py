@@ -257,7 +257,7 @@ class Mainbody(QWidget):
 
         self.ScanstepTextbox = QSpinBox(self)
         self.ScanstepTextbox.setMaximum(20000)
-        self.ScanstepTextbox.setValue(1650)
+        self.ScanstepTextbox.setValue(1550)
         self.ScanstepTextbox.setSingleStep(500)
         ScanSettingLayout.addWidget(self.ScanstepTextbox, 0, 7)
         ScanSettingLayout.addWidget(QLabel("Step size:"), 0, 6)

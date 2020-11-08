@@ -95,6 +95,24 @@ class LudlStage:
             
             return True
         
+        time.sleep(1)
+        xPosition, yPosition = self.getPos()
+        trial_num = 0
+        while  xPosition != x or yPosition != y:
+            
+            with serial.Serial(self.address, self.baudrate, stopbits = serial.STOPBITS_TWO) as stage:
+                stage.write(command.encode())
+                stage.flush()
+                stage.close()
+                return True
+            
+            time.sleep(1)
+            xPosition, yPosition = self.getPos()
+            
+            trial_num += 1
+            if trial_num > 6:
+                break
+            
     @Try_until_Success
     def moveVec(self, x, y):
         """
@@ -117,7 +135,7 @@ class LudlStage:
             command = "Movrel X = %d" % xRel + self.endOfLine
         else:
             command = "Movrel X = %d Y = %d" % (xRel, yRel) + self.endOfLine
-        print(1)
+
         with serial.Serial(self.address, self.baudrate, stopbits = serial.STOPBITS_TWO) as stage:
             stage.write(command.encode())
             stage.flush()

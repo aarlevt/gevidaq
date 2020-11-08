@@ -24,6 +24,8 @@ from skimage.restoration import denoise_tv_chambolle
 from skimage.io import imread
 from skimage.transform import rotate, resize
 from scipy.signal import convolve2d, medfilt
+from PIL import Image
+from PIL.TiffTags import TAGS
 import scipy.interpolate as interpolate
 from scipy.ndimage.filters import gaussian_filter1d
 from scipy import fftpack
@@ -82,7 +84,7 @@ class ProcessImage():
                     
         return PMT_image_wholetrace_stack
     
-    def retrive_scanning_scheme(Nest_data_directory):
+    def retrive_scanning_scheme(Nest_data_directory, row_data_folder = True):
         """
         # =============================================================================
         # Return lists that contain round sequence and coordinates strings, like ['Coords1_R0C0', 'Coords2_R0C1500']
@@ -91,7 +93,9 @@ class ProcessImage():
         ----------
         Nest_data_directory : string.
             The directory to folder where the screening data is stored.
-    
+        row_data_folder: bool.
+            If selectively add the file names.
+            
         Returns
         -------
         RoundNumberList : List.
@@ -102,20 +106,30 @@ class ProcessImage():
             List of file names strings.
         """
         fileNameList = []
-#        ImgSequenceNum = 0
+
         for file in os.listdir(Nest_data_directory):
-            if 'PMT_0Zmax' in file:
+            if row_data_folder == True:
+                if 'PMT_0Zmax' in file:
+                    fileNameList.append(file)
+            elif 'Thumbs' not in file:
                 fileNameList.append(file)
         
         RoundNumberList = []
         CoordinatesList = []
         for eachfilename in fileNameList:
+            
             # Get how many rounds are there
             RoundNumberList.append(eachfilename[eachfilename.index('Round'):eachfilename.index('_Coord')])
             RoundNumberList = list(dict.fromkeys(RoundNumberList)) # Remove Duplicates
             
-            CoordinatesList.append(eachfilename[eachfilename.index('Coord'):eachfilename.index('_PMT')])
-            CoordinatesList = list(dict.fromkeys(CoordinatesList))
+            if row_data_folder == True:
+                # Get the coordinates, R_C_
+                CoordinatesList.append(eachfilename[eachfilename.index('_R') + 1:eachfilename.index('_PMT')])
+                CoordinatesList = list(dict.fromkeys(CoordinatesList))
+            else:
+                # Get the coordinates, R_C_
+                CoordinatesList.append(eachfilename[eachfilename.index('_R') + 1:len(eachfilename)])
+                CoordinatesList = list(dict.fromkeys(CoordinatesList))                
             
 #        print(CoordinatesList)
         return RoundNumberList, CoordinatesList, fileNameList
@@ -1590,10 +1604,149 @@ class ProcessImage():
         entropy_image = entropy(image_uint8, disk(disk_size))
         
         return np.mean(entropy_image)
-        
-    #%%
-if __name__ == "__main__":
     
+    #%%
+    # =============================================================================
+    #     Images stitching
+    # =============================================================================
+    def image_stitching(Nest_data_directory, row_data_folder = True):
+        """
+        Stitch all screening images together into one.
+
+        Parameters
+        ----------
+        Nest_data_directory : string
+            Directory in which all images are stored.
+        row_data_folder : bool, optional
+            For MaskRCNN stitching, this is False. The default is True.
+
+        Returns
+        -------
+        Stitched_image_dict : dict
+            Dict containing stitched images of all rounds.
+
+        """
+        RoundNumberList, CoordinatesList, fileNameList = ProcessImage.retrive_scanning_scheme(Nest_data_directory, row_data_folder)
+        
+        imageinfo_DataFrame = []
+        for Each_round in RoundNumberList:
+            for Each_coord_image_filename in fileNameList:
+                if Each_round in Each_coord_image_filename: # Loop through each image in round
+                    
+                    if row_data_folder == True:
+                        Coord_text = Each_coord_image_filename[Each_coord_image_filename.index("_R"):Each_coord_image_filename.index("_PMT")]
+                    else:
+                        Coord_text = Each_coord_image_filename[Each_coord_image_filename.index("_R"):len(Each_coord_image_filename) - 4]
+
+                    Stage_row_index = int(Coord_text[2:Coord_text.index('C')])
+                    Stage_column_index = int(Coord_text[Coord_text.index('C') + 1 : len(Coord_text)])
+                    imageinfo_DataFrame.append(dict(zip(['Round', 'File name', 'Stage row index', 'Stage column index'],\
+                                                        [Each_round, Each_coord_image_filename, Stage_row_index, Stage_column_index])))
+        # Generate the data frame which contains coordinates information
+        imageinfo_DataFrame = pd.DataFrame(imageinfo_DataFrame)
+
+        # Get the scanning step size
+        if imageinfo_DataFrame.iloc[0]['Stage row index'] != imageinfo_DataFrame.iloc[1]['Stage row index']:
+            scanning_coord_step = imageinfo_DataFrame.iloc[1]['Stage row index'] - imageinfo_DataFrame.iloc[0]['Stage row index']
+        else:
+            scanning_coord_step = imageinfo_DataFrame.iloc[1]['Stage column index'] - imageinfo_DataFrame.iloc[0]['Stage column index']
+        scanning_coord_step = 1550
+        # Assume that col and row coordinates numbers are the same.
+        max_coord_value = imageinfo_DataFrame['Stage column index'].max()
+        number_of_coord = int(max_coord_value/scanning_coord_step + 1)
+
+        # Get the pixel number of image.
+        example_image = imread(os.path.join(Nest_data_directory, fileNameList[0]))
+        if row_data_folder == True:
+            image_pixel_number = example_image.shape[0]
+        else: # In ML masks there's a white line at the bottom of image.
+            image_pixel_number = example_image.shape[0] - 1
+        
+        Stitched_image_dict = {}
+        for Each_round in RoundNumberList:
+            # Create the empty array holder
+            final_image_size = image_pixel_number * number_of_coord
+            if row_data_folder == True:
+                final_image_holder = np.empty((final_image_size, final_image_size))
+            else:
+                # For ML mask assembly, its RGBA format, size MxNx4.
+                final_image_holder = np.empty((final_image_size, final_image_size, 4), dtype = 'uint8')
+
+            for index, row_Data in imageinfo_DataFrame.iterrows():
+                if Each_round == row_Data["Round"]:
+                    # col and row in stage coordinates are opposite of np coordinates
+
+                    final_image_holder_col_start = final_image_size - image_pixel_number * (int(row_Data['Stage row index'] / scanning_coord_step) + 1)
+                    final_image_holder_row_start = image_pixel_number * (int(row_Data['Stage column index'] / scanning_coord_step))
+
+                    row_image = imread(os.path.join(Nest_data_directory, row_Data['File name']))
+                    
+                    if row_data_folder == True:
+                        final_image_holder[final_image_holder_row_start: final_image_holder_row_start + image_pixel_number, \
+                                       final_image_holder_col_start:final_image_holder_col_start + image_pixel_number] = row_image
+                    else:# In ML masks there's a white line at the bottom of image, needs to crop it.
+                        final_image_holder[final_image_holder_row_start: final_image_holder_row_start + image_pixel_number, \
+                        final_image_holder_col_start:final_image_holder_col_start + image_pixel_number] = row_image[0:image_pixel_number, 0:image_pixel_number, :]                        
+                        
+            Stitched_image_dict[Each_round] = final_image_holder
+            
+        return Stitched_image_dict
+
+
+    def retrieve_focus_map(Nest_data_directory):
+        
+        RoundNumberList, CoordinatesList, fileNameList = ProcessImage.retrive_scanning_scheme(Nest_data_directory)
+        
+        imageinfo_DataFrame = []
+        for Each_round in RoundNumberList:
+            for Each_coord_image_filename in fileNameList:
+                if Each_round in Each_coord_image_filename: # Loop through each image in round
+                    
+                    Coord_text = Each_coord_image_filename[Each_coord_image_filename.index("_R"):Each_coord_image_filename.index("_PMT")]
+                    Stage_row_index = int(Coord_text[2:Coord_text.index('C')])
+                    Stage_column_index = int(Coord_text[Coord_text.index('C') + 1 : len(Coord_text)])
+                    imageinfo_DataFrame.append(dict(zip(['Round', 'File name', 'Stage row index', 'Stage column index'],\
+                                                        [Each_round, Each_coord_image_filename, Stage_row_index, Stage_column_index])))
+        # Generate the data frame which contains coordinates information
+        imageinfo_DataFrame = pd.DataFrame(imageinfo_DataFrame)
+
+        # Get the scanning step size
+        if imageinfo_DataFrame.iloc[0]['Stage row index'] != imageinfo_DataFrame.iloc[1]['Stage row index']:
+            scanning_coord_step = imageinfo_DataFrame.iloc[1]['Stage row index'] - imageinfo_DataFrame.iloc[0]['Stage row index']
+        else:
+            scanning_coord_step = imageinfo_DataFrame.iloc[1]['Stage column index'] - imageinfo_DataFrame.iloc[0]['Stage column index']
+        
+        # Assume that col and row coordinates numbers are the same.
+        max_coord_value = imageinfo_DataFrame['Stage column index'].max()
+        number_of_coord = int(max_coord_value/scanning_coord_step + 1)
+        
+        focus_map_dict = {}
+        for Each_round in RoundNumberList:
+            # Create the empty array holder
+            final_focus_map_holder = np.empty((number_of_coord, number_of_coord))
+
+            for index, row_Data in imageinfo_DataFrame.iterrows():
+                if Each_round == row_Data["Round"]:
+                    # col and row in stage coordinates are opposite of np coordinates
+
+                    final_focus_map_col_start = number_of_coord - (int(row_Data['Stage row index'] / scanning_coord_step) + 1)
+                    final_focus_map_row_start = int(row_Data['Stage column index'] / scanning_coord_step)
+
+                    # Read the metadata and extract the focus position information.
+                    with Image.open(os.path.join(Nest_data_directory, row_Data['File name'])) as img:
+                        meta_dict = {TAGS[key] : img.tag[key] for key in img.tag.keys()}
+                        ImageDescription = meta_dict['ImageDescription'][0]
+                        objective_position = float(ImageDescription[ImageDescription.index('focuspos: =')+11:len(ImageDescription)-1])
+                        
+                    final_focus_map_holder[final_focus_map_row_start: final_focus_map_row_start + 1, \
+                                       final_focus_map_col_start:final_focus_map_col_start + 1] = objective_position
+                        
+            focus_map_dict[Each_round] = final_focus_map_holder
+            
+        return focus_map_dict        
+
+        
+if __name__ == "__main__":
     from skimage.io import imread
     import time
     from IPython import get_ipython
@@ -1613,30 +1766,40 @@ if __name__ == "__main__":
             
         
 # =============================================================================
-    tag_folder = r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\2020-05-12 Archon lib 400FOVs 4 grid\trial_1'
-    lib_folder = r'D:\XinMeng\imageCollection\Fov3\New folder (3)'
-  #   tag_folder = r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\2020-3-6 Archon brightness screening\NovArch library'
-
-    tag_round = 'Round1'
-    lib_round = 'Round4'
-    
-    EvaluatingPara_1 = 'Mean intensity divided by tag'
-    EvaluatingPara_2 = 'Contour soma ratio'
-    
-    MeanIntensityThreshold = 0.16
-    
-    starttime = time.time()
-    
-    tagprotein_cell_properties_dict = ProcessImage.TagFluorescenceAnalysis(tag_folder, tag_round, Roundness_threshold = 2.1)
-    print('tag done.')
-    
-    tagprotein_cell_properties_dict_meanIntensity_list = []
-    for eachpos in tagprotein_cell_properties_dict:
-        for i in range(len(tagprotein_cell_properties_dict[eachpos])):
-            tagprotein_cell_properties_dict_meanIntensity_list.append(tagprotein_cell_properties_dict[eachpos]['Mean intensity'][i])
-            
+# =============================================================================
+#     tag_folder = r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\2020-05-12 Archon lib 400FOVs 4 grid\trial_1'
+#     lib_folder = r'D:\XinMeng\imageCollection\Fov3\New folder (3)'
+#   #   tag_folder = r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\2020-3-6 Archon brightness screening\NovArch library'
+# 
+#     tag_round = 'Round1'
+#     lib_round = 'Round4'
+#     
+#     EvaluatingPara_1 = 'Mean intensity divided by tag'
+#     EvaluatingPara_2 = 'Contour soma ratio'
+#     
+#     MeanIntensityThreshold = 0.16
+#     
+#     starttime = time.time()
+#     
+#     tagprotein_cell_properties_dict = ProcessImage.TagFluorescenceAnalysis(tag_folder, tag_round, Roundness_threshold = 2.1)
+#     print('tag done.')
+#     
+#     tagprotein_cell_properties_dict_meanIntensity_list = []
+#     for eachpos in tagprotein_cell_properties_dict:
+#         for i in range(len(tagprotein_cell_properties_dict[eachpos])):
+#             tagprotein_cell_properties_dict_meanIntensity_list.append(tagprotein_cell_properties_dict[eachpos]['Mean intensity'][i])
+# =============================================================================
+    stitch_img = False
+    if stitch_img == True:
+        Nest_data_directory = r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2020-11-5 Lib z3_2p5um 9coords AF gap3\MLimages_Round2'
+        Stitched_image_dict = ProcessImage.image_stitching(Nest_data_directory, row_data_folder = False)
         
+        for key in Stitched_image_dict:
+            r2 = Stitched_image_dict[key]
+            row_image = Image.fromarray(r2)            
+            row_image.save(os.path.join(Nest_data_directory, '{} stitched.tif'.format(key)))
 
-
-
+    else:
+        Nest_data_directory = r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2020-11-5 Lib z3_2p5um 9coords AF gap3'
+        focus_map_dict = ProcessImage.retrieve_focus_map(Nest_data_directory)
                 

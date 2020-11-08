@@ -473,9 +473,9 @@ class CoordinatesWidgetUI(QWidget):
     def run_ML_onImg_and_display(self):
         # self.ResetLiveImgView()
         # For testing
-        snap_from_camera = plt.imread\
-        (r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Vidya\Imaging\Octoscope\2020-10-08 Archon lib V7\V7_gfp_5v_telescope_2.TIF")
-        self.selection_view.setImage(snap_from_camera)
+        # snap_from_camera = plt.imread\
+        # (r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Vidya\Imaging\Octoscope\2020-10-08 Archon lib V7\V7_gfp_5v_telescope_2.TIF")
+        # self.selection_view.setImage(snap_from_camera)
         
         """Run MaskRCNN on input image"""
         self.Matdisplay_Figure.clear()

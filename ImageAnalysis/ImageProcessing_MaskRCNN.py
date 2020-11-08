@@ -32,7 +32,7 @@ import plotly.express as px
 import sys
 import concurrent.futures
 import time
-
+from datetime import datetime, date
 # Ensure that the Widget can be run either independently or as part of Tupolev.
 if __name__ == "__main__":
     abspath = os.path.abspath(__file__)
@@ -284,9 +284,11 @@ class ProcessImageML():
                     # segmentationImg.save(os.path.join(folder, 'MLimages_{}\{}.tif'.format(round_num, ImgNameInfor)))#save as tif
                     
                     if self.cell_counted_inRound == 0:
-                        cell_Data, self.cell_counted_inRound, total_cells_counted_in_coord = ProcessImage.retrieveDataFromML(Rawimage, MLresults, str(ImgNameInfor), self.cell_counted_inRound)
+                        cell_Data, self.cell_counted_inRound, total_cells_counted_in_coord = \
+                            ProcessImage.retrieveDataFromML(Rawimage, MLresults, str(ImgNameInfor), self.cell_counted_inRound)
                     else:                       
-                        Cell_Data_new, self.cell_counted_inRound, total_cells_counted_in_coord = ProcessImage.retrieveDataFromML(Rawimage, MLresults, str(ImgNameInfor), self.cell_counted_inRound)
+                        Cell_Data_new, self.cell_counted_inRound, total_cells_counted_in_coord = \
+                            ProcessImage.retrieveDataFromML(Rawimage, MLresults, str(ImgNameInfor), self.cell_counted_inRound)
                         if len(Cell_Data_new) > 0:
                             cell_Data = cell_Data.append(Cell_Data_new)
                     
@@ -294,6 +296,9 @@ class ProcessImageML():
                     cells_counted_in_round += total_cells_counted_in_coord
                     
                 print("Number of round/flat cells in this round: {}".format(cells_counted_in_round))
+                
+        # Save to excel
+        cell_Data.to_excel(os.path.join(os.path.join(folder, 'Round' + str(round_num) + datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'_CellsProperties.xlsx')))
                 
         return cell_Data
                 
