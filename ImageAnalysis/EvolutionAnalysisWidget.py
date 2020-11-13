@@ -37,7 +37,7 @@ if __name__ == "__main__":
     os.chdir(dname+'/../')
 
 from ImageAnalysis.ImageProcessing import ProcessImage
-from ImageAnalysis.ImageProcessing_MaskRCNN import ProcessImageML
+# from ImageAnalysis.ImageProcessing_MaskRCNN import ProcessImageML
 import StylishQT
 
 
@@ -374,26 +374,59 @@ class MainGUI(QWidget):
         self.ProcessML = ProcessImageML()
         
         self.normalOutputWritten('Start loading images...\n')
-        tag_folder = self.Tag_folder
-        lib_folder = self.Lib_folder
-    
-        tag_round = 'Round{}'.format(self.Tag_round_infor[0])
-        lib_round = 'Round{}'.format(self.Lib_round_infor[0])
         
-        cell_Data_1 = self.ProcessML.FluorescenceAnalysis(tag_folder, tag_round)
-        cell_Data_2 = self.ProcessML.FluorescenceAnalysis(lib_folder, lib_round)
+        if len(self.Tag_round_infor) >= 1 and len(self.Lib_round_infor) >= 1:
+            tag_folder = self.Tag_folder
+            lib_folder = self.Lib_folder
         
-        Cell_DataFrame_Merged = self.ProcessML.MergeDataFrames(cell_Data_1, cell_Data_2, method = 'TagLib')
+            tag_round = 'Round{}'.format(self.Tag_round_infor[0])
+            lib_round = 'Round{}'.format(self.Lib_round_infor[0])
+            
+            cell_Data_1 = self.ProcessML.FluorescenceAnalysis(tag_folder, tag_round)
+            cell_Data_2 = self.ProcessML.FluorescenceAnalysis(lib_folder, lib_round)
+            
+            Cell_DataFrame_Merged = self.ProcessML.MergeDataFrames(cell_Data_1, cell_Data_2, method = 'TagLib')
+            
+            DataFrames_filtered = self.ProcessML.FilterDataFrames(Cell_DataFrame_Merged, Mean_intensity_in_contour_thres, Contour_soma_ratio_thres)
+            
+            self.DataFrame_sorted = self.ProcessML.Sorting_onTwoaxes(DataFrames_filtered, axis_1 = self.X_axisBox.currentText(), axis_2 = self.Y_axisBox.currentText(), 
+                                                                     weight_1 = self.WeightBoxSelectionFactor_1.value(), weight_2 = self.WeightBoxSelectionFactor_2.value())
+            
+            print("Save CellsDataframe to Excel...")
+            self.SaveCellsDataframetoExcel()
+            
+            self.UpdateSelectionScatter()
+            
+        elif len(self.Tag_round_infor) == 0 and len(self.Lib_round_infor) == 1:
+            # For one round experiment.
+            lib_folder = self.Lib_folder
+
+            lib_round = 'Round{}'.format(self.Lib_round_infor[0])
+
+            cell_Data = self.ProcessML.FluorescenceAnalysis(lib_folder, lib_round)
+            
+        elif len(self.Tag_round_infor) == 0 and len(self.Lib_round_infor) == 2:
+            # For KCL assay, two rounds of lib.
+            lib_folder = self.Lib_folder
         
-        DataFrames_filtered = self.ProcessML.FilterDataFrames(Cell_DataFrame_Merged, Mean_intensity_in_contour_thres, Contour_soma_ratio_thres)
-        
-        self.DataFrame_sorted = self.ProcessML.Sorting_onTwoaxes(DataFrames_filtered, axis_1 = self.X_axisBox.currentText(), axis_2 = self.Y_axisBox.currentText(), 
-                                                                 weight_1 = self.WeightBoxSelectionFactor_1.value(), weight_2 = self.WeightBoxSelectionFactor_2.value())
-        
-        print("Save CellsDataframe to Excel...")
-        self.SaveCellsDataframetoExcel()
-        
-        self.UpdateSelectionScatter()
+            EC_round = 'Round{}'.format(self.Lib_round_infor[0])
+            KC_round = 'Round{}'.format(self.Lib_round_infor[1])
+            
+            cell_Data_EC = self.ProcessML.FluorescenceAnalysis(lib_folder, EC_round)
+            cell_Data_KC = self.ProcessML.FluorescenceAnalysis(lib_folder, KC_round)
+            
+            Cell_DataFrame_Merged = self.ProcessML.MergeDataFrames(cell_Data_EC, cell_Data_KC, method = 'Kcl')
+            
+            DataFrames_filtered = self.ProcessML.FilterDataFrames(Cell_DataFrame_Merged, Mean_intensity_in_contour_thres, Contour_soma_ratio_thres)
+            
+            self.DataFrame_sorted = self.ProcessML.Sorting_onTwoaxes(DataFrames_filtered, axis_1 = self.X_axisBox.currentText(), axis_2 = self.Y_axisBox.currentText(), 
+                                                                     weight_1 = self.WeightBoxSelectionFactor_1.value(), weight_2 = self.WeightBoxSelectionFactor_2.value())
+            
+            print("Save CellsDataframe to Excel...")
+            self.SaveCellsDataframetoExcel()
+            
+            self.UpdateSelectionScatter()
+            
     #%%
     def UpdateSelectionScatter(self):
         """

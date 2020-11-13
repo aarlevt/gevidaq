@@ -75,8 +75,6 @@ class Mainbody(QWidget):
             
         self.setWindowIcon(QIcon('./Icons/Icon.png'))
         self.setFont(QFont("Arial"))
-
-        self.OC = 0.1
         
         #----------------------------------------------------------------------
         #----------------------------------GUI---------------------------------
@@ -163,19 +161,6 @@ class Mainbody(QWidget):
         setdirectoryContainer.setMaximumWidth(420)
         
         self.layout.addWidget(setdirectoryContainer, 2, 0, 1, 4)
-        
-        # =============================================================================
-        #         GUI for toolbox
-        # =============================================================================
-        # toolboxContainer = StylishQT.roundQGroupBox(title="Toolbox")
-        # self.toolboxContainerlLayout = QGridLayout()
-        
-        # toolboxContainer.setFixedHeight(140)
-        # toolboxContainer.setFixedWidth(80)
-        
-        # toolboxContainer.setLayout(self.toolboxContainerlLayout)
-
-        # self.layout.addWidget(toolboxContainer, 3, 2, 1, 2)
 
         # =============================================================================
         #         GUI for general buttons

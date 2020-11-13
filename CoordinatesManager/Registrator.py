@@ -101,7 +101,7 @@ class DMDRegistator:
             self.DMD.send_data_to_DMD(mask)
             self.DMD.start_projection()
             
-            image = self.cam.SnapImage(0.04)
+            image = self.cam.SnapImage(0.01)
             plt.imsave(os.getcwd()+'/CoordinatesManager/Registration_Images/TouchingSquares/image_'+str(i)+'.png', image)
             camera_coordinates[i, :] = readRegistrationImages.touchingCoordinateFinder(image, method = 'curvefit')
             

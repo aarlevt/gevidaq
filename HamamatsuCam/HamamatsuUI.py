@@ -64,7 +64,7 @@ class CameraUI(QMainWindow):
         #----------------------------------------------------------------------
         self.setWindowTitle("Hamamatsu Orca Flash")
         self.setFont(QFont("Arial"))
-        self.setMinimumSize(1200,900)
+        self.setMinimumSize(1280,1000)
         self.layout = QGridLayout()        
         #----------------Create menu bar and add action------------------------
         menuBar = self.menuBar()
@@ -676,8 +676,8 @@ class CameraUI(QMainWindow):
         # =============================================================================        
         """
         LiveWidgetContainer = QGroupBox()
-        # LiveWidgetContainer.setMaximumHeight(920)
-        # LiveWidgetContainer.setMaximumWidth(950)
+        LiveWidgetContainer.setMinimumHeight(920)
+        LiveWidgetContainer.setMinimumWidth(950)
         self.LiveWidgetLayout = QGridLayout()
         
         self.LiveWidget = pg.ImageView()

@@ -66,6 +66,7 @@ class DMDWidget(QWidget):
         self.setLayout(layout)
         
         self.connect_button = QPushButton('Connect')
+        self.connect_button.setStyleSheet('QPushButton {background-color: #A3C1DA;}')
         self.register_button = QPushButton('Register')
         
         lasers = ['640', '532', '488']
@@ -75,8 +76,10 @@ class DMDWidget(QWidget):
         self.transform_for_laser_menu.setFixedWidth(82)
         self.transform_for_laser_menu.setCurrentRow(0)
         self.project_button = QPushButton('Start projecting')
+        self.project_button.setStyleSheet('QPushButton {background-color: #99FFCC;}')
         self.clear_button = QPushButton('Clear memory')
         self.white_project_button = QPushButton('Full illum.')
+        self.white_project_button.setStyleSheet('QPushButton {background-color: #FFE5CC;}')
         self.load_mask_container_stack = QStackedWidget()
         
         self.connect_button.clicked.connect(self.connect)

@@ -23,6 +23,7 @@ from ImageAnalysis.ImageProcessing import ProcessImage
 from GalvoWidget.GalvoScan_backend import RasterScan
 import time
 import matplotlib.pyplot as plt
+import numpy as np
 
 class FocusFinder():
     
@@ -79,8 +80,59 @@ class FocusFinder():
         self.source_of_image = source_of_image
         if source_of_image == "PMT":
             self.galvo = RasterScan(Daq_sample_rate = 500000, edge_volt = 5)
+    
+    
+    def gaussian_fit(self):
+        
+        # The upper edge.
+        upper_position = self.current_pos + self.init_step_size
+        # The lower edge.
+        lower_position = self.current_pos - self.init_step_size
+        
+        # Generate the sampling positions.
+        sample_positions = np.linspace(lower_position, upper_position, self.total_step_number)
+        
+        degree_of_focus_list = []
+        for each_pos in sample_positions:
+            # Go through each position and write down the focus degree.
+            degree_of_focus = self.evaluate_focus(round(each_pos, 6))
+            degree_of_focus_list.append(degree_of_focus)
+        print(degree_of_focus_list)
+        try:
+            interpolated_fitted_curve = ProcessImage.gaussian_fit(degree_of_focus_list)
+
+            # Generate the inpterpolated new focus position axis.
+            x_axis_new = np.linspace(lower_position, upper_position, len(interpolated_fitted_curve))
+            
+            # Generate a dictionary and find the position where has the highest focus degree.
+            max_focus_pos = dict(zip(interpolated_fitted_curve, x_axis_new))[np.amax(interpolated_fitted_curve)]
+                
+            plt.plot(sample_positions, np.asarray(degree_of_focus_list),'b+:',label='data')
+            plt.plot(x_axis_new, interpolated_fitted_curve,'ro:',label='fit')
+            plt.legend()
+            plt.title('Fig. Fit for focus degree')
+            plt.xlabel('Position')
+            plt.ylabel('Focus degree')
+            plt.show()
+            
+            print(max_focus_pos)
+            max_focus_pos_focus_degree = self.evaluate_focus(round(max_focus_pos, 6))
+        except:
+            print("Fitting failed.")
+            max_focus_pos_focus_degree = False
+            
+        return max_focus_pos_focus_degree
         
     def bisection(self):
+        """
+        Bisection way of finding focus.
+
+        Returns
+        -------
+        mid_position : float
+            DESCRIPTION.
+
+        """
         # The upper edge in which we run bisection.
         upper_position = self.current_pos + self.init_step_size
         # The lower edge in which we run bisection.
@@ -211,5 +263,7 @@ class FocusFinder():
     #     self.steps_taken += 1
 if __name__ == "__main__":
     ins = FocusFinder()
-    ins.bisection() # will return false if there's no cell in view.
+    ins.total_step_number = 7
+    ins.init_step_size = 0.010
+    ins.gaussian_fit() # will return false if there's no cell in view.
     ins.pi_device_instance.CloseMotorConnection()

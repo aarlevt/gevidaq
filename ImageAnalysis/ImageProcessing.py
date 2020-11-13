@@ -29,6 +29,7 @@ from PIL.TiffTags import TAGS
 import scipy.interpolate as interpolate
 from scipy.ndimage.filters import gaussian_filter1d
 from scipy import fftpack
+from scipy.optimize import curve_fit
 import scipy
 import pylab
 import numpy.lib.recfunctions as rfn
@@ -119,7 +120,7 @@ class ProcessImage():
         for eachfilename in fileNameList:
             
             # Get how many rounds are there
-            RoundNumberList.append(eachfilename[eachfilename.index('Round'):eachfilename.index('_Coord')])
+            RoundNumberList.append(eachfilename[eachfilename.index('Round'):eachfilename.index('_Grid')])
             RoundNumberList = list(dict.fromkeys(RoundNumberList)) # Remove Duplicates
             
             if row_data_folder == True:
@@ -1538,6 +1539,70 @@ class ProcessImage():
             
         return freqs
     
+    def gaussian_fit(raw_data_list, interpolate_factor = 10):
+        """
+        Return the gaussian fit of input number list.
+        X axis is interpolated 10 times by default.
+        
+        Parameters
+        ----------
+        raw_data_list : list
+            input number list.
+
+        Returns
+        -------
+        fitted_curve : np.array
+            Gaussian fit of input number list.
+
+        """
+        focus_degree_array = np.asarray(raw_data_list)
+        
+        x_axis = np.arange(len(raw_data_list))
+        
+        n = len(raw_data_list)                                    #the number of data
+        mean = sum(x_axis*focus_degree_array)/n                   #mean value of data
+        sigma = sum(focus_degree_array*(x_axis-mean)**2)/n        #note this correction    
+        
+        def gaus(x,a,x0,sigma):
+            return a*np.exp(-(x-x0)**2/(2*sigma**2))
+        
+        popt,pcov = curve_fit(gaus,x_axis, focus_degree_array)
+        
+        # Generate the inpterpolated new x axis.
+        x_axis_new = np.linspace(0, x_axis[-1], len(x_axis) * interpolate_factor)
+        
+        fitted_curve = gaus(x_axis_new,*popt)
+        
+        return fitted_curve
+    
+    def interpolate_1D(input_array, desired_number = None):
+        """
+        interpolate_1D
+
+        Parameters
+        ----------
+        input_array : np.array
+            DESCRIPTION.
+        desired_number : int, optional
+            Number of elements in final array. The default is None.
+
+        Returns
+        -------
+        interpolated : np.array
+            DESCRIPTION.
+
+        """
+        f = interpolate.interp1d(np.arange(len(input_array)), input_array)
+        
+        if desired_number == None:
+            xnew = np.linspace(0, np.amax(np.arange(len(input_array))), len(input_array)*10)
+        else:
+            xnew = np.linspace(0, np.amax(np.arange(len(input_array))), desired_number)
+            
+        interpolated = f(xnew) 
+        
+        return interpolated
+    
     #%%
     # =============================================================================
     #     2-D array processing
@@ -1650,7 +1715,10 @@ class ProcessImage():
             scanning_coord_step = imageinfo_DataFrame.iloc[1]['Stage row index'] - imageinfo_DataFrame.iloc[0]['Stage row index']
         else:
             scanning_coord_step = imageinfo_DataFrame.iloc[1]['Stage column index'] - imageinfo_DataFrame.iloc[0]['Stage column index']
+        
         scanning_coord_step = 1550
+        print('scanning_coord_step set to 1550!')
+        
         # Assume that col and row coordinates numbers are the same.
         max_coord_value = imageinfo_DataFrame['Stage column index'].max()
         number_of_coord = int(max_coord_value/scanning_coord_step + 1)
@@ -1693,8 +1761,22 @@ class ProcessImage():
         return Stitched_image_dict
 
 
+
     def retrieve_focus_map(Nest_data_directory):
-        
+        """
+        Retrieve the objective motor position from images meta data, and map it.
+
+        Parameters
+        ----------
+        Nest_data_directory : string
+             Directory in which all images are stored.
+
+        Returns
+        -------
+        focus_map_dict : dict
+            Dict containing focus position of recorded images of all rounds.
+
+        """
         RoundNumberList, CoordinatesList, fileNameList = ProcessImage.retrive_scanning_scheme(Nest_data_directory)
         
         imageinfo_DataFrame = []

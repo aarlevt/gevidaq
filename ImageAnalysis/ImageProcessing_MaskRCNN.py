@@ -61,7 +61,8 @@ class ProcessImageML():
         self.config = cellConfig()
         self.config.LogDir = ''
         self.config.CCoor_STD_DEV = 0.1
-        self.config.WeigthPath = r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Martijn\FinalResults\ModelWeights.h5'
+        # self.config.WeigthPath = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Martijn\SpikingHek.h5"
+        self.config.WeigthPath = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Martijn\FinalResults\ModelWeights.h5"
         
         # These four setting use the old configurations. The results are slightly different due to scaling.
         # However the new version will prevent any OOM erros from occuring
@@ -153,7 +154,7 @@ class ProcessImageML():
         CoordinatesList = []
         for eachfilename in fileNameList:
             # Get how many rounds are there
-            RoundNumberList.append(eachfilename[eachfilename.index('Round'):eachfilename.index('_Coord')])
+            RoundNumberList.append(eachfilename[eachfilename.index('Round'):eachfilename.index('_Grid')])
             RoundNumberList = list(dict.fromkeys(RoundNumberList)) # Remove Duplicates
             
             CoordinatesList.append(eachfilename[eachfilename.index('Coord'):eachfilename.index('_PMT')])
@@ -213,7 +214,7 @@ class ProcessImageML():
         ----------
         folder : string.
             The directory to folder where the screening data is stored.
-        round_num : int.
+        round_num : string.
             The target round number of analysis.
         save_mask: bool.
             Whether to save segmentation masks.
@@ -298,7 +299,7 @@ class ProcessImageML():
                 print("Number of round/flat cells in this round: {}".format(cells_counted_in_round))
                 
         # Save to excel
-        cell_Data.to_excel(os.path.join(os.path.join(folder, 'Round' + str(round_num) + datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'_CellsProperties.xlsx')))
+        cell_Data.to_excel(os.path.join(os.path.join(folder, round_num + '_' + datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'_CellsProperties.xlsx')))
                 
         return cell_Data
                 
@@ -428,7 +429,94 @@ class ProcessImageML():
             print("Register takes {}".format(end_time - start_time))              
             Cell_DataFrame_Merged = Cell_DataFrame_Merged.T
             print("Cell_DataFrame_Merged.")
+        
+        #=====================================================================
+        elif method == 'Kcl':
             
+            self.cell_Data_1 = cell_Data_1.add_suffix('_EC')
+            self.cell_Data_2 = cell_Data_2.add_suffix('_KC')
+            cell_merged_num = 0
+            
+            print("Start linking cells...")
+            start_time = time.time()
+            
+            for index_Data_1, row_Data_1 in self.cell_Data_1.iterrows():
+                # For each flat cell in round
+                bounding_box_str_Data_1 = row_Data_1['BoundingBox_EC']
+                ImgNameInforString_Data1 = row_Data_1['ImgNameInfor_EC']
+
+                # Retrieve boundingbox information
+                minr_Data_1 = int(bounding_box_str_Data_1[bounding_box_str_Data_1.index('minr')+4:bounding_box_str_Data_1.index('_maxr')])
+                maxr_Data_1 = int(bounding_box_str_Data_1[bounding_box_str_Data_1.index('maxr')+4:bounding_box_str_Data_1.index('_minc')])        
+                minc_Data_1 = int(bounding_box_str_Data_1[bounding_box_str_Data_1.index('minc')+4:bounding_box_str_Data_1.index('_maxc')])
+                maxc_Data_1 = int(bounding_box_str_Data_1[bounding_box_str_Data_1.index('maxc')+4:len(bounding_box_str_Data_1)])
+                
+                Area_cell_1 = (maxr_Data_1 - minr_Data_1) * (maxc_Data_1 - minc_Data_1)
+                
+                intersection_Area_percentage_list = []
+                index_list_Data_2 = []
+                
+                # Iterate through DataFrame 2 calculating intersection area
+                # Get dataframe of same coordinate in dataframe from next round.
+                DataFrame_of_same_coordinate_Data2 = self.cell_Data_2\
+                    [self.cell_Data_2['ImgNameInfor_KC'].str.contains(ImgNameInforString_Data1[ImgNameInforString_Data1.index('_R')+1:len(ImgNameInforString_Data1)])]
+                
+                for index_2, row_Data_2 in DataFrame_of_same_coordinate_Data2.iterrows():
+                    ImgNameInforString_Data2 = row_Data_2['ImgNameInfor_KC']
+
+                    bounding_box_str_Data_2 = row_Data_2['BoundingBox_KC']
+                    # Retrieve boundingbox information
+                    minr_Data_2 = int(bounding_box_str_Data_2[bounding_box_str_Data_2.index('minr')+4:bounding_box_str_Data_2.index('_maxr')])
+                    maxr_Data_2 = int(bounding_box_str_Data_2[bounding_box_str_Data_2.index('maxr')+4:bounding_box_str_Data_2.index('_minc')])        
+                    minc_Data_2 = int(bounding_box_str_Data_2[bounding_box_str_Data_2.index('minc')+4:bounding_box_str_Data_2.index('_maxc')])
+                    maxc_Data_2 = int(bounding_box_str_Data_2[bounding_box_str_Data_2.index('maxc')+4:len(bounding_box_str_Data_2)])                
+                    
+                    Area_cell_2 = (maxr_Data_2 - minr_Data_2) * (maxc_Data_2 - minc_Data_2)
+                    
+                    # Overlapping row
+                    if minr_Data_2 < maxr_Data_1 and maxr_Data_2 > minr_Data_1:
+                        intersection_rowNumber = min((abs(minr_Data_2 - maxr_Data_1), maxr_Data_1 - minr_Data_1)) - max(maxr_Data_1 - maxr_Data_2, 0)
+                    else:
+                        intersection_rowNumber = 0
+                    # Overlapping column
+                    if minc_Data_2 < maxc_Data_1 and maxc_Data_2 > minc_Data_1:
+                        intersection_colNumber = min((abs(minc_Data_2 - maxc_Data_1), maxc_Data_1 - minc_Data_1)) - max(maxc_Data_1 - maxc_Data_2, 0)
+                    else:
+                        intersection_colNumber = 0                
+        
+                    intersection_Area = intersection_rowNumber * intersection_colNumber
+                    # Calculate the percentage based on smaller number of intersection over the two.
+                    intersection_Area_percentage = min([(intersection_Area / Area_cell_1), (intersection_Area / Area_cell_2)])
+
+                    intersection_Area_percentage_list.append(intersection_Area_percentage)
+                    index_list_Data_2.append(index_2)
+            
+                if len(intersection_Area_percentage_list) > 0:
+                    # Link back cells based on intersection area
+                    if max(intersection_Area_percentage_list) > 0.6:
+                        # If in DataFrame_2 there's a cell that has a overlapping bounding box, merge and generate a new dataframe.
+                        Merge_data2_index = index_list_Data_2[intersection_Area_percentage_list.index(max(intersection_Area_percentage_list))]
+      
+                        pd_data_of_single_cell = pd.concat((self.cell_Data_1.loc[index_Data_1], self.cell_Data_2.loc[Merge_data2_index]), axis = 0)
+                        
+                        # Add the lib/tag brightness ratio
+                        Lib_Tag_ratio = pd.DataFrame([pd_data_of_single_cell.loc['Mean_intensity_in_contour_KC'] / pd_data_of_single_cell.loc['Mean_intensity_in_contour_EC']],
+                                                      index = ['KC_EC_contour_ratio'])
+                        
+                        pd_data_of_single_cell = pd.concat((pd_data_of_single_cell, Lib_Tag_ratio), axis = 0)
+                        pd_data_of_single_cell.rename(columns={0:'Cell {}'.format(cell_merged_num)}, inplace=True) # Rename the column name, which is the index name after T.
+                        
+                        if cell_merged_num == 0:
+                            Cell_DataFrame_Merged = pd_data_of_single_cell
+                        else:
+                            Cell_DataFrame_Merged = pd.concat((Cell_DataFrame_Merged, pd_data_of_single_cell), axis = 1)
+                        cell_merged_num += 1
+                    
+            end_time = time.time()
+            print("Register takes {}".format(end_time - start_time))              
+            Cell_DataFrame_Merged = Cell_DataFrame_Merged.T
+            print("Cell_DataFrame_Merged.")
+                
         return Cell_DataFrame_Merged
     
     

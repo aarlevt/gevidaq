@@ -250,7 +250,7 @@ class Mainbody(QWidget):
         self.ScanStepsNumTextbox = QSpinBox(self)
         self.ScanStepsNumTextbox.setMinimum(1)
         self.ScanStepsNumTextbox.setMaximum(100000)
-        self.ScanStepsNumTextbox.setValue(10)
+        self.ScanStepsNumTextbox.setValue(9)
         self.ScanStepsNumTextbox.setSingleStep(1)
         ScanSettingLayout.addWidget(self.ScanStepsNumTextbox, 0, 1)
         ScanSettingLayout.addWidget(QLabel("Stage scanning step number:"), 0, 0)  
@@ -263,7 +263,7 @@ class Mainbody(QWidget):
         ScanSettingLayout.addWidget(QLabel("Step size:"), 0, 6)
         
         self.AutoFocusGapTextbox = QSpinBox(self)
-        self.AutoFocusGapTextbox.setMinimum(1)
+        self.AutoFocusGapTextbox.setMinimum(0)
         self.AutoFocusGapTextbox.setMaximum(100000)
         self.AutoFocusGapTextbox.setValue(0)
         self.AutoFocusGapTextbox.setSingleStep(5)
@@ -748,17 +748,25 @@ class Mainbody(QWidget):
             AutoFocusOffset_row = AutoFocusGridOffset[0]
             AutoFocusOffset_col = AutoFocusGridOffset[1]
             
-            for row_pos in range(row_start, AutoFocusCoordGap, step):
-                for col_pos in range(column_start, AutoFocusCoordGap, step):
-                    # At each left-top corner of the coordinates grid, place the 
-                    # flag for auto focus
-                    if col_pos == 0 and row_pos == 0 and AutoFocusGrid_steps != 0:
-                        current_coord_array = np.array([(row_pos + AutoFocusOffset_row, col_pos + AutoFocusOffset_col, 'yes', -1)], dtype=Coords_array_dtype)
-                    else:
-                        current_coord_array = np.array([(row_pos + AutoFocusOffset_row, col_pos + AutoFocusOffset_col, 'no', -1)], dtype=Coords_array_dtype)
-                        
-                    Coords_array = np.append(Coords_array, current_coord_array)
-
+            if AutoFocusCoordGap != 0:
+                for row_pos in range(row_start, AutoFocusCoordGap, step):
+                    for col_pos in range(column_start, AutoFocusCoordGap, step):
+                        # At each left-top corner of the coordinates grid, place the 
+                        # flag for auto focus
+                        if col_pos == 0 and row_pos == 0 and AutoFocusGrid_steps != 0:
+                            current_coord_array = np.array([(row_pos + AutoFocusOffset_row, col_pos + AutoFocusOffset_col, 'yes', -1)], dtype=Coords_array_dtype)
+                        else:
+                            current_coord_array = np.array([(row_pos + AutoFocusOffset_row, col_pos + AutoFocusOffset_col, 'no', -1)], dtype=Coords_array_dtype)
+                            
+                        Coords_array = np.append(Coords_array, current_coord_array)
+            else:
+                for row_pos in range(row_start, row_end + step, step):
+                    for col_pos in range(column_start, column_end + step, step):
+                            
+                        current_coord_array = np.array([(row_pos, col_pos, 'no', -1)], dtype=Coords_array_dtype)
+                            
+                        Coords_array = np.append(Coords_array, current_coord_array)                
+                
         self.RoundCoordsDict['CoordsPackage_{}'.format(CurrentRoundSequence)] = Coords_array
         
     def DeleteFreshRound(self):
@@ -905,6 +913,7 @@ class Mainbody(QWidget):
             waveform_sequence = 1
             
             for eachwaveform in waveformPackage:
+
                 try:
                     if len(waveformPackage[eachwaveform][3]) != 0:
                         self.normalOutputWritten('Round {}, sequence {}, recording channels:{}.\n'.format(eachround+1, waveform_sequence, waveformPackage[eachwaveform][3]))
@@ -921,7 +930,7 @@ class Mainbody(QWidget):
                     self.normalOutputWritten('No Analog signals.\n')
                     print('No Analog signals.')
                 try:
-                    if len(waveformPackage[2]['Sepcification']) != 0:
+                    if len(waveformPackage[eachwaveform][2]['Sepcification']) != 0:
                         self.normalOutputWritten('Round {}, Digital signals:{}.\n'.format(eachround+1, waveformPackage[eachwaveform][2]['Sepcification']))
                         self.normalOutputWritten('Lasting time:{} s.\n'.format(len(waveformPackage[eachwaveform][2]['Waveform'][0])/waveformPackage[eachwaveform][0]))
                         

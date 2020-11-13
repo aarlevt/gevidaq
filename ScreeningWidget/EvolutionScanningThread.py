@@ -59,8 +59,8 @@ class ScanningExecutionThread(QThread):
         self.pi_device_instance = PIMotor()
         print('Objective motor connected.')
         self.errornum = 0
-        # self.init_focus_position = self.pi_device_instance.pidevice.qPOS(self.pi_device_instance.pidevice.axes)
-        # print("init_focus_position : {}".format(self.init_focus_position))
+        self.init_focus_position = self.pi_device_instance.pidevice.qPOS(self.pi_device_instance.pidevice.axes)['1']
+        print("init_focus_position : {}".format(self.init_focus_position))
 
         """
         # =============================================================================
@@ -250,7 +250,7 @@ class ScanningExecutionThread(QThread):
                             time.sleep(0.3)
                         else:
                             self.ZStackOrder = 1
-                            self.FocusPos = self.ZStackPosList[0]
+                            self.FocusPos = self.init_focus_position
                         """
                         # =============================================================================
                         #         Execute waveform packages
@@ -751,11 +751,11 @@ class ScanningExecutionThread(QThread):
 #                        self.PMT_image_reconstructed = self.PMT_image_reconstructed[:, 70:326] # for 256*256 images
 
                         #---------------------------------------------For multiple images in one z pos, Stack the arrays into a 3d array--------------------------------------------------------------------------
-                        if imageSequence == 0:
-                            self.PMT_image_reconstructed_stack = self.PMT_image_reconstructed[np.newaxis, :, :] # Turns into 3d array
-                        else:
-                            self.PMT_image_reconstructed_stack = np.concatenate((self.PMT_image_reconstructed_stack, self.PMT_image_reconstructed[np.newaxis, :, :]), axis=0)
-                            print(self.PMT_image_reconstructed_stack.shape)
+                        # if imageSequence == 0:
+                        #     self.PMT_image_reconstructed_stack = self.PMT_image_reconstructed[np.newaxis, :, :] # Turns into 3d array
+                        # else:
+                        #     self.PMT_image_reconstructed_stack = np.concatenate((self.PMT_image_reconstructed_stack, self.PMT_image_reconstructed[np.newaxis, :, :]), axis=0)
+                        #     print(self.PMT_image_reconstructed_stack.shape)
                             
                         #---------------------------------------------Calculate the z max projection-----------------------------------------------------------------------
                         if self.repeatnum == 1: # Consider one repeat image situlation 
@@ -809,10 +809,10 @@ class ScanningExecutionThread(QThread):
                         self.PMT_image_reconstructed = self.PMT_image_reconstructed[:, 50:550]
                         
                         # Stack the arrays into a 3d array
-                        if imageSequence == 0:
-                            self.PMT_image_reconstructed_stack = self.PMT_image_reconstructed[np.newaxis, :, :]
-                        else:
-                            self.PMT_image_reconstructed_stack = np.concatenate((self.PMT_image_reconstructed_stack, self.PMT_image_reconstructed[np.newaxis, :, :]), axis=0)
+                        # if imageSequence == 0:
+                        #     self.PMT_image_reconstructed_stack = self.PMT_image_reconstructed[np.newaxis, :, :]
+                        # else:
+                        #     self.PMT_image_reconstructed_stack = np.concatenate((self.PMT_image_reconstructed_stack, self.PMT_image_reconstructed[np.newaxis, :, :]), axis=0)
                         
                         #---------------------------------------------Calculate the z max projection-----------------------------------------------------------------------
                         if self.repeatnum == 1: # Consider one repeat image situlation 
@@ -844,11 +844,11 @@ class ScanningExecutionThread(QThread):
         print('ProcessData executed.')
 
         
-        def generate_tif_name(self, extra_text = "_"):
-            
-            tif_name = os.path.join(self.scansavedirectory, 'Round'+str(self.RoundWaveformIndex[0])+'_Coords'+str(self.currentCoordsSeq)+ \
-                                    '_R'+str(self.CurrentPosIndex[0])+'C'+str(self.CurrentPosIndex[1])+ extra_text +'.tif')            
-            return tif_name
+    def generate_tif_name(self, extra_text = "_"):
+        
+        tif_name = os.path.join(self.scansavedirectory, 'Round'+str(self.RoundWaveformIndex[0])+'_Coords'+str(self.currentCoordsSeq)+ \
+                                '_R'+str(self.CurrentPosIndex[0])+'C'+str(self.CurrentPosIndex[1])+ extra_text +'.tif')            
+        return tif_name
     #----------------------------------------------------------------WatchDog for laser----------------------------------------------------------------------------------
     def Status_watchdog(self, querygap):
         
