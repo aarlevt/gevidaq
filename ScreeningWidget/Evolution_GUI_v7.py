@@ -1001,6 +1001,8 @@ class Mainbody(QWidget):
         
         self.ScreenAnalysisMLWindow = EvolutionAnalysisWidget.MainGUI()
         self.ScreenAnalysisMLWindow.show()
+        
+        print(self.ScreenAnalysisMLWindow.Mean_intensity_in_contour_thres_box.value())
     #%%
 if __name__ == "__main__":
     def run_app():

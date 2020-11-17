@@ -37,7 +37,7 @@ if __name__ == "__main__":
     os.chdir(dname+'/../')
 
 from ImageAnalysis.ImageProcessing import ProcessImage
-# from ImageAnalysis.ImageProcessing_MaskRCNN import ProcessImageML
+from ImageAnalysis.ImageProcessing_MaskRCNN import ProcessImageML
 import StylishQT
 
 
@@ -370,10 +370,11 @@ class MainGUI(QWidget):
         """
         Mean_intensity_in_contour_thres = self.Mean_intensity_in_contour_thres_box.value()
         Contour_soma_ratio_thres = self.Contour_soma_ratio_thres_box.value()
-        # For the brightness screening
-        self.ProcessML = ProcessImageML()
         
         self.normalOutputWritten('Start loading images...\n')
+        
+        # For the brightness screening
+        self.ProcessML = ProcessImageML()
         
         if len(self.Tag_round_infor) >= 1 and len(self.Lib_round_infor) >= 1:
             tag_folder = self.Tag_folder

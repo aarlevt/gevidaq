@@ -18,12 +18,33 @@ from pipython import pitools
 class PIMotor:
 
     def __init__(self):
+        """
+        Provide a device, connected via the PI GCS DLL.
+
+        def pipython.gcsdevice.GCSDevice.__init__	(	 	self,
+         	devname = '',
+         	gcsdll = '')
+        
+        Parameters
+        devname	: Name of device, chooses according DLL which defaults to PI_GCS2_DLL.
+        gcsdll	: Name or path to GCS DLL to use, overwrites 'devname'.
+
+        Returns
+        -------
+        None.
+
+        """
         CONTROLLERNAME = 'C-863.11'
         #STAGES = None
         STAGES = ('M-110.1DG')
         REFMODE = ('FNL')
         
-        self.pidevice = GCSDevice()
+        # Get the path to dll in the same folder.
+        abspath = os.path.abspath(__file__)
+        dname = os.path.dirname(abspath) + '/PI_GCS2_DLL_x64.dll'
+        print(dname)
+        
+        self.pidevice = GCSDevice(gcsdll = dname)
         print(self.pidevice.EnumerateUSB())
         # InterfaceSetupDlg() is an interactive dialog. There are other methods to
         # connect to an interface without user interaction.
