@@ -23,7 +23,7 @@ from CoordinatesManager import DMDActuator
 from NIDAQ.DAQoperator import DAQmission
 
 from HamamatsuCam.HamamatsuActuator import CamActuator
-from SampleStageControl.Stagemovement_Thread import StagemovementRelativeThread, StagemovementAbsoluteThread
+# from SampleStageControl.Stagemovement_Thread import StagemovementRelativeThread, StagemovementAbsoluteThread
 
 import matplotlib.pyplot as plt
 

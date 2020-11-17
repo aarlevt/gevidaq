@@ -7,7 +7,6 @@ Created on Mon Dec 23 15:10:53 2019
 """
 from PyQt5.QtCore import pyqtSignal, QThread
 import numpy as np
-from SampleStageControl.stage import LudlStage
 import time
 from PIL import Image
 from matplotlib import pyplot as plt
@@ -18,6 +17,7 @@ from skimage.io import imread
 import skimage.external.tifffile as skimtiff
 import threading
 
+from SampleStageControl.stage import LudlStage
 from NIDAQ.DAQoperator import DAQmission
 from PI_ObjectiveMotor.focuser import PIMotor
 from PI_ObjectiveMotor.AutoFocus import FocusFinder
@@ -602,6 +602,12 @@ class ScanningExecutionThread(QThread):
                 else: # If there's already position from last round, move to it.
                     self.previous_auto_focus_position = self.RoundCoordsDict['CoordsPackage_{}'.format(EachRound+1)][EachCoord]['focus_position']
                     
+                    try:
+                        # Record the position, try to write it in the NEXT round dict. 
+                        self.RoundCoordsDict['CoordsPackage_{}'.format(EachRound + 2)][EachCoord]['focus_position'] = self.previous_auto_focus_position
+                    except:
+                        pass
+                    
                     # Generate position list.
                     ZStacklinspaceStart = self.previous_auto_focus_position - (math.floor(ZStackNum/2)) * ZStackStep
                     ZStacklinspaceEnd = self.previous_auto_focus_position + (ZStackNum - math.floor(ZStackNum/2)-1) * ZStackStep
@@ -720,7 +726,9 @@ class ScanningExecutionThread(QThread):
                 time.sleep(0.5)
             time.sleep(1) 
 
-        time.sleep(1.5)            
+        time.sleep(1.5)      
+        
+        
         #--------------------------------------------------------------Reconstruct and save images from 1D recorded array.--------------------------------------------------------------------------------       
     def ProcessData(self, data_waveformreceived):    
         print('ZStackOrder is:'+str(self.ZStackOrder)+'numis_'+str(self.ZStackNum))

@@ -70,6 +70,8 @@ class MainGUI(QWidget):
         pg.setConfigOptions(imageAxisOrder='row-major')
         
         self.popnexttopimgcounter = 0
+        self.Tag_folder = None
+        self.Lib_folder = None
         self.Tag_round_infor = []
         self.Lib_round_infor = []
         #**************************************************************************************************************************************

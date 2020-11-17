@@ -218,22 +218,23 @@ class Mainbody(QWidget):
         # =============================================================================
         #         GUI for camera button       
         # =============================================================================
-        self.open_cam = StylishQT.FancyPushButton(55, 30, color1=(255,153,255), color2=(204,208,255))
+        self.open_cam = StylishQT.FancyPushButton(50, 50, color1=(255,153,255), color2=(204,208,255))
+        
         self.open_cam.setIcon(QIcon('./Icons/Hamamatsu.png'))
         self.open_cam.setToolTip("Open camera widget")
-        self.open_cam.setIconSize(QSize(100, 100))
+        self.open_cam.setIconSize(QSize(60, 60))
         self.open_cam.clicked.connect(self.open_camera)
-        self.layout.addWidget(self.open_cam, 4, 0, 1, 2)
+        self.layout.addWidget(self.open_cam, 4, 0, 1, 1)
         self.open_cam.setGraphicsEffect(QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2))
         # =============================================================================
         #         GUI for Insight X3      
         # =============================================================================
         self.open_Insight = StylishQT.FancyPushButton(50, 50, color1=(176,224,230), color2=(135,206,250))
-        self.open_Insight.setIcon(QIcon("./Icons/spectra_physics.png"))
+        self.open_Insight.setIcon(QIcon("./Icons/two_photon.png"))
         self.open_Insight.setToolTip("Open 2-p laser widget")
-        self.open_Insight.setIconSize(QSize(40, 40))
+        self.open_Insight.setIconSize(QSize(50, 50))
         self.open_Insight.clicked.connect(self.open_Insight_UI)
-        self.layout.addWidget(self.open_Insight, 5, 0, 1, 1)
+        self.layout.addWidget(self.open_Insight, 4, 1, 1, 1)
         self.open_Insight.setGraphicsEffect(QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2))
         # =============================================================================
         #         GUI for evolution screening     

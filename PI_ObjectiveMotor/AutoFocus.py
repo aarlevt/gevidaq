@@ -21,6 +21,7 @@ if __name__ == "__main__":
 from PI_ObjectiveMotor.focuser import PIMotor
 from ImageAnalysis.ImageProcessing import ProcessImage
 from GalvoWidget.GalvoScan_backend import RasterScan
+import skimage.external.tifffile as skimtiff
 import time
 import matplotlib.pyplot as plt
 import numpy as np
@@ -214,6 +215,11 @@ class FocusFinder():
             plt.figure()
             plt.imshow(image)
             plt.show()
+            
+            if False:
+                with skimtiff.TiffWriter(os.path.join(r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Xin\2020-11-17 gaussian fit auto-focus cells\trial_11', str(obj_position).replace(".", "_")+ '.tif')) as tif:                
+                    tif.save(image.astype('float32'), compress=0)
+                            
         degree_of_focus = ProcessImage.local_entropy(image)
         time.sleep(0.2)
         
@@ -264,6 +270,6 @@ class FocusFinder():
 if __name__ == "__main__":
     ins = FocusFinder()
     ins.total_step_number = 7
-    ins.init_step_size = 0.010
+    ins.init_step_size = 0.012
     ins.gaussian_fit() # will return false if there's no cell in view.
     ins.pi_device_instance.CloseMotorConnection()

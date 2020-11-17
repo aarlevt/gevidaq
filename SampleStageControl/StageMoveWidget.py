@@ -18,24 +18,21 @@ import pyqtgraph as pg
 import time
 import sys
 import os
+import threading
 # Ensure that the Widget can be run either independently or as part of Tupolev.
 if __name__ == "__main__":
     abspath = os.path.abspath(__file__)
     dname = os.path.dirname(abspath)
     os.chdir(dname+'/../')
-from SampleStageControl.Stagemovement_Thread import StagemovementRelativeThread, StagemovementAbsoluteThread
+from SampleStageControl.stage import LudlStage
 
 class StageWidgetUI(QWidget):
-    
-#    waveforms_generated = pyqtSignal(object, object, list, int)
-#    SignalForContourScanning = pyqtSignal(int, int, int, np.ndarray, np.ndarray)
-#    MessageBack = pyqtSignal(str)
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 #        os.chdir('./')# Set directory to current folder.
         self.setFont(QFont("Arial"))
-        
+        self.ludlStage = LudlStage("COM12")
 #        self.setMinimumSize(1350,900)
         self.setWindowTitle("StageWidget")
         self.layout = QGridLayout(self)
@@ -67,7 +64,7 @@ class StageWidgetUI(QWidget):
         self.stage_upwards.setIcon(QIcon('./Icons/UpArrow.png')) 
         self.stage_upwards.setIconSize(QSize(35,35))
         self.stagecontrolLayout.addWidget(self.stage_upwards, 1, 4)
-        self.stage_upwards.clicked.connect(lambda: self.sample_stage_move_upwards())
+        self.stage_upwards.clicked.connect(lambda: self.run_in_thread(self.sample_stage_move(direction = "upwards")))
         self.stage_upwards.setShortcut('w')
         
         self.stage_left = QPushButton()
@@ -80,7 +77,7 @@ class StageWidgetUI(QWidget):
 #        self.stage_left.setStyleSheet("QPushButton {padding: 10px;}");
         self.stage_left.setIconSize(QSize(35,35))
         self.stagecontrolLayout.addWidget(self.stage_left, 2, 3)
-        self.stage_left.clicked.connect(lambda: self.sample_stage_move_leftwards())
+        self.stage_left.clicked.connect(lambda: self.run_in_thread(self.sample_stage_move(direction = "leftwards")))
         self.stage_left.setShortcut('a')
         
         self.stage_right = QPushButton()
@@ -92,7 +89,7 @@ class StageWidgetUI(QWidget):
         self.stage_right.setIcon(QIcon('./Icons/RightArrow.png')) 
         self.stage_right.setIconSize(QSize(35,35))
         self.stagecontrolLayout.addWidget(self.stage_right, 2, 5)
-        self.stage_right.clicked.connect(lambda: self.sample_stage_move_rightwards())
+        self.stage_right.clicked.connect(lambda: self.run_in_thread(self.sample_stage_move(direction = "rightwards")))
         self.stage_right.setShortcut('d')
         
         self.stage_down = QPushButton()
@@ -104,7 +101,7 @@ class StageWidgetUI(QWidget):
         self.stage_down.setIcon(QIcon('./Icons/DownArrow.png'))
         self.stage_down.setIconSize(QSize(35,35))
         self.stagecontrolLayout.addWidget(self.stage_down, 2, 4)
-        self.stage_down.clicked.connect(lambda: self.sample_stage_move_downwards())
+        self.stage_down.clicked.connect(lambda: self.run_in_thread(self.sample_stage_move(direction = "downwards")))
         self.stage_down.setShortcut('s')
         
         self.stage_speed = QSpinBox(self)
@@ -131,7 +128,7 @@ class StageWidgetUI(QWidget):
 #                                            "QPushButton:pressed {color:red;background-color: white; border-style: outset;border-radius: 8px;border-width: 2px;font: bold 12px;padding: 6px}"
 #                                            "QPushButton:hover:!pressed {color:green;background-color: #6495ED; border-style: outset;border-radius: 8px;border-width: 2px;font: bold 12px;padding: 6px}")        
         self.stagecontrolLayout.addWidget(self.stage_goto, 1, 0)
-        self.stage_goto.clicked.connect(lambda: self.sample_stage_move_towards())
+        self.stage_goto.clicked.connect(lambda: self.run_in_thread(self.sample_stage_move(direction = "absolute")))
         
         self.stage_goto_x = QLineEdit(self)
         self.stage_goto_x.setFixedWidth(47)
@@ -152,59 +149,44 @@ class StageWidgetUI(QWidget):
         #-----------------------------------------------------------Fucs for stage movement----------------------------------------------------
         #--------------------------------------------------------------------------------------------------------------------------------------          
         #**************************************************************************************************************************************        
-    def sample_stage_move_upwards(self):
-        self.sample_move_distance_yRel = int(self.stage_speed.value())
-        stage_movement_thread = StagemovementRelativeThread(0, self.sample_move_distance_yRel)
-        stage_movement_thread.current_position.connect(self.update_stage_current_pos)
-        stage_movement_thread.start()
-        time.sleep(0.5)
-        stage_movement_thread.quit()
-        stage_movement_thread.wait()
-        
-    def sample_stage_move_downwards(self):
-        self.sample_move_distance_yRel = int(self.stage_speed.value())
-        stage_movement_thread = StagemovementRelativeThread(0, -1*self.sample_move_distance_yRel)
-        stage_movement_thread.current_position.connect(self.update_stage_current_pos)
-        stage_movement_thread.start()
-        time.sleep(0.5)
-        stage_movement_thread.quit()
-        stage_movement_thread.wait()
+    def sample_stage_move(self, direction):
 
-    def sample_stage_move_leftwards(self):
-        self.sample_move_distance_xRel = int(self.stage_speed.value())
-        stage_movement_thread = StagemovementRelativeThread(self.sample_move_distance_xRel, 0)
-        stage_movement_thread.current_position.connect(self.update_stage_current_pos)
-        stage_movement_thread.start()
-        time.sleep(0.5)
-        stage_movement_thread.quit()
-        stage_movement_thread.wait()
+        self.sample_move_distance_Rel = int(self.stage_speed.value())
+        if direction == "upwards":
+            self.ludlStage.moveRel(xRel = 0, yRel= self.sample_move_distance_Rel)
+        elif direction == "downwards":
+            self.ludlStage.moveRel(xRel = 0, yRel= -1*self.sample_move_distance_Rel)            
+        elif direction == "leftwards":
+            self.ludlStage.moveRel(xRel = self.sample_move_distance_Rel, yRel= 0)
+        elif direction == "rightwards":
+            self.ludlStage.moveRel(xRel = -1*self.sample_move_distance_Rel, yRel= 0)
+        elif direction == "absolute":
+            self.ludlStage.moveAbs(x = int(self.stage_goto_x.text()), y= int(self.stage_goto_y.text()))            
+        self.xPosition, self.yPosition = self.ludlStage.getPos()
         
-    def sample_stage_move_rightwards(self):
-        self.sample_move_distance_xRel = int(self.stage_speed.value())
-        stage_movement_thread = StagemovementRelativeThread(-1*self.sample_move_distance_xRel, 0)
-        stage_movement_thread.current_position.connect(self.update_stage_current_pos)
-        stage_movement_thread.start()
-        time.sleep(0.5)
-        stage_movement_thread.quit()
-        stage_movement_thread.wait()
+        self.stage_goto_x.setText(str(self.xPosition))
+        self.stage_goto_y.setText(str(self.yPosition))
         
-    def sample_stage_move_towards(self):
-        self.sample_move_x = int(float(self.stage_goto_x.text()))
-        self.sample_move_y = int(float(self.stage_goto_y.text()))
-        stage_movement_thread = StagemovementAbsoluteThread(self.sample_move_x, self.sample_move_y)
+    def run_in_thread(self, fn, *args, **kwargs):
+        """
+        Send target function to thread.
+        Usage: lambda: self.run_in_thread(self.fn)
         
-        stage_movement_thread.current_position.connect(self.update_stage_current_pos)
-        stage_movement_thread.start()
-        time.sleep(2)
-        stage_movement_thread.quit()
-        stage_movement_thread.wait()
+        Parameters
+        ----------
+        fn : function
+            Target function to put in thread.
+
+        Returns
+        -------
+        thread : TYPE
+            Threading handle.
+
+        """
+        thread = threading.Thread(target=fn, args=args, kwargs=kwargs)
+        thread.start()
         
-    def update_stage_current_pos(self, current_pos):
-        self.stage_current_pos = current_pos
-        self.stage_goto_x.setText(str(self.stage_current_pos[0]))
-        self.stage_goto_y.setText(str(self.stage_current_pos[1]))
-#        self.stage_current_pos_Label.setText('X:'+str(self.stage_current_pos[0])+' Y: '+str(self.stage_current_pos[1]))
-        
+        return thread
         
 if __name__ == "__main__":
     def run_app():

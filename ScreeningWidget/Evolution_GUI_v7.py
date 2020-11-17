@@ -73,6 +73,9 @@ class Mainbody(QWidget):
         self.popnexttopimgcounter = 0
 
         self.quick_start_location = [r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\2020-8-26 Screening Lenti Archon\2020-08-26_11-28-50_Pipeline.npy"]
+
+        self.Tag_round_infor = []
+        self.Lib_round_infor = []
         
         #**************************************************************************************************************************************
         #-----------------------------------------------------------GUI for Quick start--------------------------------------------------------
@@ -106,24 +109,21 @@ class Mainbody(QWidget):
         #**************************************************************************************************************************************
         #-----------------------------------------------------------GUI for GeneralSettings----------------------------------------------------
         #**************************************************************************************************************************************
-        self.GeneralSettingContainer = StylishQT.roundQGroupBox("Tanto Tanto")
+        self.GeneralSettingContainer = StylishQT.roundQGroupBox("Execution")
         self.GeneralSettingContainerLayout = QGridLayout()
         
         self.saving_prefix = ''
         self.savedirectorytextbox = QtWidgets.QLineEdit(self)
+        self.savedirectorytextbox.setPlaceholderText('Saving directory')
         self.savedirectorytextbox.setFixedWidth(300)
         self.savedirectorytextbox.returnPressed.connect(self.update_saving_directory)
-        self.GeneralSettingContainerLayout.addWidget(self.savedirectorytextbox, 0, 1)
+        self.GeneralSettingContainerLayout.addWidget(self.savedirectorytextbox, 0, 2, 1, 3)
         
-        self.toolButtonOpenDialog = QtWidgets.QPushButton('Saving directory')
-        self.toolButtonOpenDialog.setStyleSheet("QPushButton {color:white;background-color: pink; border-style: outset;border-radius: 10px;border-width: 2px;font: bold 14px;padding: 6px}"
-                                                "QPushButton:pressed {color:yellow;background-color: pink; border-style: outset;border-radius: 3px;border-width: 2px;font: bold 14px;padding: 1px}"
-                                                "QPushButton:hover:!pressed {color:gray;background-color: pink; border-style: outset;border-radius: 10px;border-width: 2px;font: bold 14px;padding: 6px}")
-
-        self.toolButtonOpenDialog.setObjectName("toolButtonOpenDialog")
+        self.toolButtonOpenDialog = QtWidgets.QPushButton()
+        self.toolButtonOpenDialog.setIcon(QIcon('./Icons/Browse.png')) 
         self.toolButtonOpenDialog.clicked.connect(self._open_file_dialog)
         
-        self.GeneralSettingContainerLayout.addWidget(self.toolButtonOpenDialog, 0, 0)
+        self.GeneralSettingContainerLayout.addWidget(self.toolButtonOpenDialog, 0, 1)
         
         ButtonConfigurePipeline = StylishQT.generateButton()
         ButtonConfigurePipeline.clicked.connect(self.ConfigGeneralSettings)
@@ -135,33 +135,31 @@ class Mainbody(QWidget):
         ButtonSavePipeline = StylishQT.saveButton()
         ButtonSavePipeline.clicked.connect(self.Savepipeline)
         
-        # Pipeline import
-        self.LoadPipelineAddressbox = QLineEdit(self)    
-        self.LoadPipelineAddressbox.setFixedWidth(300)
-        self.GeneralSettingContainerLayout.addWidget(self.LoadPipelineAddressbox, 1, 1)
-        
-        self.BrowsePipelineButton = QPushButton('Browse pipeline', self)
-        self.BrowsePipelineButton.setStyleSheet("QPushButton {color:white;background-color:rgb(143,191,224); border-style: outset;border-radius: 10px;border-width: 2px;font: bold 14px;padding: 6px}"
-                                                "QPushButton:pressed {color:red;background-color: white; border-style: outset;border-radius: 10px;border-width: 2px;font: bold 14px;padding: 6px}"
-                                                "QPushButton:hover:!pressed {color:gray;background-color:rgb(143,191,224); border-style: outset;border-radius: 10px;border-width: 2px;font: bold 14px;padding: 6px}")        
-        
-        self.GeneralSettingContainerLayout.addWidget(self.BrowsePipelineButton, 1, 0) 
-        
-        self.BrowsePipelineButton.clicked.connect(self.GetPipelineNPFile)
-        
-        self.GeneralSettingContainerLayout.addWidget(QLabel('Configure focus correction first.'), 1, 2)
-        
-        self.ImportPipelineButton = QPushButton('Load', self)
-        self.ImportPipelineButton.setStyleSheet("QPushButton {color:white;background-color: rgb(191,216,189); border-style: outset;border-radius: 10px;border-width: 2px;font: bold 14px;padding: 6px}"
-                                                "QPushButton:pressed {color:red;background-color: white; border-style: outset;border-radius: 10px;border-width: 2px;font: bold 14px;padding: 6px}"
-                                                "QPushButton:hover:!pressed {color:gray;background-color: rgb(191,216,189); border-style: outset;border-radius: 10px;border-width: 2px;font: bold 14px;padding: 6px}")        
+        self.ImportPipelineButton = StylishQT.loadButton()
+        self.GeneralSettingContainerLayout.addWidget(self.ImportPipelineButton, 0, 0)
+        self.ImportPipelineButton.clicked.connect(self.GetPipelineNPFile)
 
-        self.GeneralSettingContainerLayout.addWidget(self.ImportPipelineButton, 1, 3)
-        self.ImportPipelineButton.clicked.connect(self.LoadPipelineFile)
+        self.GeneralSettingContainerLayout.addWidget(ButtonConfigurePipeline, 0, 5)        
+        self.GeneralSettingContainerLayout.addWidget(ButtonExePipeline, 0, 7)
+        self.GeneralSettingContainerLayout.addWidget(ButtonSavePipeline, 0, 6) 
         
-        self.GeneralSettingContainerLayout.addWidget(ButtonConfigurePipeline, 0, 3)        
-        self.GeneralSettingContainerLayout.addWidget(ButtonExePipeline, 0, 5)
-        self.GeneralSettingContainerLayout.addWidget(ButtonSavePipeline, 0, 4)    
+        #----------------------------------------------------------------------
+        self.GeneralSettingContainerLayout.addWidget(QLabel('Configure analysis: '), 1, 0)
+
+        self.FilepathSwitchBox = QComboBox()
+        self.FilepathSwitchBox.addItems(['Tag', 'Lib'])
+        self.GeneralSettingContainerLayout.addWidget(self.FilepathSwitchBox, 1, 2)
+        
+        self.AnalysisRoundBox = QSpinBox(self)
+        self.AnalysisRoundBox.setMaximum(2000)
+        self.AnalysisRoundBox.setValue(1)
+        self.AnalysisRoundBox.setSingleStep(1)
+        self.GeneralSettingContainerLayout.addWidget(self.AnalysisRoundBox, 1, 1)
+        
+        self.AddAnalysisRoundButton = QtWidgets.QPushButton('Add to analysis')
+        self.AddAnalysisRoundButton.clicked.connect(self.SetAnalysisRound)
+        self.GeneralSettingContainerLayout.addWidget(self.AddAnalysisRoundButton, 1, 3)
+           
         self.GeneralSettingContainer.setLayout(self.GeneralSettingContainerLayout)
         
         #**************************************************************************************************************************************
@@ -236,7 +234,7 @@ class Mainbody(QWidget):
         self.PipelineContainerLayout.addWidget(QLabel("Meshgrid:"), 0, 0)  
         
         self.OpenTwoPLaserShutterCheckbox = QCheckBox("Open shutter first")
-        self.OpenTwoPLaserShutterCheckbox.setStyleSheet('color:blue;font:bold "Times New Roman"')
+        self.OpenTwoPLaserShutterCheckbox.setStyleSheet('color:navy;font:bold "Times New Roman"')
         self.OpenTwoPLaserShutterCheckbox.setChecked(True)
         self.PipelineContainerLayout.addWidget(self.OpenTwoPLaserShutterCheckbox, 0, 2)  
 
@@ -854,12 +852,74 @@ class Mainbody(QWidget):
         self.ExecuteThreadInstance = ScanningExecutionThread(self.RoundQueueDict, self.RoundCoordsDict, self.GeneralSettingDict)
         self.ExecuteThreadInstance.start()
         
+        self.ExecuteThreadInstance.finished.connect(lambda: self.run_in_thread(self.start_analysis))
+        
     def Savepipeline(self):
         SavepipelineInstance = []
         SavepipelineInstance.extend([self.RoundQueueDict, self.RoundCoordsDict, self.GeneralSettingDict])
         
-        np.save(os.path.join(self.savedirectory, self.saving_prefix, datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'_Pipeline'), SavepipelineInstance)
+        np.save(os.path.join(self.savedirectory, self.saving_prefix + datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'_Pipeline'), SavepipelineInstance)
+    
+    
+    #----------------------------Auto analysis--------------------------------
+    #-------------------------------------------------------------------------
+    def SetAnalysisRound(self):
+        """
+        Sepcify the round numbers and store the information in list.
+
+        Returns
+        -------
+        None.
+
+        """
+        if self.FilepathSwitchBox.currentText() == 'Tag':
+            self.Tag_round_infor.append(self.AnalysisRoundBox.value())
+        elif self.FilepathSwitchBox.currentText() == 'Lib':
+            self.Lib_round_infor.append(self.AnalysisRoundBox.value())
         
+        self.normalOutputWritten('Tag_round_infor: {}\nLib_round_infor: {}\n'.format(str(self.Tag_round_infor), str(self.Lib_round_infor)))
+        
+    def start_analysis(self):
+        if len(self.Tag_round_infor) != 0 or len(self.Lib_round_infor) != 0:
+            # If analysis information configured, start analysis afterwards.
+
+            from ImageAnalysis import EvolutionAnalysisWidget
+            
+            self.ScreenAnalysisMLWindow = EvolutionAnalysisWidget.MainGUI()
+            self.ScreenAnalysisMLWindow.show()
+            
+            # By default all data is stored in the same folder.
+            self.ScreenAnalysisMLWindow.Tag_folder = self.savedirectory
+            self.ScreenAnalysisMLWindow.Lib_folder = self.savedirectory
+            
+            self.ScreenAnalysisMLWindow.Tag_round_infor = self.Tag_round_infor
+            self.ScreenAnalysisMLWindow.Lib_round_infor = self.Lib_round_infor
+            
+            self.ScreenAnalysisMLWindow.ScreeningAnalysis()
+            
+        else:
+            pass
+
+    def run_in_thread(self, fn, *args, **kwargs):
+        """
+        Send target function to thread.
+        Usage: lambda: self.run_in_thread(self.fn)
+        
+        Parameters
+        ----------
+        fn : function
+            Target function to put in thread.
+
+        Returns
+        -------
+        thread : TYPE
+            Threading handle.
+
+        """
+        thread = threading.Thread(target=fn, args=args, kwargs=kwargs)
+        thread.start()
+        
+        return thread
         
     #%%
     """
@@ -869,7 +929,9 @@ class Mainbody(QWidget):
     """
     def GetPipelineNPFile(self):
         self.pipelinenpfileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, 'Single File', 'M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data',"(*.npy)")
-        self.LoadPipelineAddressbox.setText(self.pipelinenpfileName)
+        # self.LoadPipelineAddressbox.setText(self.pipelinenpfileName)
+        
+        self.LoadPipelineFile()
         
     def LoadPipelineFile(self):
         temp_loaded_container = np.load(self.pipelinenpfileName, allow_pickle=True)
@@ -1001,8 +1063,7 @@ class Mainbody(QWidget):
         
         self.ScreenAnalysisMLWindow = EvolutionAnalysisWidget.MainGUI()
         self.ScreenAnalysisMLWindow.show()
-        
-        print(self.ScreenAnalysisMLWindow.Mean_intensity_in_contour_thres_box.value())
+
     #%%
 if __name__ == "__main__":
     def run_app():

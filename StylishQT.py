@@ -276,6 +276,22 @@ class connectButton(QtWidgets.QPushButton):
         icon.addPixmap(QPixmap('./Icons/connect.png'), QIcon.Normal, QIcon.On)
         self.setIcon(icon)
         self.setToolTip("Connect/Disconnect")
+
+class loadButton(QtWidgets.QPushButton):
+    """
+    Button style for 'load'
+    """
+    def __init__(self, parent = None):
+        super().__init__(parent)
+        self.setIcon(QIcon('./Icons/Load.png'))
+        StyleSheet = ("QPushButton {color:#0000CC;font: bold;background-color: qlineargradient( x1:0 y1:0, x2:1 y2:0, stop:0 #39C0F0, stop:1 #CBF0FD);border-radius: 8px;}" 
+                      "QPushButton:hover:!pressed {color:white;background-color: #9999FF;border-radius: 8px;}"
+                      "QPushButton:disabled {color:white;background-color: grey;border-radius: 8px;}")
+        self.setStyleSheet(StyleSheet)               
+        self.setFixedHeight(32)
+        self.setIconSize(QSize(30, 30))
+        self.setGraphicsEffect(QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2))
+        self.setToolTip("Load from file")
               
 class disconnectButton(QtWidgets.QPushButton):
     """

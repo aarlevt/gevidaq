@@ -17,7 +17,7 @@ from PyQt5 import QtGui
 
 from StylishQT import MySwitch, roundQGroupBox, SquareImageView
 
-from SampleStageControl.Stagemovement_Thread import StagemovementAbsoluteThread
+from SampleStageControl.stage import LudlStage
 from HamamatsuCam.HamamatsuActuator import CamActuator
 
 import sys
@@ -44,6 +44,7 @@ class StageWidget(QWidget):
         
         self.init_gui()
         
+        self.ludlStage = LudlStage("COM12")
         
     def init_gui(self):
         layout = QGridLayout()
@@ -87,11 +88,12 @@ class StageWidget(QWidget):
                 x = global_pos[i,0] + local_pos[j,0] + offset_x
                 y = global_pos[i,1] + local_pos[j,1] + offset_y
                 
-                stage_movement_thread = StagemovementAbsoluteThread(x, y)
-                stage_movement_thread.start()
-                time.sleep(2)
-                stage_movement_thread.quit()
-                stage_movement_thread.wait()
+                self.ludlStage.moveAbs(x = x, y= y)
+                # stage_movement_thread = StagemovementAbsoluteThread(x, y)
+                # stage_movement_thread.start()
+                # time.sleep(2)
+                # stage_movement_thread.quit()
+                # stage_movement_thread.wait()
                 
                 image = self.cam.SnapImage(0.04)
                 filename = global_pos_name[i]+local_pos_name[j]
