@@ -99,6 +99,7 @@ class FocusFinder():
             degree_of_focus = self.evaluate_focus(round(each_pos, 6))
             degree_of_focus_list.append(degree_of_focus)
         print(degree_of_focus_list)
+        
         try:
             interpolated_fitted_curve = ProcessImage.gaussian_fit(degree_of_focus_list)
 
@@ -107,22 +108,24 @@ class FocusFinder():
             
             # Generate a dictionary and find the position where has the highest focus degree.
             max_focus_pos = dict(zip(interpolated_fitted_curve, x_axis_new))[np.amax(interpolated_fitted_curve)]
-                
-            plt.plot(sample_positions, np.asarray(degree_of_focus_list),'b+:',label='data')
-            plt.plot(x_axis_new, interpolated_fitted_curve,'ro:',label='fit')
-            plt.legend()
-            plt.title('Fig. Fit for focus degree')
-            plt.xlabel('Position')
-            plt.ylabel('Focus degree')
-            plt.show()
             
+            if False: # Plot the fitting.
+                plt.plot(sample_positions, np.asarray(degree_of_focus_list),'b+:',label='data')
+                plt.plot(x_axis_new, interpolated_fitted_curve,'ro:',label='fit')
+                plt.legend()
+                plt.title('Fig. Fit for focus degree')
+                plt.xlabel('Position')
+                plt.ylabel('Focus degree')
+                plt.show()
+            
+            max_focus_pos = round(max_focus_pos, 6)
             print(max_focus_pos)
-            max_focus_pos_focus_degree = self.evaluate_focus(round(max_focus_pos, 6))
+            # max_focus_pos_focus_degree = self.evaluate_focus(round(max_focus_pos, 6))
         except:
             print("Fitting failed.")
-            max_focus_pos_focus_degree = False
+            max_focus_pos = [False, self.current_pos]
             
-        return max_focus_pos_focus_degree
+        return max_focus_pos
         
     def bisection(self):
         """
@@ -270,6 +273,6 @@ class FocusFinder():
 if __name__ == "__main__":
     ins = FocusFinder()
     ins.total_step_number = 7
-    ins.init_step_size = 0.012
+    ins.init_step_size = 0.013
     ins.gaussian_fit() # will return false if there's no cell in view.
     ins.pi_device_instance.CloseMotorConnection()

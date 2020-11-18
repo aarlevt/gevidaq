@@ -120,7 +120,11 @@ class ProcessImage():
         for eachfilename in fileNameList:
             
             # Get how many rounds are there
-            RoundNumberList.append(eachfilename[eachfilename.index('Round'):eachfilename.index('_Grid')])
+            try:
+                RoundNumberList.append(eachfilename[eachfilename.index('Round'):eachfilename.index('_Grid')])
+            except:
+                RoundNumberList.append(eachfilename[eachfilename.index('Round'):eachfilename.index('_Coord')])
+                
             RoundNumberList = list(dict.fromkeys(RoundNumberList)) # Remove Duplicates
             
             if row_data_folder == True:
@@ -1871,9 +1875,9 @@ if __name__ == "__main__":
 #         for i in range(len(tagprotein_cell_properties_dict[eachpos])):
 #             tagprotein_cell_properties_dict_meanIntensity_list.append(tagprotein_cell_properties_dict[eachpos]['Mean intensity'][i])
 # =============================================================================
-    stitch_img = False
+    stitch_img = True
     if stitch_img == True:
-        Nest_data_directory = r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2020-11-5 Lib z3_2p5um 9coords AF gap3\MLimages_Round2'
+        Nest_data_directory = r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2020-11-05_2020-11-05_22-20-31_WT z3 gap3\MLimages_Round2'
         Stitched_image_dict = ProcessImage.image_stitching(Nest_data_directory, row_data_folder = False)
         
         for key in Stitched_image_dict:
