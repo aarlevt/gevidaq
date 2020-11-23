@@ -57,7 +57,7 @@ class SlidingWindow(pg.PlotWidget):
         
         self.pen = QPen()
         self.pen.setColor(QColor(145,255,244))
-        # self.pen.setWidth(.7)
+        self.pen.setWidth(0.7)
         self.pen.setStyle(Qt.DashLine)
         self.plotData = self.plot(pen=self.pen) #call plot, so it is not needed to calll this in the UI. However, you can still change the pen variables in the UI.
         

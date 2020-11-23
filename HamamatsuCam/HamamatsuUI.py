@@ -96,7 +96,7 @@ class CameraUI(QMainWindow):
         """
         CameraSettingContainer = StylishQT.roundQGroupBox(title = 'General settings')
         CameraSettingContainer.setFixedHeight(370)
-        CameraSettingContainer.setMaximumWidth(335)
+        CameraSettingContainer.setMaximumWidth(325)
         CameraSettingLayout = QGridLayout()
         
         self.CamStatusLabel = QLabel('Camera not connected.')
@@ -104,6 +104,11 @@ class CameraUI(QMainWindow):
         self.CamStatusLabel.setFixedHeight(30)
         self.CamStatusLabel.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
         CameraSettingLayout.addWidget(self.CamStatusLabel, 0, 0, 1, 1)
+        
+        self.cam_connect_button = StylishQT.connectButton()
+        self.cam_connect_button.setFixedWidth(70)
+        CameraSettingLayout.addWidget(self.cam_connect_button, 0, 1)
+        self.cam_connect_button.clicked.connect(lambda: self.run_in_thread(self.cam_connect_switch)) 
         
         #----------------------------------------------------------------------
         CameraSettingTab = QTabWidget()
@@ -373,7 +378,7 @@ class CameraUI(QMainWindow):
         CameraSettingTab.addTab(CameraSettingTab_3,"Timing")
         
         CameraSettingTab.setStyleSheet('QTabBar { width: 200px; font-size: 8pt; font: bold;}')
-        CameraSettingLayout.addWidget(CameraSettingTab, 1, 0, 1, 1)
+        CameraSettingLayout.addWidget(CameraSettingTab, 1, 0, 1, 2)
         
         CameraSettingContainer.setLayout(CameraSettingLayout)
         MainWinCentralWidget.layout.addWidget(CameraSettingContainer, 0, 0)
@@ -396,7 +401,7 @@ class CameraUI(QMainWindow):
                                                          left: 7px;\
                                                          padding: 5px 5px 5px 5px;}")
         CameraAcquisitionContainer.setMaximumHeight(438)
-        CameraAcquisitionContainer.setMaximumWidth(335)
+        CameraAcquisitionContainer.setMaximumWidth(325)
         CameraAcquisitionLayout = QGridLayout()
         
         #----------------------------------------------------------------------
@@ -474,7 +479,7 @@ class CameraUI(QMainWindow):
         # self.LiveSwitchLabel.setFixedHeight(45)
         # self.LiveSwitchLabel.setAlignment(Qt.AlignCenter)
         # CamLiveActionLayout.addWidget(self.LiveSwitchLabel, 0, 0)
-        self.LiveButton = StylishQT.MySwitch('End live', 'indian red', 'Start live', 'spring green', width = 85, font_size = 10)
+        self.LiveButton = StylishQT.MySwitch('Stop live', 'indian red', 'Start live', 'spring green', width = 85, font_size = 10)
         self.LiveButton.clicked.connect(self.LiveSwitchEvent)
         CamLiveActionLayout.addWidget(self.LiveButton, 0, 1, 1, 2)
         
@@ -771,12 +776,24 @@ class CameraUI(QMainWindow):
             elif self.trigger_active == "SYNCREADOUT":
                 self.ExternTriggerSingalComboBox.setCurrentIndex(3)
             
+            # Toggle the switch button.
+            self.cam_connect_button.setChecked(True)
+            
     def DisconnectCamera(self):
         self.hcam.shutdown()
         dcam.dcamapi_uninit()
         self.CamStatusLabel.setText('Camera disconnected.')
 
-
+    def cam_connect_switch(self):
+        
+        if self.cam_connect_button.isChecked():
+            try:
+                self.ConnectCamera()
+            except:
+                self.cam_connect_button.setChecked(False)
+        else:
+            self.DisconnectCamera()
+            
         """
         # =============================================================================
         #                              Properties Settings

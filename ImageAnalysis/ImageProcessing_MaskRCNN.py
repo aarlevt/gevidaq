@@ -154,7 +154,11 @@ class ProcessImageML():
         CoordinatesList = []
         for eachfilename in fileNameList:
             # Get how many rounds are there
-            RoundNumberList.append(eachfilename[eachfilename.index('Round'):eachfilename.index('_Grid')])
+            try:
+                RoundNumberList.append(eachfilename[eachfilename.index('Round'):eachfilename.index('_Grid')])
+            except:
+                RoundNumberList.append(eachfilename[eachfilename.index('Round'):eachfilename.index('_Coord')])
+                
             RoundNumberList = list(dict.fromkeys(RoundNumberList)) # Remove Duplicates
             
             CoordinatesList.append(eachfilename[eachfilename.index('Coord'):eachfilename.index('_PMT')])

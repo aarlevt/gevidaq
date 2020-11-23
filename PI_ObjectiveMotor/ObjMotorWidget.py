@@ -157,30 +157,35 @@ class ObjMotorWidgetUI(QWidget):
             self.ObjMotor_connect.setEnabled(False)
             self.device_instance = ConnectObj_Thread()
             self.device_instance.start()
-            self.device_instance.finished.connect(self.getmotorhandle)            
+            self.device_instance.finished.connect(self.getmotorhandle)
+
         else:
             self.ObjMotor_connect.setChecked(False)
             self.DisconnectMotor()
 
 
     def getmotorhandle(self):
-        self.ObjMotor_connect.setEnabled(True)
-        self.ObjMotor_connect.setChecked(True)
+        try:
+            self.ObjMotor_connect.setEnabled(True)
+            
+            self.pi_device_instance = self.device_instance.getInstance()
+            print('Objective motor connected.')
+            self.connect_status = True
+            
+            self.ObjCurrentPos = self.pi_device_instance.pidevice.qPOS(self.pi_device_instance.pidevice.axes)
+            self.ObjMotor_current_pos_Label.setText("Current position: {:.4f}".format(self.ObjCurrentPos['1'])) # Axis here is a string.
+            self.ObjMotor_target.setValue(self.ObjCurrentPos['1'])
+            
+            decimal_places = len(str(self.ObjCurrentPos['1']).split('.')[1])
+            print(int(self.ObjCurrentPos['1']*(10**decimal_places)))
+            self.FocusSlider.setValue(int(self.ObjCurrentPos['1']*(10**6)))
+            self.ObjMotorcontrolContainer.setEnabled(True)
+    
+            self.ObjMotor_connect.setChecked(True)
         
-        self.pi_device_instance = self.device_instance.getInstance()
-        print('Objective motor connected.')
-        self.connect_status = True
-#        self.normalOutputWritten('Objective motor connected.'+'\n')
-        
-        self.ObjCurrentPos = self.pi_device_instance.pidevice.qPOS(self.pi_device_instance.pidevice.axes)
-        self.ObjMotor_current_pos_Label.setText("Current position: {:.4f}".format(self.ObjCurrentPos['1'])) # Axis here is a string.
-        self.ObjMotor_target.setValue(self.ObjCurrentPos['1'])
-        
-        decimal_places = len(str(self.ObjCurrentPos['1']).split('.')[1])
-        print(int(self.ObjCurrentPos['1']*(10**decimal_places)))
-        self.FocusSlider.setValue(int(self.ObjCurrentPos['1']*(10**6)))
-        self.ObjMotorcontrolContainer.setEnabled(True)
-        
+        except:
+            QMessageBox.warning(self,'Oops','Failed to connect, try again.',QMessageBox.Ok)
+                
     def MovingMotorThread(self, target):
         if target == "Motor_move_target":
             MoveMotorThread = threading.Thread(target = self.MoveMotor, args=('Target',))

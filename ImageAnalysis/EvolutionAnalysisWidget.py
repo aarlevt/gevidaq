@@ -400,13 +400,15 @@ class MainGUI(QWidget):
             
             self.UpdateSelectionScatter()
             
-        elif len(self.Tag_round_infor) == 0 and len(self.Lib_round_infor) == 1:
-            # For one round experiment.
+        elif len(self.Tag_round_infor) == 0 and len(self.Lib_round_infor) >= 1:
+            
+            # For multiple single round wavelength experiment.
             lib_folder = self.Lib_folder
-
-            lib_round = 'Round{}'.format(self.Lib_round_infor[0])
-
-            cell_Data = self.ProcessML.FluorescenceAnalysis(lib_folder, lib_round)
+            
+            for round_index in self.Lib_round_infor:
+                lib_round = 'Round{}'.format(round_index)
+    
+                cell_Data = self.ProcessML.FluorescenceAnalysis(lib_folder, lib_round)
             
         elif len(self.Tag_round_infor) == 0 and len(self.Lib_round_infor) == 2:
             # For KCL assay, two rounds of lib.

@@ -97,9 +97,10 @@ class LudlStage:
         
         time.sleep(1)
         xPosition, yPosition = self.getPos()
+        print('current pos: x:{}, y{}'.format(xPosition, yPosition))
         trial_num = 0
         while  xPosition != x or yPosition != y:
-            
+            print('Failed to move, try again.')
             with serial.Serial(self.address, self.baudrate, stopbits = serial.STOPBITS_TWO) as stage:
                 stage.write(command.encode())
                 stage.flush()

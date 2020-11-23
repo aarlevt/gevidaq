@@ -880,25 +880,29 @@ class Mainbody(QWidget):
         self.normalOutputWritten('Tag_round_infor: {}\nLib_round_infor: {}\n'.format(str(self.Tag_round_infor), str(self.Lib_round_infor)))
         
     def start_analysis(self):
-        if len(self.Tag_round_infor) != 0 or len(self.Lib_round_infor) != 0:
-            # If analysis information configured, start analysis afterwards.
-
-            from ImageAnalysis import EvolutionAnalysisWidget
-            
-            self.ScreenAnalysisMLWindow = EvolutionAnalysisWidget.MainGUI()
-            self.ScreenAnalysisMLWindow.show()
-            
-            # By default all data is stored in the same folder.
-            self.ScreenAnalysisMLWindow.Tag_folder = self.savedirectory
-            self.ScreenAnalysisMLWindow.Lib_folder = self.savedirectory
-            
-            self.ScreenAnalysisMLWindow.Tag_round_infor = self.Tag_round_infor
-            self.ScreenAnalysisMLWindow.Lib_round_infor = self.Lib_round_infor
-            
-            self.ScreenAnalysisMLWindow.ScreeningAnalysis()
-            
-        else:
-            pass
+        try:
+            if len(self.Tag_round_infor) != 0 or len(self.Lib_round_infor) != 0:
+                # If analysis information configured, start analysis afterwards.
+    
+                from ImageAnalysis import EvolutionAnalysisWidget
+                
+                self.ScreenAnalysisMLWindow = EvolutionAnalysisWidget.MainGUI()
+                self.ScreenAnalysisMLWindow.show()
+                
+                time.sleep(4)
+                # By default all data is stored in the same folder.
+                self.ScreenAnalysisMLWindow.Tag_folder = self.savedirectory
+                self.ScreenAnalysisMLWindow.Lib_folder = self.savedirectory
+                
+                self.ScreenAnalysisMLWindow.Tag_round_infor = self.Tag_round_infor
+                self.ScreenAnalysisMLWindow.Lib_round_infor = self.Lib_round_infor
+                
+                self.ScreenAnalysisMLWindow.ScreeningAnalysis()
+                
+            else:
+                pass
+        except:
+            print('Analysis failed to start.')
 
     def run_in_thread(self, fn, *args, **kwargs):
         """

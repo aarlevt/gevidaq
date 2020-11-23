@@ -178,8 +178,23 @@ class ScanningExecutionThread(QThread):
                 # =============================================================================
                 """
                 self.filters_init(EachRound)
+
+                """
+                # =============================================================================
+                #         Generate focus position list at the beginning of each round
+                # =============================================================================
+                """
+                if EachRound == 0:
+                    ZStackinfor = self.GeneralSettingDict['FocusStackInfoDict']['RoundPackage_{}'.format(EachRound+1)]        
+                    ZStackNum = int(ZStackinfor[ZStackinfor.index('Focus')+5])
+                    ZStackStep = float(ZStackinfor[ZStackinfor.index('Being')+5:len(ZStackinfor)])
+            
+                    # Generate position list.
+                    ZStacklinspaceStart = self.init_focus_position - (math.floor(ZStackNum/2)) * ZStackStep
+                    ZStacklinspaceEnd = self.init_focus_position + (ZStackNum - math.floor(ZStackNum/2)-1) * ZStackStep
     
-                    
+                    self.ZStackPosList = np.linspace(ZStacklinspaceStart, ZStacklinspaceEnd, num = ZStackNum)
+                
                 self.currentCoordsSeq = 0
                 #%%
                 #-------------Unpack infor for stage move.
@@ -210,7 +225,8 @@ class ScanningExecutionThread(QThread):
                     ColumnIndex = self.coord_array['col'] + ScanningGridOffset_Col
                                       
                     try:
-                        self.ludlStage.moveAbs(RowIndex,ColumnIndex) # Row/Column indexs of np.array are opposite of stage row-col indexs.
+                        for _ in range(2): # Repeat twice
+                            self.ludlStage.moveAbs(RowIndex,ColumnIndex) # Row/Column indexs of np.array are opposite of stage row-col indexs.
                     except:
                         self.error_massage = 'Fail_MoveStage'
                         self.errornum += 1
@@ -555,7 +571,7 @@ class ScanningExecutionThread(QThread):
         ZStackNum = int(ZStackinfor[ZStackinfor.index('Focus')+5])
         ZStackStep = float(ZStackinfor[ZStackinfor.index('Being')+5:len(ZStackinfor)])
         
-        # If focus correction applies, unpact the target focus infor.
+        # If manual focus correction applies, unpact the target focus infor.
         if len(self.GeneralSettingDict['FocusCorrectionMatrixDict']) > 0:
             FocusPosArray = self.GeneralSettingDict['FocusCorrectionMatrixDict']['RoundPackage_{}_Grid_{}'.format(EachRound+1, EachGrid)]
             FocusPosArray = FocusPosArray.flatten('F')
@@ -564,7 +580,7 @@ class ScanningExecutionThread(QThread):
             ZStacklinspaceStart = FocusPos_fromCorrection - (math.floor(ZStackNum/2))* ZStackStep
             ZStacklinspaceEnd = FocusPos_fromCorrection + (ZStackNum - math.floor(ZStackNum/2)-1) * ZStackStep         
         
-        # Without focus correction
+        # With auto-focus correction
         else:
             # If go for auto-focus at this coordinate
             auto_focus_flag = self.coord_array['auto_focus_flag']
@@ -641,16 +657,14 @@ class ScanningExecutionThread(QThread):
                     #     pass                    
                 
 
-                       
+                # Generate the position list, for none-auto-focus coordinates they will use the same list variable.
                 self.ZStackPosList = np.linspace(ZStacklinspaceStart, ZStacklinspaceEnd, num = ZStackNum)
                 print('ZStackPos is : {}'.format(self.ZStackPosList))   
             #------------------------------------------------------------------
-            # If not auto focus, stay where it is.
+            # If not auto focus, use the same list variable self.ZStackPosList.
             else:
                 pass
                 
-
-        
         return ZStackNum
         
     def inidividual_coordinate_operation(self, EachRound, EachWaveform, RowIndex, ColumnIndex):

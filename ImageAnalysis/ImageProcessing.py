@@ -1674,6 +1674,54 @@ class ProcessImage():
         
         return np.mean(entropy_image)
     
+    def images_difference(imageA, imageB):
+       	# the 'Mean Squared Error' between the two images is the
+       	# sum of the squared difference between the two images;
+       	# NOTE: the two images must have the same dimension
+        imageA_unit8 = imageA * (255.0/imageA.max())
+        imageA_unit8=imageA_unit8.astype(int)+1
+    
+        imageB_unit8 = imageB * (255.0/imageB.max())
+        imageB_unit8=imageB_unit8.astype(int)+1
+          
+       	err = np.sum((imageA_unit8 - imageB_unit8) ** 2)
+       	err /= float(imageA.shape[0] * imageA.shape[1])
+       
+       	# return the MSE, the lower the error, the more "similar"
+       	# the two images are
+       	return err
+    
+    #%%
+    # =============================================================================
+    #     Images stitching
+    # =============================================================================
+    def find_repeat_imgs(Nest_data_directory, similarity_thres = 0.04):
+        
+        RoundNumberList, CoordinatesList, fileNameList = ProcessImage.retrive_scanning_scheme(Nest_data_directory, row_data_folder = True)
+        
+        similar_img_list = []
+        for Round in RoundNumberList:
+            fileNameList_oneRound = []
+            for fileName in fileNameList:
+                if fileName.startswith(Round):
+                    # Generate name list only from one round
+                    fileNameList_oneRound.append(fileName)
+                
+            for fileIndex_oneRound in range(len(fileNameList_oneRound)):
+                # If not the last image:
+                if fileIndex_oneRound != len(fileNameList_oneRound) -1:
+                    fileName_oneRound = fileNameList_oneRound[fileIndex_oneRound]
+                    previous_image = imread(os.path.join(Nest_data_directory, fileName_oneRound))
+                    # Assume that file names are in sequence.
+                    next_image = imread(os.path.join(Nest_data_directory, fileNameList_oneRound[fileIndex_oneRound + 1]))
+                    
+                    img_diff = ProcessImage.images_difference(previous_image, next_image)
+                    
+                    if img_diff < similarity_thres:
+                        similar_img_list.append(fileNameList_oneRound[fileIndex_oneRound + 1])
+                        
+        return similar_img_list
+                        
     #%%
     # =============================================================================
     #     Images stitching
@@ -1877,8 +1925,8 @@ if __name__ == "__main__":
 # =============================================================================
     stitch_img = True
     if stitch_img == True:
-        Nest_data_directory = r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2020-11-05_2020-11-05_22-20-31_WT z3 gap3\MLimages_Round2'
-        Stitched_image_dict = ProcessImage.image_stitching(Nest_data_directory, row_data_folder = False)
+        Nest_data_directory = r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2020-11-18 WT lenti2 gaussian-fit'
+        Stitched_image_dict = ProcessImage.image_stitching(Nest_data_directory, row_data_folder = True)
         
         for key in Stitched_image_dict:
             r2 = Stitched_image_dict[key]

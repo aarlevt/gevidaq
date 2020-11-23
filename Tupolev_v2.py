@@ -79,7 +79,8 @@ class Mainbody(QWidget):
         #----------------------------------------------------------------------
         #----------------------------------GUI---------------------------------
         #----------------------------------------------------------------------
-        self.setMinimumSize(1600,1080)
+        self.setMinimumSize(1600,1090)
+        self.setMaximumHeight(1080)
         self.setWindowTitle("Fiumicino")
         self.layout = QGridLayout(self)
         """
@@ -88,13 +89,15 @@ class Mainbody(QWidget):
         # =============================================================================
         """
         self.tabs = QTabWidget()
+        self.Camera_WidgetInstance = HamamatsuCam.HamamatsuUI.CameraUI()
         self.Galvo_WidgetInstance = GalvoWidget.PMTWidget.PMTWidgetUI()
         self.Waveformer_WidgetInstance = NIDAQ.WaveformWidget.WaveformGenerator()
         self.PatchClamp_WidgetInstance = PatchClamp.ui_patchclamp_sealtest.PatchclampSealTestUI()
         self.Analysis_WidgetInstance = ImageAnalysis.AnalysisWidget.AnalysisWidgetUI()
-        self.Coordinate_WidgetInstance = CoordinatesManager.CoordinateWidget2.CoordinatesWidgetUI(self)
+        self.Coordinate_WidgetInstance = CoordinatesManager.CoordinateWidget2.CoordinatesWidgetUI()
         
         #--------------Add tab widgets-------------------
+        self.tabs.addTab(self.Camera_WidgetInstance,"Camera imaging")
         self.tabs.addTab(self.Galvo_WidgetInstance,"PMT imaging")
         self.tabs.addTab(self.Waveformer_WidgetInstance,"Waveform")
         self.tabs.addTab(self.PatchClamp_WidgetInstance,"Patch clamp")    
@@ -218,14 +221,14 @@ class Mainbody(QWidget):
         # =============================================================================
         #         GUI for camera button       
         # =============================================================================
-        self.open_cam = StylishQT.FancyPushButton(50, 50, color1=(255,153,255), color2=(204,208,255))
+        # self.open_cam = StylishQT.FancyPushButton(50, 50, color1=(255,153,255), color2=(204,208,255))
         
-        self.open_cam.setIcon(QIcon('./Icons/Hamamatsu.png'))
-        self.open_cam.setToolTip("Open camera widget")
-        self.open_cam.setIconSize(QSize(60, 60))
-        self.open_cam.clicked.connect(self.open_camera)
-        self.layout.addWidget(self.open_cam, 4, 0, 1, 1)
-        self.open_cam.setGraphicsEffect(QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2))
+        # self.open_cam.setIcon(QIcon('./Icons/Hamamatsu.png'))
+        # self.open_cam.setToolTip("Open camera widget")
+        # self.open_cam.setIconSize(QSize(60, 60))
+        # self.open_cam.clicked.connect(self.open_camera)
+        # self.layout.addWidget(self.open_cam, 4, 0, 1, 1)
+        # self.open_cam.setGraphicsEffect(QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2))
         # =============================================================================
         #         GUI for Insight X3      
         # =============================================================================
@@ -234,7 +237,7 @@ class Mainbody(QWidget):
         self.open_Insight.setToolTip("Open 2-p laser widget")
         self.open_Insight.setIconSize(QSize(50, 50))
         self.open_Insight.clicked.connect(self.open_Insight_UI)
-        self.layout.addWidget(self.open_Insight, 4, 1, 1, 1)
+        self.layout.addWidget(self.open_Insight, 4, 0, 1, 1)
         self.open_Insight.setGraphicsEffect(QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2))
         # =============================================================================
         #         GUI for evolution screening     
@@ -244,7 +247,7 @@ class Mainbody(QWidget):
         self.open_screening_button.setToolTip("Open screening widget")
         self.open_screening_button.setIconSize(QSize(45, 45))
         self.open_screening_button.clicked.connect(self.open_screening)
-        self.layout.addWidget(self.open_screening_button, 5, 1, 1, 1)
+        self.layout.addWidget(self.open_screening_button, 4, 1, 1, 1)
         self.open_screening_button.setGraphicsEffect(QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2))
         
         #**************************************************************************************************************************************        
@@ -268,6 +271,13 @@ class Mainbody(QWidget):
         
         self.Analysis_WidgetInstance.MessageBack.connect(self.normalOutputWritten)
         self.Analysis_WidgetInstance.Cellselection_DMD_mask_contour.connect(self.Coordinate_WidgetInstance.DMDWidget.receive_mask_coordinates)
+        
+
+        # Connect camera with DMD widget, so that snapped images are shown in 
+        # DMD widget.
+        self.Camera_WidgetInstance.signal_SnapImg.connect(self.Coordinate_WidgetInstance.receive_image_from_camera)
+        
+        self.Camera_WidgetInstance.default_folder = self.savedirectory
         '''
         ***************************************************************************************************************************************
         ************************************************************END of GUI*****************************************************************
@@ -345,15 +355,15 @@ class Mainbody(QWidget):
     # =============================================================================
     #    Fucs for external windows
     # =============================================================================
-    def open_camera(self):
-        self.camWindow = HamamatsuCam.HamamatsuUI.CameraUI()
-        self.camWindow.show()
+    # def open_camera(self):
+    #     self.camWindow = HamamatsuCam.HamamatsuUI.CameraUI()
+    #     self.camWindow.show()
         
-        # Connect camera with DMD widget, so that snapped images are shown in 
-        # DMD widget.
-        self.camWindow.signal_SnapImg.connect(self.Coordinate_WidgetInstance.receive_image_from_camera)
+    #     # Connect camera with DMD widget, so that snapped images are shown in 
+    #     # DMD widget.
+    #     self.camWindow.signal_SnapImg.connect(self.Coordinate_WidgetInstance.receive_image_from_camera)
         
-        self.camWindow.default_folder = self.savedirectory
+    #     self.camWindow.default_folder = self.savedirectory
         
     def open_Insight_UI(self):
         self.open_Insight_UIWindow = InsightX3.TwoPhotonLaserUI.InsightWidgetUI()
