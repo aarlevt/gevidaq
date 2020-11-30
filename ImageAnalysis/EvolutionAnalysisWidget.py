@@ -195,7 +195,7 @@ class MainGUI(QWidget):
         self.Mean_intensity_in_contour_thres_box.setDecimals(4)
         self.Mean_intensity_in_contour_thres_box.setMinimum(-10)
         self.Mean_intensity_in_contour_thres_box.setMaximum(10)
-        self.Mean_intensity_in_contour_thres_box.setValue(0.250)
+        self.Mean_intensity_in_contour_thres_box.setValue(0.240)
         self.Mean_intensity_in_contour_thres_box.setSingleStep(0.0001)  
         IPLayout.addWidget(self.Mean_intensity_in_contour_thres_box, 0, 3)
         
@@ -601,7 +601,7 @@ class MainGUI(QWidget):
                 # Display the library image
                 self.meta_data = self.CurrentRankCellpProperties.loc['ImgNameInfor_Lib']
                 
-                roundnum = self.meta_data[0:self.meta_data.index('_Coord')]
+                roundnum = self.meta_data[0:self.meta_data.index('_Grid')]
                 
                 # All the mask images from MaskRCNN are saved in tag folder
                 self.lib_mask_imagefilename = os.path.join(self.Tag_folder, "MLimages_{}".format(roundnum), self.meta_data+'.tif')
@@ -611,7 +611,7 @@ class MainGUI(QWidget):
             else:
                 # Display the tag protein image
                 self.meta_data = self.CurrentRankCellpProperties.loc['ImgNameInfor_Tag']
-                roundnum = self.meta_data[0:self.meta_data.index('_Coord')]
+                roundnum = self.meta_data[0:self.meta_data.index('_Grid')]
                 
                 self.tag_mask_imagefilename = os.path.join(self.Tag_folder, "MLimages_{}".format(roundnum), self.meta_data+'.tif')
     

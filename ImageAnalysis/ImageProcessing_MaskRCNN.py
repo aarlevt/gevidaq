@@ -126,7 +126,7 @@ class ProcessImageML():
                     
         return PMT_image_wholetrace_stack
     
-    def retrive_scanning_scheme(self, Nest_data_directory):
+    def retrive_scanning_scheme(self, Nest_data_directory, file_keyword = 'PMT_0Zmax'):
         """
         Return lists that contain round sequence and coordinates strings, like ['Coords1_R0C0', 'Coords2_R0C1500']
 
@@ -134,7 +134,9 @@ class ProcessImageML():
         ----------
         Nest_data_directory : string.
             The directory to folder where the screening data is stored.
-    
+        file_keyword : string.
+            The keyowrd used to search for file name.
+        
         Returns
         -------
         RoundNumberList : List.
@@ -147,7 +149,7 @@ class ProcessImageML():
         fileNameList = []
 #        ImgSequenceNum = 0
         for file in os.listdir(Nest_data_directory):
-            if 'PMT_0Zmax' in file:
+            if file_keyword in file:
                 fileNameList.append(file)
         
         RoundNumberList = []
@@ -228,7 +230,8 @@ class ProcessImageML():
         cell_Data : pd.DataFrame.
             Sum of return from func: retrieveDataFromML, for whole round.
         """
-        RoundNumberList, CoordinatesList, fileNameList = self.retrive_scanning_scheme(folder)
+        RoundNumberList, CoordinatesList, fileNameList = self.retrive_scanning_scheme(folder, file_keyword = 'Zmax')
+        # RoundNumberList, CoordinatesList, fileNameList = self.retrive_scanning_scheme(folder, file_keyword = 'Zfocus')
         os.mkdir(os.path.join(folder, 'MLimages_{}'.format(round_num))) # Create the folder
         
         for EachRound in RoundNumberList:
@@ -249,7 +252,10 @@ class ProcessImageML():
                     #-------------- readin image---------------
                     for Eachfilename in enumerate(fileNameList):
                         if EachCoord in Eachfilename[1] and EachRound in Eachfilename[1]:
-                            ImgNameInfor = Eachfilename[1][0:len(Eachfilename[1])-14] # get rid of '_PMT_0Zmax.tif' in the name.
+                            if '0Zmax' in Eachfilename[1]:
+                                ImgNameInfor = Eachfilename[1][0:len(Eachfilename[1])-14] # get rid of '_PMT_0Zmax.tif' in the name.
+                            elif '0Zfocus' in Eachfilename[1]:
+                                ImgNameInfor = Eachfilename[1][0:len(Eachfilename[1])-16] # get rid of '_PMT_0Zfocus.tif' in the name.
                             tag_imagefilename = os.path.join(folder, Eachfilename[1])
                     #------------------------------------------
     

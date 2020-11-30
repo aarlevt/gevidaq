@@ -184,6 +184,7 @@ class ObjMotorWidgetUI(QWidget):
             self.ObjMotor_connect.setChecked(True)
         
         except:
+            self.ObjMotor_connect.setChecked(False)
             QMessageBox.warning(self,'Oops','Failed to connect, try again.',QMessageBox.Ok)
                 
     def MovingMotorThread(self, target):

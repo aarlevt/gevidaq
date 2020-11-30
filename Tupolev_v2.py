@@ -9,8 +9,9 @@ Created on Sat Aug 10 20:54:40 2019
     ============================== ==============================================
     == Widget descriptions ==
     
+    - HamamatsuCam.HamamatsuUI: Hamamatsu orca flash 4.0 camera user interface.
     - PatchClamp.ui_patchclamp_sealtest: The GUI for patch clamp.
-    - NIDAQ.Waveformer_for_screening: The GUI for configuring and executing waveforms in National Instrument Data Acquisition (DAQ) device.
+    - NIDAQ.WaveformWidget: The GUI for configuring and executing waveforms in National Instrument Data Acquisition (DAQ) device.
     - GalvoWidget.PMTWidget: For PMT scanning imaging.
     - ImageAnalysis.AnalysisWidget: Data Analysis widget.
     - SampleStageControl.StageMoveWidget: The GUI for sample stage movement control.

@@ -593,10 +593,10 @@ class ScanningExecutionThread(QThread):
                 if self.coord_array['focus_position'] == -1.:
                     instance_FocusFinder = FocusFinder(motor_handle = self.pi_device_instance)
                     print("--------------Start auto-focusing-----------------")
-                    instance_FocusFinder.total_step_number = 7
-                    instance_FocusFinder.init_step_size = 0.013
-                    self.auto_focus_position = instance_FocusFinder.gaussian_fit()
-                    # self.auto_focus_position = instance_FocusFinder.bisection()
+                    # instance_FocusFinder.total_step_number = 7
+                    # instance_FocusFinder.init_step_size = 0.013
+                    # self.auto_focus_position = instance_FocusFinder.gaussian_fit()
+                    self.auto_focus_position = instance_FocusFinder.bisection()
                     
                     try:
                         if self.auto_focus_position[0] == False: # If there's no cell in FOV

@@ -24,6 +24,7 @@ from skimage.restoration import denoise_tv_chambolle
 from skimage.io import imread
 from skimage.transform import rotate, resize
 from scipy.signal import convolve2d, medfilt
+import skimage.external.tifffile as skimtiff
 from PIL import Image
 from PIL.TiffTags import TAGS
 import scipy.interpolate as interpolate
@@ -85,7 +86,7 @@ class ProcessImage():
                     
         return PMT_image_wholetrace_stack
     
-    def retrive_scanning_scheme(Nest_data_directory, row_data_folder = True):
+    def retrive_scanning_scheme(Nest_data_directory, row_data_folder = True, file_keyword = 'PMT_0Zmax'):
         """
         # =============================================================================
         # Return lists that contain round sequence and coordinates strings, like ['Coords1_R0C0', 'Coords2_R0C1500']
@@ -110,7 +111,7 @@ class ProcessImage():
 
         for file in os.listdir(Nest_data_directory):
             if row_data_folder == True:
-                if 'PMT_0Zmax' in file:
+                if file_keyword in file:
                     fileNameList.append(file)
             elif 'Thumbs' not in file:
                 fileNameList.append(file)
@@ -226,7 +227,8 @@ class ProcessImage():
         clear_border(cleared)
         # label image regions, prepare for regionprops
         label_image = label(cleared)       
-        dtype = [('BoundingBox', 'U32'), ('Mean intensity', float), ('Mean intensity in contour', float), ('Contour soma ratio', float), ('Roundness', float)]
+        dtype = [('BoundingBox', 'U32'), ('Mean intensity', float), ('Mean intensity in contour', float), \
+                 ('Contour soma ratio', float), ('Roundness', float)]
         CellSequenceInRegion = 0
         dirforcellprp = {}
         show_img = False
@@ -249,17 +251,21 @@ class ProcessImage():
                 RawRegionImg_for_contour = RawRegionImg.copy()
                 
                 #---------Get the cell filled mask-------------
-                filled_mask_bef, MeanIntensity_Background = ProcessImage.get_cell_filled_mask(RawRegionImg = RawRegionImg, region_area = bbox_area*0.2, 
-                                                                                                      cell_region_opening_factor = cell_region_opening_factor, 
-                                                                                                      cell_region_closing_factor = cell_region_closing_factor)
+                filled_mask_bef, MeanIntensity_Background = \
+                ProcessImage.get_cell_filled_mask(RawRegionImg = RawRegionImg, region_area = bbox_area*0.2, 
+                                                  cell_region_opening_factor = cell_region_opening_factor, 
+                                                  cell_region_closing_factor = cell_region_closing_factor)
 
-                filled_mask_convolve2d = ProcessImage.smoothing_filled_mask(RawRegionImg, filled_mask_bef = filled_mask_bef, region_area = bbox_area*0.2, threshold_factor = 1.1)
+                filled_mask_convolve2d = \
+                    ProcessImage.smoothing_filled_mask(RawRegionImg, filled_mask_bef = filled_mask_bef, region_area = bbox_area*0.2, threshold_factor = 1.1)
 
                 # Find contour along filled image
-                contour_mask_thin_line = ProcessImage.contour(filled_mask_convolve2d, RawRegionImg_for_contour.copy(), contour_thres) 
+                contour_mask_thin_line = \
+                    ProcessImage.contour(filled_mask_convolve2d, RawRegionImg_for_contour.copy(), contour_thres) 
 
                 # after here intensityimage_intensity is changed from contour labeled with number 5 to binary image
-                contour_mask_of_cell = ProcessImage.inward_mask_dilation(contour_mask_thin_line.copy() ,filled_mask_convolve2d, contour_dilationparameter)
+                contour_mask_of_cell = \
+                    ProcessImage.inward_mask_dilation(contour_mask_thin_line.copy() ,filled_mask_convolve2d, contour_dilationparameter)
                 
                 #                    Calculate Roundness
                 #--------------------------------------------------------------
@@ -1693,13 +1699,15 @@ class ProcessImage():
     
     #%%
     # =============================================================================
-    #     Images stitching
+    #     Screening data post-processing
     # =============================================================================
     def find_repeat_imgs(Nest_data_directory, similarity_thres = 0.04):
         
-        RoundNumberList, CoordinatesList, fileNameList = ProcessImage.retrive_scanning_scheme(Nest_data_directory, row_data_folder = True)
+        RoundNumberList, CoordinatesList, fileNameList = \
+            ProcessImage.retrive_scanning_scheme(Nest_data_directory, row_data_folder = True)
         
         similar_img_list = []
+        img_diff_list = []
         for Round in RoundNumberList:
             fileNameList_oneRound = []
             for fileName in fileNameList:
@@ -1716,12 +1724,55 @@ class ProcessImage():
                     next_image = imread(os.path.join(Nest_data_directory, fileNameList_oneRound[fileIndex_oneRound + 1]))
                     
                     img_diff = ProcessImage.images_difference(previous_image, next_image)
-                    
+                    img_diff_list.append(img_diff)
                     if img_diff < similarity_thres:
                         similar_img_list.append(fileNameList_oneRound[fileIndex_oneRound + 1])
                         
-        return similar_img_list
-                        
+        return similar_img_list, img_diff_list
+    
+    def find_infocus_from_stack(Nest_data_directory, save_image = True):
+        
+        RoundNumberList, CoordinatesList, fileNameList = ProcessImage.retrive_scanning_scheme(Nest_data_directory)
+        
+        for each_file_name in fileNameList:
+            # For each coordinate, find all position files in the stack, according to Zmax file name.
+            file_name_stack = []
+            for file in os.listdir(Nest_data_directory):
+                if each_file_name[0:each_file_name.index('Zmax')] + 'Zpos' in file :
+                    file_name_stack.append(file)
+
+            img_stack = []
+            for file in file_name_stack:
+                img_stack.append(imread(os.path.join(Nest_data_directory, file)))
+            
+            img_with_highest_focus_degree = ProcessImage.find_infocus_from_list(img_stack)
+            if save_image == True:
+                # Save the file.
+                with skimtiff.TiffWriter(os.path.join(Nest_data_directory, each_file_name[0:each_file_name.index('max')] +'focus.tif'), imagej = True) as tif:                
+                    tif.save(img_with_highest_focus_degree.astype('float32'), compress=0)
+                    
+    def find_infocus_from_list(img_stack):
+        """
+        Find the most in-focus image from the image list.
+
+        Parameters
+        ----------
+        img_stack : list
+            List of input images.
+
+        Returns
+        -------
+        img_highest_focus_degree : np.ndarray
+            Best in-focus image.
+
+        """
+        focus_degree_list = []
+        for each_img in img_stack:
+            focus_degree_list.append(ProcessImage.local_entropy(each_img))
+            
+        img_highest_focus_degree = img_stack[focus_degree_list.index(max(focus_degree_list))]
+        
+        return img_highest_focus_degree
     #%%
     # =============================================================================
     #     Images stitching
@@ -1923,7 +1974,10 @@ if __name__ == "__main__":
 #         for i in range(len(tagprotein_cell_properties_dict[eachpos])):
 #             tagprotein_cell_properties_dict_meanIntensity_list.append(tagprotein_cell_properties_dict[eachpos]['Mean intensity'][i])
 # =============================================================================
-    stitch_img = True
+    stitch_img = False
+    retrievefocus_map = False
+    find_focus = True
+    
     if stitch_img == True:
         Nest_data_directory = r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2020-11-18 WT lenti2 gaussian-fit'
         Stitched_image_dict = ProcessImage.image_stitching(Nest_data_directory, row_data_folder = True)
@@ -1933,7 +1987,11 @@ if __name__ == "__main__":
             row_image = Image.fromarray(r2)            
             row_image.save(os.path.join(Nest_data_directory, '{} stitched.tif'.format(key)))
 
-    else:
+    elif retrievefocus_map == True:
         Nest_data_directory = r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2020-11-5 Lib z3_2p5um 9coords AF gap3'
         focus_map_dict = ProcessImage.retrieve_focus_map(Nest_data_directory)
-                
+    
+    elif find_focus == True :
+        ProcessImage.find_infocus_from_stack(r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2020-11-05_2020-11-05_22-20-31_WT z3 gap3')
+    else:
+        res,diff = ProcessImage.find_repeat_imgs(r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2020-11-24_2020-11-24_16-45-26_2rounds_GFP_olddish', similarity_thres = 400)

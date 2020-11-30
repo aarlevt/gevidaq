@@ -886,6 +886,8 @@ class Mainbody(QWidget):
     
                 from ImageAnalysis import EvolutionAnalysisWidget
                 
+                time.sleep(4)
+                
                 self.ScreenAnalysisMLWindow = EvolutionAnalysisWidget.MainGUI()
                 self.ScreenAnalysisMLWindow.show()
                 
