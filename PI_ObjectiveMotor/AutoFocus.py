@@ -66,10 +66,6 @@ class FocusFinder():
         
         # Current position of the focus.
         self.current_pos = self.pi_device_instance.GetCurrentPos()
-        
-        # Threshold for focus-degree
-        # self.focus_degree_thres = 0.00008 # Laplacian variance
-        self.focus_degree_thres = 0
 
         # Number of steps already tried.
         self.steps_taken = 0
@@ -154,8 +150,9 @@ class FocusFinder():
                 
                 # Break the loop if focus degree is below threshold which means
                 # that there's no cell in image.
-                if degree_of_focus_mid <= self.focus_degree_thres:
-                    mid_position = [False, self.current_pos]
+                if not ProcessImage.if_theres_cell(self.galvo_image.astype('float32')):
+                    print('no cell')
+                    mid_position = False
                     break
 
                 # Move to top and evaluate.
@@ -214,16 +211,16 @@ class FocusFinder():
             
         # Get the image.
         if self.source_of_image == "PMT":
-            image = self.galvo.run()
+            self.galvo_image = self.galvo.run()
             plt.figure()
-            plt.imshow(image)
+            plt.imshow(self.galvo_image)
             plt.show()
             
             if False:
                 with skimtiff.TiffWriter(os.path.join(r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Xin\2020-11-17 gaussian fit auto-focus cells\trial_11', str(obj_position).replace(".", "_")+ '.tif')) as tif:                
-                    tif.save(image.astype('float32'), compress=0)
+                    tif.save(self.galvo_image.astype('float32'), compress=0)
                             
-        degree_of_focus = ProcessImage.local_entropy(image)
+        degree_of_focus = ProcessImage.local_entropy(self.galvo_image.astype('float32'))
         time.sleep(0.2)
         
         return degree_of_focus

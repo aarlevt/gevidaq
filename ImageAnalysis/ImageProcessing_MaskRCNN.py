@@ -658,7 +658,17 @@ class ProcessImageML():
             DataFrame_sorted = DataFrame.loc[(((DataFrame.Contour_soma_ratio_Lib - Contour_soma_ratio_min) / (Contour_soma_ratio_max - Contour_soma_ratio_min)) ** 2 * weight_2
             + ((DataFrame.Lib_Tag_contour_ratio - Lib_Tag_contour_ratio_min) / (Lib_Tag_contour_ratio_max - Lib_Tag_contour_ratio_min)) **2 * weight_1) \
             .sort_values(ascending=False).index]   
-    
+
+        elif axis_1 == "Lib_Tag_contour_ratio" and axis_2 == "Mean_intensity_in_contour_Lib":
+            # Get the min and max on two axes, prepare for next step.
+            Mean_intensity_in_contour_Lib_min, Mean_intensity_in_contour_Lib_max = DataFrame.Mean_intensity_in_contour_Lib.min(), DataFrame.Mean_intensity_in_contour_Lib.max()
+            Lib_Tag_contour_ratio_min, Lib_Tag_contour_ratio_max = DataFrame.Lib_Tag_contour_ratio.min(), DataFrame.Lib_Tag_contour_ratio.max()
+            
+            DataFrame_sorted = DataFrame.loc[(((DataFrame.Mean_intensity_in_contour_Lib - Mean_intensity_in_contour_Lib_min) \
+                                               / (Mean_intensity_in_contour_Lib_max - Mean_intensity_in_contour_Lib_min)) ** 2 * weight_2
+            + ((DataFrame.Lib_Tag_contour_ratio - Lib_Tag_contour_ratio_min) / (Lib_Tag_contour_ratio_max - Lib_Tag_contour_ratio_min)) **2 * weight_1) \
+            .sort_values(ascending=False).index]
+                
         return DataFrame_sorted
     
     def showPlotlyScatter(self, DataFrame, x_axis, y_axis, saving_directory):

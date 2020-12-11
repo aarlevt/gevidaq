@@ -255,7 +255,7 @@ class Mainbody(QWidget):
 
         self.ScanstepTextbox = QSpinBox(self)
         self.ScanstepTextbox.setMaximum(20000)
-        self.ScanstepTextbox.setValue(1550)
+        self.ScanstepTextbox.setValue(1600)
         self.ScanstepTextbox.setSingleStep(500)
         ScanSettingLayout.addWidget(self.ScanstepTextbox, 0, 7)
         ScanSettingLayout.addWidget(QLabel("Step size:"), 0, 6)
@@ -829,6 +829,10 @@ class Mainbody(QWidget):
     def _open_file_dialog(self):
         self.savedirectory = str(QtWidgets.QFileDialog.getExistingDirectory(directory='M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data'))
         self.savedirectorytextbox.setText(self.savedirectory)
+        try:
+            self.GeneralSettingDict['savedirectory'] = self.savedirectory
+        except:
+            pass
         self.set_prefix()
     
     def update_saving_directory(self):

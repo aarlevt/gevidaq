@@ -640,7 +640,10 @@ class DAQmission(QThread): # For all-purpose Nidaq tasks, use "Dev1/ai22" as ref
                 print('^^^^^^^^^^^^^^^^^^Daq tasks finish^^^^^^^^^^^^^^^^^^')
         #----------------------------------------------------------------------------------------------------------------------------------
                     
+    def get_raw_data(self):
         
+        return self.Dataholder
+    
     def save_as_binary(self, directory):
         #print(self.ai_dev_scaling_coeff_vp)
         if self.has_recording_channel == True:

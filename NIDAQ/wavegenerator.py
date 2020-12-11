@@ -2,6 +2,7 @@ from __future__ import division
 import numpy as np
 import matplotlib.pyplot as plt
 import math
+from scipy import signal
 
 from NIDAQ.constants import HardwareConstants
 

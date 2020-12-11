@@ -16,7 +16,8 @@ from skimage.filters import threshold_otsu, threshold_local
 from skimage.filters.rank import entropy
 from skimage.segmentation import clear_border
 from skimage.measure import label, perimeter, find_contours
-from skimage.morphology import closing, square, opening, reconstruction, skeletonize, convex_hull_image, dilation, thin, binary_erosion, disk, binary_dilation
+from skimage.morphology import closing, square, opening, reconstruction, skeletonize, \
+                convex_hull_image, dilation, thin, binary_erosion, disk, binary_dilation
 from skimage.measure import regionprops, moments, moments_central, moments_hu
 from skimage.draw import line, polygon2mask, polygon_perimeter
 from skimage.color import label2rgb, gray2rgb, rgb2gray
@@ -147,7 +148,7 @@ class ProcessImage():
     # ==========================================================================================================================================================
     """
     
-    def generate_mask(imagestack, openingfactor, closingfactor, binary_adaptive_block_size):
+    def generate_mask(imagestack,  openingfactor=2, closingfactor=3, binary_adaptive_block_size=335):
         """
         Return a rough binary mask generated from single image or first image of the stack using adaptive thresholding.
         
@@ -469,13 +470,49 @@ class ProcessImage():
         for p in range(CellSequenceInRegion):
             LibFluorescenceLookupBook[p] = dirforcellprp[p]
             
-        return LibFluorescenceLookupBook        
+        return LibFluorescenceLookupBook
+
+
+    def if_theres_cell(image, percentage_threshold = 0.0032):
+        """
+        Check if there're enough objects in the image.
+
+        Parameters
+        ----------
+        image : np.array
+            Input image.
+        percentage_threshold : float, optional
+            Threshold for the percentage of pixels identifies as object of interest. 
+            The default is 0.0085.
+
+        Returns
+        -------
+        bool
+            DESCRIPTION.
+
+        """
+        # Get the thresholded mask
+        image_binary = np.where(image >= threshold_otsu(image), 1, 0)
+        # Opening on the mask to diminish tiny patches from noise
+        image_binary_open = opening(image_binary, square(3))
+        # Closing on the mask
+        image_binary_close = closing(image_binary_open, square(4))
+        # Loop through regions to find the biggest area
+        area_list = []
+        for region in regionprops(label(image_binary_close)):
+            area_list.append(region.area)
+        
+        if max(area_list)/image.size > percentage_threshold:
+            return True
+        else:
+            return False
     #%%
     """           
     # =========================================================================
     #     Contour scanning processing       
     # =========================================================================
     """
+    
     def findContour(imagewithouthole, image, threshold):
         """
         Return contour mask by eroding inward from filled cell mask.
@@ -557,7 +594,6 @@ class ProcessImage():
         filled_mask_bef: ndarray
             Sstand alone single filled cell mask without inner holes.
         
-
         """
 
         #---------------------------------------------------Get binary cell image baseed on expanded current region image-------------------------------------------------
@@ -1329,7 +1365,152 @@ class ProcessImage():
         else:
             return Cell_DataFrame, cell_counted_number, total_cells_alive
         
+    
+    def Register_cells(data_frame_list):
+        """
+        Trace inidividual cell at different time points based on bounding box
+        overlapping from the dataframe list.
+
+        Parameters
+        ----------
+        data_frame_list : list
+            List of dataframes of cells from different time points.
+
+        Returns
+        -------
+        whole_registered_dataframe : pd.DataFrame
+            Registered dataframe.
+
+        """
+        # Set the first data frame as starter as it should have most cells.
+        whole_registered_dataframe = data_frame_list[0].set_index('Unnamed: 0')
         
+        for previous_dataframe_index in range(len(data_frame_list) - 1):
+            
+            if previous_dataframe_index == 0:
+                registered_dataframe = ProcessImage.Register_between_dataframes(data_frame_list[previous_dataframe_index].set_index('Unnamed: 0'), \
+                                                                            data_frame_list[previous_dataframe_index + 1].set_index('Unnamed: 0'))
+            else:
+                registered_dataframe = ProcessImage.Register_between_dataframes(registered_dataframe, \
+                                                                            data_frame_list[previous_dataframe_index + 1].set_index('Unnamed: 0'))
+                    
+            whole_registered_dataframe = whole_registered_dataframe.join(registered_dataframe, rsuffix='_round_{}'.format(previous_dataframe_index +1))
+
+        return whole_registered_dataframe
+        
+    def Retrieve_boundingbox(bounding_box_str):
+        """
+        Given the input boundingbox string, return the row/col limits.
+
+        Parameters
+        ----------
+        bounding_box_str : TYPE
+            DESCRIPTION.
+
+        Returns
+        -------
+        minr_Data : int
+            Minimum row index.
+        maxr_Data : int
+            Maximum row index.
+        minc_Data : int
+            Minimum col index.
+        maxc_Data : int
+            Maximum col index.
+
+        """
+        minr_Data = int(bounding_box_str[bounding_box_str.index('minr')+4:bounding_box_str.index('_maxr')])
+        maxr_Data = int(bounding_box_str[bounding_box_str.index('maxr')+4:bounding_box_str.index('_minc')])        
+        minc_Data = int(bounding_box_str[bounding_box_str.index('minc')+4:bounding_box_str.index('_maxc')])
+        maxc_Data = int(bounding_box_str[bounding_box_str.index('maxc')+4:len(bounding_box_str)])        
+        
+        return minr_Data, maxr_Data, minc_Data, maxc_Data
+    
+    def Register_between_dataframes(dataframe_previous, dataframe_latter, boundingbox_overlapping_thres = 0.6):
+        """
+        Given two dataframs from different time, find back the same cells from latter time point.
+        Show NAN instead if fail to trace back the cell.
+
+        Parameters
+        ----------
+        dataframe_previous : pd.DataFrame
+            DataFrame of first time point.
+        dataframe_latter : pd.DataFrame
+            DataFrame of second time point.
+        boundingbox_overlapping_thres : TYPE, optional
+            Bounding box verlapping percentage threshold above which will be
+            seen as same cell. The default is 0.6.
+
+        Returns
+        -------
+        registered_dataframe : pd.DataFrame
+            Show NAN on row instead if fail to trace back the cell.
+
+        """
+        
+        registered_dataframe = pd.DataFrame()
+        
+        for index_previous_data_frame, row_previous_data_frame in dataframe_previous.iterrows():
+            # For each flat cell in round
+            bounding_box_str_Last_data_frame = row_previous_data_frame['BoundingBox']
+            ImgNameInfor_string = row_previous_data_frame['ImgNameInfor']
+            
+            # Retrieve boundingbox information
+            minr_Data_1, maxr_Data_1, minc_Data_1, maxc_Data_1 = ProcessImage.Retrieve_boundingbox(bounding_box_str_Last_data_frame)
+            
+            Area_bbox_Last_data_frame = (maxr_Data_1 - minr_Data_1) * (maxc_Data_1 - minc_Data_1)
+            
+            intersection_area_percentage_list = []
+            index_list_same_coordinate = []
+            registered_cell_Series_list = []
+                
+            # From the image name information, locate rows only from the same coordinate, generate a pd.dataframe
+            DataFrame_of_same_coordinate = dataframe_latter\
+                [dataframe_latter['ImgNameInfor'].str.contains(ImgNameInfor_string[ImgNameInfor_string.index('_R')+1:len(ImgNameInfor_string)])]
+            
+            for index_2, row_Data_2 in DataFrame_of_same_coordinate.iterrows():
+
+                bounding_box_str_latter = row_Data_2['BoundingBox']
+                # Retrieve boundingbox information
+                minr_Data_2, maxr_Data_2, minc_Data_2, maxc_Data_2 = ProcessImage.Retrieve_boundingbox(bounding_box_str_latter)           
+                
+                Area_bbox_latter_round = (maxr_Data_2 - minr_Data_2) * (maxc_Data_2 - minc_Data_2)
+                
+                # Overlapping row
+                if minr_Data_2 < maxr_Data_1 and maxr_Data_2 > minr_Data_1:
+                    intersection_rowNumber = min((abs(minr_Data_2 - maxr_Data_1), maxr_Data_1 - minr_Data_1)) - max(maxr_Data_1 - maxr_Data_2, 0)
+                else:
+                    intersection_rowNumber = 0
+                # Overlapping column
+                if minc_Data_2 < maxc_Data_1 and maxc_Data_2 > minc_Data_1:
+                    intersection_colNumber = min((abs(minc_Data_2 - maxc_Data_1), maxc_Data_1 - minc_Data_1)) - max(maxc_Data_1 - maxc_Data_2, 0)
+                else:
+                    intersection_colNumber = 0                
+    
+                intersection_Area = intersection_rowNumber * intersection_colNumber
+                # Calculate the percentage based on smaller number of intersection over the two.
+                intersection_Area_percentage = min([(intersection_Area / Area_bbox_Last_data_frame), (intersection_Area / Area_bbox_latter_round)])
+
+                intersection_area_percentage_list.append(intersection_Area_percentage)
+                index_list_same_coordinate.append(index_2)
+        
+
+            # Link back cells based on intersection area
+            if len(intersection_area_percentage_list) > 0 and max(intersection_area_percentage_list) > boundingbox_overlapping_thres:
+
+                registered_cell_index = index_list_same_coordinate[intersection_area_percentage_list.index(max(intersection_area_percentage_list))]
+                
+                # Get the pd.series from dataframe.
+                registered_cell_Series = DataFrame_of_same_coordinate.loc[registered_cell_index].copy()
+                
+                # Update the Cell index in the first column.
+                registered_cell_Series.name = dataframe_previous.loc[index_previous_data_frame].copy().name
+                
+                # Append the series as dataframe
+                registered_dataframe = registered_dataframe.append(registered_cell_Series.to_frame().T)
+                
+        return registered_dataframe
+                
     def Convert2Unit8(Imagepath, Rawimage):
         """ Convert image pixel values to unit8 to run on MaskRCNN.
         """
@@ -1819,8 +2000,8 @@ class ProcessImage():
         else:
             scanning_coord_step = imageinfo_DataFrame.iloc[1]['Stage column index'] - imageinfo_DataFrame.iloc[0]['Stage column index']
         
-        scanning_coord_step = 1550
-        print('scanning_coord_step set to 1550!')
+        scanning_coord_step = 1585
+        print('scanning_coord_step set to {}!'.format(scanning_coord_step))
         
         # Assume that col and row coordinates numbers are the same.
         max_coord_value = imageinfo_DataFrame['Stage column index'].max()
@@ -1974,12 +2155,13 @@ if __name__ == "__main__":
 #         for i in range(len(tagprotein_cell_properties_dict[eachpos])):
 #             tagprotein_cell_properties_dict_meanIntensity_list.append(tagprotein_cell_properties_dict[eachpos]['Mean intensity'][i])
 # =============================================================================
-    stitch_img = False
+    stitch_img = True
     retrievefocus_map = False
-    find_focus = True
+    find_focus = False
+    registration = False
     
     if stitch_img == True:
-        Nest_data_directory = r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2020-11-18 WT lenti2 gaussian-fit'
+        Nest_data_directory = r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2020-12-10_2020-12-10_17-30-03_WT_Archon_repeat_2um_1585step'
         Stitched_image_dict = ProcessImage.image_stitching(Nest_data_directory, row_data_folder = True)
         
         for key in Stitched_image_dict:
@@ -1993,5 +2175,16 @@ if __name__ == "__main__":
     
     elif find_focus == True :
         ProcessImage.find_infocus_from_stack(r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2020-11-05_2020-11-05_22-20-31_WT z3 gap3')
-    else:
-        res,diff = ProcessImage.find_repeat_imgs(r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2020-11-24_2020-11-24_16-45-26_2rounds_GFP_olddish', similarity_thres = 400)
+        
+    elif registration == True:
+        data_1_xlsx = pd.ExcelFile(r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2020-11-17 photobleaching WT LentiII\Round2_2020-11-20_17-29-19_CellsProperties.xlsx")
+        data_1 = pd.read_excel(data_1_xlsx)
+        data_2_xlsx = pd.ExcelFile(r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2020-11-17 photobleaching WT LentiII\Round3_2020-11-20_17-32-28_CellsProperties.xlsx")
+        data_2 = pd.read_excel(data_2_xlsx)
+        data_3_xlsx = pd.ExcelFile(r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2020-11-17 photobleaching WT LentiII\Round4_2020-11-20_17-35-24_CellsProperties.xlsx")
+        data_3 = pd.read_excel(data_3_xlsx)
+        
+        registered_dataframe = ProcessImage.Register_cells([data_1, data_2, data_3])
+        # registered_dataframe = ProcessImage.Register_between_dataframes(data_1, data_2)
+    # else:
+    #     res,diff = ProcessImage.find_repeat_imgs(r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2020-11-24_2020-11-24_16-45-26_2rounds_GFP_olddish', similarity_thres = 400)

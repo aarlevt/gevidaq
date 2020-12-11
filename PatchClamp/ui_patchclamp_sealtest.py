@@ -296,6 +296,10 @@ class PatchclampSealTestUI(QWidget):
         self.savedataButton = QPushButton("Save figure")
         self.savedataButton.clicked.connect(lambda: self.savePatchfigure())
         self.valueLayout.addWidget(self.savedataButton)        
+
+        self.resetButton = QPushButton("Reset Iplot")
+        self.resetButton.clicked.connect(lambda: self.ResetCurrentImgView())
+        self.valueLayout.addWidget(self.resetButton) 
         
         valueContainer.setLayout(self.valueLayout)
         self.plotLayout.addWidget(valueContainer, 2, 0, 1, 2)
@@ -318,6 +322,15 @@ class PatchclampSealTestUI(QWidget):
         self.outVolGainList.currentIndexChanged.connect(lambda: self.changeVolOutGain(self.outVolGainList.currentText()))
         self.outCurGainList.currentIndexChanged.connect(lambda: self.changeCurOutGain(self.outCurGainList.currentText()))
         self.probeGainList.currentIndexChanged.connect(lambda: self.changeProbeGain(self.probeGainList.currentText()))
+        
+    def ResetCurrentImgView(self):
+        """Closes the widget nicely, making sure to clear the graphics scene and release memory."""
+        self.outCurPlotWidget.close()
+
+        # Replot the imageview
+        self.outCurPlotWidget = SlidingWindow(200, title = "Current", unit = "A")
+        
+        self.plotLayout.addWidget(self.outCurPlotWidget, 1, 1)
         
     def measure(self):
         """Pop up window asking to check the gains.
