@@ -473,7 +473,7 @@ class ProcessImage():
         return LibFluorescenceLookupBook
 
 
-    def if_theres_cell(image, percentage_threshold = 0.0032):
+    def if_theres_cell(image, percentage_threshold = 0.0012):
         """
         Check if there're enough objects in the image.
 
@@ -501,10 +501,14 @@ class ProcessImage():
         area_list = []
         for region in regionprops(label(image_binary_close)):
             area_list.append(region.area)
-        
-        if max(area_list)/image.size > percentage_threshold:
-            return True
-        else:
+            
+        try:
+            if len(area_list) > 0:
+                if max(area_list)/image.size > percentage_threshold:
+                    return True
+                else:
+                    return False
+        except:
             return False
     #%%
     """           
@@ -2161,7 +2165,7 @@ if __name__ == "__main__":
     registration = False
     
     if stitch_img == True:
-        Nest_data_directory = r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2020-12-10_2020-12-10_17-30-03_WT_Archon_repeat_2um_1585step'
+        Nest_data_directory = r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2020-12-19_2020-12-19_18-41-18_Lib9_Q1_1TO16_NOPURO'
         Stitched_image_dict = ProcessImage.image_stitching(Nest_data_directory, row_data_folder = True)
         
         for key in Stitched_image_dict:

@@ -1532,7 +1532,7 @@ class CameraUI(QMainWindow):
                            self.CamSaving_filename_textbox.text() + str(datetime.now().strftime('%Y-%m-%d_%H-%M-%S')) + ".tif"))
  
     def get_file_dir(self):
-        return os.path.join(self.saving_path, self.CamSaving_filename_textbox.text() + str(datetime.now().strftime('%Y-%m-%d_%H-%M-%S')) + ".tif")
+        return os.path.join(self.saving_path, self.CamSaving_filename_textbox.text() + '_' + str(datetime.now().strftime('%Y-%m-%d_%H-%M-%S')) + ".tif")
     
     def run_in_thread(self, fn, *args, **kwargs):
         """

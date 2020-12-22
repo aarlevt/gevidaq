@@ -225,8 +225,11 @@ class ScanningExecutionThread(QThread):
                     ColumnIndex = self.coord_array['col'] + ScanningGridOffset_Col
                                       
                     try:
-                        for _ in range(2): # Repeat twice
-                            self.ludlStage.moveAbs(RowIndex,ColumnIndex) # Row/Column indexs of np.array are opposite of stage row-col indexs.
+                        # for _ in range(2): # Repeat twice
+                        #     self.ludlStage.moveAbs(RowIndex,ColumnIndex) # Row/Column indexs of np.array are opposite of stage row-col indexs.
+                        #     time.sleep(1)
+                        self.ludlStage.moveAbs(RowIndex,ColumnIndex) # Row/Column indexs of np.array are opposite of stage row-col indexs.
+                        time.sleep(1.2)
                     except:
                         self.error_massage = 'Fail_MoveStage'
                         self.errornum += 1

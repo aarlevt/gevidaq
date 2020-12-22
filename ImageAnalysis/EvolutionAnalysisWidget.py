@@ -237,7 +237,7 @@ class MainGUI(QWidget):
         LoadSettingLayout.addWidget(self.ClearAnalysisInforButton, 1, 4)
         
         self.X_axisBox = QComboBox()
-        self.X_axisBox.addItems(['Lib_Tag_contour_ratio'])
+        self.X_axisBox.addItems(['Lib_Tag_contour_ratio', 'Contour_soma_ratio_Lib'])
         LoadSettingLayout.addWidget(self.X_axisBox, 2, 1)
         LoadSettingLayout.addWidget(QLabel('X axis: '), 2, 0)
         

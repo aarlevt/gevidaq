@@ -85,34 +85,36 @@ class LudlStage:
         Moves the motor to an absolute position defined by X and Y.
         A positive reply is sent back when the command is received correctly.
         The reply does not mean the movement is finished.
+        
+        Note: After sending the command, the execution seems to be running in backend then.
         """
         command = 'Move X = %d Y = %d' % (x, y) + self.endOfLine
 
         with serial.Serial(self.address, self.baudrate, stopbits = serial.STOPBITS_TWO) as stage:
             stage.write(command.encode())
-            stage.flush()
+            # stage.flush()
             stage.close()
             
             return True
         
-        time.sleep(1)
-        xPosition, yPosition = self.getPos()
-        print('current pos: x:{}, y{}'.format(xPosition, yPosition))
-        trial_num = 0
-        while  xPosition != x or yPosition != y:
-            print('Failed to move, try again.')
-            with serial.Serial(self.address, self.baudrate, stopbits = serial.STOPBITS_TWO) as stage:
-                stage.write(command.encode())
-                stage.flush()
-                stage.close()
-                return True
+        # time.sleep(1)
+        # xPosition, yPosition = self.getPos()
+        # print('current pos: x:{}, y{}'.format(xPosition, yPosition))
+        # trial_num = 0
+        # while  xPosition != x or yPosition != y:
+        #     print('Failed to move, try again.')
+        #     with serial.Serial(self.address, self.baudrate, stopbits = serial.STOPBITS_TWO) as stage:
+        #         stage.write(command.encode())
+        #         stage.flush()
+        #         stage.close()
+        #         return True
             
-            time.sleep(1)
-            xPosition, yPosition = self.getPos()
+        #     time.sleep(1)
+        #     xPosition, yPosition = self.getPos()
             
-            trial_num += 1
-            if trial_num > 6:
-                break
+        #     trial_num += 1
+        #     if trial_num > 6:
+        #         break
             
     @Try_until_Success
     def moveVec(self, x, y):
@@ -204,3 +206,18 @@ class LudlStage:
         with serial.Serial(self.address, self.baudrate, stopbits = serial.STOPBITS_TWO) as stage:
             stage.write(command.encode())
             time.sleep(5) #Sleep for 5 seconds to initialize.
+            
+if __name__ == "__main__":
+    
+    ludlStage = LudlStage("COM12")
+    
+    step = 1500
+    for i in range(10): # Repeat twice
+        print('start moving..')
+        # for _ in range(2):
+        #     ludlStage.moveAbs(i * step,i * step)
+            
+        #     time.sleep(0.5)
+        ludlStage.moveAbs(i * step,i * step)
+        
+        time.sleep(1)
