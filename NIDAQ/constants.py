@@ -43,8 +43,8 @@ class NiDaqChannels:
                                  'PMT':"Dev1/ai0",
                                  'Vp':"Dev1/ai22", # patchVoltOutChannel
                                  'Ip':"Dev1/ai20", # patchCurOutChannel
-                                 #'Perfusion_8':"Dev1/port0/line19",#line21 is perfusion_8, set to 19-LED for test
-                                 'LED':"Dev1/port0/line19",
+                                 'Perfusion_8':"Dev1/port0/line21",#line21 is perfusion_8, set to 19-LED for test
+                                 'LED':"Dev1/port0/line19", # Need to assign new port.
                                  'Perfusion_7':"Dev1/port0/line22",
                                  'Perfusion_6':"Dev1/port0/line23",
                                  'Perfusion_2':"Dev1/port0/line24",

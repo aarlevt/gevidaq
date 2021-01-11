@@ -37,7 +37,11 @@ if __name__ == "__main__":
     os.chdir(dname+'/../')
 
 from ImageAnalysis.ImageProcessing import ProcessImage
-from ImageAnalysis.ImageProcessing_MaskRCNN import ProcessImageML
+try:
+    from ImageAnalysis.ImageProcessing_MaskRCNN import ProcessImageML
+except:
+    print('None-MaskRCNN environment.')
+    
 import StylishQT
 
 
@@ -400,7 +404,7 @@ class MainGUI(QWidget):
             
             self.UpdateSelectionScatter()
             
-        elif len(self.Tag_round_infor) == 0 and len(self.Lib_round_infor) >= 1:
+        elif len(self.Tag_round_infor) == 0 and len(self.Lib_round_infor) > 2:
             
             # For multiple single round wavelength experiment.
             lib_folder = self.Lib_folder
@@ -412,6 +416,7 @@ class MainGUI(QWidget):
             
         elif len(self.Tag_round_infor) == 0 and len(self.Lib_round_infor) == 2:
             # For KCL assay, two rounds of lib.
+            print('===== Kcl analysis based on absolute contour intensity =====')
             lib_folder = self.Lib_folder
         
             EC_round = 'Round{}'.format(self.Lib_round_infor[0])
@@ -420,17 +425,54 @@ class MainGUI(QWidget):
             cell_Data_EC = self.ProcessML.FluorescenceAnalysis(lib_folder, EC_round)
             cell_Data_KC = self.ProcessML.FluorescenceAnalysis(lib_folder, KC_round)
             
+            print('Start Cell_DataFrame_Merging.')
             Cell_DataFrame_Merged = self.ProcessML.MergeDataFrames(cell_Data_EC, cell_Data_KC, method = 'Kcl')
+            print('Cell_DataFrame_Merged.')
             
-            DataFrames_filtered = self.ProcessML.FilterDataFrames(Cell_DataFrame_Merged, Mean_intensity_in_contour_thres, Contour_soma_ratio_thres)
+            # DataFrames_filtered = self.ProcessML.FilterDataFrames(Cell_DataFrame_Merged, Mean_intensity_in_contour_thres, Contour_soma_ratio_thres)
             
-            self.DataFrame_sorted = self.ProcessML.Sorting_onTwoaxes(DataFrames_filtered, axis_1 = self.X_axisBox.currentText(), axis_2 = self.Y_axisBox.currentText(), 
-                                                                     weight_1 = self.WeightBoxSelectionFactor_1.value(), weight_2 = self.WeightBoxSelectionFactor_2.value())
+            # self.DataFrame_sorted = self.ProcessML.Sorting_onTwoaxes(DataFrames_filtered, axis_1 = self.X_axisBox.currentText(), axis_2 = self.Y_axisBox.currentText(), 
+            #                                                          weight_1 = self.WeightBoxSelectionFactor_1.value(), weight_2 = self.WeightBoxSelectionFactor_2.value())
             
             print("Save CellsDataframe to Excel...")
-            self.SaveCellsDataframetoExcel()
+            os.path.join(self.Tag_folder, datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'_Kcl_CellsProperties.xlsx')
+            Cell_DataFrame_Merged.to_excel(os.path.join(self.Tag_folder, datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'_Kcl_CellsProperties.xlsx'))
             
-            self.UpdateSelectionScatter()
+            # self.UpdateSelectionScatter()
+            
+        elif len(self.Tag_round_infor) == 2 and len(self.Lib_round_infor) == 2:
+            # For KCL assay, two rounds of lib/tag.
+            print('===== Kcl analysis based on lib/tag contour ratio =====')
+            tag_folder = self.Tag_folder
+            lib_folder = self.Lib_folder
+            
+            # First get the ratio data from the first EC round.
+            tag_round_1 = 'Round{}'.format(self.Tag_round_infor[0])
+            lib_round_1 = 'Round{}'.format(self.Lib_round_infor[0])
+            
+            cell_Data_tag_round_1 = self.ProcessML.FluorescenceAnalysis(tag_folder, tag_round_1)
+            cell_Data_lib_round_1 = self.ProcessML.FluorescenceAnalysis(lib_folder, lib_round_1)
+            
+            Cell_DataFrame_Merged_1 = self.ProcessML.MergeDataFrames(cell_Data_tag_round_1, cell_Data_lib_round_1, method = 'TagLib')
+            #------------------------------------------------------------------
+            
+            # Get the ratio data from the second KC round.
+            tag_round_2 = 'Round{}'.format(self.Tag_round_infor[1])
+            lib_round_2 = 'Round{}'.format(self.Lib_round_infor[1])
+            
+            cell_Data_tag_round_2 = self.ProcessML.FluorescenceAnalysis(tag_folder, tag_round_2)
+            cell_Data_lib_round_2 = self.ProcessML.FluorescenceAnalysis(lib_folder, lib_round_2)
+            
+            Cell_DataFrame_Merged_2 = self.ProcessML.MergeDataFrames(cell_Data_tag_round_2, cell_Data_lib_round_2, method = 'TagLib')
+            #------------------------------------------------------------------
+            
+            print('Start Cell_DataFrame_Merging.')
+            Cell_DataFrame_Merged = self.ProcessML.MergeDataFrames(Cell_DataFrame_Merged_1, Cell_DataFrame_Merged_2, method = 'Kcl')
+            print('Cell_DataFrame_Merged.')
+
+            print("Save CellsDataframe to Excel...")
+            os.path.join(self.Tag_folder, datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'_Kcl_CellsProperties.xlsx')
+            Cell_DataFrame_Merged.to_excel(os.path.join(self.Tag_folder, datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'_Kcl_CellsProperties.xlsx'))
             
     #%%
     def UpdateSelectionScatter(self):

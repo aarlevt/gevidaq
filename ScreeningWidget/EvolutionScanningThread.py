@@ -229,7 +229,9 @@ class ScanningExecutionThread(QThread):
                         #     self.ludlStage.moveAbs(RowIndex,ColumnIndex) # Row/Column indexs of np.array are opposite of stage row-col indexs.
                         #     time.sleep(1)
                         self.ludlStage.moveAbs(RowIndex,ColumnIndex) # Row/Column indexs of np.array are opposite of stage row-col indexs.
-                        time.sleep(1.2)
+                        
+                        # Typically it needs 1~ second to move across 15000 stage index.
+                        time.sleep(1.5) 
                     except:
                         self.error_massage = 'Fail_MoveStage'
                         self.errornum += 1
@@ -656,13 +658,16 @@ class ScanningExecutionThread(QThread):
                     ZStacklinspaceEnd = self.auto_focus_position + (ZStackNum - math.floor(ZStackNum/2)-1) * ZStackStep
                 
                 else: # If there's already position from last round, move to it.
+                    # EachRound+1 is current round number.
                     self.previous_auto_focus_position = self.RoundCoordsDict['CoordsPackage_{}'.format(EachRound+1)][EachCoord]['focus_position']
                     
-                    try:
-                        # Record the position, try to write it in the NEXT round dict. 
-                        self.RoundCoordsDict['CoordsPackage_{}'.format(EachRound + 2)][EachCoord]['focus_position'] = self.previous_auto_focus_position
-                    except:
-                        pass
+# =============================================================================
+#                     try:
+#                         # Record the position, try to write it in the NEXT round dict. 
+#                         self.RoundCoordsDict['CoordsPackage_{}'.format(EachRound + 2)][EachCoord]['focus_position'] = self.previous_auto_focus_position
+#                     except:
+#                         pass
+# =============================================================================
                     
                     # Generate position list.
                     ZStacklinspaceStart = self.previous_auto_focus_position - (math.floor(ZStackNum/2)) * ZStackStep

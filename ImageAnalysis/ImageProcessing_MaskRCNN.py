@@ -174,7 +174,7 @@ class ProcessImageML():
     # ************************************  Run detection on single image  ************************************* 
     # ================================================================================================================
     """
-    def DetectionOnImage(self, Rawimage, axis = None, show_mask=True, show_bbox=True):
+    def DetectionOnImage(self, Rawimage, axis = None, show_result = False):
         """ 
         Convert image pixel values to unit8 to run on MaskRCNN, and then run MaskRCNN on it.
         """        
@@ -185,6 +185,14 @@ class ProcessImageML():
         
         MLresults      = results[0]
         
+        if show_result == True:
+            
+            # Set class_names = [None,None,None,None] to mute class name display.
+            visualize.display_instances(Rawimage, MLresults['rois'], MLresults['masks'], MLresults['class_ids'],
+                                            class_names = [None,None,None,None],
+                                            centre_coors = MLresults['Centre_coor'], Centre_coor_radius = 2, 
+                                            WhiteSpace = (0, 0))#MLresults['class_ids'],MLresults['scores'], 
+
         if axis != None:
             # If axis is given, draw on axis.
             visualize.display_instances(Rawimage, MLresults['rois'], MLresults['masks'], MLresults['class_ids'],
@@ -452,9 +460,15 @@ class ProcessImageML():
             
             for index_Data_1, row_Data_1 in self.cell_Data_1.iterrows():
                 # For each flat cell in round
-                bounding_box_str_Data_1 = row_Data_1['BoundingBox_EC']
-                ImgNameInforString_Data1 = row_Data_1['ImgNameInfor_EC']
-
+                try:
+                    # For absolute intensity
+                    bounding_box_str_Data_1 = row_Data_1['BoundingBox_EC']
+                    ImgNameInforString_Data1 = row_Data_1['ImgNameInfor_EC']
+                except:
+                    # For ratio registration
+                    bounding_box_str_Data_1 = row_Data_1['BoundingBox_Tag_EC']
+                    ImgNameInforString_Data1 = row_Data_1['ImgNameInfor_Tag_EC']
+                    
                 # Retrieve boundingbox information
                 minr_Data_1 = int(bounding_box_str_Data_1[bounding_box_str_Data_1.index('minr')+4:bounding_box_str_Data_1.index('_maxr')])
                 maxr_Data_1 = int(bounding_box_str_Data_1[bounding_box_str_Data_1.index('maxr')+4:bounding_box_str_Data_1.index('_minc')])        
@@ -468,13 +482,20 @@ class ProcessImageML():
                 
                 # Iterate through DataFrame 2 calculating intersection area
                 # Get dataframe of same coordinate in dataframe from next round.
-                DataFrame_of_same_coordinate_Data2 = self.cell_Data_2\
+                try:
+                    DataFrame_of_same_coordinate_Data2 = self.cell_Data_2\
                     [self.cell_Data_2['ImgNameInfor_KC'].str.contains(ImgNameInforString_Data1[ImgNameInforString_Data1.index('_R')+1:len(ImgNameInforString_Data1)])]
-                
+                except:
+                    DataFrame_of_same_coordinate_Data2 = self.cell_Data_2\
+                    [self.cell_Data_2['ImgNameInfor_Tag_KC'].str.contains(ImgNameInforString_Data1[ImgNameInforString_Data1.index('_R')+1:len(ImgNameInforString_Data1)])]
+                    
                 for index_2, row_Data_2 in DataFrame_of_same_coordinate_Data2.iterrows():
-                    ImgNameInforString_Data2 = row_Data_2['ImgNameInfor_KC']
-
-                    bounding_box_str_Data_2 = row_Data_2['BoundingBox_KC']
+                    
+                    # ImgNameInforString_Data2 = row_Data_2['ImgNameInfor_KC']
+                    try:
+                        bounding_box_str_Data_2 = row_Data_2['BoundingBox_KC']
+                    except:
+                        bounding_box_str_Data_2 = row_Data_2['BoundingBox_Tag_KC']
                     # Retrieve boundingbox information
                     minr_Data_2 = int(bounding_box_str_Data_2[bounding_box_str_Data_2.index('minr')+4:bounding_box_str_Data_2.index('_maxr')])
                     maxr_Data_2 = int(bounding_box_str_Data_2[bounding_box_str_Data_2.index('maxr')+4:bounding_box_str_Data_2.index('_minc')])        
@@ -510,9 +531,15 @@ class ProcessImageML():
                         pd_data_of_single_cell = pd.concat((self.cell_Data_1.loc[index_Data_1], self.cell_Data_2.loc[Merge_data2_index]), axis = 0)
                         
                         # Add the lib/tag brightness ratio
-                        Lib_Tag_ratio = pd.DataFrame([pd_data_of_single_cell.loc['Mean_intensity_in_contour_KC'] / pd_data_of_single_cell.loc['Mean_intensity_in_contour_EC']],
-                                                      index = ['KC_EC_contour_ratio'])
-                        
+                        try:
+                            # For absolute intensity
+                            Lib_Tag_ratio = pd.DataFrame([pd_data_of_single_cell.loc['Mean_intensity_in_contour_KC'] / pd_data_of_single_cell.loc['Mean_intensity_in_contour_EC']],
+                                                          index = ['KC_EC_Mean_intensity_in_contour_ratio'])
+                        except:
+                            # For lib/tag KC/EC ratio 
+                            Lib_Tag_ratio = pd.DataFrame([pd_data_of_single_cell.loc['Lib_Tag_contour_ratio_KC'] / pd_data_of_single_cell.loc['Lib_Tag_contour_ratio_EC']],
+                                                         index = ['KC_EC_LibTag_contour_ratio'])
+                            
                         pd_data_of_single_cell = pd.concat((pd_data_of_single_cell, Lib_Tag_ratio), axis = 0)
                         pd_data_of_single_cell.rename(columns={0:'Cell {}'.format(cell_merged_num)}, inplace=True) # Rename the column name, which is the index name after T.
                         
@@ -690,29 +717,28 @@ class ProcessImageML():
 
     
 if __name__ == "__main__":
-    
-    import time
     import skimage
     # from skimage.io import imread
     # =============================================================================
+    
     tag_folder = r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\2020-4-08 Archon citrine library 100FOVs\trial_3_library_cellspicked'
     lib_folder = r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\2020-7-30 Archon1 comparision 100 FOV\code_test'
-  #   tag_folder = r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\2020-3-6 Archon brightness screening\NovArch library'
 
     tag_round = 'Round1'
     lib_round = 'Round2'
     
-    
     ProcessML = ProcessImageML()
-
-#    cell_Data_1 = ProcessML.FluorescenceAnalysis(lib_folder, tag_round)
-    # cell_Data_2 = ProcessML.FluorescenceAnalysis(lib_folder, tag_round)
-    
+    # ProcessML.config.WeigthPath = r"C:\MaskRCNN\MaskRCNNGit\MaskRCNN\MaskRCNN\Data\Xin_training\cell20210107T1533\mask_rcnn_cell_0050.h5"
+    print(ProcessML.config.WeigthPath)
     # 5.6s for each detection
-    img = skimage.io.imread(r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\2020-7-30 Archon1 comparision 100 FOV\code_test\Round1_Coords1_R0C0_PMT_0Zmax.tif")
-    for _ in range(3):    
+    img = skimage.io.imread\
+    (r"C:\MaskRCNN\MaskRCNNGit\MaskRCNN\MaskRCNN\Data\Xin_training\detection trial\Round1_Grid8_Coords11_R20150C24800_PMT_0Zmax.tif")
+    for _ in range(1):    
         starttime = time.time()
-        ProcessML.DetectionOnImage(img)
+        ProcessML.DetectionOnImage(img, show_result = True)
         endtime = time.time()
         print(starttime-endtime)
+    
+    
+    
     
