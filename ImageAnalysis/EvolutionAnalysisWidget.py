@@ -199,7 +199,7 @@ class MainGUI(QWidget):
         self.Mean_intensity_in_contour_thres_box.setDecimals(4)
         self.Mean_intensity_in_contour_thres_box.setMinimum(-10)
         self.Mean_intensity_in_contour_thres_box.setMaximum(10)
-        self.Mean_intensity_in_contour_thres_box.setValue(0.240)
+        self.Mean_intensity_in_contour_thres_box.setValue(0.200)
         self.Mean_intensity_in_contour_thres_box.setSingleStep(0.0001)  
         IPLayout.addWidget(self.Mean_intensity_in_contour_thres_box, 0, 3)
         
@@ -392,11 +392,11 @@ class MainGUI(QWidget):
             cell_Data_1 = self.ProcessML.FluorescenceAnalysis(tag_folder, tag_round)
             cell_Data_2 = self.ProcessML.FluorescenceAnalysis(lib_folder, lib_round)
             
-            Cell_DataFrame_Merged = self.ProcessML.MergeDataFrames(cell_Data_1, cell_Data_2, method = 'TagLib')
+            Cell_DataFrame_Merged = ProcessImage.MergeDataFrames(cell_Data_1, cell_Data_2, method = 'TagLib')
             
-            DataFrames_filtered = self.ProcessML.FilterDataFrames(Cell_DataFrame_Merged, Mean_intensity_in_contour_thres, Contour_soma_ratio_thres)
+            DataFrames_filtered = ProcessImage.FilterDataFrames(Cell_DataFrame_Merged, Mean_intensity_in_contour_thres, Contour_soma_ratio_thres)
             
-            self.DataFrame_sorted = self.ProcessML.Sorting_onTwoaxes(DataFrames_filtered, axis_1 = self.X_axisBox.currentText(), axis_2 = self.Y_axisBox.currentText(), 
+            self.DataFrame_sorted = ProcessImage.Sorting_onTwoaxes(DataFrames_filtered, axis_1 = self.X_axisBox.currentText(), axis_2 = self.Y_axisBox.currentText(), 
                                                                      weight_1 = self.WeightBoxSelectionFactor_1.value(), weight_2 = self.WeightBoxSelectionFactor_2.value())
             
             print("Save CellsDataframe to Excel...")
@@ -426,17 +426,16 @@ class MainGUI(QWidget):
             cell_Data_KC = self.ProcessML.FluorescenceAnalysis(lib_folder, KC_round)
             
             print('Start Cell_DataFrame_Merging.')
-            Cell_DataFrame_Merged = self.ProcessML.MergeDataFrames(cell_Data_EC, cell_Data_KC, method = 'Kcl')
+            Cell_DataFrame_Merged = ProcessImage.MergeDataFrames(cell_Data_EC, cell_Data_KC, method = 'Kcl')
             print('Cell_DataFrame_Merged.')
             
-            # DataFrames_filtered = self.ProcessML.FilterDataFrames(Cell_DataFrame_Merged, Mean_intensity_in_contour_thres, Contour_soma_ratio_thres)
+            DataFrames_filtered = ProcessImage.FilterDataFrames(Cell_DataFrame_Merged, Mean_intensity_in_contour_thres, Contour_soma_ratio_thres)
             
-            # self.DataFrame_sorted = self.ProcessML.Sorting_onTwoaxes(DataFrames_filtered, axis_1 = self.X_axisBox.currentText(), axis_2 = self.Y_axisBox.currentText(), 
-            #                                                          weight_1 = self.WeightBoxSelectionFactor_1.value(), weight_2 = self.WeightBoxSelectionFactor_2.value())
+            self.DataFrame_sorted = ProcessImage.Sorting_onTwoaxes(DataFrames_filtered, axis_1 = self.X_axisBox.currentText(), axis_2 = self.Y_axisBox.currentText(), 
+                                                                      weight_1 = self.WeightBoxSelectionFactor_1.value(), weight_2 = self.WeightBoxSelectionFactor_2.value())
             
             print("Save CellsDataframe to Excel...")
-            os.path.join(self.Tag_folder, datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'_Kcl_CellsProperties.xlsx')
-            Cell_DataFrame_Merged.to_excel(os.path.join(self.Tag_folder, datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'_Kcl_CellsProperties.xlsx'))
+            self.DataFrame_sorted.to_excel(os.path.join(self.Tag_folder, datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'_Kcl_CellsProperties.xlsx'))
             
             # self.UpdateSelectionScatter()
             
@@ -453,7 +452,7 @@ class MainGUI(QWidget):
             cell_Data_tag_round_1 = self.ProcessML.FluorescenceAnalysis(tag_folder, tag_round_1)
             cell_Data_lib_round_1 = self.ProcessML.FluorescenceAnalysis(lib_folder, lib_round_1)
             
-            Cell_DataFrame_Merged_1 = self.ProcessML.MergeDataFrames(cell_Data_tag_round_1, cell_Data_lib_round_1, method = 'TagLib')
+            Cell_DataFrame_Merged_1 = ProcessImage.MergeDataFrames(cell_Data_tag_round_1, cell_Data_lib_round_1, method = 'TagLib')
             #------------------------------------------------------------------
             
             # Get the ratio data from the second KC round.
@@ -463,16 +462,21 @@ class MainGUI(QWidget):
             cell_Data_tag_round_2 = self.ProcessML.FluorescenceAnalysis(tag_folder, tag_round_2)
             cell_Data_lib_round_2 = self.ProcessML.FluorescenceAnalysis(lib_folder, lib_round_2)
             
-            Cell_DataFrame_Merged_2 = self.ProcessML.MergeDataFrames(cell_Data_tag_round_2, cell_Data_lib_round_2, method = 'TagLib')
+            Cell_DataFrame_Merged_2 = ProcessImage.MergeDataFrames(cell_Data_tag_round_2, cell_Data_lib_round_2, method = 'TagLib')
             #------------------------------------------------------------------
             
             print('Start Cell_DataFrame_Merging.')
-            Cell_DataFrame_Merged = self.ProcessML.MergeDataFrames(Cell_DataFrame_Merged_1, Cell_DataFrame_Merged_2, method = 'Kcl')
+            Cell_DataFrame_Merged = ProcessImage.MergeDataFrames(Cell_DataFrame_Merged_1, Cell_DataFrame_Merged_2, method = 'Kcl')
             print('Cell_DataFrame_Merged.')
 
+            DataFrames_filtered = ProcessImage.FilterDataFrames(Cell_DataFrame_Merged, Mean_intensity_in_contour_thres, Contour_soma_ratio_thres)
+            
+            self.DataFrame_sorted = ProcessImage.Sorting_onTwoaxes(DataFrames_filtered, axis_1 = self.X_axisBox.currentText(), axis_2 = self.Y_axisBox.currentText(), 
+                                                                      weight_1 = self.WeightBoxSelectionFactor_1.value(), weight_2 = self.WeightBoxSelectionFactor_2.value())
+
+
             print("Save CellsDataframe to Excel...")
-            os.path.join(self.Tag_folder, datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'_Kcl_CellsProperties.xlsx')
-            Cell_DataFrame_Merged.to_excel(os.path.join(self.Tag_folder, datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'_Kcl_CellsProperties.xlsx'))
+            self.DataFrame_sorted.to_excel(os.path.join(self.Tag_folder, datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'_Kcl_CellsProperties.xlsx'))
             
     #%%
     def UpdateSelectionScatter(self):

@@ -1514,6 +1514,440 @@ class ProcessImage():
                 registered_dataframe = registered_dataframe.append(registered_cell_Series.to_frame().T)
                 
         return registered_dataframe
+    
+    def MergeDataFrames(cell_Data_1, cell_Data_2, method = 'TagLib'):
+        """ Merge Data frames based on input methods.
+        
+        #   'TagLib': Merge tag protein screening round with library screening round.
+        #   -In this mode, for each bounding box in the tag round, it will search through every bounding box in library round and find the best match with
+        #   -with the most intersection, and then treat them as images from the same cell and merge the two input dataframes.
+        
+        Parameters
+        ----------
+        cell_Data_1, cell_Data_2 : pd.DataFrame.
+            Input data from two rounds.
+        method : String.
+            Merge method. 
+            'TagLib': for brightness screening.
+            
+        Returns
+        -------
+        Cell_DataFrame_Merged : pd.DataFrame.
+            Detail information from merging two input dataframe, with bounding boxes from different rounds overlapping above 60% seen as same cell.
+        """
+        
+        if method == 'TagLib':
+            """
+            # For the brightness screening, the library brightness is normalized
+            # by tag protein brightness.
+            """
+            
+            cell_Data_1 = cell_Data_1.add_suffix('_Tag')
+            cell_Data_2 = cell_Data_2.add_suffix('_Lib')
+            cell_merged_num = 0
+            
+            print("Start linking cells...")
+            
+            # start_time = time.time()
+            # # Get the pd.series from first cell.
+            # first_pd_data_of_single_cell = self.register_single_cell(("Cell {}".format(0), self.cell_Data_1.iloc[0]))
+            # # Make sure that there's content in first pd data.
+            # i = 1
+            # while type(first_pd_data_of_single_cell) == bool:
+            #     first_pd_data_of_single_cell = self.register_single_cell(("Cell {}".format(i), self.cell_Data_1.iloc[0]))
+            #     i += 1
+                
+            # Cell_DataFrame_Merged = first_pd_data_of_single_cell
+            
+            # with concurrent.futures.ProcessPoolExecutor() as executor:
+            #     for pd_data_of_single_cell in executor.map(self.register_single_cell, self.cell_Data_1.iterrows()):
+            #         if type(pd_data_of_single_cell) != bool:
+            #           Cell_DataFrame_Merged = pd.concat((Cell_DataFrame_Merged, pd_data_of_single_cell), axis = 1)
+            
+            # end_time = time.time()
+            # print("Register takes {}".format(end_time - start_time))
+            
+            # Assume that cell_Data_1 is the tag protein dataframe, for each of the cell bounding box, 
+            # find the one with the most intersection from library dataframe.
+            start_time = time.time()
+            for index_Data_1, row_Data_1 in cell_Data_1.iterrows():
+                # For each flat cell in round
+                bounding_box_str_Data_1 = row_Data_1['BoundingBox_Tag']
+                ImgNameInforString_Data1 = row_Data_1['ImgNameInfor_Tag']
+                # Retrieve boundingbox information
+                minr_Data_1 = int(bounding_box_str_Data_1[bounding_box_str_Data_1.index('minr')+4:bounding_box_str_Data_1.index('_maxr')])
+                maxr_Data_1 = int(bounding_box_str_Data_1[bounding_box_str_Data_1.index('maxr')+4:bounding_box_str_Data_1.index('_minc')])        
+                minc_Data_1 = int(bounding_box_str_Data_1[bounding_box_str_Data_1.index('minc')+4:bounding_box_str_Data_1.index('_maxc')])
+                maxc_Data_1 = int(bounding_box_str_Data_1[bounding_box_str_Data_1.index('maxc')+4:len(bounding_box_str_Data_1)])
+                
+                Area_cell_1 = (maxr_Data_1 - minr_Data_1) * (maxc_Data_1 - minc_Data_1)
+                
+                intersection_Area_percentage_list = []
+                index_list_Data_2 = []
+                
+                # Iterate through DataFrame 2 calculating intersection area
+                # Get dataframe of same coordinate in dataframe from next round.
+                DataFrame_of_same_coordinate_Data2 = cell_Data_2\
+                    [cell_Data_2['ImgNameInfor_Lib'].str.contains(ImgNameInforString_Data1[ImgNameInforString_Data1.index('_R')+1:len(ImgNameInforString_Data1)])]
+                
+                for index_2, row_Data_2 in DataFrame_of_same_coordinate_Data2.iterrows():
+                    ImgNameInforString_Data2 = row_Data_2['ImgNameInfor_Lib']
+
+                    bounding_box_str_Data_2 = row_Data_2['BoundingBox_Lib']
+                    # Retrieve boundingbox information
+                    minr_Data_2 = int(bounding_box_str_Data_2[bounding_box_str_Data_2.index('minr')+4:bounding_box_str_Data_2.index('_maxr')])
+                    maxr_Data_2 = int(bounding_box_str_Data_2[bounding_box_str_Data_2.index('maxr')+4:bounding_box_str_Data_2.index('_minc')])        
+                    minc_Data_2 = int(bounding_box_str_Data_2[bounding_box_str_Data_2.index('minc')+4:bounding_box_str_Data_2.index('_maxc')])
+                    maxc_Data_2 = int(bounding_box_str_Data_2[bounding_box_str_Data_2.index('maxc')+4:len(bounding_box_str_Data_2)])                
+                    
+                    Area_cell_2 = (maxr_Data_2 - minr_Data_2) * (maxc_Data_2 - minc_Data_2)
+                    
+                    # Overlapping row
+                    if minr_Data_2 < maxr_Data_1 and maxr_Data_2 > minr_Data_1:
+                        intersection_rowNumber = min((abs(minr_Data_2 - maxr_Data_1), maxr_Data_1 - minr_Data_1)) - max(maxr_Data_1 - maxr_Data_2, 0)
+                    else:
+                        intersection_rowNumber = 0
+                    # Overlapping column
+                    if minc_Data_2 < maxc_Data_1 and maxc_Data_2 > minc_Data_1:
+                        intersection_colNumber = min((abs(minc_Data_2 - maxc_Data_1), maxc_Data_1 - minc_Data_1)) - max(maxc_Data_1 - maxc_Data_2, 0)
+                    else:
+                        intersection_colNumber = 0                
+        
+                    intersection_Area = intersection_rowNumber * intersection_colNumber
+                    # Calculate the percentage based on smaller number of intersection over the two.
+                    intersection_Area_percentage = min([(intersection_Area / Area_cell_1), (intersection_Area / Area_cell_2)])
+
+                    intersection_Area_percentage_list.append(intersection_Area_percentage)
+                    index_list_Data_2.append(index_2)
+            
+                if len(intersection_Area_percentage_list) > 0:
+                    # Link back cells based on intersection area
+                    if max(intersection_Area_percentage_list) > 0.6:
+                        # If in DataFrame_2 there's a cell that has a overlapping bounding box, merge and generate a new dataframe.
+                        Merge_data2_index = index_list_Data_2[intersection_Area_percentage_list.index(max(intersection_Area_percentage_list))]
+      
+                        pd_data_of_single_cell = pd.concat((cell_Data_1.loc[index_Data_1], cell_Data_2.loc[Merge_data2_index]), axis = 0)
+                        
+                        # Add the lib/tag brightness ratio
+                        Lib_Tag_ratio = pd.DataFrame([pd_data_of_single_cell.loc['Mean_intensity_in_contour_Lib'] / pd_data_of_single_cell.loc['Mean_intensity_in_contour_Tag']],
+                                                      index = ['Lib_Tag_contour_ratio'])
+                        
+                        pd_data_of_single_cell = pd.concat((pd_data_of_single_cell, Lib_Tag_ratio), axis = 0)
+                        pd_data_of_single_cell.rename(columns={0:'Cell {}'.format(cell_merged_num)}, inplace=True) # Rename the column name, which is the index name after T.
+                        
+                        if cell_merged_num == 0:
+                            Cell_DataFrame_Merged = pd_data_of_single_cell
+                        else:
+                            Cell_DataFrame_Merged = pd.concat((Cell_DataFrame_Merged, pd_data_of_single_cell), axis = 1)
+                        cell_merged_num += 1
+                    
+            end_time = time.time()
+            print("Register takes {}".format(end_time - start_time))              
+            Cell_DataFrame_Merged = Cell_DataFrame_Merged.T
+            print("Cell_DataFrame_Merged.")
+        
+        #=====================================================================
+        elif method == 'Kcl':
+            """
+            # There are two situatiions here, one is simply with absolute intenesity,
+            # the other one is with lib/tag ration in the excel, both have different
+            # field names, and the final ration is done differently. 
+            # Bounding box tracing is based on both tag fluorescence images.
+            """
+            
+            cell_Data_1 = cell_Data_1.add_suffix('_EC')
+            cell_Data_2 = cell_Data_2.add_suffix('_KC')
+            cell_merged_num = 0
+            
+            print("Start linking cells...")
+            start_time = time.time()
+            
+            for index_Data_1, row_Data_1 in cell_Data_1.iterrows():
+                # For each flat cell in round
+                try:
+                    # For absolute intensity
+                    bounding_box_str_Data_1 = row_Data_1['BoundingBox_EC']
+                    ImgNameInforString_Data1 = row_Data_1['ImgNameInfor_EC']
+                except:
+                    # For ratio registration
+                    bounding_box_str_Data_1 = row_Data_1['BoundingBox_Tag_EC']
+                    ImgNameInforString_Data1 = row_Data_1['ImgNameInfor_Tag_EC']
+                    
+                # Retrieve boundingbox information
+                minr_Data_1 = int(bounding_box_str_Data_1[bounding_box_str_Data_1.index('minr')+4:bounding_box_str_Data_1.index('_maxr')])
+                maxr_Data_1 = int(bounding_box_str_Data_1[bounding_box_str_Data_1.index('maxr')+4:bounding_box_str_Data_1.index('_minc')])        
+                minc_Data_1 = int(bounding_box_str_Data_1[bounding_box_str_Data_1.index('minc')+4:bounding_box_str_Data_1.index('_maxc')])
+                maxc_Data_1 = int(bounding_box_str_Data_1[bounding_box_str_Data_1.index('maxc')+4:len(bounding_box_str_Data_1)])
+                
+                Area_cell_1 = (maxr_Data_1 - minr_Data_1) * (maxc_Data_1 - minc_Data_1)
+                
+                intersection_Area_percentage_list = []
+                index_list_Data_2 = []
+                
+                # Iterate through DataFrame 2 calculating intersection area
+                # Get dataframe of same coordinate in dataframe from next round.
+                try:
+                    DataFrame_of_same_coordinate_Data2 = cell_Data_2\
+                    [cell_Data_2['ImgNameInfor_KC'].str.contains(ImgNameInforString_Data1[ImgNameInforString_Data1.index('_R')+1:len(ImgNameInforString_Data1)])]
+                except:
+                    DataFrame_of_same_coordinate_Data2 = cell_Data_2\
+                    [cell_Data_2['ImgNameInfor_Tag_KC'].str.contains(ImgNameInforString_Data1[ImgNameInforString_Data1.index('_R')+1:len(ImgNameInforString_Data1)])]
+                    
+                for index_2, row_Data_2 in DataFrame_of_same_coordinate_Data2.iterrows():
+                    
+                    # ImgNameInforString_Data2 = row_Data_2['ImgNameInfor_KC']
+                    try:
+                        bounding_box_str_Data_2 = row_Data_2['BoundingBox_KC']
+                    except:
+                        bounding_box_str_Data_2 = row_Data_2['BoundingBox_Tag_KC']
+                    # Retrieve boundingbox information
+                    minr_Data_2 = int(bounding_box_str_Data_2[bounding_box_str_Data_2.index('minr')+4:bounding_box_str_Data_2.index('_maxr')])
+                    maxr_Data_2 = int(bounding_box_str_Data_2[bounding_box_str_Data_2.index('maxr')+4:bounding_box_str_Data_2.index('_minc')])        
+                    minc_Data_2 = int(bounding_box_str_Data_2[bounding_box_str_Data_2.index('minc')+4:bounding_box_str_Data_2.index('_maxc')])
+                    maxc_Data_2 = int(bounding_box_str_Data_2[bounding_box_str_Data_2.index('maxc')+4:len(bounding_box_str_Data_2)])                
+                    
+                    Area_cell_2 = (maxr_Data_2 - minr_Data_2) * (maxc_Data_2 - minc_Data_2)
+                    
+                    # Overlapping row
+                    if minr_Data_2 < maxr_Data_1 and maxr_Data_2 > minr_Data_1:
+                        intersection_rowNumber = min((abs(minr_Data_2 - maxr_Data_1), maxr_Data_1 - minr_Data_1)) - max(maxr_Data_1 - maxr_Data_2, 0)
+                    else:
+                        intersection_rowNumber = 0
+                    # Overlapping column
+                    if minc_Data_2 < maxc_Data_1 and maxc_Data_2 > minc_Data_1:
+                        intersection_colNumber = min((abs(minc_Data_2 - maxc_Data_1), maxc_Data_1 - minc_Data_1)) - max(maxc_Data_1 - maxc_Data_2, 0)
+                    else:
+                        intersection_colNumber = 0                
+        
+                    intersection_Area = intersection_rowNumber * intersection_colNumber
+                    # Calculate the percentage based on smaller number of intersection over the two.
+                    intersection_Area_percentage = min([(intersection_Area / Area_cell_1), (intersection_Area / Area_cell_2)])
+
+                    intersection_Area_percentage_list.append(intersection_Area_percentage)
+                    index_list_Data_2.append(index_2)
+            
+                if len(intersection_Area_percentage_list) > 0:
+                    # Link back cells based on intersection area
+                    if max(intersection_Area_percentage_list) > 0.6:
+                        # If in DataFrame_2 there's a cell that has a overlapping bounding box, merge and generate a new dataframe.
+                        Merge_data2_index = index_list_Data_2[intersection_Area_percentage_list.index(max(intersection_Area_percentage_list))]
+      
+                        pd_data_of_single_cell = pd.concat((cell_Data_1.loc[index_Data_1], cell_Data_2.loc[Merge_data2_index]), axis = 0)
+                        
+                        # Add the lib/tag brightness ratio
+                        if 'Mean_intensity_in_contour_KC' in in pd_data_of_single_cell.columns:
+                            # For absolute intensity 
+                            # For ones with lib/tag ratio, it will have 'Mean_intensity_in_contour_Lib_KC' field instead.
+                            Kcl_Lib_Tag_ratio = pd.DataFrame([pd_data_of_single_cell.loc['Mean_intensity_in_contour_KC'] / pd_data_of_single_cell.loc['Mean_intensity_in_contour_EC']],
+                                                          index = ['KC_EC_Mean_intensity_in_contour_ratio'])
+                            
+                            pd_data_of_single_cell = pd.concat((pd_data_of_single_cell, Kcl_Lib_Tag_ratio), axis = 0)
+                        else:
+                            # For lib/tag KC/EC ratio 
+                            Kcl_LibTag_contour_ratio = pd.DataFrame([pd_data_of_single_cell.loc['Lib_Tag_contour_ratio_KC'] / pd_data_of_single_cell.loc['Lib_Tag_contour_ratio_EC']],
+                                                         index = ['KC_EC_LibTag_contour_ratio'])
+                            Kcl_Lib_Tag_ratio = pd.DataFrame([pd_data_of_single_cell.loc['Mean_intensity_in_contour_Lib_KC'] / pd_data_of_single_cell.loc['Mean_intensity_in_contour_Lib_EC']],
+                                                          index = ['KC_EC_Mean_intensity_in_contour_ratio'])
+                            
+                            pd_data_of_single_cell = pd.concat((pd_data_of_single_cell, Kcl_Lib_Tag_ratio), axis = 0)
+                            pd_data_of_single_cell = pd.concat((pd_data_of_single_cell, Kcl_LibTag_contour_ratio), axis = 0)
+                            
+                        pd_data_of_single_cell.rename(columns={0:'Cell {}'.format(cell_merged_num)}, inplace=True) # Rename the column name, which is the index name after T.
+                        
+                        if cell_merged_num == 0:
+                            Cell_DataFrame_Merged = pd_data_of_single_cell
+                        else:
+                            Cell_DataFrame_Merged = pd.concat((Cell_DataFrame_Merged, pd_data_of_single_cell), axis = 1)
+                        cell_merged_num += 1
+                    
+            end_time = time.time()
+            print("Register takes {}".format(end_time - start_time))              
+            Cell_DataFrame_Merged = Cell_DataFrame_Merged.T
+            print("Cell_DataFrame_Merged.")
+                
+        return Cell_DataFrame_Merged
+    
+    
+    def register_single_cell(cell_Data_1, cell_Data_2, input_series):
+        """
+        Given input series from dataframe cell_Data_1, find the same cell in data frame
+        from second round, based on intersection percentage of bounding boxes.
+        
+        input_series[0] is the string row index (Cell 1...) of input_series in original dataframe cell_Data_1.
+        input_series[1] is the data series in original dataframe cell_Data_1.
+        
+        Return False if failed to find the same cell from other round.
+        
+        Parameters
+        ----------
+        input_series : TYPE
+            Input series from dataframe cell_Data_1.
+
+        Returns
+        -------
+        pd_data_of_single_cell : TYPE
+            Return False if failed to find the same cell from other round.
+
+        """
+        
+        # For each flat cell in round
+        bounding_box_str_Data_1 = input_series[1]['BoundingBox_Tag']
+        ImgNameInforString_Data1 = input_series[1]['ImgNameInfor_Tag']
+        # Retrieve boundingbox information
+        minr_Data_1 = int(bounding_box_str_Data_1[bounding_box_str_Data_1.index('minr')+4:bounding_box_str_Data_1.index('_maxr')])
+        maxr_Data_1 = int(bounding_box_str_Data_1[bounding_box_str_Data_1.index('maxr')+4:bounding_box_str_Data_1.index('_minc')])        
+        minc_Data_1 = int(bounding_box_str_Data_1[bounding_box_str_Data_1.index('minc')+4:bounding_box_str_Data_1.index('_maxc')])
+        maxc_Data_1 = int(bounding_box_str_Data_1[bounding_box_str_Data_1.index('maxc')+4:len(bounding_box_str_Data_1)])
+        
+        Area_cell_1 = (maxr_Data_1 - minr_Data_1) * (maxc_Data_1 - minc_Data_1)
+        
+        intersection_Area_percentage_list = []
+        index_list_Data_2 = []
+        # Iterate through DataFrame 2 calculating intersection area
+        # Get dataframe of same coordinate in dataframe from next round.
+        DataFrame_of_same_coordinate_Data2 = cell_Data_2\
+            [cell_Data_2['ImgNameInfor_Lib'].str.contains(ImgNameInforString_Data1[ImgNameInforString_Data1.index('_R')+1:len(ImgNameInforString_Data1)])]
+        
+        for index_2, row_Data_2 in DataFrame_of_same_coordinate_Data2.iterrows():
+            ImgNameInforString_Data2 = row_Data_2['ImgNameInfor_Lib']
+            
+            bounding_box_str_Data_2 = row_Data_2['BoundingBox_Lib']
+            # Retrieve boundingbox information
+            minr_Data_2 = int(bounding_box_str_Data_2[bounding_box_str_Data_2.index('minr')+4:bounding_box_str_Data_2.index('_maxr')])
+            maxr_Data_2 = int(bounding_box_str_Data_2[bounding_box_str_Data_2.index('maxr')+4:bounding_box_str_Data_2.index('_minc')])        
+            minc_Data_2 = int(bounding_box_str_Data_2[bounding_box_str_Data_2.index('minc')+4:bounding_box_str_Data_2.index('_maxc')])
+            maxc_Data_2 = int(bounding_box_str_Data_2[bounding_box_str_Data_2.index('maxc')+4:len(bounding_box_str_Data_2)])                
+            
+            Area_cell_2 = (maxr_Data_2 - minr_Data_2) * (maxc_Data_2 - minc_Data_2)
+            
+            # Overlapping row
+            if minr_Data_2 < maxr_Data_1 and maxr_Data_2 > minr_Data_1:
+                intersection_rowNumber = min((abs(minr_Data_2 - maxr_Data_1), maxr_Data_1 - minr_Data_1)) - max(maxr_Data_1 - maxr_Data_2, 0)
+            else:
+                intersection_rowNumber = 0
+            # Overlapping column
+            if minc_Data_2 < maxc_Data_1 and maxc_Data_2 > minc_Data_1:
+                intersection_colNumber = min((abs(minc_Data_2 - maxc_Data_1), maxc_Data_1 - minc_Data_1)) - max(maxc_Data_1 - maxc_Data_2, 0)
+            else:
+                intersection_colNumber = 0                
+
+            intersection_Area = intersection_rowNumber * intersection_colNumber
+            # Calculate the percentage based on smaller number of intersection over the two.
+            intersection_Area_percentage = min([(intersection_Area / Area_cell_1), (intersection_Area / Area_cell_2)])
+
+            intersection_Area_percentage_list.append(intersection_Area_percentage)
+            index_list_Data_2.append(index_2)
+        
+        if len(intersection_Area_percentage_list) > 0:
+            # Link back cells based on intersection area
+            if max(intersection_Area_percentage_list) > 0.6:
+                # If in DataFrame_2 there's a cell that has a overlapping bounding box, merge and generate a new dataframe.
+                Merge_data2_index = index_list_Data_2[intersection_Area_percentage_list.index(max(intersection_Area_percentage_list))]
+
+                pd_data_of_single_cell = pd.concat((cell_Data_1.loc[input_series[0]], cell_Data_2.loc[Merge_data2_index]), axis = 0)
+                
+                # Add the lib/tag brightness ratio
+                Lib_Tag_ratio = pd.DataFrame([pd_data_of_single_cell.loc['Mean_intensity_in_contour_Lib'] / pd_data_of_single_cell.loc['Mean_intensity_in_contour_Tag']],
+                                             index = ['Lib_Tag_contour_ratio'])
+                
+                pd_data_of_single_cell = pd.concat((pd_data_of_single_cell, Lib_Tag_ratio), axis = 0)
+                pd_data_of_single_cell.rename(columns={0:'Cell {}'.format(int(input_series[0][5:]))}, inplace=True) # Rename the column name, which is the index name after T.
+                 
+            else:
+                pd_data_of_single_cell = False
+                
+        else:
+            pd_data_of_single_cell = False
+                
+        return pd_data_of_single_cell
+    
+    def FilterDataFrames(DataFrame, Mean_intensity_in_contour_thres, Contour_soma_ratio_thres, *args, **kwargs):
+        """
+        Filter the dataframe based on input numbers.
+        
+        Parameters
+        ----------
+        DataFrame : pd.DataFrame.
+            Input data.
+        Mean_intensity_in_contour_thres : Float.
+            Threshold for eliminating dim cells.
+        Contour_soma_ratio_thres : Float.
+            Threshold for contour soma ratio.
+            
+        Returns
+        -------
+        DataFrames_filtered : pd.DataFrame.
+            Filtered dataframe.
+        """
+        # For lib/tag measurements
+        if 'Mean_intensity_in_contour_Lib' in DataFrame.columns:
+            DataFrames_filtered = DataFrame[(DataFrame['Mean_intensity_in_contour_Lib'] > Mean_intensity_in_contour_thres) & 
+                                            (DataFrame['Contour_soma_ratio_Lib'] > Contour_soma_ratio_thres)]
+        # For single round intensity measurements
+        elif 'Mean_intensity_in_contour' in DataFrame.columns:
+            DataFrames_filtered = DataFrame[(DataFrame['Mean_intensity_in_contour_Lib'] > Mean_intensity_in_contour_thres) & 
+                                            (DataFrame['Contour_soma_ratio_Lib'] > Contour_soma_ratio_thres)]
+        # For KC/EC measurements
+        elif 'Mean_intensity_in_contour_Lib_KC' in DataFrame.columns:
+            DataFrames_filtered = DataFrame[(DataFrame['Mean_intensity_in_contour_Lib_EC'] > Mean_intensity_in_contour_thres) & 
+                                            (DataFrame['Contour_soma_ratio_Lib_EC'] > Contour_soma_ratio_thres)]
+                
+        return DataFrames_filtered
+    
+    def Sorting_onTwoaxes(DataFrame, axis_1, axis_2, weight_1, weight_2):
+        """
+        Sort the dataframe based on normalized distance calculated from two given axes.
+
+        Parameters
+        ----------
+        DataFrame : TYPE
+            DESCRIPTION.
+        axis_1 : TYPE
+            DESCRIPTION.
+        axis_2 : TYPE
+            DESCRIPTION.
+        weight_1 : TYPE
+            DESCRIPTION.
+        weight_2 : TYPE
+            DESCRIPTION.
+
+        Returns
+        -------
+        DataFrame_sorted : TYPE
+            DESCRIPTION.
+
+        """
+
+        if axis_1 == "Lib_Tag_contour_ratio" and axis_2 == "Contour_soma_ratio_Lib":
+            # Get the min and max on two axes, prepare for next step.
+            Contour_soma_ratio_min, Contour_soma_ratio_max = DataFrame.Contour_soma_ratio_Lib.min(), DataFrame.Contour_soma_ratio_Lib.max()
+            Lib_Tag_contour_ratio_min, Lib_Tag_contour_ratio_max = DataFrame.Lib_Tag_contour_ratio.min(), DataFrame.Lib_Tag_contour_ratio.max()
+            
+            DataFrame_sorted = DataFrame.loc[(((DataFrame.Contour_soma_ratio_Lib - Contour_soma_ratio_min) / (Contour_soma_ratio_max - Contour_soma_ratio_min)) ** 2 * weight_2
+            + ((DataFrame.Lib_Tag_contour_ratio - Lib_Tag_contour_ratio_min) / (Lib_Tag_contour_ratio_max - Lib_Tag_contour_ratio_min)) **2 * weight_1) \
+            .sort_values(ascending=False).index]   
+
+        elif axis_1 == "Lib_Tag_contour_ratio" and axis_2 == "Mean_intensity_in_contour_Lib":
+            # Get the min and max on two axes, prepare for next step.
+            Mean_intensity_in_contour_Lib_min, Mean_intensity_in_contour_Lib_max = DataFrame.Mean_intensity_in_contour_Lib.min(), DataFrame.Mean_intensity_in_contour_Lib.max()
+            Lib_Tag_contour_ratio_min, Lib_Tag_contour_ratio_max = DataFrame.Lib_Tag_contour_ratio.min(), DataFrame.Lib_Tag_contour_ratio.max()
+            
+            DataFrame_sorted = DataFrame.loc[(((DataFrame.Mean_intensity_in_contour_Lib - Mean_intensity_in_contour_Lib_min) \
+                                               / (Mean_intensity_in_contour_Lib_max - Mean_intensity_in_contour_Lib_min)) ** 2 * weight_2
+            + ((DataFrame.Lib_Tag_contour_ratio - Lib_Tag_contour_ratio_min) / (Lib_Tag_contour_ratio_max - Lib_Tag_contour_ratio_min)) **2 * weight_1) \
+            .sort_values(ascending=False).index]
+                
+        elif axis_1 == "Contour_soma_ratio_Lib" and axis_2 == "Mean_intensity_in_contour_Lib":
+            # Get the min and max on two axes, prepare for next step.
+            Contour_soma_ratio_min, Contour_soma_ratio_max = DataFrame.Contour_soma_ratio_Lib.min(), DataFrame.Contour_soma_ratio_Lib.max()
+            Mean_intensity_in_contour_Lib_min, Mean_intensity_in_contour_Lib_max = DataFrame.Mean_intensity_in_contour_Lib.min(), DataFrame.Mean_intensity_in_contour_Lib.max()
+            
+            DataFrame_sorted = DataFrame.loc[(((DataFrame.Contour_soma_ratio_Lib - Contour_soma_ratio_min) \
+                                               / (Contour_soma_ratio_max - Contour_soma_ratio_min)) ** 2 * weight_1
+            + ((DataFrame.Mean_intensity_in_contour_Lib - Mean_intensity_in_contour_Lib_min) / (Mean_intensity_in_contour_Lib_max - Mean_intensity_in_contour_Lib_min)) **2 * weight_2) \
+            .sort_values(ascending=False).index]
+                
+        return DataFrame_sorted
                 
     def Convert2Unit8(Imagepath, Rawimage):
         """ Convert image pixel values to unit8 to run on MaskRCNN.
@@ -2159,10 +2593,11 @@ if __name__ == "__main__":
 #         for i in range(len(tagprotein_cell_properties_dict[eachpos])):
 #             tagprotein_cell_properties_dict_meanIntensity_list.append(tagprotein_cell_properties_dict[eachpos]['Mean intensity'][i])
 # =============================================================================
-    stitch_img = True
+    stitch_img = False
     retrievefocus_map = False
     find_focus = False
     registration = False
+    merge_dataFrames = True
     
     if stitch_img == True:
         Nest_data_directory = r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2020-12-19_2020-12-19_18-41-18_Lib9_Q1_1TO16_NOPURO'
@@ -2192,3 +2627,13 @@ if __name__ == "__main__":
         # registered_dataframe = ProcessImage.Register_between_dataframes(data_1, data_2)
     # else:
     #     res,diff = ProcessImage.find_repeat_imgs(r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2020-11-24_2020-11-24_16-45-26_2rounds_GFP_olddish', similarity_thres = 400)
+    elif merge_dataFrames == True:
+        data_1_xlsx = pd.ExcelFile(r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2021-1-9 WT Archon Perfusion test KC\2021-01-09_16-17-43_CellsProperties.xlsx")
+        data_1 = pd.read_excel(data_1_xlsx)
+        data_2_xlsx = pd.ExcelFile(r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2021-1-9 WT Archon Perfusion test KC\2021-01-10_16-57-01_CellsProperties.xlsx")
+        data_2 = pd.read_excel(data_2_xlsx)
+    
+        print('Start Cell_DataFrame_Merging.')
+        Cell_DataFrame_Merged = ProcessImage.MergeDataFrames(data_1, data_2, method = 'Kcl')
+        print('Cell_DataFrame_Merged.')  
+    
