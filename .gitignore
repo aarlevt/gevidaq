@@ -27,3 +27,5 @@ Thumbs.db
 **/dist/**
 **.egg**
 CentreCoordinates/FinalVersion/condaenv.mu0sdd1c.requirements.txt
+
+.DS_Store
