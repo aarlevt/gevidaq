@@ -30,6 +30,7 @@ from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import plotly.express as px
+import pandas as pd
 
 if __name__ == "__main__":
     abspath = os.path.abspath(__file__)
@@ -132,7 +133,7 @@ class MainGUI(QWidget):
         self.SwitchMaskButton.clicked.connect(self.display_ML_mask)
         ImageButtonContainerLayout.addWidget(self.SwitchMaskButton, 2, 6)
         
-        self.ShowLibImgButton = StylishQT.MySwitch('Lib', '#CCE5FF','Tag', '#E5FFCC',  width = 65)
+        self.ShowLibImgButton = StylishQT.MySwitch('Lib/KC', '#CCE5FF','Tag/EC', '#E5FFCC',  width = 65)
         self.ShowLibImgButton.setChecked(True)
         self.ShowLibImgButton.clicked.connect(lambda: self.GoThroughTopCells('null'))
         ImageButtonContainerLayout.addWidget(self.ShowLibImgButton, 2, 7)
@@ -199,7 +200,7 @@ class MainGUI(QWidget):
         self.Mean_intensity_in_contour_thres_box.setDecimals(4)
         self.Mean_intensity_in_contour_thres_box.setMinimum(-10)
         self.Mean_intensity_in_contour_thres_box.setMaximum(10)
-        self.Mean_intensity_in_contour_thres_box.setValue(0.200)
+        self.Mean_intensity_in_contour_thres_box.setValue(0.000)
         self.Mean_intensity_in_contour_thres_box.setSingleStep(0.0001)  
         IPLayout.addWidget(self.Mean_intensity_in_contour_thres_box, 0, 3)
         
@@ -231,6 +232,10 @@ class MainGUI(QWidget):
         self.toolButtonOpenDialog.clicked.connect(self.SetAnalysisPath)
         LoadSettingLayout.addWidget(self.toolButtonOpenDialog, 0, 4)
         
+        readExcelButtonOpenDialog = QtWidgets.QPushButton('Read excel')
+        readExcelButtonOpenDialog.clicked.connect(self.ReadEexcel)
+        LoadSettingLayout.addWidget(readExcelButtonOpenDialog, 0, 5)
+        
         ExecuteAnalysisButton = QPushButton('Load images', self)
 #        ExecuteAnalysisButton.setObjectName('Startbutton')
         ExecuteAnalysisButton.clicked.connect(lambda: self.run_in_thread(self.ScreeningAnalysis))
@@ -240,9 +245,13 @@ class MainGUI(QWidget):
         self.ClearAnalysisInforButton.clicked.connect(self.ClearAnalysisInfor)
         LoadSettingLayout.addWidget(self.ClearAnalysisInforButton, 1, 4)
         
+        Re_plot_Button = QtWidgets.QPushButton('Replot data')
+        Re_plot_Button.clicked.connect(self.ReplotExcel)
+        LoadSettingLayout.addWidget(Re_plot_Button, 1, 5)
+        
         self.X_axisBox = QComboBox()
-        self.X_axisBox.addItems(['Lib_Tag_contour_ratio', 'Contour_soma_ratio_Lib'])
-        LoadSettingLayout.addWidget(self.X_axisBox, 2, 1)
+        self.X_axisBox.addItems(['Lib_Tag_contour_ratio', 'Contour_soma_ratio_Lib', 'KC_EC_LibTag_contour_ratio', 'KC_EC_Mean_intensity_in_contour_ratio'])
+        LoadSettingLayout.addWidget(self.X_axisBox, 2, 1, 1, 3)
         LoadSettingLayout.addWidget(QLabel('X axis: '), 2, 0)
         
         self.WeightBoxSelectionFactor_1 = QDoubleSpinBox(self)
@@ -251,12 +260,12 @@ class MainGUI(QWidget):
         self.WeightBoxSelectionFactor_1.setMaximum(1)
         self.WeightBoxSelectionFactor_1.setValue(1)
         self.WeightBoxSelectionFactor_1.setSingleStep(0.1)  
-        LoadSettingLayout.addWidget(self.WeightBoxSelectionFactor_1, 2, 3)
-        LoadSettingLayout.addWidget(QLabel("Weight:"), 2, 2)
+        LoadSettingLayout.addWidget(self.WeightBoxSelectionFactor_1, 2, 5)
+        LoadSettingLayout.addWidget(QLabel("Weight:"), 2, 4)
         
         self.Y_axisBox = QComboBox()
-        self.Y_axisBox.addItems(['Mean_intensity_in_contour_Lib', 'Contour_soma_ratio_Lib'])
-        LoadSettingLayout.addWidget(self.Y_axisBox, 3, 1)
+        self.Y_axisBox.addItems(['Mean_intensity_in_contour_Lib', 'Mean_intensity_in_contour_Lib_EC', 'Lib_Tag_contour_ratio_EC', 'Contour_soma_ratio_Lib', 'Contour_soma_ratio_Lib_EC'])
+        LoadSettingLayout.addWidget(self.Y_axisBox, 3, 1, 1, 3)
         LoadSettingLayout.addWidget(QLabel('Y axis: '), 3, 0)
         
         self.WeightBoxSelectionFactor_2 = QDoubleSpinBox(self)
@@ -265,8 +274,8 @@ class MainGUI(QWidget):
         self.WeightBoxSelectionFactor_2.setMaximum(1)
         self.WeightBoxSelectionFactor_2.setValue(0.5)
         self.WeightBoxSelectionFactor_2.setSingleStep(0.1)  
-        LoadSettingLayout.addWidget(self.WeightBoxSelectionFactor_2, 3, 3)
-        LoadSettingLayout.addWidget(QLabel("Weight:"), 3, 2)
+        LoadSettingLayout.addWidget(self.WeightBoxSelectionFactor_2, 3, 5)
+        LoadSettingLayout.addWidget(QLabel("Weight:"), 3, 4)
 
         LoadSettingContainer.setLayout(LoadSettingLayout)
         
@@ -374,15 +383,15 @@ class MainGUI(QWidget):
         None.
 
         """
-        Mean_intensity_in_contour_thres = self.Mean_intensity_in_contour_thres_box.value()
-        Contour_soma_ratio_thres = self.Contour_soma_ratio_thres_box.value()
+        self.Mean_intensity_in_contour_thres = self.Mean_intensity_in_contour_thres_box.value()
+        self.Contour_soma_ratio_thres = self.Contour_soma_ratio_thres_box.value()
         
         self.normalOutputWritten('Start loading images...\n')
         
         # For the brightness screening
         self.ProcessML = ProcessImageML()
         
-        if len(self.Tag_round_infor) >= 1 and len(self.Lib_round_infor) >= 1:
+        if len(self.Tag_round_infor) == 1 and len(self.Lib_round_infor) == 1:
             tag_folder = self.Tag_folder
             lib_folder = self.Lib_folder
         
@@ -392,9 +401,9 @@ class MainGUI(QWidget):
             cell_Data_1 = self.ProcessML.FluorescenceAnalysis(tag_folder, tag_round)
             cell_Data_2 = self.ProcessML.FluorescenceAnalysis(lib_folder, lib_round)
             
-            Cell_DataFrame_Merged = ProcessImage.MergeDataFrames(cell_Data_1, cell_Data_2, method = 'TagLib')
+            self.Cell_DataFrame_Merged = ProcessImage.MergeDataFrames(cell_Data_1, cell_Data_2, method = 'TagLib')
             
-            DataFrames_filtered = ProcessImage.FilterDataFrames(Cell_DataFrame_Merged, Mean_intensity_in_contour_thres, Contour_soma_ratio_thres)
+            DataFrames_filtered = ProcessImage.FilterDataFrames(self.Cell_DataFrame_Merged, self.Mean_intensity_in_contour_thres, self.Contour_soma_ratio_thres)
             
             self.DataFrame_sorted = ProcessImage.Sorting_onTwoaxes(DataFrames_filtered, axis_1 = self.X_axisBox.currentText(), axis_2 = self.Y_axisBox.currentText(), 
                                                                      weight_1 = self.WeightBoxSelectionFactor_1.value(), weight_2 = self.WeightBoxSelectionFactor_2.value())
@@ -426,10 +435,10 @@ class MainGUI(QWidget):
             cell_Data_KC = self.ProcessML.FluorescenceAnalysis(lib_folder, KC_round)
             
             print('Start Cell_DataFrame_Merging.')
-            Cell_DataFrame_Merged = ProcessImage.MergeDataFrames(cell_Data_EC, cell_Data_KC, method = 'Kcl')
+            self.Cell_DataFrame_Merged = ProcessImage.MergeDataFrames(cell_Data_EC, cell_Data_KC, method = 'Kcl')
             print('Cell_DataFrame_Merged.')
             
-            DataFrames_filtered = ProcessImage.FilterDataFrames(Cell_DataFrame_Merged, Mean_intensity_in_contour_thres, Contour_soma_ratio_thres)
+            DataFrames_filtered = ProcessImage.FilterDataFrames(self.Cell_DataFrame_Merged, self.Mean_intensity_in_contour_thres, self.Contour_soma_ratio_thres)
             
             self.DataFrame_sorted = ProcessImage.Sorting_onTwoaxes(DataFrames_filtered, axis_1 = self.X_axisBox.currentText(), axis_2 = self.Y_axisBox.currentText(), 
                                                                       weight_1 = self.WeightBoxSelectionFactor_1.value(), weight_2 = self.WeightBoxSelectionFactor_2.value())
@@ -437,7 +446,7 @@ class MainGUI(QWidget):
             print("Save CellsDataframe to Excel...")
             self.DataFrame_sorted.to_excel(os.path.join(self.Tag_folder, datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'_Kcl_CellsProperties.xlsx'))
             
-            # self.UpdateSelectionScatter()
+            self.UpdateSelectionScatter()
             
         elif len(self.Tag_round_infor) == 2 and len(self.Lib_round_infor) == 2:
             # For KCL assay, two rounds of lib/tag.
@@ -466,19 +475,51 @@ class MainGUI(QWidget):
             #------------------------------------------------------------------
             
             print('Start Cell_DataFrame_Merging.')
-            Cell_DataFrame_Merged = ProcessImage.MergeDataFrames(Cell_DataFrame_Merged_1, Cell_DataFrame_Merged_2, method = 'Kcl')
+            self.Cell_DataFrame_Merged = ProcessImage.MergeDataFrames(Cell_DataFrame_Merged_1, Cell_DataFrame_Merged_2, method = 'Kcl')
+            # self.Cell_DataFrame_Merged.to_excel(os.path.join(self.Tag_folder, datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'_merged_CellsProperties.xlsx'))
+            # print(self.Cell_DataFrame_Merged.columns)
             print('Cell_DataFrame_Merged.')
 
-            DataFrames_filtered = ProcessImage.FilterDataFrames(Cell_DataFrame_Merged, Mean_intensity_in_contour_thres, Contour_soma_ratio_thres)
+            DataFrames_filtered = ProcessImage.FilterDataFrames(self.Cell_DataFrame_Merged, self.Mean_intensity_in_contour_thres, self.Contour_soma_ratio_thres)
             
             self.DataFrame_sorted = ProcessImage.Sorting_onTwoaxes(DataFrames_filtered, axis_1 = self.X_axisBox.currentText(), axis_2 = self.Y_axisBox.currentText(), 
                                                                       weight_1 = self.WeightBoxSelectionFactor_1.value(), weight_2 = self.WeightBoxSelectionFactor_2.value())
 
-
             print("Save CellsDataframe to Excel...")
             self.DataFrame_sorted.to_excel(os.path.join(self.Tag_folder, datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'_Kcl_CellsProperties.xlsx'))
             
+            self.UpdateSelectionScatter()
     #%%
+    def ReadEexcel(self):
+        self.Mean_intensity_in_contour_thres = self.Mean_intensity_in_contour_thres_box.value()
+        self.Contour_soma_ratio_thres = self.Contour_soma_ratio_thres_box.value()
+        
+        self.ExcelfileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, 'Single File', r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope',"(*.xlsx)")
+        self.Excelfile = pd.read_excel(pd.ExcelFile(self.ExcelfileName))        
+        
+        # --------------------------------------------------------------------
+        DataFrames_filtered = ProcessImage.FilterDataFrames(self.Excelfile, self.Mean_intensity_in_contour_thres, self.Contour_soma_ratio_thres)
+        
+        self.DataFrame_sorted = ProcessImage.Sorting_onTwoaxes(DataFrames_filtered, axis_1 = self.X_axisBox.currentText(), axis_2 = self.Y_axisBox.currentText(), 
+                                                                  weight_1 = self.WeightBoxSelectionFactor_1.value(), weight_2 = self.WeightBoxSelectionFactor_2.value())
+
+        print("Save CellsDataframe to Excel...")
+        self.DataFrame_sorted.to_excel(os.path.join(self.Tag_folder, datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'_ReadEexcel_CellsProperties.xlsx'))
+        
+        self.UpdateSelectionScatter()
+        
+    def ReplotExcel(self):
+
+        DataFrames_filtered = ProcessImage.FilterDataFrames(self.Cell_DataFrame_Merged, self.Mean_intensity_in_contour_thres, self.Contour_soma_ratio_thres)
+        
+        self.DataFrame_sorted = ProcessImage.Sorting_onTwoaxes(DataFrames_filtered, axis_1 = self.X_axisBox.currentText(), axis_2 = self.Y_axisBox.currentText(), 
+                                                                  weight_1 = self.WeightBoxSelectionFactor_1.value(), weight_2 = self.WeightBoxSelectionFactor_2.value())
+
+        print("Save CellsDataframe to Excel...")
+        self.DataFrame_sorted.to_excel(os.path.join(self.Tag_folder, datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'_Replot_CellsProperties.xlsx'))
+        
+        self.UpdateSelectionScatter()        
+        
     def UpdateSelectionScatter(self):
         """
         Plot the scatter graph.
@@ -594,8 +635,14 @@ class MainGUI(QWidget):
         #-------------- readin image---------------
         if self.ShowLibImgButton.isChecked():
             # Display the library image
-            self.meta_data = self.CurrentRankCellpProperties.loc['ImgNameInfor_Lib']
-            Each_bounding_box = self.CurrentRankCellpProperties.loc['BoundingBox_Lib']
+            if 'ImgNameInfor_Lib' in self.CurrentRankCellpProperties.index:
+                # In brightness lib/tag dataframe
+                self.meta_data = self.CurrentRankCellpProperties.loc['ImgNameInfor_Lib']
+                Each_bounding_box = self.CurrentRankCellpProperties.loc['BoundingBox_Lib']
+            elif 'ImgNameInfor_Lib_EC' in self.CurrentRankCellpProperties.index:
+                # In Kcl assay, show the KC lib image.
+                self.meta_data = self.CurrentRankCellpProperties.loc['ImgNameInfor_Lib_KC']
+                Each_bounding_box = self.CurrentRankCellpProperties.loc['BoundingBox_Lib_KC']                
             
             self.lib_imagefilename = os.path.join(self.Lib_folder, self.meta_data+'_PMT_0Zmax.tif')
             print(self.lib_imagefilename)
@@ -603,8 +650,14 @@ class MainGUI(QWidget):
             
         else:
             # Display the tag protein image
-            self.meta_data = self.CurrentRankCellpProperties.loc['ImgNameInfor_Tag']
-            Each_bounding_box = self.CurrentRankCellpProperties.loc['BoundingBox_Tag']
+            if 'ImgNameInfor_Tag' in self.CurrentRankCellpProperties.index:
+                # In brightness lib/tag dataframe
+                self.meta_data = self.CurrentRankCellpProperties.loc['ImgNameInfor_Tag']
+                Each_bounding_box = self.CurrentRankCellpProperties.loc['BoundingBox_Tag']
+            elif 'ImgNameInfor_Lib_EC' in self.CurrentRankCellpProperties.index:
+                # In Kcl assay, show the KC lib image.
+                self.meta_data = self.CurrentRankCellpProperties.loc['ImgNameInfor_Lib_EC']
+                Each_bounding_box = self.CurrentRankCellpProperties.loc['BoundingBox_Lib_EC']  
             
             self.tag_imagefilename = os.path.join(self.Tag_folder, self.meta_data+'_PMT_0Zmax.tif')
             print(self.tag_imagefilename)
@@ -644,8 +697,6 @@ class MainGUI(QWidget):
     def display_ML_mask(self):
         if self.SwitchMaskButton.isChecked():
             if self.ShowLibImgButton.isChecked():
-                # Display the library image
-                self.meta_data = self.CurrentRankCellpProperties.loc['ImgNameInfor_Lib']
                 
                 roundnum = self.meta_data[0:self.meta_data.index('_Grid')]
                 
@@ -655,8 +706,7 @@ class MainGUI(QWidget):
                 self.loaded_image_display = imread(self.lib_mask_imagefilename)
                 
             else:
-                # Display the tag protein image
-                self.meta_data = self.CurrentRankCellpProperties.loc['ImgNameInfor_Tag']
+
                 roundnum = self.meta_data[0:self.meta_data.index('_Grid')]
                 
                 self.tag_mask_imagefilename = os.path.join(self.Tag_folder, "MLimages_{}".format(roundnum), self.meta_data+'.tif')
@@ -718,7 +768,6 @@ class MainGUI(QWidget):
     def SaveCellsDataframetoExcel(self):
         os.path.join(self.Tag_folder, datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'_CellsProperties.xlsx')
         self.DataFrame_sorted.to_excel(os.path.join(self.Tag_folder, datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'_CellsProperties.xlsx'))
-#        np.save(os.path.join(self.Tag_folder, datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'_CellsProperties'), self.Overview_LookupBook)
         
     def ResetRankCoord(self):
         self.popnexttopimgcounter = 0

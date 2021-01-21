@@ -473,7 +473,7 @@ class ProcessImage():
         return LibFluorescenceLookupBook
 
 
-    def if_theres_cell(image, percentage_threshold = 0.0012):
+    def if_theres_cell(image, percentage_threshold = 0.0008):
         """
         Check if there're enough objects in the image.
 
@@ -1177,7 +1177,31 @@ class ProcessImage():
     def binarymask_to_DMD_mask(binary_mask, laser, dict_transformations, flag_fill_contour = True, contour_thickness = 1, flag_invert_mode = False, mask_resolution = (1024, 768)):
         """
         First binart mask to contour vertices, then from vertices to transformed vertices then to DMD mask.
+
+        Parameters
+        ----------
+        binary_mask : TYPE
+            DESCRIPTION.
+        laser : TYPE
+            DESCRIPTION.
+        dict_transformations : TYPE
+            DESCRIPTION.
+        flag_fill_contour : TYPE, optional
+            DESCRIPTION. The default is True.
+        contour_thickness : TYPE, optional
+            DESCRIPTION. The default is 1.
+        flag_invert_mode : TYPE, optional
+            DESCRIPTION. The default is False.
+        mask_resolution : TYPE, optional
+            DESCRIPTION. The default is (1024, 768).
+
+        Returns
+        -------
+        mask_transformed_final : TYPE
+            DESCRIPTION.
+
         """
+
         mask_transformed_final = np.zeros((mask_resolution[1], mask_resolution[0]))
         
         contours = find_contours(binary_mask, 0.5) # Find iso-valued contours in a 2D array for a given level value.
@@ -1733,9 +1757,9 @@ class ProcessImage():
                         Merge_data2_index = index_list_Data_2[intersection_Area_percentage_list.index(max(intersection_Area_percentage_list))]
       
                         pd_data_of_single_cell = pd.concat((cell_Data_1.loc[index_Data_1], cell_Data_2.loc[Merge_data2_index]), axis = 0)
-                        
+
                         # Add the lib/tag brightness ratio
-                        if 'Mean_intensity_in_contour_KC' in in pd_data_of_single_cell.columns:
+                        if 'Mean_intensity_in_contour_KC' in pd_data_of_single_cell.index:
                             # For absolute intensity 
                             # For ones with lib/tag ratio, it will have 'Mean_intensity_in_contour_Lib_KC' field instead.
                             Kcl_Lib_Tag_ratio = pd.DataFrame([pd_data_of_single_cell.loc['Mean_intensity_in_contour_KC'] / pd_data_of_single_cell.loc['Mean_intensity_in_contour_EC']],
@@ -1888,9 +1912,13 @@ class ProcessImage():
             DataFrames_filtered = DataFrame[(DataFrame['Mean_intensity_in_contour_Lib'] > Mean_intensity_in_contour_thres) & 
                                             (DataFrame['Contour_soma_ratio_Lib'] > Contour_soma_ratio_thres)]
         # For KC/EC measurements
-        elif 'Mean_intensity_in_contour_Lib_KC' in DataFrame.columns:
+        elif 'Mean_intensity_in_contour_Lib_EC' in DataFrame.columns:
             DataFrames_filtered = DataFrame[(DataFrame['Mean_intensity_in_contour_Lib_EC'] > Mean_intensity_in_contour_thres) & 
                                             (DataFrame['Contour_soma_ratio_Lib_EC'] > Contour_soma_ratio_thres)]
+        # For KC/EC measurements with absolute intensity
+        elif 'Mean_intensity_in_contour_EC' in DataFrame.columns:
+            DataFrames_filtered = DataFrame[(DataFrame['Mean_intensity_in_contour_EC'] > Mean_intensity_in_contour_thres) & 
+                                            (DataFrame['Contour_soma_ratio_EC'] > Contour_soma_ratio_thres)]
                 
         return DataFrames_filtered
     
@@ -1901,51 +1929,29 @@ class ProcessImage():
         Parameters
         ----------
         DataFrame : TYPE
-            DESCRIPTION.
-        axis_1 : TYPE
-            DESCRIPTION.
-        axis_2 : TYPE
-            DESCRIPTION.
-        weight_1 : TYPE
-            DESCRIPTION.
-        weight_2 : TYPE
-            DESCRIPTION.
+            The input dataframe.
+        axis_1 : str
+            Dataframe column name of the first axis.
+        axis_2 : str
+            Dataframe column name of the second axis.
+        weight_1 : float
+            The weight for axis 1 when sorting.
+        weight_2 : float
+            The weight for axis 2 when sorting.
 
         Returns
         -------
-        DataFrame_sorted : TYPE
+        DataFrame_sorted : pd.dataframe
             DESCRIPTION.
 
         """
-
-        if axis_1 == "Lib_Tag_contour_ratio" and axis_2 == "Contour_soma_ratio_Lib":
-            # Get the min and max on two axes, prepare for next step.
-            Contour_soma_ratio_min, Contour_soma_ratio_max = DataFrame.Contour_soma_ratio_Lib.min(), DataFrame.Contour_soma_ratio_Lib.max()
-            Lib_Tag_contour_ratio_min, Lib_Tag_contour_ratio_max = DataFrame.Lib_Tag_contour_ratio.min(), DataFrame.Lib_Tag_contour_ratio.max()
-            
-            DataFrame_sorted = DataFrame.loc[(((DataFrame.Contour_soma_ratio_Lib - Contour_soma_ratio_min) / (Contour_soma_ratio_max - Contour_soma_ratio_min)) ** 2 * weight_2
-            + ((DataFrame.Lib_Tag_contour_ratio - Lib_Tag_contour_ratio_min) / (Lib_Tag_contour_ratio_max - Lib_Tag_contour_ratio_min)) **2 * weight_1) \
-            .sort_values(ascending=False).index]   
-
-        elif axis_1 == "Lib_Tag_contour_ratio" and axis_2 == "Mean_intensity_in_contour_Lib":
-            # Get the min and max on two axes, prepare for next step.
-            Mean_intensity_in_contour_Lib_min, Mean_intensity_in_contour_Lib_max = DataFrame.Mean_intensity_in_contour_Lib.min(), DataFrame.Mean_intensity_in_contour_Lib.max()
-            Lib_Tag_contour_ratio_min, Lib_Tag_contour_ratio_max = DataFrame.Lib_Tag_contour_ratio.min(), DataFrame.Lib_Tag_contour_ratio.max()
-            
-            DataFrame_sorted = DataFrame.loc[(((DataFrame.Mean_intensity_in_contour_Lib - Mean_intensity_in_contour_Lib_min) \
-                                               / (Mean_intensity_in_contour_Lib_max - Mean_intensity_in_contour_Lib_min)) ** 2 * weight_2
-            + ((DataFrame.Lib_Tag_contour_ratio - Lib_Tag_contour_ratio_min) / (Lib_Tag_contour_ratio_max - Lib_Tag_contour_ratio_min)) **2 * weight_1) \
-            .sort_values(ascending=False).index]
-                
-        elif axis_1 == "Contour_soma_ratio_Lib" and axis_2 == "Mean_intensity_in_contour_Lib":
-            # Get the min and max on two axes, prepare for next step.
-            Contour_soma_ratio_min, Contour_soma_ratio_max = DataFrame.Contour_soma_ratio_Lib.min(), DataFrame.Contour_soma_ratio_Lib.max()
-            Mean_intensity_in_contour_Lib_min, Mean_intensity_in_contour_Lib_max = DataFrame.Mean_intensity_in_contour_Lib.min(), DataFrame.Mean_intensity_in_contour_Lib.max()
-            
-            DataFrame_sorted = DataFrame.loc[(((DataFrame.Contour_soma_ratio_Lib - Contour_soma_ratio_min) \
-                                               / (Contour_soma_ratio_max - Contour_soma_ratio_min)) ** 2 * weight_1
-            + ((DataFrame.Mean_intensity_in_contour_Lib - Mean_intensity_in_contour_Lib_min) / (Mean_intensity_in_contour_Lib_max - Mean_intensity_in_contour_Lib_min)) **2 * weight_2) \
-            .sort_values(ascending=False).index]
+        # Get the min and max on two axes, prepare for next step.
+        Axis_1_min, Axis_1_max = DataFrame[axis_1].min(), DataFrame[axis_1].max()
+        Axis_2_min, Axis_2_max = DataFrame[axis_2].min(), DataFrame[axis_2].max()
+        
+        DataFrame_sorted = DataFrame.loc[(((DataFrame[axis_1] - Axis_1_min) / (Axis_1_max - Axis_1_min)) ** 2 * weight_1
+        + ((DataFrame[axis_2] - Axis_2_min) / (Axis_2_max - Axis_2_min)) **2 * weight_2) \
+        .sort_values(ascending=False).index]
                 
         return DataFrame_sorted
                 
@@ -2321,7 +2327,24 @@ class ProcessImage():
     #     Screening data post-processing
     # =============================================================================
     def find_repeat_imgs(Nest_data_directory, similarity_thres = 0.04):
-        
+        """
+        Find repeating images inside diretory.
+
+        Parameters
+        ----------
+        Nest_data_directory : str
+            DESCRIPTION.
+        similarity_thres : float, optional
+            DESCRIPTION. The default is 0.04.
+
+        Returns
+        -------
+        similar_img_list : TYPE
+            DESCRIPTION.
+        img_diff_list : TYPE
+            DESCRIPTION.
+
+        """
         RoundNumberList, CoordinatesList, fileNameList = \
             ProcessImage.retrive_scanning_scheme(Nest_data_directory, row_data_folder = True)
         
@@ -2350,7 +2373,22 @@ class ProcessImage():
         return similar_img_list, img_diff_list
     
     def find_infocus_from_stack(Nest_data_directory, save_image = True):
-        
+        """
+        Given the directory, walk through all the images with 'Zmax' in its name
+        and find the image with highest focus degree.
+
+        Parameters
+        ----------
+        Nest_data_directory : TYPE
+            DESCRIPTION.
+        save_image : TYPE, optional
+            DESCRIPTION. The default is True.
+
+        Returns
+        -------
+        None.
+
+        """
         RoundNumberList, CoordinatesList, fileNameList = ProcessImage.retrive_scanning_scheme(Nest_data_directory)
         
         for each_file_name in fileNameList:
@@ -2628,12 +2666,14 @@ if __name__ == "__main__":
     # else:
     #     res,diff = ProcessImage.find_repeat_imgs(r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2020-11-24_2020-11-24_16-45-26_2rounds_GFP_olddish', similarity_thres = 400)
     elif merge_dataFrames == True:
-        data_1_xlsx = pd.ExcelFile(r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2021-1-9 WT Archon Perfusion test KC\2021-01-09_16-17-43_CellsProperties.xlsx")
+        data_1_xlsx = pd.ExcelFile(r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2021-01-09_2021-01-09_15-50-55_Archonperfusion_test_EC_control 6by6\2021-01-10_17-09-54_CellsProperties.xlsx")
         data_1 = pd.read_excel(data_1_xlsx)
-        data_2_xlsx = pd.ExcelFile(r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2021-1-9 WT Archon Perfusion test KC\2021-01-10_16-57-01_CellsProperties.xlsx")
+        data_2_xlsx = pd.ExcelFile(r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2021-01-09_2021-01-09_15-50-55_Archonperfusion_test_EC_control 6by6\2021-01-10_17-12-12_CellsProperties.xlsx")
         data_2 = pd.read_excel(data_2_xlsx)
     
         print('Start Cell_DataFrame_Merging.')
         Cell_DataFrame_Merged = ProcessImage.MergeDataFrames(data_1, data_2, method = 'Kcl')
-        print('Cell_DataFrame_Merged.')  
+        print('Cell_DataFrame_Merged.')
     
+        DataFrames_filtered = ProcessImage.FilterDataFrames(Cell_DataFrame_Merged, 0.2, 1)
+        DataFrame_sorted = ProcessImage.Sorting_onTwoaxes(DataFrames_filtered, 'KC_EC_Mean_intensity_in_contour_ratio', 'Mean_intensity_in_contour_Lib_EC', 0, 1)

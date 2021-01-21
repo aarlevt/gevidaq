@@ -314,7 +314,7 @@ class Mainbody(QWidget):
         TwoPLaserSettingLayout.addWidget(NDfilterlabel, 0, 3)
         NDfilterlabel.setAlignment(Qt.AlignRight)
         self.NDfilterCombox = QComboBox()
-        self.NDfilterCombox.addItems(['1', '0.3', '0.5', '2', '2.3', '2.5', '3'])
+        self.NDfilterCombox.addItems([ '0.3', '0.5','1', '1.1', '1.3', '1.5', '2', '2.3', '2.5', '3'])
         TwoPLaserSettingLayout.addWidget(self.NDfilterCombox, 0, 4)
         
         Emifilterlabel = QLabel("Emission filter:")
@@ -818,8 +818,8 @@ class Mainbody(QWidget):
         self.show_pipline_infor()
         
     def auto_saving_directory(self):
-        self.savedirectory = r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\{}_{}_{}'.format \
-                            (date.today(), datetime.now().strftime('%Y-%m-%d_%H-%M-%S'), str(self.prefixtextbox.text()))
+        self.savedirectory = r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\{}_{}'.format \
+                            (datetime.now().strftime('%Y-%m-%d_%H-%M-%S'), str(self.prefixtextbox.text()))
         
         self.GeneralSettingDict['savedirectory'] = self.savedirectory
         
@@ -939,7 +939,6 @@ class Mainbody(QWidget):
     """
     def GetPipelineNPFile(self):
         self.pipelinenpfileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, 'Single File', 'M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data',"(*.npy)")
-        # self.LoadPipelineAddressbox.setText(self.pipelinenpfileName)
         
         self.LoadPipelineFile()
         

@@ -231,7 +231,7 @@ class ScanningExecutionThread(QThread):
                         self.ludlStage.moveAbs(RowIndex,ColumnIndex) # Row/Column indexs of np.array are opposite of stage row-col indexs.
                         
                         # Typically it needs 1~ second to move across 15000 stage index.
-                        time.sleep(1.5) 
+                        time.sleep(1.8) 
                     except:
                         self.error_massage = 'Fail_MoveStage'
                         self.errornum += 1
@@ -532,9 +532,27 @@ class ScanningExecutionThread(QThread):
             if NDnumber == '0':
                 ND_filter1_Pos = 0
                 ND_filter2_Pos = 0
+            elif NDnumber == '0.1':
+                ND_filter1_Pos = 0
+                ND_filter2_Pos = 1
+            elif NDnumber == '0.3':
+                ND_filter1_Pos = 0
+                ND_filter2_Pos = 2
+            elif NDnumber == '0.5':
+                ND_filter1_Pos = 0
+                ND_filter2_Pos = 3  
             elif NDnumber == '1':
                 ND_filter1_Pos = 1
                 ND_filter2_Pos = 0
+            elif NDnumber == '1.1':
+                ND_filter1_Pos = 1
+                ND_filter2_Pos = 1
+            elif NDnumber == '1.3':
+                ND_filter1_Pos = 1
+                ND_filter2_Pos = 2
+            elif NDnumber == '1.5':
+                ND_filter1_Pos = 1
+                ND_filter2_Pos = 3
             elif NDnumber == '2':
                 ND_filter1_Pos = 2
                 ND_filter2_Pos = 0
@@ -544,12 +562,10 @@ class ScanningExecutionThread(QThread):
             elif NDnumber == '2.5':
                 ND_filter1_Pos = 2
                 ND_filter2_Pos = 3
-            elif NDnumber == '0.5':
-                ND_filter1_Pos = 0
-                ND_filter2_Pos = 3        
-            elif NDnumber == '0.3':
-                ND_filter1_Pos = 0
-                ND_filter2_Pos = 2
+            elif NDnumber == '3':
+                ND_filter1_Pos = 3
+                ND_filter2_Pos = 0
+
             
             if EMprotein == 'Arch':
                 EM_filter_Pos = 0
@@ -661,13 +677,13 @@ class ScanningExecutionThread(QThread):
                     # EachRound+1 is current round number.
                     self.previous_auto_focus_position = self.RoundCoordsDict['CoordsPackage_{}'.format(EachRound+1)][EachCoord]['focus_position']
                     
-# =============================================================================
-#                     try:
-#                         # Record the position, try to write it in the NEXT round dict. 
-#                         self.RoundCoordsDict['CoordsPackage_{}'.format(EachRound + 2)][EachCoord]['focus_position'] = self.previous_auto_focus_position
-#                     except:
-#                         pass
-# =============================================================================
+                    #=================Pass on auto-focus positions to coming rounds.================
+                    # try:
+                    #     # Record the position, try to write it in the NEXT round dict. 
+                    #     self.RoundCoordsDict['CoordsPackage_{}'.format(EachRound + 2)][EachCoord]['focus_position'] = self.previous_auto_focus_position
+                    # except:
+                    #     pass
+
                     
                     # Generate position list.
                     ZStacklinspaceStart = self.previous_auto_focus_position - (math.floor(ZStackNum/2)) * ZStackStep
