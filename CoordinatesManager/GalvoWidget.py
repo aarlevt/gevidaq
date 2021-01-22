@@ -99,6 +99,10 @@ class GalvoWidget(QWidget):
         self.sig_request_mask_coordinates.emit()
         
     def receive_mask_coordinates(self, sig):
+        """
+        Receive signal from CoordinateWidget
+        ----------
+        """
         #!!! need to adapt to multiple frames!
         for each_roi_index in range(len(sig_from_CoordinateWidget)):
             
@@ -113,6 +117,21 @@ class GalvoWidget(QWidget):
             self.create_voltage_signal(list_of_rois)
     
     def transform_coordinates(self, list_of_rois):
+        """
+        Given list of roi positions in camera image, transform into corrseponding
+        voltage positions.
+
+        Parameters
+        ----------
+        list_of_rois : list
+            DESCRIPTION.
+
+        Returns
+        -------
+        new_list_of_rois : TYPE
+            DESCRIPTION.
+
+        """
         new_list_of_rois = []
         for roi in list_of_rois:
             new_list_of_rois.append(np.flip(CoordinateTransformations.transform(np.flip(roi), self.transform)))

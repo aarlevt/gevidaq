@@ -257,17 +257,22 @@ class Mainbody(QWidget):
         self.ScanstepTextbox.setMaximum(20000)
         self.ScanstepTextbox.setValue(1585)
         self.ScanstepTextbox.setSingleStep(500)
-        ScanSettingLayout.addWidget(self.ScanstepTextbox, 0, 7)
-        ScanSettingLayout.addWidget(QLabel("Step size:"), 0, 6)
+        ScanSettingLayout.addWidget(self.ScanstepTextbox, 1, 1)
+        ScanSettingLayout.addWidget(QLabel("Step size:"), 1, 0)
         
         self.AutoFocusGapTextbox = QSpinBox(self)
         self.AutoFocusGapTextbox.setMinimum(0)
         self.AutoFocusGapTextbox.setMaximum(100000)
         self.AutoFocusGapTextbox.setValue(0)
-        self.AutoFocusGapTextbox.setSingleStep(5)
-
+        self.AutoFocusGapTextbox.setSingleStep(2)
+        # if value = 0, then no auto-focus.
         ScanSettingLayout.addWidget(self.AutoFocusGapTextbox, 0, 5)
         ScanSettingLayout.addWidget(QLabel("Auto focus grid steps:"), 0, 4)
+        
+        self.AF_roundCheckbox = QCheckBox("Auto-focus round")
+        self.AF_roundCheckbox.setStyleSheet('color:navy;font:bold "Times New Roman"')
+        self.AF_roundCheckbox.setChecked(False)
+        ScanSettingLayout.addWidget(self.AF_roundCheckbox, 0, 6) 
         
         self.FocusStackNumTextbox = QSpinBox(self)
         self.FocusStackNumTextbox.setMinimum(1)
@@ -302,7 +307,7 @@ class Mainbody(QWidget):
         self.TwoPLaserWavelengthbox.setMinimum(680)
         self.TwoPLaserWavelengthbox.setMaximum(1300)
         self.TwoPLaserWavelengthbox.setSingleStep(100)
-        self.TwoPLaserWavelengthbox.setValue(1280)
+        self.TwoPLaserWavelengthbox.setValue(900)
         TwoPLaserSettingLayout.addWidget(self.TwoPLaserWavelengthbox, 0, 1)
         
         self.TwoPLaserShutterCombox = QComboBox()
@@ -314,14 +319,14 @@ class Mainbody(QWidget):
         TwoPLaserSettingLayout.addWidget(NDfilterlabel, 0, 3)
         NDfilterlabel.setAlignment(Qt.AlignRight)
         self.NDfilterCombox = QComboBox()
-        self.NDfilterCombox.addItems([ '0.3', '0.5','1', '1.1', '1.3', '1.5', '2', '2.3', '2.5', '3'])
+        self.NDfilterCombox.addItems([ '2.3', '0.3', '0.5','1', '1.1', '1.3', '1.5', '2', '2.5', '3'])
         TwoPLaserSettingLayout.addWidget(self.NDfilterCombox, 0, 4)
         
         Emifilterlabel = QLabel("Emission filter:")
         TwoPLaserSettingLayout.addWidget(Emifilterlabel, 1, 3)
         Emifilterlabel.setAlignment(Qt.AlignRight)
         self.EmisfilterCombox = QComboBox()
-        self.EmisfilterCombox.addItems(['Arch', 'eGFP', 'Citrine'])
+        self.EmisfilterCombox.addItems(['eGFP', 'Arch', 'Citrine'])
         TwoPLaserSettingLayout.addWidget(self.EmisfilterCombox, 1, 4)
         
         ButtonDelEvent = QPushButton('Delete event', self)
@@ -494,6 +499,8 @@ class Mainbody(QWidget):
         self.layout.addWidget(self.Quick_startContainer, 1, 0, 1, 2)
         
         self.setLayout(self.layout)
+        
+        self.showPipelineConfigWidget()
         
     def showPipelineConfigWidget(self):
         self.layout.addWidget(self.ImageDisplayContainer, 1, 2, 1, 2)
@@ -742,29 +749,43 @@ class Mainbody(QWidget):
         
         Coords_array = np.array([], dtype=Coords_array_dtype)
         
-        for AutoFocusGridOffset in AutoFocusGridOffsetList:
-            AutoFocusOffset_row = AutoFocusGridOffset[0]
-            AutoFocusOffset_col = AutoFocusGridOffset[1]
-            
-            if AutoFocusCoordGap != 0:
-                for row_pos in range(row_start, AutoFocusCoordGap, step):
-                    for col_pos in range(column_start, AutoFocusCoordGap, step):
-                        # At each left-top corner of the coordinates grid, place the 
-                        # flag for auto focus
-                        if col_pos == 0 and row_pos == 0 and AutoFocusGrid_steps != 0:
-                            current_coord_array = np.array([(row_pos + AutoFocusOffset_row, col_pos + AutoFocusOffset_col, 'yes', -1)], dtype=Coords_array_dtype)
-                        else:
-                            current_coord_array = np.array([(row_pos + AutoFocusOffset_row, col_pos + AutoFocusOffset_col, 'no', -1)], dtype=Coords_array_dtype)
-                            
-                        Coords_array = np.append(Coords_array, current_coord_array)
-            else:
-                for row_pos in range(row_start, row_end + step, step):
-                    for col_pos in range(column_start, column_end + step, step):
-                            
-                        current_coord_array = np.array([(row_pos, col_pos, 'no', -1)], dtype=Coords_array_dtype)
-                            
-                        Coords_array = np.append(Coords_array, current_coord_array)                
+        if not self.AF_roundCheckbox.isChecked():
+            # If not auto-focus round
+            for AutoFocusGridOffset in AutoFocusGridOffsetList:
+                # In each small auto-focus grid
+                AutoFocusOffset_row = AutoFocusGridOffset[0]
+                AutoFocusOffset_col = AutoFocusGridOffset[1]
                 
+                if AutoFocusCoordGap != 0:
+                    # If auto-focus involved:
+                    for row_pos in range(row_start, AutoFocusCoordGap, step):
+                        for col_pos in range(column_start, AutoFocusCoordGap, step):
+                            # At each left-top corner of the coordinates grid, place the 
+                            # flag for auto focus
+                            if col_pos == 0 and row_pos == 0 and AutoFocusGrid_steps != 0:
+                                current_coord_array = np.array([(row_pos + AutoFocusOffset_row, col_pos + AutoFocusOffset_col, 'yes', -1)], dtype=Coords_array_dtype)
+                            else:
+                                current_coord_array = np.array([(row_pos + AutoFocusOffset_row, col_pos + AutoFocusOffset_col, 'no', -1)], dtype=Coords_array_dtype)
+                                
+                            Coords_array = np.append(Coords_array, current_coord_array)
+    
+                else:
+                    # If no auto-focus
+                    for row_pos in range(row_start, row_end + step, step):
+                        for col_pos in range(column_start, column_end + step, step):
+                                
+                            current_coord_array = np.array([(row_pos, col_pos, 'no', -1)], dtype=Coords_array_dtype)
+                                
+                            Coords_array = np.append(Coords_array, current_coord_array)
+                            
+        else:
+            # In case of pure auto-focus round
+            for row_pos in range(row_start, row_end, AutoFocusCoordGap):
+                for col_pos in range(column_start, column_end, AutoFocusCoordGap):                    
+                    current_coord_array = np.array([(row_pos, col_pos, 'yes_auto_focus_round', -1)], dtype=Coords_array_dtype)
+                
+                    Coords_array = np.append(Coords_array, current_coord_array)
+        # print(Coords_array)
         self.RoundCoordsDict['CoordsPackage_{}'.format(CurrentRoundSequence)] = Coords_array
         
     def DeleteFreshRound(self):

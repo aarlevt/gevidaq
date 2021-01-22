@@ -37,6 +37,7 @@ if __name__ == "__main__":
     dname = os.path.dirname(abspath)
     os.chdir(dname+'/../')
 
+from SampleStageControl.stage import LudlStage
 from ImageAnalysis.ImageProcessing import ProcessImage
 try:
     from ImageAnalysis.ImageProcessing_MaskRCNN import ProcessImageML
@@ -119,7 +120,7 @@ class MainGUI(QWidget):
         ImageButtonContainer = QGroupBox()
         ImageButtonContainerLayout = QGridLayout()
         
-        ButtonRankResetCoordImg = QPushButton('Reset coord', self)
+        ButtonRankResetCoordImg = QPushButton('Reset index', self)
         ButtonRankResetCoordImg.clicked.connect(self.ResetRankCoord)
         ImageButtonContainerLayout.addWidget(ButtonRankResetCoordImg, 0, 6)
         
@@ -154,6 +155,13 @@ class MainGUI(QWidget):
         self.CellSequenceBox.setSingleStep(1)
         ImageButtonContainerLayout.addWidget(self.CellSequenceBox, 3, 7)
         
+        MoveToCoordButton = QPushButton('Move FOV', self)
+        MoveToCoordButton.clicked.connect(self.MoveToCoordinate)
+        ImageButtonContainerLayout.addWidget(MoveToCoordButton, 4, 6)
+        
+        MoveToCellButton = QPushButton('Move to cell', self)
+        MoveToCellButton.clicked.connect(self.MoveToCoordinate)
+        ImageButtonContainerLayout.addWidget(MoveToCellButton, 4, 7)
 #        ButtonRankDeleteFromList = QPushButton('Delete', self)
 #        ButtonRankDeleteFromList.clicked.connect(self.DeleteFromTopCells)
 #        ImageButtonContainerLayout.addWidget(ButtonRankDeleteFromList, 2, 7)
@@ -165,7 +173,7 @@ class MainGUI(QWidget):
         self.ConsoleTextDisplay = QTextEdit()
         self.ConsoleTextDisplay.setFontItalic(True)
         self.ConsoleTextDisplay.setPlaceholderText('Notice board from console.')
-        self.ConsoleTextDisplay.setMaximumHeight(300)
+        self.ConsoleTextDisplay.setFixedHeight(150)
         ImageButtonContainerLayout.addWidget(self.ConsoleTextDisplay, 5, 6, 3, 2)
         
         ImageButtonContainer.setLayout(ImageButtonContainerLayout)
@@ -695,6 +703,9 @@ class MainGUI(QWidget):
                                                                  'IDNumber', self.CurrentRankCellpProperties.name))
         
     def display_ML_mask(self):
+        """
+        Display the ML mask.
+        """
         if self.SwitchMaskButton.isChecked():
             if self.ShowLibImgButton.isChecked():
                 
@@ -764,8 +775,23 @@ class MainGUI(QWidget):
         self.Matdisplay_Canvas.draw()            
 #        else:
 #            self.GoThroughTopCells('sequence')
-    
+
+    def MoveToCoordinate(self):
+        """
+        Move to the stage coordinate of current inspecting cell.
+        """
+        coordinate_text = self.meta_data[self.meta_data.index('_R')+1:len(self.meta_data)]
+        
+        coordinate_row = coordinate_text[coordinate_text.index('R')+1:coordinate_text.index('C')]
+        coordinate_col = coordinate_text[coordinate_text.index('C')+1:len(coordinate_text)]
+        
+        ludlStage = LudlStage("COM12")
+        ludlStage.moveAbs(coordinate_row, coordinate_col)
+        
     def SaveCellsDataframetoExcel(self):
+        """
+        Save the data sheet into excel file.
+        """
         os.path.join(self.Tag_folder, datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'_CellsProperties.xlsx')
         self.DataFrame_sorted.to_excel(os.path.join(self.Tag_folder, datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'_CellsProperties.xlsx'))
         

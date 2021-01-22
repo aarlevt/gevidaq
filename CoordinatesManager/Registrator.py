@@ -33,6 +33,24 @@ class GalvoRegistrator:
         self.cam.initializeCamera()
         
     def registration(self, grid_points_x = 3, grid_points_y = 3):
+        """
+        By default, generate 9 galvo voltage coordinates from (-5,-5) to (5,5),
+        take the camera images of these points, return a function matrix that 
+        transforms camera_coordinates into galvo_coordinates using polynomial transform. 
+
+        Parameters
+        ----------
+        grid_points_x : TYPE, optional
+            DESCRIPTION. The default is 3.
+        grid_points_y : TYPE, optional
+            DESCRIPTION. The default is 3.
+
+        Returns
+        -------
+        transformation : TYPE
+            DESCRIPTION.
+
+        """
         galvothread = DAQmission()
         readinchan = []
         

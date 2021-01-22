@@ -261,7 +261,7 @@ class ScanningExecutionThread(QThread):
                         #------------------------------------------------------------------------------------
                         """
                         print('--------------------------------------------Stack {}--------------------------------------------------'.format(EachZStackPos+1))
-                        if self.ZStackNum > 1:
+                        if self.ZStackNum >= 1:
                             self.ZStackOrder = int(EachZStackPos +1) # Here the first one is 1, not starting from 0.
                             
                             self.FocusPos = self.ZStackPosList[EachZStackPos]# + self.wavelength_offset    
@@ -291,6 +291,7 @@ class ScanningExecutionThread(QThread):
                             
                             time.sleep(0.3)
                         else:
+                            # No Z-stack or auto-focus.
                             self.ZStackOrder = 1
                             self.FocusPos = self.init_focus_position
                         """
@@ -720,8 +721,12 @@ class ScanningExecutionThread(QThread):
                 print('ZStackPos is : {}'.format(self.ZStackPosList))   
             #------------------------------------------------------------------
             # If not auto focus, use the same list variable self.ZStackPosList.
-            else:
+            elif auto_focus_flag == "no":
                 pass
+            #------------------------------------------------------------------
+            # If it's auto-focus round, skip next waveforms.
+            elif auto_focus_flag == "yes_auto_focus_round":
+                ZStackNum = 0
                 
         return ZStackNum
         
