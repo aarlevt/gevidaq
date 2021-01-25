@@ -80,13 +80,21 @@ class GalvoRegistrator:
         del galvothread
         self.cam.Exit()
         
-        transformation = CoordinateTransformations.polynomial2DFit(camera_coordinates, galvo_coordinates, order=1)
+        transformation_cam2galvo = CoordinateTransformations.polynomial2DFit(camera_coordinates, galvo_coordinates, order=1)
+        
+        transformation_galvo2cam = CoordinateTransformations.polynomial2DFit(galvo_coordinates, camera_coordinates, order=1)
         
         print('Transformation found for x:')
-        print(transformation[:,:,0])
+        print(transformation_cam2galvo[:,:,0])
         print('Transformation found for y:')
-        print(transformation[:,:,1])
-        return transformation
+        print(transformation_cam2galvo[:,:,1])
+        
+        print('galvo2cam found for x:')
+        print(transformation_galvo2cam[:,:,0])
+        print('galvo2cam found for y:')
+        print(transformation_galvo2cam[:,:,1])
+        
+        return transformation_cam2galvo
 
 class DMDRegistator:
     def __init__(self, DMD, *args, **kwargs):
