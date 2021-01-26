@@ -220,7 +220,7 @@ class FocusFinder():
                 with skimtiff.TiffWriter(os.path.join(r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Xin\2020-11-17 gaussian fit auto-focus cells\trial_11', str(obj_position).replace(".", "_")+ '.tif')) as tif:                
                     tif.save(self.galvo_image.astype('float32'), compress=0)
                             
-        degree_of_focus = ProcessImage.local_entropy(self.galvo_image.astype('float32'))
+            degree_of_focus = ProcessImage.local_entropy(self.galvo_image.astype('float32'))
         time.sleep(0.2)
         
         return degree_of_focus

@@ -75,7 +75,8 @@ class MainGUI(QWidget):
         
         pg.setConfigOptions(imageAxisOrder='row-major')
         
-        self.popnexttopimgcounter = 0
+        self.pop_next_top_cell_counter = 0
+        self.picked_cell_index = 1
         self.Tag_folder = None
         self.Lib_folder = None
         self.Tag_round_infor = []
@@ -153,6 +154,7 @@ class MainGUI(QWidget):
         self.CellSequenceBox.setMinimum(1)
         self.CellSequenceBox.setValue(1)
         self.CellSequenceBox.setSingleStep(1)
+        self.CellSequenceBox.setFixedWidth(200)
         ImageButtonContainerLayout.addWidget(self.CellSequenceBox, 3, 7)
         
         MoveToCoordButton = QPushButton('Move FOV', self)
@@ -162,6 +164,10 @@ class MainGUI(QWidget):
         MoveToCellButton = QPushButton('Move to cell', self)
         MoveToCellButton.clicked.connect(self.MoveToCoordinate)
         ImageButtonContainerLayout.addWidget(MoveToCellButton, 4, 7)
+        
+        SaveCellInforButton = QPushButton('Save cell infor', self)
+        SaveCellInforButton.clicked.connect(self.saveCellInfor)
+        ImageButtonContainerLayout.addWidget(SaveCellInforButton, 5, 6)
 #        ButtonRankDeleteFromList = QPushButton('Delete', self)
 #        ButtonRankDeleteFromList.clicked.connect(self.DeleteFromTopCells)
 #        ImageButtonContainerLayout.addWidget(ButtonRankDeleteFromList, 2, 7)
@@ -219,7 +225,7 @@ class MainGUI(QWidget):
         LoadSettingLayout = QGridLayout()
         
         self.FilepathSwitchBox = QComboBox()
-        self.FilepathSwitchBox.addItems(['All', 'Tag', 'Lib'])
+        self.FilepathSwitchBox.addItems(['Tag', 'Lib', 'All'])
         LoadSettingLayout.addWidget(self.FilepathSwitchBox, 1, 0)
         
         self.AnalysisRoundBox = QSpinBox(self)
@@ -324,16 +330,19 @@ class MainGUI(QWidget):
         None.
 
         """
-        self.Analysissavedirectory = str(QtWidgets.QFileDialog.getExistingDirectory())
-        self.datasavedirectorytextbox.setText(self.Analysissavedirectory)
+        self.Analysis_saving_directory = str(QtWidgets.QFileDialog.getExistingDirectory())
+        self.datasavedirectorytextbox.setText(self.Analysis_saving_directory)
         
-        if self.FilepathSwitchBox.currentText() == 'Tag':
-            self.Tag_folder = self.Analysissavedirectory
-        elif self.FilepathSwitchBox.currentText() == 'Lib':
-            self.Lib_folder = self.Analysissavedirectory     
-        elif self.FilepathSwitchBox.currentText() == 'All':
-            self.Tag_folder = self.Analysissavedirectory
-            self.Lib_folder = self.Analysissavedirectory    
+        self.Tag_folder = self.Analysis_saving_directory
+        self.Lib_folder = self.Analysis_saving_directory  
+            
+        # if self.FilepathSwitchBox.currentText() == 'Tag':
+        #     self.Tag_folder = self.Analysis_saving_directory
+        # elif self.FilepathSwitchBox.currentText() == 'Lib':
+        #     self.Lib_folder = self.Analysis_saving_directory     
+        # elif self.FilepathSwitchBox.currentText() == 'All':
+        #     self.Tag_folder = self.Analysis_saving_directory
+        #     self.Lib_folder = self.Analysis_saving_directory    
         
     def SetAnalysisRound(self):
         """
@@ -563,7 +572,7 @@ class MainGUI(QWidget):
         According to the direction, get the cell index in dataframe and display
         the cell image and position in scatter plot.
         
-        Cell dataframe index starts from Cell 1, which corresponds to popnexttopimgcounter = 0.
+        Cell dataframe index starts from Cell 1, which corresponds to pop_next_top_cell_counter = 0.
 
         Parameters
         ----------
@@ -579,42 +588,42 @@ class MainGUI(QWidget):
         #         Show the next ranked cell
         # =============================================================================    
         if direction == 'next':
-            if self.popnexttopimgcounter > (self.TotaNumofCellSelected-1):#Make sure it doesn't go beyond the last coords.
-                self.popnexttopimgcounter -= 1
+            if self.pop_next_top_cell_counter > (self.TotaNumofCellSelected-1):#Make sure it doesn't go beyond the last coords.
+                self.pop_next_top_cell_counter -= 1
             
-            self.CurrentRankCellpProperties = self.DataFrame_sorted.iloc[self.popnexttopimgcounter]
+            self.CurrentRankCellpProperties = self.DataFrame_sorted.iloc[self.pop_next_top_cell_counter]
             
             self.display_selected_image()
             
-            self.popnexttopimgcounter += 1 # Alwasy plus 1 to get it ready for next move.
+            self.pop_next_top_cell_counter += 1 # Alwasy plus 1 to get it ready for next move.
 
         # =============================================================================
         #         Show the previous ranked cell
         # =============================================================================            
         elif direction == 'previous':
-            self.popnexttopimgcounter -= 2 
-            if self.popnexttopimgcounter >= 0:
+            self.pop_next_top_cell_counter -= 2 
+            if self.pop_next_top_cell_counter >= 0:
                 
-                self.CurrentRankCellpProperties = self.DataFrame_sorted.iloc[self.popnexttopimgcounter]
+                self.CurrentRankCellpProperties = self.DataFrame_sorted.iloc[self.pop_next_top_cell_counter]
                 
                 self.display_selected_image()
                 
-                if self.popnexttopimgcounter < (self.TotaNumofCellSelected-1):
-                    self.popnexttopimgcounter += 1
+                if self.pop_next_top_cell_counter < (self.TotaNumofCellSelected-1):
+                    self.pop_next_top_cell_counter += 1
             else:
-                self.popnexttopimgcounter = 0
+                self.pop_next_top_cell_counter = 0
         
         # =============================================================================
         #         Show the current cell
         # =============================================================================
         elif direction == 'null': 
-            self.popnexttopimgcounter -= 1
+            self.pop_next_top_cell_counter -= 1
             
-            self.CurrentRankCellpProperties = self.DataFrame_sorted.iloc[self.popnexttopimgcounter]
+            self.CurrentRankCellpProperties = self.DataFrame_sorted.iloc[self.pop_next_top_cell_counter]
             
             self.display_selected_image()
             
-            self.popnexttopimgcounter += 1
+            self.pop_next_top_cell_counter += 1
         
         # if go to specific cell
         elif direction == 'IDNumber':
@@ -692,7 +701,7 @@ class MainGUI(QWidget):
 #            #--------------------------------------------------Add red boundingbox to axis----------------------------------------------
 #            rect = mpatches.Rectangle((minc, minr), maxc - minc, maxr - minr, fill=False, edgecolor='cyan', linewidth=2)
 #            ax1.add_patch(rect)
-#            ax1.text(maxc, minr, 'NO_{}'.format(self.popnexttopimgcounter),fontsize=10, color='orange', style='italic')
+#            ax1.text(maxc, minr, 'NO_{}'.format(self.pop_next_top_cell_counter),fontsize=10, color='orange', style='italic')
 #            self.Matdisplay_Figure.tight_layout()
 #            self.Matdisplay_Canvas.draw()
         
@@ -743,7 +752,7 @@ class MainGUI(QWidget):
         self.Matdisplay_Figure.clear()
         ax1 = self.Matdisplay_Figure.add_subplot(111)
         ax1.scatter(self.DataFrame_sorted.loc[:,self.EvaluatingPara_list[0]], self.DataFrame_sorted.loc[:,self.EvaluatingPara_list[1]], s=np.pi*3, c='blue', alpha=0.5)
-        ax1.scatter(self.DataFrame_sorted.iloc[self.popnexttopimgcounter-1, :].loc[self.EvaluatingPara_list[0]], self.DataFrame_sorted.iloc[self.popnexttopimgcounter-1, :].loc[self.EvaluatingPara_list[1]], 
+        ax1.scatter(self.DataFrame_sorted.iloc[self.pop_next_top_cell_counter-1, :].loc[self.EvaluatingPara_list[0]], self.DataFrame_sorted.iloc[self.pop_next_top_cell_counter-1, :].loc[self.EvaluatingPara_list[1]], 
                     s=np.pi*6, c='red', alpha=0.5)
         ax1.set_xlabel(self.EvaluatingPara_list[0])
         ax1.set_ylabel(self.EvaluatingPara_list[1])
@@ -780,10 +789,10 @@ class MainGUI(QWidget):
         """
         Move to the stage coordinate of current inspecting cell.
         """
-        coordinate_text = self.meta_data[self.meta_data.index('_R')+1:len(self.meta_data)]
+        self.coordinate_text = self.meta_data[self.meta_data.index('_R')+1:len(self.meta_data)]
         
-        coordinate_row = coordinate_text[coordinate_text.index('R')+1:coordinate_text.index('C')]
-        coordinate_col = coordinate_text[coordinate_text.index('C')+1:len(coordinate_text)]
+        coordinate_row = int(self.coordinate_text[self.coordinate_text.index('R')+1:self.coordinate_text.index('C')])
+        coordinate_col = int(self.coordinate_text[self.coordinate_text.index('C')+1:len(self.coordinate_text)])
         
         ludlStage = LudlStage("COM12")
         ludlStage.moveAbs(coordinate_row, coordinate_col)
@@ -795,8 +804,21 @@ class MainGUI(QWidget):
         os.path.join(self.Tag_folder, datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'_CellsProperties.xlsx')
         self.DataFrame_sorted.to_excel(os.path.join(self.Tag_folder, datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'_CellsProperties.xlsx'))
         
+    def saveCellInfor(self):
+        # create an exporter instance, as an argument give it
+        # the item you wish to export
+        exporter = pg.exporters.ImageExporter(self.OriginalImg_item)
+        
+        # set export parameters if needed
+        exporter.parameters()['width'] = 500   # (note this also affects height parameter)
+        
+        # save to file
+        exporter.export(os.path.join(self.Analysis_saving_directory, 'Picked cells\\'+'Picked cell_'+str(self.picked_cell_index)+' '+self.coordinate_text+'.png'))    
+        
     def ResetRankCoord(self):
-        self.popnexttopimgcounter = 0
+        self.pop_next_top_cell_counter = 0
+        self.picked_cell_index = 0
+        
     #%%
 if __name__ == "__main__":
     def run_app():
