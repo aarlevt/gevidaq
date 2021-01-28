@@ -15,11 +15,10 @@ from PyQt5.QtWidgets import (QWidget, QButtonGroup, QLabel, QSlider, QSpinBox, Q
                              QFileDialog, QProgressBar, QTextEdit, QStyleFactory)
 
 import pyqtgraph as pg
-from IPython import get_ipython
+import pyqtgraph.exporters
 import sys
 import numpy as np
 from skimage.io import imread
-from skimage.transform import rotate
 import threading
 import os
 
@@ -39,6 +38,7 @@ if __name__ == "__main__":
 
 from SampleStageControl.stage import LudlStage
 from ImageAnalysis.ImageProcessing import ProcessImage
+from CoordinatesManager import CoordinateTransformations
 try:
     from ImageAnalysis.ImageProcessing_MaskRCNN import ProcessImageML
 except:
@@ -122,8 +122,12 @@ class MainGUI(QWidget):
         ImageButtonContainerLayout = QGridLayout()
         
         ButtonRankResetCoordImg = QPushButton('Reset index', self)
-        ButtonRankResetCoordImg.clicked.connect(self.ResetRankCoord)
+        ButtonRankResetCoordImg.clicked.connect(self.ResetRankIndex)
         ImageButtonContainerLayout.addWidget(ButtonRankResetCoordImg, 0, 6)
+        
+        ButtonPickedResetCoordImg = QPushButton('Reset picked index', self)
+        ButtonPickedResetCoordImg.clicked.connect(self.ResetPickedIndex)
+        ImageButtonContainerLayout.addWidget(ButtonPickedResetCoordImg, 0, 7)
         
         ButtonRankPreviousCoordImg = QPushButton('Previous', self)
         ButtonRankPreviousCoordImg.setShortcut('a')
@@ -162,7 +166,7 @@ class MainGUI(QWidget):
         ImageButtonContainerLayout.addWidget(MoveToCoordButton, 4, 6)
         
         MoveToCellButton = QPushButton('Move to cell', self)
-        MoveToCellButton.clicked.connect(self.MoveToCoordinate)
+        MoveToCellButton.clicked.connect(self.MoveCellToCamCentre)
         ImageButtonContainerLayout.addWidget(MoveToCellButton, 4, 7)
         
         SaveCellInforButton = QPushButton('Save cell infor', self)
@@ -278,7 +282,8 @@ class MainGUI(QWidget):
         LoadSettingLayout.addWidget(QLabel("Weight:"), 2, 4)
         
         self.Y_axisBox = QComboBox()
-        self.Y_axisBox.addItems(['Mean_intensity_in_contour_Lib', 'Mean_intensity_in_contour_Lib_EC', 'Lib_Tag_contour_ratio_EC', 'Contour_soma_ratio_Lib', 'Contour_soma_ratio_Lib_EC'])
+        self.Y_axisBox.addItems\
+            (['Mean_intensity_in_contour_Lib', 'Mean_intensity_in_contour_Lib_EC', 'Lib_Tag_contour_ratio_EC', 'Contour_soma_ratio_Lib', 'Contour_soma_ratio_Lib_EC'])
         LoadSettingLayout.addWidget(self.Y_axisBox, 3, 1, 1, 3)
         LoadSettingLayout.addWidget(QLabel('Y axis: '), 3, 0)
         
@@ -508,24 +513,47 @@ class MainGUI(QWidget):
             self.UpdateSelectionScatter()
     #%%
     def ReadEexcel(self):
+        """
+        Read in existing excel file and do the ranking and graph generating.
+
+        Returns
+        -------
+        None.
+
+        """
         self.Mean_intensity_in_contour_thres = self.Mean_intensity_in_contour_thres_box.value()
         self.Contour_soma_ratio_thres = self.Contour_soma_ratio_thres_box.value()
         
         self.ExcelfileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, 'Single File', r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope',"(*.xlsx)")
-        self.Excelfile = pd.read_excel(pd.ExcelFile(self.ExcelfileName))        
-        
+        self.Excelfile = pd.read_excel(self.ExcelfileName)     
+        # Return the directory name of pathname path.
+        self.Tag_folder = os.path.dirname(self.ExcelfileName)
+        self.Lib_folder = os.path.dirname(self.ExcelfileName)
+        self.Analysis_saving_directory = os.path.dirname(self.ExcelfileName)
         # --------------------------------------------------------------------
         DataFrames_filtered = ProcessImage.FilterDataFrames(self.Excelfile, self.Mean_intensity_in_contour_thres, self.Contour_soma_ratio_thres)
         
         self.DataFrame_sorted = ProcessImage.Sorting_onTwoaxes(DataFrames_filtered, axis_1 = self.X_axisBox.currentText(), axis_2 = self.Y_axisBox.currentText(), 
                                                                   weight_1 = self.WeightBoxSelectionFactor_1.value(), weight_2 = self.WeightBoxSelectionFactor_2.value())
-
-        print("Save CellsDataframe to Excel...")
-        self.DataFrame_sorted.to_excel(os.path.join(self.Tag_folder, datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'_ReadEexcel_CellsProperties.xlsx'))
         
+        try:
+            print("Save CellsDataframe to Excel...")
+            self.DataFrame_sorted.to_excel(os.path.join(self.Tag_folder, datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'_ReloadedEexcel_CellsProperties.xlsx'))
+            print("Saved.")
+        except:
+            pass
+            
         self.UpdateSelectionScatter()
         
     def ReplotExcel(self):
+        """
+        Replot the data based on current hyperparameters.
+
+        Returns
+        -------
+        None.
+
+        """
 
         DataFrames_filtered = ProcessImage.FilterDataFrames(self.Cell_DataFrame_Merged, self.Mean_intensity_in_contour_thres, self.Contour_soma_ratio_thres)
         
@@ -679,12 +707,18 @@ class MainGUI(QWidget):
             self.tag_imagefilename = os.path.join(self.Tag_folder, self.meta_data+'_PMT_0Zmax.tif')
             print(self.tag_imagefilename)
             self.loaded_image_display = imread(self.tag_imagefilename, as_gray=True)
-            
+        
+        # Get stage coordinates information.
+        self.coordinate_text = self.meta_data[self.meta_data.index('_R')+1:len(self.meta_data)]
+        
         # Retrieve boundingbox information
         minr = int(Each_bounding_box[Each_bounding_box.index('minr')+4:Each_bounding_box.index('_maxr')])
         maxr = int(Each_bounding_box[Each_bounding_box.index('maxr')+4:Each_bounding_box.index('_minc')]) -1    
         minc = int(Each_bounding_box[Each_bounding_box.index('minc')+4:Each_bounding_box.index('_maxc')])
         maxc = int(Each_bounding_box[Each_bounding_box.index('maxc')+4:len(Each_bounding_box)]) -1
+        
+        self.currentCellCentre_PMTimgCoordinates = [int((minr+maxr)/2), int((minc+maxc)/2)]
+        print("current CellCentre_PMTimgCoordinates: {}".format(self.currentCellCentre_PMTimgCoordinates))
         
         self.loaded_image_display[minr, minc:maxc] = 4
         self.loaded_image_display[maxr, minc:maxc] = 4
@@ -707,7 +741,8 @@ class MainGUI(QWidget):
         
         #-------------------Print details of cell of interest----------------
         self.normalOutputWritten('------------------IDNumber {}----------------\n'.format(self.CurrentRankCellpProperties.name))
-        self.normalOutputWritten('ID: {}\n{}: {}\n{}: {}\n{}: {}\n'.format(self.meta_data, self.EvaluatingPara_list[0], round(self.CurrentRankCellpProperties.loc[self.EvaluatingPara_list[0]], 4), \
+        self.normalOutputWritten\
+            ('ID: {}\n{}: {}\n{}: {}\n{}: {}\n'.format(self.meta_data, self.EvaluatingPara_list[0], round(self.CurrentRankCellpProperties.loc[self.EvaluatingPara_list[0]], 4), \
                                                                  self.EvaluatingPara_list[1], round(self.CurrentRankCellpProperties.loc[self.EvaluatingPara_list[1]], 4), 
                                                                  'IDNumber', self.CurrentRankCellpProperties.name))
         
@@ -752,8 +787,9 @@ class MainGUI(QWidget):
         self.Matdisplay_Figure.clear()
         ax1 = self.Matdisplay_Figure.add_subplot(111)
         ax1.scatter(self.DataFrame_sorted.loc[:,self.EvaluatingPara_list[0]], self.DataFrame_sorted.loc[:,self.EvaluatingPara_list[1]], s=np.pi*3, c='blue', alpha=0.5)
-        ax1.scatter(self.DataFrame_sorted.iloc[self.pop_next_top_cell_counter-1, :].loc[self.EvaluatingPara_list[0]], self.DataFrame_sorted.iloc[self.pop_next_top_cell_counter-1, :].loc[self.EvaluatingPara_list[1]], 
-                    s=np.pi*6, c='red', alpha=0.5)
+        ax1.scatter(self.DataFrame_sorted.iloc[self.pop_next_top_cell_counter-1, :].loc[self.EvaluatingPara_list[0]], \
+                    self.DataFrame_sorted.iloc[self.pop_next_top_cell_counter-1, :].loc[self.EvaluatingPara_list[1]], 
+                    s=np.pi*8, c='red', alpha=0.5)
         ax1.set_xlabel(self.EvaluatingPara_list[0])
         ax1.set_ylabel(self.EvaluatingPara_list[1])
         self.Matdisplay_Figure.tight_layout()
@@ -775,8 +811,9 @@ class MainGUI(QWidget):
         ax1 = self.Matdisplay_Figure.add_subplot(111)
         
         ax1.scatter(self.DataFrame_sorted.loc[:,self.EvaluatingPara_list[0]], self.DataFrame_sorted.loc[:,self.EvaluatingPara_list[1]], s=np.pi*3, c='blue', alpha=0.5)
-        ax1.scatter(self.DataFrame_sorted.loc[self.SpecificIndexInArray, :].loc[self.EvaluatingPara_list[0]], self.DataFrame_sorted.loc[self.SpecificIndexInArray, :].loc[self.EvaluatingPara_list[1]], 
-                    s=np.pi*6, c='red', alpha=0.5)
+        ax1.scatter(self.DataFrame_sorted.loc[self.SpecificIndexInArray, :].loc[self.EvaluatingPara_list[0]], \
+                    self.DataFrame_sorted.loc[self.SpecificIndexInArray, :].loc[self.EvaluatingPara_list[1]], 
+                    s=np.pi*8, c='red', alpha=0.5)
 
         ax1.set_xlabel(self.EvaluatingPara_list[0])
         ax1.set_ylabel(self.EvaluatingPara_list[1])
@@ -789,13 +826,20 @@ class MainGUI(QWidget):
         """
         Move to the stage coordinate of current inspecting cell.
         """
-        self.coordinate_text = self.meta_data[self.meta_data.index('_R')+1:len(self.meta_data)]
         
         coordinate_row = int(self.coordinate_text[self.coordinate_text.index('R')+1:self.coordinate_text.index('C')])
         coordinate_col = int(self.coordinate_text[self.coordinate_text.index('C')+1:len(self.coordinate_text)])
         
         ludlStage = LudlStage("COM12")
         ludlStage.moveAbs(coordinate_row, coordinate_col)
+        
+    def MoveCellToCamCentre(self):
+        """
+        Move the identified cell to the centre of camera FOV.
+        """
+        # Find the corresponding centre coordinates in camera image.
+        camera_centre_coordinates = CoordinateTransformations.general_coordinates_transformation([[1853, 1769]], 'Galvo2Camera')
+        print("Corresponding camera centre coordinates: {}".format(camera_centre_coordinates[0]))
         
     def SaveCellsDataframetoExcel(self):
         """
@@ -813,11 +857,24 @@ class MainGUI(QWidget):
         exporter.parameters()['width'] = 500   # (note this also affects height parameter)
         
         # save to file
-        exporter.export(os.path.join(self.Analysis_saving_directory, 'Picked cells\\'+'Picked cell_'+str(self.picked_cell_index)+' '+self.coordinate_text+'.png'))    
+        if self.picked_cell_index == 1:
+            if not os.path.exists(os.path.join(self.Analysis_saving_directory, 'Picked cells')):
+                # If the folder is not there, create the folder
+                print("Create Picked Cells folder.")
+                os.mkdir(os.path.join(self.Analysis_saving_directory, 'Picked cells'))
+            
+        exporter.export(os.path.join(self.Analysis_saving_directory, \
+        'Picked cells\\'+'Picked cell_'+str(self.picked_cell_index)+' '+self.coordinate_text+datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'.png'))    
         
-    def ResetRankCoord(self):
+        self.Matdisplay_Figure.savefig(os.path.join(self.Analysis_saving_directory, \
+        'Picked cells\\'+'Picked cell_'+str(self.picked_cell_index)+' scatter'+self.coordinate_text+datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'.png'))
+        
+        self.picked_cell_index += 1
+        
+    def ResetRankIndex(self):
         self.pop_next_top_cell_counter = 0
-        self.picked_cell_index = 0
+    def ResetPickedIndex(self):
+        self.picked_cell_index = 1
         
     #%%
 if __name__ == "__main__":

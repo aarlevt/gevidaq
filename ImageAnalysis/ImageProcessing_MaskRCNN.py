@@ -244,9 +244,6 @@ class ProcessImageML():
         if not os.path.exists(os.path.join(folder, 'MLimages_{}'.format(round_num))):
             # If the folder is not there, create the folder
             os.mkdir(os.path.join(folder, 'MLimages_{}'.format(round_num))) 
-        if not os.path.exists(os.path.join(folder, 'Picked cells')):
-            # If the folder is not there, create the folder
-            os.mkdir(os.path.join(folder, 'Picked cells')) 
             
         for EachRound in RoundNumberList:
             

@@ -94,7 +94,7 @@ class AOTFWidgetUI(QWidget):
         
         self.switchbutton_532 = StylishQT.MySwitch('ON', 'green', 'OFF', 'lime green', width = 32)
         self.switchbutton_532.clicked.connect(lambda: self.execute_tread_single_sample_digital('532blanking'))
-        self.AOTFcontrolLayout.addWidget(self.switchbutton_532, 1, 1)
+        # self.AOTFcontrolLayout.addWidget(self.switchbutton_532, 1, 1)
         
         self.slider488 = QSlider(Qt.Horizontal)
         self.slider488.setMinimum(0)
@@ -110,7 +110,7 @@ class AOTFWidgetUI(QWidget):
         
         self.switchbutton_488 = StylishQT.MySwitch('ON', 'blue', 'OFF', 'corn flower blue', width = 32)
         self.switchbutton_488.clicked.connect(lambda: self.execute_tread_single_sample_digital('488blanking'))
-        self.AOTFcontrolLayout.addWidget(self.switchbutton_488, 2, 1)
+        # self.AOTFcontrolLayout.addWidget(self.switchbutton_488, 2, 1)
         
         self.shutter488Button = StylishQT.checkableButton(Icon_path = './Icons/shutter.png', background_color = '#C4DDDE')
         self.shutter488Button.clicked.connect(lambda:self.shutter_CW_action("488"))
