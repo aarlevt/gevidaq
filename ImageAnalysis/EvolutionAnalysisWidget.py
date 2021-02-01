@@ -525,7 +525,10 @@ class MainGUI(QWidget):
         self.Contour_soma_ratio_thres = self.Contour_soma_ratio_thres_box.value()
         
         self.ExcelfileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, 'Single File', r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope',"(*.xlsx)")
-        self.Excelfile = pd.read_excel(self.ExcelfileName)     
+        try:
+            self.Excelfile = pd.read_excel(self.ExcelfileName)   
+        except:
+            self.Excelfile = pd.read_excel(self.ExcelfileName, engine='openpyxl')
         # Return the directory name of pathname path.
         self.Tag_folder = os.path.dirname(self.ExcelfileName)
         self.Lib_folder = os.path.dirname(self.ExcelfileName)
@@ -690,7 +693,7 @@ class MainGUI(QWidget):
                 Each_bounding_box = self.CurrentRankCellpProperties.loc['BoundingBox_Lib_KC']                
             
             self.lib_imagefilename = os.path.join(self.Lib_folder, self.meta_data+'_PMT_0Zmax.tif')
-            print(self.lib_imagefilename)
+            print(self.lib_imagefilename[len(self.lib_imagefilename) - 50: len(self.lib_imagefilename)])
             self.loaded_image_display = imread(self.lib_imagefilename, as_gray=True)
             
         else:
@@ -705,7 +708,7 @@ class MainGUI(QWidget):
                 Each_bounding_box = self.CurrentRankCellpProperties.loc['BoundingBox_Lib_EC']  
             
             self.tag_imagefilename = os.path.join(self.Tag_folder, self.meta_data+'_PMT_0Zmax.tif')
-            print(self.tag_imagefilename)
+            print(self.tag_imagefilename[len(self.tag_imagefilename) - 50: len(self.tag_imagefilename)])
             self.loaded_image_display = imread(self.tag_imagefilename, as_gray=True)
         
         # Get stage coordinates information.
@@ -838,8 +841,23 @@ class MainGUI(QWidget):
         Move the identified cell to the centre of camera FOV.
         """
         # Find the corresponding centre coordinates in camera image.
-        camera_centre_coordinates = CoordinateTransformations.general_coordinates_transformation([[1853, 1769]], 'Galvo2Camera')
-        print("Corresponding camera centre coordinates: {}".format(camera_centre_coordinates[0]))
+        camera_centre_coordinates = \
+        CoordinateTransformations.general_coordinates_transformation([self.currentCellCentre_PMTimgCoordinates], 'PMT2Camera', scanning_config = [5, 500])
+        print("Corresponding coordinates in camera image: {}".format(camera_centre_coordinates[0]))
+        
+        # Calculate the relative stage move coordinates
+        # Camera pixel offset
+        camera_image_size = 2048
+        relative_cam_pixel_offset_row = camera_image_size/2 - camera_centre_coordinates[0][0]
+        relative_cam_pixel_offset_col = camera_image_size/2 - camera_centre_coordinates[0][1]
+
+        # Transform into stage coordinates
+        relative_stage_move_row = int(relative_cam_pixel_offset_row * -1.132)
+        relative_stage_move_col = int(relative_cam_pixel_offset_col * 1.132)
+        print("Stage relative moving steps: {}".format([relative_stage_move_row, relative_stage_move_col]))
+        
+        ludlStage = LudlStage("COM12")
+        ludlStage.moveAbs(relative_stage_move_row, relative_stage_move_col)        
         
     def SaveCellsDataframetoExcel(self):
         """

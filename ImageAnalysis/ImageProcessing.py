@@ -2666,9 +2666,9 @@ if __name__ == "__main__":
     # else:
     #     res,diff = ProcessImage.find_repeat_imgs(r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2020-11-24_2020-11-24_16-45-26_2rounds_GFP_olddish', similarity_thres = 400)
     elif merge_dataFrames == True:
-        data_1_xlsx = pd.ExcelFile(r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2021-01-09_2021-01-09_15-50-55_Archonperfusion_test_EC_control 6by6\2021-01-10_17-09-54_CellsProperties.xlsx")
+        data_1_xlsx = pd.ExcelFile(r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2021-01-27 Lib8 Archon KCl 8b8 ND1p5ND0p3\m1.xlsx")
         data_1 = pd.read_excel(data_1_xlsx)
-        data_2_xlsx = pd.ExcelFile(r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2021-01-09_2021-01-09_15-50-55_Archonperfusion_test_EC_control 6by6\2021-01-10_17-12-12_CellsProperties.xlsx")
+        data_2_xlsx = pd.ExcelFile(r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2021-01-27 Lib8 Archon KCl 8b8 ND1p5ND0p3\m2.xlsx")
         data_2 = pd.read_excel(data_2_xlsx)
     
         print('Start Cell_DataFrame_Merging.')
@@ -2676,4 +2676,5 @@ if __name__ == "__main__":
         print('Cell_DataFrame_Merged.')
     
         DataFrames_filtered = ProcessImage.FilterDataFrames(Cell_DataFrame_Merged, 0.2, 1)
-        DataFrame_sorted = ProcessImage.Sorting_onTwoaxes(DataFrames_filtered, 'KC_EC_Mean_intensity_in_contour_ratio', 'Mean_intensity_in_contour_Lib_EC', 0, 1)
+        DataFrames_filtered.to_excel(r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2021-01-27 Lib8 Archon KCl 8b8 ND1p5ND0p3\m3.xlsx')
+        # DataFrame_sorted = ProcessImage.Sorting_onTwoaxes(DataFrames_filtered, 'KC_EC_Mean_intensity_in_contour_ratio', 'Mean_intensity_in_contour_Lib_EC', 0, 1)
