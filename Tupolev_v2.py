@@ -80,7 +80,7 @@ class Mainbody(QWidget):
         #----------------------------------------------------------------------
         #----------------------------------GUI---------------------------------
         #----------------------------------------------------------------------
-        self.setMinimumSize(1600,1090)
+        self.setMinimumSize(1630,1080)
         self.setMaximumHeight(1080)
         self.setWindowTitle("Fiumicino")
         self.layout = QGridLayout(self)
@@ -193,31 +193,31 @@ class Mainbody(QWidget):
         #         GUI for Thorlabs motor
         # =============================================================================
         self.KCubeWidgetInstance = SampleStageControl.StageMoveWidget.StageWidgetUI()
-        self.layout.addWidget(self.KCubeWidgetInstance, 6, 0, 1, 4)
+        self.layout.addWidget(self.KCubeWidgetInstance, 9, 0, 1, 4)
         
         # =============================================================================
         #         GUI for sample stage
         # =============================================================================
         self.StageMoveWidgetInstance = ThorlabsKCube.KCubeWidget.KCubeWidgetUI()
-        self.layout.addWidget(self.StageMoveWidgetInstance, 8, 0, 1, 4)
+        self.layout.addWidget(self.StageMoveWidgetInstance, 10, 0, 1, 4)
 
         # =============================================================================
         #         GUI for AOTF
         # =============================================================================             
         self.AOTFWidgetInstance = NIDAQ.AOTFWidget.AOTFWidgetUI()
-        self.layout.addWidget(self.AOTFWidgetInstance, 7, 0, 1, 4)
+        self.layout.addWidget(self.AOTFWidgetInstance, 6, 0, 1, 2)
 
         # =============================================================================
         #         GUI for fliter silder
         # =============================================================================        
         FilterSliderWidgetInstance = ThorlabsFilterSlider.FilterSliderWidget.FilterSliderWidgetUI()
-        self.layout.addWidget(FilterSliderWidgetInstance, 10, 0, 1, 4)    
+        self.layout.addWidget(FilterSliderWidgetInstance, 8, 0, 1, 4)    
 
         # =============================================================================
         #         GUI for objective motor
         # =============================================================================        
         ObjMotorInstance = PI_ObjectiveMotor.ObjMotorWidget.ObjMotorWidgetUI()
-        self.layout.addWidget(ObjMotorInstance, 9, 0, 1, 4)         
+        self.layout.addWidget(ObjMotorInstance, 7, 0, 1, 4)         
 
         # =============================================================================
         #         GUI for camera button       
@@ -244,7 +244,7 @@ class Mainbody(QWidget):
         #         GUI for evolution screening     
         # =============================================================================
         self.open_screening_button = StylishQT.FancyPushButton(50, 50, color1=(245,245,220), color2=(255,228,196))
-        self.open_screening_button.setIcon(QIcon("./Icons/screening.png"))
+        self.open_screening_button.setIcon(QIcon("./Icons/Screening1.png"))
         self.open_screening_button.setToolTip("Open screening widget")
         self.open_screening_button.setIconSize(QSize(45, 45))
         self.open_screening_button.clicked.connect(self.open_screening)

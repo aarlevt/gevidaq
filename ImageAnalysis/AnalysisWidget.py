@@ -443,7 +443,7 @@ class AnalysisWidgetUI(QWidget):
                 self.Ip = self.Ip[0:-2]
                 self.samplingrate_curve = curvereadingobjective_I[0]
                 
-            elif 'Wavefroms_sr_' in file:
+            elif 'Wavefroms_sr_' and 'npy' in file:
                 self.Waveform_filename_npy = os.path.dirname(self.fileName) + '/'+file
                 # Read in configured waveforms
                 configwave_wavenpfileName = self.Waveform_filename_npy

@@ -268,7 +268,8 @@ class MainGUI(QWidget):
         LoadSettingLayout.addWidget(Re_plot_Button, 1, 5)
         
         self.X_axisBox = QComboBox()
-        self.X_axisBox.addItems(['Lib_Tag_contour_ratio', 'Contour_soma_ratio_Lib', 'KC_EC_LibTag_contour_ratio', 'KC_EC_Mean_intensity_in_contour_ratio'])
+        self.X_axisBox.addItems(['Lib_Tag_contour_ratio', 'Contour_soma_ratio', 'Contour_soma_ratio_Lib', \
+                                 'KC_EC_LibTag_contour_ratio', 'KC_EC_Mean_intensity_in_contour_ratio'])
         LoadSettingLayout.addWidget(self.X_axisBox, 2, 1, 1, 3)
         LoadSettingLayout.addWidget(QLabel('X axis: '), 2, 0)
         
@@ -283,7 +284,8 @@ class MainGUI(QWidget):
         
         self.Y_axisBox = QComboBox()
         self.Y_axisBox.addItems\
-            (['Mean_intensity_in_contour_Lib', 'Mean_intensity_in_contour_Lib_EC', 'Lib_Tag_contour_ratio_EC', 'Contour_soma_ratio_Lib', 'Contour_soma_ratio_Lib_EC'])
+            (['Mean_intensity_in_contour_Lib', 'Mean_intensity_in_contour', 'Mean_intensity_in_contour_Lib_EC', \
+              'Lib_Tag_contour_ratio_EC', 'Contour_soma_ratio_Lib', 'Contour_soma_ratio_Lib_EC'])
         LoadSettingLayout.addWidget(self.Y_axisBox, 3, 1, 1, 3)
         LoadSettingLayout.addWidget(QLabel('Y axis: '), 3, 0)
         
@@ -683,7 +685,11 @@ class MainGUI(QWidget):
         #-------------- readin image---------------
         if self.ShowLibImgButton.isChecked():
             # Display the library image
-            if 'ImgNameInfor_Lib' in self.CurrentRankCellpProperties.index:
+            if 'ImgNameInfor' in self.CurrentRankCellpProperties.index:
+                # In brightness lib/tag dataframe
+                self.meta_data = self.CurrentRankCellpProperties.loc['ImgNameInfor']
+                Each_bounding_box = self.CurrentRankCellpProperties.loc['BoundingBox']            
+            elif 'ImgNameInfor_Lib' in self.CurrentRankCellpProperties.index:
                 # In brightness lib/tag dataframe
                 self.meta_data = self.CurrentRankCellpProperties.loc['ImgNameInfor_Lib']
                 Each_bounding_box = self.CurrentRankCellpProperties.loc['BoundingBox_Lib']
@@ -698,7 +704,11 @@ class MainGUI(QWidget):
             
         else:
             # Display the tag protein image
-            if 'ImgNameInfor_Tag' in self.CurrentRankCellpProperties.index:
+            if 'ImgNameInfor' in self.CurrentRankCellpProperties.index:
+                # In brightness lib/tag dataframe
+                self.meta_data = self.CurrentRankCellpProperties.loc['ImgNameInfor']
+                Each_bounding_box = self.CurrentRankCellpProperties.loc['BoundingBox']
+            elif 'ImgNameInfor_Tag' in self.CurrentRankCellpProperties.index:
                 # In brightness lib/tag dataframe
                 self.meta_data = self.CurrentRankCellpProperties.loc['ImgNameInfor_Tag']
                 Each_bounding_box = self.CurrentRankCellpProperties.loc['BoundingBox_Tag']
@@ -857,7 +867,7 @@ class MainGUI(QWidget):
         print("Stage relative moving steps: {}".format([relative_stage_move_row, relative_stage_move_col]))
         
         ludlStage = LudlStage("COM12")
-        ludlStage.moveAbs(relative_stage_move_row, relative_stage_move_col)        
+        ludlStage.moveRel(relative_stage_move_row, relative_stage_move_col)        
         
     def SaveCellsDataframetoExcel(self):
         """
@@ -882,10 +892,10 @@ class MainGUI(QWidget):
                 os.mkdir(os.path.join(self.Analysis_saving_directory, 'Picked cells'))
             
         exporter.export(os.path.join(self.Analysis_saving_directory, \
-        'Picked cells\\'+'Picked cell_'+str(self.picked_cell_index)+' '+self.coordinate_text+datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'.png'))    
+        'Picked cells\\'+'Picked cell_'+str(self.picked_cell_index)+' '+self.coordinate_text+' '+datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'.png'))    
         
         self.Matdisplay_Figure.savefig(os.path.join(self.Analysis_saving_directory, \
-        'Picked cells\\'+'Picked cell_'+str(self.picked_cell_index)+' scatter'+self.coordinate_text+datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'.png'))
+        'Picked cells\\'+'Picked cell_'+str(self.picked_cell_index)+' scatter'+self.coordinate_text+' '+datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'.png'))
         
         self.picked_cell_index += 1
         

@@ -7,32 +7,13 @@ Created on Thu May  7 15:50:10 2020
 
 import numpy as np
 import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
-import math
-from skimage import data, exposure
-from skimage.filters import threshold_otsu, threshold_local
-from skimage.filters.rank import entropy
-from skimage.segmentation import clear_border
-from skimage.measure import label, perimeter, find_contours
 from skimage.morphology import closing, square, opening, reconstruction, skeletonize, \
                                 convex_hull_image, dilation, thin, binary_erosion, disk
-from skimage.measure import regionprops, moments, moments_central, moments_hu
-from skimage.color import label2rgb, gray2rgb
-from skimage.restoration import denoise_tv_chambolle
+from datetime import datetime
 from skimage.io import imread
-from PIL import Image
-from scipy.signal import convolve2d, medfilt
-import scipy.interpolate as interpolate
-from scipy.ndimage.filters import gaussian_filter1d
-import numpy.lib.recfunctions as rfn
-import pandas as pd
-import copy
 import os
 import plotly.express as px
-import sys
-import concurrent.futures
-import time
-from datetime import datetime, date
+
 # Ensure that the Widget can be run either independently or as part of Tupolev.
 if __name__ == "__main__":
     abspath = os.path.abspath(__file__)
@@ -324,7 +305,64 @@ class ProcessImageML():
                 
         return cell_Data
                 
+    def analyze_single_image(self, Rawimage, axis = None, show_result = True):
     
+        MLresults = self.DetectionOnImage(Rawimage, axis = axis, show_result = show_result)
+
+        cell_Data, cell_counted_inRound, total_cells_counted_in_coord = \
+            ProcessImage.retrieveDataFromML(Rawimage, MLresults)
+            
+        return cell_Data
+    
+    def analyze_images_in_folder(self, folder, show_result = True, save_mask = True, save_excel = True):
+        
+        flat_cell_counted_in_folder = 0  
+        total_cells_counted_in_folder = 0
+        
+        # Get a list of file names
+        fileNameList = []
+        for file in os.listdir(folder):
+            if "tif" in file and "LED" not in file:
+                fileNameList.append(file)
+        print(fileNameList)
+        
+        for image_file_name in fileNameList:
+            print(image_file_name)
+            Rawimage = imread(os.path.join(folder, image_file_name))
+
+            # Analyze each image
+            # Run the detection on input image.
+            MLresults = self.DetectionOnImage(Rawimage, axis = None, show_result = show_result)
+
+            if save_mask == True:
+                fig, ax = plt.subplots()
+                # Set class_names = [None,None,None,None] to mute class name display.
+                visualize.display_instances(Rawimage, MLresults['rois'], MLresults['masks'], MLresults['class_ids'],
+                                                class_names = [None,None,None,None], ax=ax,
+                                                centre_coors = MLresults['Centre_coor'], Centre_coor_radius = 2, 
+                                                WhiteSpace = (0, 0))#MLresults['class_ids'],MLresults['scores'], 
+                # ax.imshow(fig)
+                fig.tight_layout()
+                # Save the detection Rawimage
+                fig_name = os.path.join(folder, 'ML_mask_{}.png'.format(image_file_name[0:len(image_file_name)-4]))
+                plt.savefig(fname = fig_name, dpi=200, pad_inches=0.0, bbox_inches='tight')
+                        
+            if flat_cell_counted_in_folder == 0:
+                cell_Data, flat_cell_counted_in_folder, total_cells_counted_in_coord = \
+                    ProcessImage.retrieveDataFromML(Rawimage, MLresults, image_file_name, flat_cell_counted_in_folder)
+            else:                       
+                Cell_Data_new, flat_cell_counted_in_folder, total_cells_counted_in_coord = \
+                    ProcessImage.retrieveDataFromML(Rawimage, MLresults, image_file_name, flat_cell_counted_in_folder)
+                if len(Cell_Data_new) > 0:
+                    cell_Data = cell_Data.append(Cell_Data_new)
+            total_cells_counted_in_folder += total_cells_counted_in_coord
+            
+        if save_excel == True:
+            # Save to excel
+            cell_Data.to_excel(os.path.join(folder, 'CellsProperties_{}flat_outof_{}cells.xlsx'.format(flat_cell_counted_in_folder, total_cells_counted_in_folder)))
+            
+        return cell_Data
+      
     #%%
     def showPlotlyScatter(self, DataFrame, x_axis, y_axis, saving_directory):
         """
@@ -369,11 +407,16 @@ if __name__ == "__main__":
     # 5.6s for each detection
     img = skimage.io.imread\
     (r"C:\MaskRCNN\MaskRCNNGit\MaskRCNN\MaskRCNN\Data\Xin_training\detection trial\Round1_Grid8_Coords11_R20150C24800_PMT_0Zmax.tif")
-    for _ in range(1):    
-        starttime = time.time()
-        ProcessML.DetectionOnImage(img, show_result = True)
-        endtime = time.time()
-        print(starttime-endtime)
+    # for _ in range(1):    
+    #     starttime = time.time()
+    #     ProcessML.DetectionOnImage(img, show_result = True)
+    #     endtime = time.time()
+    #     print(starttime-endtime)
+        
+    cell_data = ProcessML.analyze_single_image(img)
+    
+    # cell_data = ProcessML.analyze_images_in_folder(folder=r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Huma\2021-1-22 CO2 test-Xin Microscope\10% PCAG\gfp analysis')
+    
     
       
     

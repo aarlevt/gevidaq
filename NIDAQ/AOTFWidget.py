@@ -69,14 +69,14 @@ class AOTFWidgetUI(QWidget):
         self.slider640.setTickInterval(100)
         self.slider640.setSingleStep(1)
         self.line640 = QLineEdit(self)
-        self.line640.setFixedWidth(40)
+        self.line640.setFixedWidth(38)
         self.slider640.sliderReleased.connect(lambda:self.updatelinevalue(640))
         self.slider640.sliderReleased.connect(lambda:self.execute_tread_single_sample_analog('640AO'))
         self.line640.returnPressed.connect(lambda:self.updateslider(640))
         
-        self.switchbutton_640 = StylishQT.MySwitch('ON', 'red', 'OFF', 'maroon', width = 32)
-        self.switchbutton_640.clicked.connect(lambda: self.execute_tread_single_sample_digital('640blanking'))
-        self.AOTFcontrolLayout.addWidget(self.switchbutton_640, 0, 1)
+        self.switchbutton_blankingAll = StylishQT.MySwitch('Blanking ON', 'spring green', 'Blanking OFF', 'indian red', width = 64)
+        self.switchbutton_blankingAll.clicked.connect(lambda: self.execute_tread_single_sample_digital('640blanking'))
+        self.AOTFcontrolLayout.addWidget(self.switchbutton_blankingAll, 0, 2)
                 
         self.shutter532Button = StylishQT.checkableButton(Icon_path = './Icons/shutter.png', background_color = '#CDDEC4')
                                                   
@@ -87,7 +87,7 @@ class AOTFWidgetUI(QWidget):
         self.slider532.setTickInterval(100)
         self.slider532.setSingleStep(1)
         self.line532 = QLineEdit(self)
-        self.line532.setFixedWidth(40)
+        self.line532.setFixedWidth(38)
         self.slider532.sliderReleased.connect(lambda:self.updatelinevalue(532))
         self.slider532.sliderReleased.connect(lambda:self.execute_tread_single_sample_analog('532AO'))
         self.line532.returnPressed.connect(lambda:self.updatesider(532))
@@ -103,7 +103,7 @@ class AOTFWidgetUI(QWidget):
         self.slider488.setTickInterval(100)
         self.slider488.setSingleStep(1)
         self.line488 = QLineEdit(self)
-        self.line488.setFixedWidth(40)
+        self.line488.setFixedWidth(38)
         self.slider488.sliderReleased.connect(lambda:self.updatelinevalue(488))
         self.slider488.sliderReleased.connect(lambda:self.execute_tread_single_sample_analog('488AO'))
         self.line488.returnPressed.connect(lambda:self.updatesider(488))
@@ -115,17 +115,17 @@ class AOTFWidgetUI(QWidget):
         self.shutter488Button = StylishQT.checkableButton(Icon_path = './Icons/shutter.png', background_color = '#C4DDDE')
         self.shutter488Button.clicked.connect(lambda:self.shutter_CW_action("488"))
 
-        self.AOTFcontrolLayout.addWidget(self.shutter640Button, 0, 0)        
-        self.AOTFcontrolLayout.addWidget(self.slider640, 0, 2)
-        self.AOTFcontrolLayout.addWidget(self.line640, 0, 3)
+        self.AOTFcontrolLayout.addWidget(self.shutter640Button, 1, 4)        
+        self.AOTFcontrolLayout.addWidget(self.slider640, 1, 2)
+        self.AOTFcontrolLayout.addWidget(self.line640, 1, 3)
         
-        self.AOTFcontrolLayout.addWidget(self.shutter532Button, 1, 0)
-        self.AOTFcontrolLayout.addWidget(self.slider532, 1, 2)
-        self.AOTFcontrolLayout.addWidget(self.line532, 1, 3)
+        self.AOTFcontrolLayout.addWidget(self.shutter532Button, 2, 4)
+        self.AOTFcontrolLayout.addWidget(self.slider532, 2, 2)
+        self.AOTFcontrolLayout.addWidget(self.line532, 2, 3)
         
-        self.AOTFcontrolLayout.addWidget(self.shutter488Button, 2, 0)
-        self.AOTFcontrolLayout.addWidget(self.slider488, 2, 2)
-        self.AOTFcontrolLayout.addWidget(self.line488, 2, 3)
+        self.AOTFcontrolLayout.addWidget(self.shutter488Button, 3, 4)
+        self.AOTFcontrolLayout.addWidget(self.slider488, 3, 2)
+        self.AOTFcontrolLayout.addWidget(self.line488, 3, 3)
         
         self.AOTFstackedLayout.addWidget(self.AOTFcontrolWidget)
         self.AOTFstackedLayout.addWidget(self.AOTFdisabledWidget)
@@ -180,75 +180,44 @@ class AOTFWidgetUI(QWidget):
             self.lasers_status['640'][1] = self.slider640.value()
 
             daq.sendSingleAnalog(channel, self.slider640.value()/100)
-            # execute_tread_singlesample_AOTF_analog = execute_tread_singlesample_analog()
-            # execute_tread_singlesample_AOTF_analog.set_waves(channel, self.slider640.value()/100)
-            # execute_tread_singlesample_AOTF_analog.start()
+
         elif channel == '532AO':
             self.lasers_status['532'][1] = self.slider532.value()
             daq.sendSingleAnalog(channel, self.slider532.value()/100)
-            # execute_tread_singlesample_AOTF_analog = execute_tread_singlesample_analog()
-            # execute_tread_singlesample_AOTF_analog.set_waves(channel, self.slider532.value()/100)
-            # execute_tread_singlesample_AOTF_analog.start()
+
         elif channel == '488AO':
             self.lasers_status['488'][1] = self.slider488.value()
-            daq.sendSingleAnalog(channel, self.slider488.value()/100)
-            # execute_tread_singlesample_AOTF_analog = execute_tread_singlesample_analog()
-            # execute_tread_singlesample_AOTF_analog.set_waves(channel, self.slider488.value()/100)
-            # execute_tread_singlesample_AOTF_analog.start()            
+            daq.sendSingleAnalog(channel, self.slider488.value()/100)        
             
         self.sig_lasers_status_changed.emit(self.lasers_status)
             
     def execute_tread_single_sample_digital(self, channel):
         daq= DAQmission()  
         if channel == '640blanking':
-            if self.switchbutton_640.isChecked():
+            if self.switchbutton_blankingAll.isChecked():
                 self.lasers_status['640'][0] = True
                 daq.sendSingleDigital(channel, True)
-                # execute_tread_singlesample_AOTF_digital = execute_tread_singlesample_digital()
-                # execute_tread_singlesample_AOTF_digital.set_waves(channel, 1)
-                # execute_tread_singlesample_AOTF_digital.start()
+
             else:
                 self.lasers_status['640'][0] = False
                 daq.sendSingleDigital(channel, False)
-                # execute_tread_singlesample_AOTF_digital = execute_tread_singlesample_digital()
-                # execute_tread_singlesample_AOTF_digital.set_waves(channel, 0)
-                # execute_tread_singlesample_AOTF_digital.start()
+
         elif channel == '532blanking':
             if self.switchbutton_532.isChecked():
                 self.lasers_status['532'][0] = True
                 daq.sendSingleDigital(channel, True)
-                # execute_tread_singlesample_AOTF_digital = execute_tread_singlesample_digital()
-                # execute_tread_singlesample_AOTF_digital.set_waves(channel, 1)
-                # execute_tread_singlesample_AOTF_digital.start()
+
             else:
                 self.lasers_status['532'][0] = False
                 daq.sendSingleDigital(channel, False)
-                # execute_tread_singlesample_AOTF_digital = execute_tread_singlesample_digital()
-                # execute_tread_singlesample_AOTF_digital.set_waves(channel, 0)
-                # execute_tread_singlesample_AOTF_digital.start()        
+       
         elif channel == '488blanking':
             if self.switchbutton_488.isChecked():
                 self.lasers_status['488'][0] = True
                 daq.sendSingleDigital(channel, True)
-                # execute_tread_singlesample_AOTF_digital = execute_tread_singlesample_digital()
-                # execute_tread_singlesample_AOTF_digital.set_waves(channel, 1)
-                # execute_tread_singlesample_AOTF_digital.start()
             else:
                 self.lasers_status['488'][0] = False
                 daq.sendSingleDigital(channel, False)
-                # execute_tread_singlesample_AOTF_digital = execute_tread_singlesample_digital()
-                # execute_tread_singlesample_AOTF_digital.set_waves(channel, 0)
-                # execute_tread_singlesample_AOTF_digital.start()  
-                
-        elif channel == 'LED':
-            if self.switchbutton_LED.isChecked():
-                execute_tread_singlesample_AOTF_digital = execute_tread_singlesample_digital()
-                execute_tread_singlesample_AOTF_digital.set_waves(channel, 1)
-                execute_tread_singlesample_AOTF_digital.start()
-            else:
-                execute_tread_singlesample_AOTF_digital = execute_tread_singlesample_digital()
-                execute_tread_singlesample_AOTF_digital.set_waves(channel, 0)
-                execute_tread_singlesample_AOTF_digital.start() 
                 
         self.sig_lasers_status_changed.emit(self.lasers_status)
         
@@ -280,14 +249,8 @@ class AOTFWidgetUI(QWidget):
             print(wavelength+':'+str(value))
             print(str(switch))
             daq.sendSingleAnalog('640AO', value)
-            # execute_tread_singlesample_AOTF_analog = execute_tread_singlesample_analog()
-            # execute_tread_singlesample_AOTF_analog.set_waves('640AO', value)
-            # execute_tread_singlesample_AOTF_analog.start()
             
             daq.sendSingleDigital('640blanking', switch)
-            # execute_tread_singlesample_AOTF_digital = execute_tread_singlesample_digital()
-            # execute_tread_singlesample_AOTF_digital.set_waves('640blanking', switch)
-            # execute_tread_singlesample_AOTF_digital.start()
             
         elif wavelength == '532':
             print(wavelength+':'+str(value))
@@ -295,13 +258,6 @@ class AOTFWidgetUI(QWidget):
             daq.sendSingleAnalog('532AO', value)
 
             daq.sendSingleDigital('640blanking', switch)            
-            # execute_tread_singlesample_AOTF_analog = execute_tread_singlesample_analog()
-            # execute_tread_singlesample_AOTF_analog.set_waves('532AO', value)
-            # execute_tread_singlesample_AOTF_analog.start()
-            
-            # execute_tread_singlesample_AOTF_digital = execute_tread_singlesample_digital()
-            # execute_tread_singlesample_AOTF_digital.set_waves('640blanking', switch)
-            # execute_tread_singlesample_AOTF_digital.start()
             
         else:
             print(wavelength+':'+str(value))
@@ -309,46 +265,6 @@ class AOTFWidgetUI(QWidget):
             daq.sendSingleAnalog('488AO', value)
 
             daq.sendSingleDigital('640blanking', switch)   
-# =============================================================================
-#             # execute_tread_singlesample_AOTF_analog = execute_tread_singlesample_analog()
-#             # execute_tread_singlesample_AOTF_analog.set_waves('532AO', value) #!!!!!!!!!!!532
-#             # execute_tread_singlesample_AOTF_analog.start()
-#             
-#             # execute_tread_singlesample_AOTF_digital = execute_tread_singlesample_digital()
-#             # execute_tread_singlesample_AOTF_digital.set_waves('640blanking', switch)
-#             # execute_tread_singlesample_AOTF_digital.start()
-# =============================================================================
-#            print(wavelength + ': ' + str(value))
-#            self.slider640.setValue(value)
-#            
-#            if not value:
-#                self.switchbutton_640.setChecked(False)
-#            else:
-#                self.switchbutton_640.setChecked(True)
-#            
-#            self.execute_tread_single_sample_analog('640AO')
-#            self.execute_tread_single_sample_digital('640blanking')
-#
-#        elif wavelength == '532':
-#            print(wavelength + ': ' + str(value))
-#            self.slider532.setValue(value)
-#            if not value:
-#                self.switchbutton_640.setChecked(False)
-#            else:
-#                self.switchbutton_640.setChecked(True)
-#                
-#            self.execute_tread_single_sample_analog('532A0')
-#            self.execute_tread_single_sample_digital('640blanking')
-#        else:
-#            print(wavelength + ': ' + str(value))
-#            self.slider488.setValue(value)
-#            if not value:
-#                self.switchbutton_640.setChecked(False)
-#            else: 
-#                self.switchbutton_640.setChecked(True)
-#            
-#            self.execute_tread_single_sample_analog('488A0')
-#            self.execute_tread_single_sample_digital('640blanking')
         
             
 if __name__ == "__main__":

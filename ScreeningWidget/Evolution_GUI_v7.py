@@ -14,12 +14,9 @@ from PyQt5.QtWidgets import (QWidget, QButtonGroup, QLabel, QSlider, QSpinBox, Q
                              QLineEdit, QVBoxLayout, QHBoxLayout, QComboBox, QMessageBox, QTabWidget, QCheckBox, QRadioButton, 
                              QFileDialog, QProgressBar, QTextEdit, QStyleFactory, QStackedWidget)
 
-import pyqtgraph as pg
 from IPython import get_ipython
 import sys
 import numpy as np
-from skimage.io import imread
-from skimage.transform import rotate
 import threading
 import os
 if __name__ == "__main__":
@@ -28,22 +25,11 @@ if __name__ == "__main__":
     os.chdir(dname+'/../')
 import copy
 import time
-from datetime import datetime, date
-import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
-import plotly.express as px
-from NIDAQ.constants import HardwareConstants
 import NIDAQ.WaveformWidget
 from ScreeningWidget.EvolutionScanningThread import ScanningExecutionThread # This is the thread file for execution.
-from SampleStageControl.stage import LudlStage
-from NIDAQ.DAQoperator import DAQmission
-
-import GalvoWidget.PMTWidget
 import NIDAQ.AOTFWidget
-import ThorlabsFilterSlider.FilterSliderWidget
-import InsightX3.TwoPhotonLaserUI
 import StylishQT
-
+import datetime
 
 class Mainbody(QWidget):
     
@@ -233,7 +219,7 @@ class Mainbody(QWidget):
         self.PipelineContainerLayout.addWidget(self.ScanRepeatTextbox, 0, 1)
         self.PipelineContainerLayout.addWidget(QLabel("Meshgrid:"), 0, 0)  
         
-        self.OpenTwoPLaserShutterCheckbox = QCheckBox("Open shutter first")
+        self.OpenTwoPLaserShutterCheckbox = QCheckBox("Open 2P shutter first")
         self.OpenTwoPLaserShutterCheckbox.setStyleSheet('color:navy;font:bold "Times New Roman"')
         self.OpenTwoPLaserShutterCheckbox.setChecked(True)
         self.PipelineContainerLayout.addWidget(self.OpenTwoPLaserShutterCheckbox, 0, 2)  
@@ -248,8 +234,8 @@ class Mainbody(QWidget):
         self.ScanStepsNumTextbox = QSpinBox(self)
         self.ScanStepsNumTextbox.setMinimum(1)
         self.ScanStepsNumTextbox.setMaximum(100000)
-        self.ScanStepsNumTextbox.setValue(9)
-        self.ScanStepsNumTextbox.setSingleStep(1)
+        self.ScanStepsNumTextbox.setValue(6)
+        self.ScanStepsNumTextbox.setSingleStep(2)
         ScanSettingLayout.addWidget(self.ScanStepsNumTextbox, 0, 1)
         ScanSettingLayout.addWidget(QLabel("Stage scanning step number:"), 0, 0)  
 
@@ -335,14 +321,112 @@ class Mainbody(QWidget):
         ButtonDelEvent.clicked.connect(self.DelInsightEvent)
         
         TwoPLaserContainer.setLayout(TwoPLaserSettingLayout)
-                
+        
+        #**************************************************************************************************************************************
+        #-----------------------------------------------------------GUI for StageScanContainer-------------------------------------------------
+        #**************************************************************************************************************************************    
+        CamAFsettingsContainer = QWidget()     
+        CamAFsettingsContainerLayout = QGridLayout() #Layout manager
+        CamAFsettingsContainer.layout = CamAFsettingsContainerLayout     
+
+        self.AFmethodCombox = QComboBox()
+        self.AFmethodCombox.addItems([ 'PMT', 'Camera'])
+        CamAFsettingsContainerLayout.addWidget(self.AFmethodCombox, 0, 0)
+        # self.AFmethodCombox.currentIndexChanged().connect(lambda:DelInsightEvent)
+        self.AFmethodCombox.currentIndexChanged.connect(lambda:self.AFsettings_container_stack.setCurrentIndex(self.AFmethodCombox.currentIndex()))
+        
+        self.AFsettings_container_stack = QStackedWidget()
+        
+        #--------------------------------PMT auto focus---------------------------------
+        self.PMT_autofocus_setting_group = StylishQT.roundQGroupBox("PMT auto focus settings")
+        PMT_autofocus_setting_group_layout = QGridLayout()
+        
+        self.PMT_AF_init_step_sizeBox = QDoubleSpinBox(self)
+        self.PMT_AF_init_step_sizeBox.setDecimals(3)
+        self.PMT_AF_init_step_sizeBox.setMinimum(0)
+        self.PMT_AF_init_step_sizeBox.setMaximum(10)
+        self.PMT_AF_init_step_sizeBox.setValue(0.010)
+        self.PMT_AF_init_step_sizeBox.setSingleStep(0.001)  
+        PMT_autofocus_setting_group_layout.addWidget(self.PMT_AF_init_step_sizeBox, 0, 1)  
+        PMT_autofocus_setting_group_layout.addWidget(QLabel("Init. searching step:"), 0, 0)        
+
+        self.PMT_AF_step_numBox = QSpinBox(self)
+        self.PMT_AF_step_numBox.setMinimum(1)
+        self.PMT_AF_step_numBox.setMaximum(1000)
+        self.PMT_AF_step_numBox.setValue(5)
+        self.PMT_AF_step_numBox.setSingleStep(1)
+        PMT_autofocus_setting_group_layout.addWidget(self.PMT_AF_step_numBox, 0, 3)
+        PMT_autofocus_setting_group_layout.addWidget(QLabel("Step number:"), 0, 2)
+        
+        self.PMT_AF_scan_voltBox = QSpinBox(self)
+        self.PMT_AF_scan_voltBox.setMinimum(1)
+        self.PMT_AF_scan_voltBox.setMaximum(8)
+        self.PMT_AF_scan_voltBox.setValue(5)
+        self.PMT_AF_scan_voltBox.setSingleStep(1)
+        PMT_autofocus_setting_group_layout.addWidget(self.PMT_AF_scan_voltBox, 1, 1)
+        PMT_autofocus_setting_group_layout.addWidget(QLabel("Scanning voltage:"), 1, 0)
+        
+        self.PMT_autofocus_setting_group.setLayout(PMT_autofocus_setting_group_layout)
+        
+        self.AFsettings_container_stack.addWidget(self.PMT_autofocus_setting_group)
+        
+        #------------------------------Camera auto focus--------------------------------
+        self.Cam_autofocus_setting_group = StylishQT.roundQGroupBox("Camera auto focus settings")
+        Cam_autofocus_setting_group_layout = QGridLayout()
+
+        self.Cam_AF_init_step_sizeBox = QDoubleSpinBox(self)
+        self.Cam_AF_init_step_sizeBox.setDecimals(3)
+        self.Cam_AF_init_step_sizeBox.setMinimum(0)
+        self.Cam_AF_init_step_sizeBox.setMaximum(10)
+        self.Cam_AF_init_step_sizeBox.setValue(0.010)
+        self.Cam_AF_init_step_sizeBox.setSingleStep(0.001)  
+        Cam_autofocus_setting_group_layout.addWidget(self.Cam_AF_init_step_sizeBox, 0, 1)  
+        Cam_autofocus_setting_group_layout.addWidget(QLabel("Init. searching step:"), 0, 0)        
+
+        self.Cam_AF_step_numBox = QSpinBox(self)
+        self.Cam_AF_step_numBox.setMinimum(1)
+        self.Cam_AF_step_numBox.setMaximum(1000)
+        self.Cam_AF_step_numBox.setValue(5)
+        self.Cam_AF_step_numBox.setSingleStep(1)
+        Cam_autofocus_setting_group_layout.addWidget(self.Cam_AF_step_numBox, 0, 3)
+        Cam_autofocus_setting_group_layout.addWidget(QLabel("Step number:"), 0, 2)
+        
+        self.Cam_AF_ExposureBox = QDoubleSpinBox(self)
+        self.Cam_AF_ExposureBox.setDecimals(5)
+        self.Cam_AF_ExposureBox.setMinimum(0)
+        self.Cam_AF_ExposureBox.setMaximum(100)
+        self.Cam_AF_ExposureBox.setValue(0.003)
+        self.Cam_AF_ExposureBox.setSingleStep(0.001)  
+        Cam_autofocus_setting_group_layout.addWidget(self.Cam_AF_ExposureBox, 1, 1)  
+        Cam_autofocus_setting_group_layout.addWidget(QLabel("Exposure time(s):"), 1, 0)
+        
+        self.Cam_AF_AOTF_valueBox = QDoubleSpinBox(self)
+        self.Cam_AF_AOTF_valueBox.setDecimals(3)
+        self.Cam_AF_AOTF_valueBox.setMinimum(0)
+        self.Cam_AF_AOTF_valueBox.setMaximum(5)
+        self.Cam_AF_AOTF_valueBox.setValue(3)
+        self.Cam_AF_AOTF_valueBox.setSingleStep(0.5)  
+        Cam_autofocus_setting_group_layout.addWidget(self.Cam_AF_AOTF_valueBox, 1, 3)
+        
+        self.Cam_AF_AOTF_settingBox = QComboBox()
+        self.Cam_AF_AOTF_settingBox.addItems([ 'AOTF power for 488:', 'AOTF power for 532:', 'AOTF power for 640:'])
+        Cam_autofocus_setting_group_layout.addWidget(self.Cam_AF_AOTF_settingBox, 1, 2)
+        
+        self.Cam_autofocus_setting_group.setLayout(Cam_autofocus_setting_group_layout)
+        
+        self.AFsettings_container_stack.addWidget(self.Cam_autofocus_setting_group)
+        
+        
+        CamAFsettingsContainerLayout.addWidget(self.AFsettings_container_stack, 0, 1)
+        
+        CamAFsettingsContainer.setLayout(CamAFsettingsContainerLayout)           
         #--------------------------------------------------------------------------------------------------------------------------------------
         self.RoundGeneralSettingTabs = QTabWidget()
         self.RoundGeneralSettingTabs.addTab(ScanContainer,"Scanning settings")
         self.RoundGeneralSettingTabs.addTab(TwoPLaserContainer,"Pulse laser/Filter settings")
+        self.RoundGeneralSettingTabs.addTab(CamAFsettingsContainer,"Auto-focus settings")
 
         self.PipelineContainerLayout.addWidget(self.RoundGeneralSettingTabs, 3, 0, 1, 10)
-        
         
         self.WaveformOrderBox = QSpinBox(self)
         self.WaveformOrderBox.setMinimum(1)
@@ -383,6 +467,7 @@ class Mainbody(QWidget):
         waveformTabLayout = QGridLayout()
         
         self.Waveformer_widget_instance = NIDAQ.WaveformWidget.WaveformGenerator()
+        self.Waveformer_widget_instance.checkbox_saveWaveforms.setEnabled(False)
         self.Waveformer_widget_instance.WaveformPackage.connect(self.UpdateWaveformerSignal)
         self.Waveformer_widget_instance.GalvoScanInfor.connect(self.UpdateWaveformerGalvoInfor)
 
@@ -423,7 +508,7 @@ class Mainbody(QWidget):
         self.CamExposureBox.setValue(0.001501)
         self.CamExposureBox.setSingleStep(0.001)  
         CameraDwellTabLayout.addWidget(self.CamExposureBox, 2, 6)  
-        CameraDwellTabLayout.addWidget(QLabel("Exposure time:"), 2, 5)
+        CameraDwellTabLayout.addWidget(QLabel("Exposure time(s):"), 2, 5)
         
         #---------------------------Camera ROI settings------------------------
         CameraROIPosContainer = QGroupBox("ROI position")
@@ -716,6 +801,14 @@ class Mainbody(QWidget):
    
     #-----------------------------Generate Scan Coords-----------------------------
     def GenerateScanCoords(self):
+        """
+        Generate Scan coordinates structured array with auto-focus fields.
+
+        Returns
+        -------
+        None.
+
+        """
         CurrentRoundSequence = self.RoundOrderBox.value()
         # settings for scanning index
         step = self.ScanstepTextbox.value()
@@ -770,7 +863,7 @@ class Mainbody(QWidget):
                             Coords_array = np.append(Coords_array, current_coord_array)
     
                 else:
-                    # If no auto-focus
+                    # If no auto-focus, put 'no' in auto_focus_flag field.
                     for row_pos in range(row_start, row_end + step, step):
                         for col_pos in range(column_start, column_end + step, step):
                                 
@@ -779,13 +872,14 @@ class Mainbody(QWidget):
                             Coords_array = np.append(Coords_array, current_coord_array)
                             
         else:
-            # In case of pure auto-focus round
+            # In case of pure auto-focus round, generate coordinates at only
+            # calibration positions, and put flag 'pure AF'.
             for row_pos in range(row_start, row_end, AutoFocusCoordGap):
                 for col_pos in range(column_start, column_end, AutoFocusCoordGap):                    
-                    current_coord_array = np.array([(row_pos, col_pos, 'yes_auto_focus_round', -1)], dtype=Coords_array_dtype)
+                    current_coord_array = np.array([(row_pos, col_pos, 'pure AF', -1)], dtype=Coords_array_dtype)
                 
                     Coords_array = np.append(Coords_array, current_coord_array)
-        # print(Coords_array)
+        print(Coords_array)
         self.RoundCoordsDict['CoordsPackage_{}'.format(CurrentRoundSequence)] = Coords_array
         
     def DeleteFreshRound(self):
@@ -840,7 +934,7 @@ class Mainbody(QWidget):
         
     def auto_saving_directory(self):
         self.savedirectory = r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\{}_{}'.format \
-                            (datetime.now().strftime('%Y-%m-%d_%H-%M-%S'), str(self.prefixtextbox.text()))
+                            (datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S'), str(self.prefixtextbox.text()))
         
         self.GeneralSettingDict['savedirectory'] = self.savedirectory
         
@@ -883,7 +977,7 @@ class Mainbody(QWidget):
         SavepipelineInstance = []
         SavepipelineInstance.extend([self.RoundQueueDict, self.RoundCoordsDict, self.GeneralSettingDict])
         
-        np.save(os.path.join(self.savedirectory, self.saving_prefix + datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'_Pipeline'), SavepipelineInstance)
+        np.save(os.path.join(self.savedirectory, self.saving_prefix + datetime.datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'_Pipeline'), SavepipelineInstance)
     
     
     #----------------------------Auto analysis--------------------------------

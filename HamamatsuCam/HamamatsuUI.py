@@ -57,7 +57,7 @@ class CameraUI(QMainWindow):
         self.Live_item_autolevel = True
         self.ShowROIImgSwitch = False
         self.ROIselector_ispresented = False
-        self.Live_sleeptime = 0.04 # default 25 camera live fps
+        self.Live_sleeptime = 0.06666 # default camera live fps
         self.default_folder = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data"
         #----------------------------------------------------------------------
         #----------------------------------GUI---------------------------------

@@ -21,6 +21,8 @@ if __name__ == "__main__":
 from PI_ObjectiveMotor.focuser import PIMotor
 from ImageAnalysis.ImageProcessing import ProcessImage
 from GalvoWidget.GalvoScan_backend import RasterScan
+from HamamatsuCam.HamamatsuActuator import CamActuator
+from NIDAQ.DAQoperator import DAQmission
 import skimage.external.tifffile as skimtiff
 import time
 import matplotlib.pyplot as plt
@@ -28,7 +30,8 @@ import numpy as np
 
 class FocusFinder():
     
-    def __init__(self, source_of_image = "PMT", init_step_size = 0.010, total_step_number = 5, motor_handle = None, twophoton_handle = None, *args, **kwargs):
+    def __init__(self, source_of_image = "PMT", init_step_size = 0.010, total_step_number = 5, imaging_conditions = {'edge_volt':5}, \
+                 motor_handle = None, camera_handle = None, twophoton_handle = None, *args, **kwargs):
         """
         
 
@@ -38,8 +41,12 @@ class FocusFinder():
             The input source of image. The default is PMT.
         init_step_size : int, optional
             The step size when first doing coarse searching. The default is 0.010.
-        step_number : int, optional
+        total_step_number : int, optional
             Number of steps in total to find optimal focus. The default is 5.
+        imaging_conditions : list
+            Parameters for imaging.
+            For PMT, it specifies the scanning voltage.
+            For camera, it specifies the AOTF voltage and exposure time.
         motor_handle : TYPE, optional
             Handle to control PI motor. The default is None.
         twophoton_handle : TYPE, optional
@@ -57,6 +64,9 @@ class FocusFinder():
         
         # Number of steps in total to find optimal focus.
         self.total_step_number = total_step_number
+        
+        # Parameters for imaging.
+        self.imaging_conditions = imaging_conditions
         
         if motor_handle == None:
             # Connect the objective if the handle is not provided.
@@ -76,8 +86,14 @@ class FocusFinder():
         # The input source of image.
         self.source_of_image = source_of_image
         if source_of_image == "PMT":
-            self.galvo = RasterScan(Daq_sample_rate = 500000, edge_volt = 5)
-    
+            self.galvo = RasterScan(Daq_sample_rate = 500000, edge_volt = self.imaging_conditions['edge_volt'])
+        elif source_of_image == "Camera":
+            if camera_handle == None:
+                # If no camera instance fed in, initialize camera.
+                self.HamamatsuCam_ins = CamActuator()
+                self.HamamatsuCam_ins.initializeCamera()
+            else:
+                self.HamamatsuCam_ins = camera_handle
     
     def gaussian_fit(self):
         
@@ -221,6 +237,34 @@ class FocusFinder():
                     tif.save(self.galvo_image.astype('float32'), compress=0)
                             
             degree_of_focus = ProcessImage.local_entropy(self.galvo_image.astype('float32'))
+            
+        elif self.source_of_image == "Camera":
+            # First configure the AOTF.
+            self.AOTF_runner = DAQmission()
+            # Find the AOTF channel key
+            for key in self.imaging_conditions:
+                if 'AO' in key:
+                    AOTF_channel_key = key
+            
+            # Set the AOTF first.
+            self.AOTF_runner.sendSingleDigital('blankingall', True)
+            self.AOTF_runner.sendSingleAnalog(AOTF_channel_key, self.imaging_conditions[AOTF_channel_key])
+            # Snap an image from camera
+            self.camera_image = self.HamamatsuCam_ins.SnapImage(self.imaging_conditions['exposure_time'])      
+            # Set back AOTF
+            self.AOTF_runner.sendSingleDigital('blankingall', False)
+            self.AOTF_runner.sendSingleAnalog(AOTF_channel_key, 0)
+            
+            plt.figure()
+            plt.imshow(self.camera_image)
+            plt.show()
+            
+            if False:
+                with skimtiff.TiffWriter(os.path.join(r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Xin\2021-2-5 camera auto-focus\trial1', str(obj_position).replace(".", "_")+ '.tif')) as tif:                
+                    tif.save(self.camera_image.astype('float32'), compress=0)
+                            
+            degree_of_focus = ProcessImage.local_entropy(self.camera_image.astype('float32'))
+                
         time.sleep(0.2)
         
         return degree_of_focus

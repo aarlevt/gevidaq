@@ -229,7 +229,7 @@ class ScanningExecutionThread(QThread):
                         #     self.ludlStage.moveAbs(RowIndex,ColumnIndex) # Row/Column indexs of np.array are opposite of stage row-col indexs.
                         #     time.sleep(1)
                         self.ludlStage.moveAbs(RowIndex,ColumnIndex) # Row/Column indexs of np.array are opposite of stage row-col indexs.
-                        
+                        print("==================Stage move to {}==================".format([RowIndex,ColumnIndex]))
                         # Typically it needs 1~ second to move across 15000 stage index.
                         time.sleep(1.8) 
                     except:
@@ -666,7 +666,15 @@ class ScanningExecutionThread(QThread):
       
                     # Record the position, try to write it in the NEXT round dict.
                     try:
-                        self.RoundCoordsDict['CoordsPackage_{}'.format(EachRound + 2)][EachCoord]['focus_position'] = self.auto_focus_position
+                        AF_coord_row = self.RoundCoordsDict['CoordsPackage_{}'.format(EachRound + 1)][EachCoord]['row']
+                        AF_coord_col = self.RoundCoordsDict['CoordsPackage_{}'.format(EachRound + 1)][EachCoord]['col']
+    
+                        # Loop through next round coordinates, find one with same row and col.
+                        for coordinate in self.RoundCoordsDict['CoordsPackage_{}'.format(EachRound + 2)]:
+                            if coordinate['row'] == AF_coord_row and coordinate['col'] == AF_coord_col:
+                                coordinate['focus_position'] = self.auto_focus_position
+                                print('Write founded focus position to next round coord: {}.'.format(coordinate))
+                        # self.RoundCoordsDict['CoordsPackage_{}'.format(EachRound + 2)][EachCoord]['focus_position'] = self.auto_focus_position
                     except:# If it's already the last round, skip.
                         pass
                     
@@ -675,9 +683,10 @@ class ScanningExecutionThread(QThread):
                     ZStacklinspaceEnd = self.auto_focus_position + (ZStackNum - math.floor(ZStackNum/2)-1) * ZStackStep
                 
                 else: # If there's already position from last round, move to it.
+                    
                     # EachRound+1 is current round number.
                     self.previous_auto_focus_position = self.RoundCoordsDict['CoordsPackage_{}'.format(EachRound+1)][EachCoord]['focus_position']
-                    
+                    print("Previous_auto_focus_position found: {}".format(self.previous_auto_focus_position))
                     #=================Pass on auto-focus positions to coming rounds.================
                     # try:
                     #     # Record the position, try to write it in the NEXT round dict. 
@@ -725,7 +734,58 @@ class ScanningExecutionThread(QThread):
                 pass
             #------------------------------------------------------------------
             # If it's auto-focus round, skip next waveforms.
-            elif auto_focus_flag == "yes_auto_focus_round":
+            elif auto_focus_flag == "pure AF":
+                print("--------------Finding focus-----------------")
+
+                instance_FocusFinder = FocusFinder(motor_handle = self.pi_device_instance)
+                print("--------------Start auto-focusing-----------------")
+                # instance_FocusFinder.total_step_number = 7
+                # instance_FocusFinder.init_step_size = 0.013
+                # self.auto_focus_position = instance_FocusFinder.gaussian_fit()
+                self.auto_focus_position = instance_FocusFinder.bisection()
+                
+                relative_move_coords = [[1550,0],[0,1550],[1550,1550]]
+                trial_num = 0
+                while self.auto_focus_position == False: # If there's no cell in FOV
+                    if trial_num <= 2:
+                        print('No cells found. move to next pos.')
+                        # Move to next position in real scanning coordinates.
+                        self.ludlStage.moveRel(relative_move_coords[trial_num][0],relative_move_coords[trial_num][1])
+                        time.sleep(1)
+                        print('Now stage pos is {}'.format(self.ludlStage.getPos()))
+                        
+                        self.auto_focus_position = instance_FocusFinder.bisection()
+                        # Move back 
+                        self.ludlStage.moveRel(-1*relative_move_coords[trial_num][0],-1*relative_move_coords[trial_num][1])
+                        
+                        trial_num += 1
+                    else:
+                        print('No cells in neighbouring area. Write init_focus_position.')
+                        try:
+                            self.auto_focus_position = self.ZStackPosList[int(len(self.ZStackPosList)/2)]
+                        except:
+                            self.auto_focus_position = self.init_focus_position
+                        break
+                    
+                print("--------------End of auto-focusing----------------")
+                time.sleep(1)
+  
+                # Record the position, try to write it in the NEXT round dict.
+                try:
+                    AF_coord_row = self.RoundCoordsDict['CoordsPackage_{}'.format(EachRound + 1)][EachCoord]['row']
+                    AF_coord_col = self.RoundCoordsDict['CoordsPackage_{}'.format(EachRound + 1)][EachCoord]['col']
+
+                    # Loop through next round coordinates, find one with same row and col.
+                    for coordinate in self.RoundCoordsDict['CoordsPackage_{}'.format(EachRound + 2)]:
+                        if coordinate['row'] == AF_coord_row and coordinate['col'] == AF_coord_col:
+                            coordinate['focus_position'] = self.auto_focus_position
+                            
+                            print('Write founded focus position to next round coord: {}.'.format(coordinate))
+                            
+                except:# If it's already the last round, skip.
+                    pass
+                
+                # Make sure it skip waveform execution
                 ZStackNum = 0
                 
         return ZStackNum

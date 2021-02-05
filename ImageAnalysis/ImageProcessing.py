@@ -1297,7 +1297,7 @@ class ProcessImage():
 
         return output_image    
     
-    def retrieveDataFromML(image, MLresults, ImgNameInfor, cell_counted_number):
+    def retrieveDataFromML(image, MLresults, ImgNameInfor = "Not specified", cell_counted_number = 0):
         """ Given the raw image and ML returned result dictionary, calculate interested parameters from it.
         
         class_ids = 3: Flat cell
@@ -1325,12 +1325,12 @@ class ProcessImage():
         Cell_DataFrame : pd.DataFrame.
             Detail information extracted from MaskRCNN mask from the image, in pandas dataframe format.
         cell_counted_number: int.
-            Number of cells counted together with number from this image.
+            Number of cells counted, together with previous number from this image.
         """
-        ROInumber = len(MLresults['scores']) 
+        ROInumber = len(MLresults['rois']) 
         cell_counted_inImage = 0
         
-        total_cells_alive = 0 # Round or flat cell number
+        total_cells_alive = 0 # All identified cells number
         
         for eachROI in range(ROInumber):
             if MLresults['class_ids'][eachROI] == 3:
@@ -1909,8 +1909,8 @@ class ProcessImage():
                                             (DataFrame['Contour_soma_ratio_Lib'] > Contour_soma_ratio_thres)]
         # For single round intensity measurements
         elif 'Mean_intensity_in_contour' in DataFrame.columns:
-            DataFrames_filtered = DataFrame[(DataFrame['Mean_intensity_in_contour_Lib'] > Mean_intensity_in_contour_thres) & 
-                                            (DataFrame['Contour_soma_ratio_Lib'] > Contour_soma_ratio_thres)]
+            DataFrames_filtered = DataFrame[(DataFrame['Mean_intensity_in_contour'] > Mean_intensity_in_contour_thres) & 
+                                            (DataFrame['Contour_soma_ratio'] > Contour_soma_ratio_thres)]
         # For KC/EC measurements
         elif 'Mean_intensity_in_contour_Lib_EC' in DataFrame.columns:
             DataFrames_filtered = DataFrame[(DataFrame['Mean_intensity_in_contour_Lib_EC'] > Mean_intensity_in_contour_thres) & 
