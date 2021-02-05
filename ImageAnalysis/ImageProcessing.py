@@ -2273,6 +2273,8 @@ class ProcessImage():
             sharpness = cv2.Laplacian(image, cv2.CV_64F).var()
         elif type(image[0,0])==np.uint8:
             sharpness = cv2.Laplacian(image, cv2.CV_8U).var()
+        elif type(image[0,0])==np.uint16:
+            sharpness = cv2.Laplacian(image, cv2.CV_16U).var()
             
         return sharpness
     
