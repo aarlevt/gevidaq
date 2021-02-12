@@ -103,9 +103,9 @@ class DMDActuator:
         print("ALP_ILLUMINATE_TIME: {} μs".format(ILLUMINATE_TIME))
         print(f"ALP_BITNUM: {BITNUM}.")
         if BIN_MODE == 2015:
-            print("ALP_BIN_MODE: Normal.")
+            print("ALP_BIN_MODE: with dark phase.")
         elif BIN_MODE == 2016:
-            print("ALP_BIN_MODE: No switching.")
+            print("ALP_BIN_MODE: Operation without dark phase.")
         print("ALP_OFF_TIME: {} μs (total inactive projection time)".format(OFF_TIME))
         # if TRIGGER_TYPE == 2009:
         #     print("TRIGGER_TYPE: ALP_EDGE_RISING")

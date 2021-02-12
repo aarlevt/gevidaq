@@ -1297,7 +1297,7 @@ class ProcessImage():
 
         return output_image    
     
-    def retrieveDataFromML(image, MLresults, ImgNameInfor = "Not specified", cell_counted_number = 0):
+    def retrieveDataFromML(image, MLresults, ImgNameInfor = "Not specified", add_up_cell_counted_number = 0, show_each_cell = False):
         """ Given the raw image and ML returned result dictionary, calculate interested parameters from it.
         
         class_ids = 3: Flat cell
@@ -1318,19 +1318,19 @@ class ProcessImage():
             The returned dictionary from MaskRCNN.
         ImgNameInfor : String.
             Information of input image.
-        cell_counted_number: int.
+        add_up_cell_counted_number: int.
             Number of cells already counted in round.
         Returns
         -------
         Cell_DataFrame : pd.DataFrame.
             Detail information extracted from MaskRCNN mask from the image, in pandas dataframe format.
-        cell_counted_number: int.
+        add_up_cell_counted_number: int.
             Number of cells counted, together with previous number from this image.
         """
         ROInumber = len(MLresults['rois']) 
-        cell_counted_inImage = 0
+        flat_cell_counted_inImage = 0
         
-        total_cells_alive = 0 # All identified cells number
+        total_cells_identified = 0 # All identified cells number
         
         for eachROI in range(ROInumber):
             if MLresults['class_ids'][eachROI] == 3:
@@ -1354,10 +1354,15 @@ class ProcessImage():
                 # after here intensityimage_intensity is changed from contour labeled with number 5 to binary image.
                 cell_contour_mask_dilated = ProcessImage.inward_mask_dilation(cell_contour_mask, CellMask_roi, dilation_parameter = 11)   
                 
-                # plt.figure()
-                # plt.imshow(RawImg_roi * cell_contour_mask_dilated)
-                # plt.show()
-
+                if show_each_cell == True:
+                    fig, axs = plt.subplots(2)
+                    # fig.suptitle('Individual cell mask')
+                    axs[0].imshow(RawImg_roi)
+                    axs[0].set_title('Cell image')
+                    axs[0].set_xticks([])
+                    axs[1].imshow(RawImg_roi * (cell_contour_mask_dilated+0.4))
+                    axs[1].set_title('Cell contour')
+                    axs[1].set_xticks([])
                 #-------------Calculate intensity based on masks---------------
                 cell_contour_meanIntensity = np.mean(RawImg_roi[np.where(cell_contour_mask_dilated == 1)]) # Mean pixel value of cell membrane.
                 cell_area_meanIntensity = np.mean(RawImg_roi[np.where(CellMask_roi == 1)]) # Mean pixel value of whole cell area.
@@ -1368,30 +1373,30 @@ class ProcessImage():
                 
                 boundingbox_info = 'minr{}_maxr{}_minc{}_maxc{}'.format(ROIlist[0], ROIlist[2], ROIlist[1], ROIlist[3])
 
-                if cell_counted_inImage == 0:
+                if flat_cell_counted_inImage == 0:
                     Cell_DataFrame = pd.DataFrame([[ImgNameInfor, boundingbox_info, cell_area_meanIntensity, cell_contour_meanIntensity, cell_contourSoma_ratio]], 
                                       columns = ['ImgNameInfor', 'BoundingBox', 'Mean_intensity', 'Mean_intensity_in_contour', 'Contour_soma_ratio'],
-                                      index = ['Cell {}'.format(cell_counted_number)])
+                                      index = ['Cell {}'.format(add_up_cell_counted_number)])
                 else:
                     Cell_DataFrame_new = pd.DataFrame([[ImgNameInfor, boundingbox_info, cell_area_meanIntensity, cell_contour_meanIntensity, cell_contourSoma_ratio]], 
                                       columns = ['ImgNameInfor', 'BoundingBox', 'Mean_intensity', 'Mean_intensity_in_contour', 'Contour_soma_ratio'],
-                                      index = ['Cell {}'.format(cell_counted_number)])                    
+                                      index = ['Cell {}'.format(add_up_cell_counted_number)])                    
                     Cell_DataFrame = Cell_DataFrame.append(Cell_DataFrame_new)
                     
-                cell_counted_number += 1
-                cell_counted_inImage += 1
+                add_up_cell_counted_number += 1
+                flat_cell_counted_inImage += 1
                 
-                total_cells_alive += 1
+                total_cells_identified += 1
                 
             elif MLresults['class_ids'][eachROI] == 2: # Round cells
             
-                total_cells_alive += 1
+                total_cells_identified += 1
                 
         
-        if cell_counted_inImage == 0:
-            return pd.DataFrame(), cell_counted_number, total_cells_alive
+        if flat_cell_counted_inImage == 0:
+            return pd.DataFrame(), add_up_cell_counted_number, total_cells_identified
         else:
-            return Cell_DataFrame, cell_counted_number, total_cells_alive
+            return Cell_DataFrame, add_up_cell_counted_number, total_cells_identified
         
     
     def Register_cells(data_frame_list):

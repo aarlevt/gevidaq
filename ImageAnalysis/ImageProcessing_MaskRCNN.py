@@ -29,7 +29,8 @@ from ImageAnalysis.ImageProcessing import ProcessImage
 #================================================================ProcessImage===============================================
 class ProcessImageML():
     
-    def __init__(self, *args, **kwargs):
+    def __init__(self, WeigthPath = \
+        r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Martijn\FinalResults\ModelWeights.h5", *args, **kwargs):
         super().__init__(*args, **kwargs)
     
         """
@@ -43,7 +44,7 @@ class ProcessImageML():
         self.config.LogDir = ''
         self.config.CCoor_STD_DEV = 0.1
         # self.config.WeigthPath = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Martijn\SpikingHek.h5"
-        self.config.WeigthPath = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Martijn\FinalResults\ModelWeights.h5"
+        self.config.WeigthPath = WeigthPath
         
         # These four setting use the old configurations. The results are slightly different due to scaling.
         # However the new version will prevent any OOM erros from occuring
@@ -62,6 +63,7 @@ class ProcessImageML():
         # Create model
         self.Detector = modellib(self.config, 'inference', model_dir=self.config.LogDir)
         self.Detector.compileModel()
+        # print(self.config.WeigthPath)
         self.Detector.LoadWeigths(self.config.WeigthPath, by_name=True)
     #%%
     """
@@ -305,13 +307,16 @@ class ProcessImageML():
                 
         return cell_Data
                 
-    def analyze_single_image(self, Rawimage, axis = None, show_result = True):
+    def analyze_single_image(self, Rawimage, axis = None, show_result = True, show_each_cell = False):
     
         MLresults = self.DetectionOnImage(Rawimage, axis = axis, show_result = show_result)
 
         cell_Data, cell_counted_inRound, total_cells_counted_in_coord = \
-            ProcessImage.retrieveDataFromML(Rawimage, MLresults)
-            
+            ProcessImage.retrieveDataFromML(Rawimage, MLresults, show_each_cell = show_each_cell)
+        
+        print("Number of cells counted so far: {}".format(cell_counted_inRound))
+        print("Number of cells counted in image: {}".format(total_cells_counted_in_coord))
+        
         return cell_Data
     
     def analyze_images_in_folder(self, folder, show_result = True, save_mask = True, save_excel = True):
@@ -401,19 +406,21 @@ if __name__ == "__main__":
     tag_round = 'Round1'
     lib_round = 'Round2'
     
+    # ProcessML = ProcessImageML(WeigthPath = r"C:\MaskRCNN\MaskRCNNGit\MaskRCNN\MaskRCNN\Data\Xin_training_200epoch_2021_1_20\cell20210121T2259\mask_rcnn_cell_0200.h5")
+    # ProcessML = ProcessImageML(WeigthPath = r"C:\MaskRCNN\MaskRCNNGit\MaskRCNN\MaskRCNN\Data\Xin_training\cell20210107T1533\mask_rcnn_cell_0050.h5")
     ProcessML = ProcessImageML()
     # ProcessML.config.WeigthPath = r"C:\MaskRCNN\MaskRCNNGit\MaskRCNN\MaskRCNN\Data\Xin_training\cell20210107T1533\mask_rcnn_cell_0050.h5"
     print(ProcessML.config.WeigthPath)
     # 5.6s for each detection
     img = skimage.io.imread\
-    (r"C:\MaskRCNN\MaskRCNNGit\MaskRCNN\MaskRCNN\Data\Xin_training\detection trial\Round1_Grid8_Coords11_R20150C24800_PMT_0Zmax.tif")
+    (r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2021-01-19 WT QuasArch1 ND2p3ND0p5\Round1_Grid1_Coords27_R17435C0_PMT_0Zpos1.tif")
     # for _ in range(1):    
     #     starttime = time.time()
     #     ProcessML.DetectionOnImage(img, show_result = True)
     #     endtime = time.time()
     #     print(starttime-endtime)
         
-    cell_data = ProcessML.analyze_single_image(img)
+    cell_data = ProcessML.analyze_single_image(img, show_each_cell = True)
     
     # cell_data = ProcessML.analyze_images_in_folder(folder=r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Huma\2021-1-22 CO2 test-Xin Microscope\10% PCAG\gfp analysis')
     
