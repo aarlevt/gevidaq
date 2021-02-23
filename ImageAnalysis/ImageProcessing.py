@@ -10,8 +10,7 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 import math
 import time
-
-from skimage import data, img_as_ubyte
+from skimage import img_as_ubyte
 from skimage.filters import threshold_otsu, threshold_local
 from skimage.filters.rank import entropy
 from skimage.segmentation import clear_border
@@ -24,7 +23,7 @@ from skimage.color import label2rgb, gray2rgb, rgb2gray
 from skimage.restoration import denoise_tv_chambolle
 from skimage.io import imread
 from skimage.transform import rotate, resize
-from scipy.signal import convolve2d, medfilt
+from scipy.signal import convolve2d
 import skimage.external.tifffile as skimtiff
 from PIL import Image
 from PIL.TiffTags import TAGS
@@ -34,8 +33,6 @@ from scipy import fftpack
 from scipy.optimize import curve_fit
 import scipy
 import pylab
-import numpy.lib.recfunctions as rfn
-import copy
 import os
 import pandas as pd
 import cv2
@@ -131,8 +128,12 @@ class ProcessImage():
             
             if row_data_folder == True:
                 # Get the coordinates, R_C_
-                CoordinatesList.append(eachfilename[eachfilename.index('_R') + 1:eachfilename.index('_PMT')])
-                CoordinatesList = list(dict.fromkeys(CoordinatesList))
+                if '_PMT' in eachfilename:
+                    CoordinatesList.append(eachfilename[eachfilename.index('_R') + 1:eachfilename.index('_PMT')])
+                    CoordinatesList = list(dict.fromkeys(CoordinatesList))
+                elif "Cam" in eachfilename:
+                    CoordinatesList.append(eachfilename[eachfilename.index('_R') + 1:eachfilename.index('_Cam')])
+                    CoordinatesList = list(dict.fromkeys(CoordinatesList))                    
             else:
                 # Get the coordinates, R_C_
                 CoordinatesList.append(eachfilename[eachfilename.index('_R') + 1:len(eachfilename)])
@@ -1350,19 +1351,26 @@ class ProcessImage():
                 # =============================================================
                 #             # Find contour along cell mask
                 # =============================================================
-                cell_contour_mask = ProcessImage.findContour(CellMask_roi, RawImg_roi.copy(), 0.001) # Return the binary contour mask in bounding box.
+                cell_contour_mask = closing(ProcessImage.findContour(CellMask_roi, RawImg_roi.copy(), 0.001), square(5)) # Return the binary contour mask in bounding box.
                 # after here intensityimage_intensity is changed from contour labeled with number 5 to binary image.
-                cell_contour_mask_dilated = ProcessImage.inward_mask_dilation(cell_contour_mask, CellMask_roi, dilation_parameter = 11)   
                 
+                cell_contour_mask_dilated = ProcessImage.inward_mask_dilation(cell_contour_mask, CellMask_roi, dilation_parameter = 8)   
+                
+                # Trim the contour mask
+                cell_contour_mask_processed = opening(cell_contour_mask_dilated, square(4))
+
                 if show_each_cell == True:
-                    fig, axs = plt.subplots(2)
+                    fig, axs = plt.subplots(3)
                     # fig.suptitle('Individual cell mask')
                     axs[0].imshow(RawImg_roi)
                     axs[0].set_title('Cell image')
                     axs[0].set_xticks([])
-                    axs[1].imshow(RawImg_roi * (cell_contour_mask_dilated+0.4))
-                    axs[1].set_title('Cell contour')
+                    axs[1].imshow(cell_contour_mask_dilated, cmap='gray')
+                    axs[1].set_title('Cell contour mask')
                     axs[1].set_xticks([])
+                    axs[2].imshow(cell_contour_mask_processed, cmap='gray')
+                    axs[2].set_title('Cell contour trimed')
+                    axs[2].set_xticks([])
                 #-------------Calculate intensity based on masks---------------
                 cell_contour_meanIntensity = np.mean(RawImg_roi[np.where(cell_contour_mask_dilated == 1)]) # Mean pixel value of cell membrane.
                 cell_area_meanIntensity = np.mean(RawImg_roi[np.where(CellMask_roi == 1)]) # Mean pixel value of whole cell area.
@@ -2437,6 +2445,42 @@ class ProcessImage():
         img_highest_focus_degree = img_stack[focus_degree_list.index(max(focus_degree_list))]
         
         return img_highest_focus_degree
+    
+    def cam_screening_post_processing(directory, save_max_projection = True):
+        
+        
+        RoundNumberList, CoordinatesList, fileNameList = ProcessImage.retrive_scanning_scheme(directory, file_keyword = 'Cam')
+        
+        for each_round in RoundNumberList:
+            # Do Z-stack max projection
+            for each_coordinate in CoordinatesList:
+                # list of z stack images of same coordinate.
+                img_zstack_list = []
+                for each_file_name in fileNameList:
+                    if each_coordinate in each_file_name:
+                        img_zstack_list.append(each_file_name)
+                    
+                #---------------------------------------------Calculate the z max projection-----------------------------------------------------------------------
+                ZStackOrder = 0
+                for each_z_img_filename in img_zstack_list:
+                    each_z_img = imread(os.path.join(directory, each_z_img_filename))
+                    if ZStackOrder == 0:
+                        Cam_image_maxprojection_stack = each_z_img[np.newaxis, :, :]
+                    else:
+                        Cam_image_maxprojection_stack = np.concatenate((Cam_image_maxprojection_stack, each_z_img[np.newaxis, :, :]), axis=0)
+                    ZStackOrder += 1
+                    
+                # Save the max projection image
+                if ZStackOrder == len(img_zstack_list):
+                    Cam_image_maxprojection = np.max(Cam_image_maxprojection_stack, axis=0)
+                    
+                    if save_max_projection == True:
+                        # Save the zmax file.
+                        with skimtiff.TiffWriter(os.path.join(directory, each_round + '_' + each_coordinate +'_Cam_'+'Zmax'+'.tif'), imagej = True) as tif:                
+                            tif.save(Cam_image_maxprojection.astype('int16'), compress=0)
+
+        # return img_zstack_list
+    
     #%%
     # =============================================================================
     #     Images stitching

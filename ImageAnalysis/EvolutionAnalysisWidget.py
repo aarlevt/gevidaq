@@ -541,12 +541,12 @@ class MainGUI(QWidget):
         self.DataFrame_sorted = ProcessImage.Sorting_onTwoaxes(DataFrames_filtered, axis_1 = self.X_axisBox.currentText(), axis_2 = self.Y_axisBox.currentText(), 
                                                                   weight_1 = self.WeightBoxSelectionFactor_1.value(), weight_2 = self.WeightBoxSelectionFactor_2.value())
         
-        try:
-            print("Save CellsDataframe to Excel...")
-            self.DataFrame_sorted.to_excel(os.path.join(self.Tag_folder, datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'_ReloadedEexcel_CellsProperties.xlsx'))
-            print("Saved.")
-        except:
-            pass
+        # try:
+        #     print("Save CellsDataframe to Excel...")
+        #     self.DataFrame_sorted.to_excel(os.path.join(self.Tag_folder, datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'_ReloadedEexcel_CellsProperties.xlsx'))
+        #     print("Saved.")
+        # except:
+        #     pass
             
         self.UpdateSelectionScatter()
         
@@ -698,7 +698,10 @@ class MainGUI(QWidget):
                 self.meta_data = self.CurrentRankCellpProperties.loc['ImgNameInfor_Lib_KC']
                 Each_bounding_box = self.CurrentRankCellpProperties.loc['BoundingBox_Lib_KC']                
             
-            self.lib_imagefilename = os.path.join(self.Lib_folder, self.meta_data+'_PMT_0Zmax.tif')
+            if ".tif" in self.meta_data:
+                self.lib_imagefilename = os.path.join(self.Lib_folder, self.meta_data)
+            else:
+                self.lib_imagefilename = os.path.join(self.Lib_folder, self.meta_data+'_PMT_0Zmax.tif')
             print(self.lib_imagefilename[len(self.lib_imagefilename) - 50: len(self.lib_imagefilename)])
             self.loaded_image_display = imread(self.lib_imagefilename, as_gray=True)
             
@@ -716,8 +719,11 @@ class MainGUI(QWidget):
                 # In Kcl assay, show the KC lib image.
                 self.meta_data = self.CurrentRankCellpProperties.loc['ImgNameInfor_Lib_EC']
                 Each_bounding_box = self.CurrentRankCellpProperties.loc['BoundingBox_Lib_EC']  
-            
-            self.tag_imagefilename = os.path.join(self.Tag_folder, self.meta_data+'_PMT_0Zmax.tif')
+
+            if ".tif" in self.meta_data:
+                self.tag_imagefilename = os.path.join(self.Tag_folder, self.meta_data)
+            else:
+                self.tag_imagefilename = os.path.join(self.Tag_folder, self.meta_data+'_PMT_0Zmax.tif')
             print(self.tag_imagefilename[len(self.tag_imagefilename) - 50: len(self.tag_imagefilename)])
             self.loaded_image_display = imread(self.tag_imagefilename, as_gray=True)
         
@@ -768,16 +774,26 @@ class MainGUI(QWidget):
                 
                 roundnum = self.meta_data[0:self.meta_data.index('_Grid')]
                 
-                # All the mask images from MaskRCNN are saved in tag folder
-                self.lib_mask_imagefilename = os.path.join(self.Tag_folder, "MLimages_{}".format(roundnum), self.meta_data+'.tif')
-    
+                if not os.path.exists(os.path.join(self.Tag_folder, 'ML_masks')):
+                    # All the mask images from MaskRCNN are saved in tag folder
+                    # Normal screening, masks saved under different folder names.
+                    self.lib_mask_imagefilename = os.path.join(self.Tag_folder, "MLimages_{}".format(roundnum), self.meta_data+'.tif')
+                else:
+                    self.lib_mask_imagefilename = os.path.join(self.Tag_folder, 'ML_masks', 'ML_mask_' + self.meta_data[0:len(self.meta_data)-4]+'.png')
+                
+                
                 self.loaded_image_display = imread(self.lib_mask_imagefilename)
                 
             else:
 
                 roundnum = self.meta_data[0:self.meta_data.index('_Grid')]
                 
-                self.tag_mask_imagefilename = os.path.join(self.Tag_folder, "MLimages_{}".format(roundnum), self.meta_data+'.tif')
+                if not os.path.exists(os.path.join(self.Tag_folder, 'ML_masks')):
+                    # All the mask images from MaskRCNN are saved in tag folder
+                    # Normal screening, masks saved under different folder names.
+                    self.tag_mask_imagefilename = os.path.join(self.Tag_folder, "MLimages_{}".format(roundnum), self.meta_data+'.tif')
+                else:
+                    self.tag_mask_imagefilename = os.path.join(self.Tag_folder, 'ML_masks', 'ML_mask_' + self.meta_data[0:len(self.meta_data)-4]+'.png')
     
                 self.loaded_image_display = imread(self.tag_mask_imagefilename)
             

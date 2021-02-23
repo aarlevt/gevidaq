@@ -250,14 +250,14 @@ class ProcessImageML():
                                 ImgNameInfor = Eachfilename[1][0:len(Eachfilename[1])-14] # get rid of '_PMT_0Zmax.tif' in the name.
                             elif '0Zfocus' in Eachfilename[1]:
                                 ImgNameInfor = Eachfilename[1][0:len(Eachfilename[1])-16] # get rid of '_PMT_0Zfocus.tif' in the name.
-                            tag_imagefilename = os.path.join(folder, Eachfilename[1])
+                            _imagefilename = os.path.join(folder, Eachfilename[1])
                     #------------------------------------------
     
                     # =========================================================================
                     #                     USING MASKRCNN...
                     # =========================================================================
-                    # Imagepath      = self.Detector._fixPathName(tag_imagefilename)
-                    Rawimage     = imread(tag_imagefilename)
+                    # Imagepath      = self.Detector._fixPathName(_imagefilename)
+                    Rawimage     = imread(_imagefilename)
                     
 #                    if ClearImgBef == True:
 #                        # Clear out junk parts to make it esaier for ML detection.
@@ -340,6 +340,11 @@ class ProcessImageML():
             MLresults = self.DetectionOnImage(Rawimage, axis = None, show_result = show_result)
 
             if save_mask == True:
+                
+                if not os.path.exists(os.path.join(folder, 'ML_masks')):
+                    # If the folder is not there, create the folder
+                    os.mkdir(os.path.join(folder, 'ML_masks')) 
+            
                 fig, ax = plt.subplots()
                 # Set class_names = [None,None,None,None] to mute class name display.
                 visualize.display_instances(Rawimage, MLresults['rois'], MLresults['masks'], MLresults['class_ids'],
@@ -349,7 +354,7 @@ class ProcessImageML():
                 # ax.imshow(fig)
                 fig.tight_layout()
                 # Save the detection Rawimage
-                fig_name = os.path.join(folder, 'ML_mask_{}.png'.format(image_file_name[0:len(image_file_name)-4]))
+                fig_name = os.path.join(folder, 'ML_masks', 'ML_mask_{}.png'.format(image_file_name[0:len(image_file_name)-4]))
                 plt.savefig(fname = fig_name, dpi=200, pad_inches=0.0, bbox_inches='tight')
                         
             if flat_cell_counted_in_folder == 0:
@@ -412,17 +417,18 @@ if __name__ == "__main__":
     # ProcessML.config.WeigthPath = r"C:\MaskRCNN\MaskRCNNGit\MaskRCNN\MaskRCNN\Data\Xin_training\cell20210107T1533\mask_rcnn_cell_0050.h5"
     print(ProcessML.config.WeigthPath)
     # 5.6s for each detection
-    img = skimage.io.imread\
-    (r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2021-01-19 WT QuasArch1 ND2p3ND0p5\Round1_Grid1_Coords27_R17435C0_PMT_0Zpos1.tif")
+    img_name = \
+    r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2021-01-13_WT Archon KC 8by8\Round1_Grid0_Coords10_R0C7925_PMT_0Zmax.tif"
+    img = skimage.io.imread(img_name)
     # for _ in range(1):    
     #     starttime = time.time()
     #     ProcessML.DetectionOnImage(img, show_result = True)
     #     endtime = time.time()
     #     print(starttime-endtime)
         
-    cell_data = ProcessML.analyze_single_image(img, show_each_cell = True)
+    # cell_data = ProcessML.analyze_single_image(img, show_each_cell = False)
     
-    # cell_data = ProcessML.analyze_images_in_folder(folder=r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Huma\2021-1-22 CO2 test-Xin Microscope\10% PCAG\gfp analysis')
+    cell_data = ProcessML.analyze_images_in_folder(folder=r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Vidya\2021-2-21 screening delizzia\images_before_background_substraction\WT 640 nm')
     
     
       
