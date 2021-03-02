@@ -1935,7 +1935,7 @@ class ProcessImage():
                 
         return DataFrames_filtered
     
-    def Sorting_onTwoaxes(DataFrame, axis_1, axis_2, weight_1, weight_2):
+    def sort_on_axes(DataFrame, axis_1, axis_2, axis_3, weight_1, weight_2, weight_3):
         """
         Sort the dataframe based on normalized distance calculated from two given axes.
 
@@ -1962,9 +1962,16 @@ class ProcessImage():
         Axis_1_min, Axis_1_max = DataFrame[axis_1].min(), DataFrame[axis_1].max()
         Axis_2_min, Axis_2_max = DataFrame[axis_2].min(), DataFrame[axis_2].max()
         
-        DataFrame_sorted = DataFrame.loc[(((DataFrame[axis_1] - Axis_1_min) / (Axis_1_max - Axis_1_min)) ** 2 * weight_1
-        + ((DataFrame[axis_2] - Axis_2_min) / (Axis_2_max - Axis_2_min)) **2 * weight_2) \
-        .sort_values(ascending=False).index]
+        if axis_3 == 'None':
+            DataFrame_sorted = DataFrame.loc[(((DataFrame[axis_1] - Axis_1_min) / (Axis_1_max - Axis_1_min)) ** 2 * weight_1
+            + ((DataFrame[axis_2] - Axis_2_min) / (Axis_2_max - Axis_2_min)) **2 * weight_2) \
+            .sort_values(ascending=False).index]
+        else:
+            Axis_3_min, Axis_3_max = DataFrame[axis_3].min(), DataFrame[axis_3].max()
+            DataFrame_sorted = DataFrame.loc[(((DataFrame[axis_1] - Axis_1_min) / (Axis_1_max - Axis_1_min)) ** 2 * weight_1
+            + ((DataFrame[axis_2] - Axis_2_min) / (Axis_2_max - Axis_2_min)) **2 * weight_2 \
+            + ((DataFrame[axis_3] - Axis_3_min) / (Axis_3_max - Axis_3_min)) **2 * weight_3)
+            .sort_values(ascending=False).index]
                 
         return DataFrame_sorted
                 
@@ -2454,12 +2461,13 @@ class ProcessImage():
         for each_round in RoundNumberList:
             # Do Z-stack max projection
             for each_coordinate in CoordinatesList:
+                
                 # list of z stack images of same coordinate.
                 img_zstack_list = []
                 for each_file_name in fileNameList:
                     if each_coordinate in each_file_name:
                         img_zstack_list.append(each_file_name)
-                    
+                
                 #---------------------------------------------Calculate the z max projection-----------------------------------------------------------------------
                 ZStackOrder = 0
                 for each_z_img_filename in img_zstack_list:
@@ -2469,14 +2477,17 @@ class ProcessImage():
                     else:
                         Cam_image_maxprojection_stack = np.concatenate((Cam_image_maxprojection_stack, each_z_img[np.newaxis, :, :]), axis=0)
                     ZStackOrder += 1
-                    
+
                 # Save the max projection image
                 if ZStackOrder == len(img_zstack_list):
                     Cam_image_maxprojection = np.max(Cam_image_maxprojection_stack, axis=0)
                     
+                    if not os.path.exists(os.path.join(directory, 'maxProjection')):
+                    # If the folder is not there, create the folder
+                        os.mkdir(os.path.join(directory, 'maxProjection')) 
                     if save_max_projection == True:
                         # Save the zmax file.
-                        with skimtiff.TiffWriter(os.path.join(directory, each_round + '_' + each_coordinate +'_Cam_'+'Zmax'+'.tif'), imagej = True) as tif:                
+                        with skimtiff.TiffWriter(os.path.join(directory,"maxProjection\\" + each_round + '_' + each_coordinate +'_Cam_'+'Zmax'+'.tif'), imagej = True) as tif:                
                             tif.save(Cam_image_maxprojection.astype('int16'), compress=0)
 
         # return img_zstack_list
@@ -2686,7 +2697,8 @@ if __name__ == "__main__":
     retrievefocus_map = False
     find_focus = False
     registration = False
-    merge_dataFrames = True
+    merge_dataFrames = False
+    cam_screening_analysis = True
     
     if stitch_img == True:
         Nest_data_directory = r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2020-12-19_2020-12-19_18-41-18_Lib9_Q1_1TO16_NOPURO'
@@ -2729,3 +2741,6 @@ if __name__ == "__main__":
         DataFrames_filtered = ProcessImage.FilterDataFrames(Cell_DataFrame_Merged, 0.2, 1)
         DataFrames_filtered.to_excel(r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2021-01-27 Lib8 Archon KCl 8b8 ND1p5ND0p3\m3.xlsx')
         # DataFrame_sorted = ProcessImage.Sorting_onTwoaxes(DataFrames_filtered, 'KC_EC_Mean_intensity_in_contour_ratio', 'Mean_intensity_in_contour_Lib_EC', 0, 1)
+        
+    elif cam_screening_analysis == True:
+        ProcessImage.cam_screening_post_processing(r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Delizzia\2020-11-19_2020-11-19_10-14-32_trial_cam_screen')

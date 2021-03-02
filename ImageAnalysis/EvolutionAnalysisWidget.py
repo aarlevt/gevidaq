@@ -28,6 +28,7 @@ from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as Navigatio
 from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
+from mpl_toolkits import mplot3d
 import plotly.express as px
 import pandas as pd
 
@@ -229,7 +230,7 @@ class MainGUI(QWidget):
         LoadSettingLayout = QGridLayout()
         
         self.FilepathSwitchBox = QComboBox()
-        self.FilepathSwitchBox.addItems(['Tag', 'Lib', 'All'])
+        self.FilepathSwitchBox.addItems(['Tag', 'Lib', 'Z-max analysis'])
         LoadSettingLayout.addWidget(self.FilepathSwitchBox, 1, 0)
         
         self.AnalysisRoundBox = QSpinBox(self)
@@ -254,7 +255,7 @@ class MainGUI(QWidget):
         readExcelButtonOpenDialog.clicked.connect(self.ReadEexcel)
         LoadSettingLayout.addWidget(readExcelButtonOpenDialog, 0, 5)
         
-        ExecuteAnalysisButton = QPushButton('Load images', self)
+        ExecuteAnalysisButton = QPushButton('Load', self)
 #        ExecuteAnalysisButton.setObjectName('Startbutton')
         ExecuteAnalysisButton.clicked.connect(lambda: self.run_in_thread(self.ScreeningAnalysis))
         LoadSettingLayout.addWidget(ExecuteAnalysisButton, 1, 3)
@@ -268,7 +269,8 @@ class MainGUI(QWidget):
         LoadSettingLayout.addWidget(Re_plot_Button, 1, 5)
         
         self.X_axisBox = QComboBox()
-        self.X_axisBox.addItems(['Lib_Tag_contour_ratio', 'Contour_soma_ratio', 'Contour_soma_ratio_Lib', \
+        self.X_axisBox.addItems(['Lib_Tag_contour_ratio', 'Contour_soma_ratio_Lib', \
+                                 'Contour_soma_ratio', \
                                  'KC_EC_LibTag_contour_ratio', 'KC_EC_Mean_intensity_in_contour_ratio'])
         LoadSettingLayout.addWidget(self.X_axisBox, 2, 1, 1, 3)
         LoadSettingLayout.addWidget(QLabel('X axis: '), 2, 0)
@@ -284,8 +286,10 @@ class MainGUI(QWidget):
         
         self.Y_axisBox = QComboBox()
         self.Y_axisBox.addItems\
-            (['Mean_intensity_in_contour_Lib', 'Mean_intensity_in_contour', 'Mean_intensity_in_contour_Lib_EC', \
-              'Lib_Tag_contour_ratio_EC', 'Contour_soma_ratio_Lib', 'Contour_soma_ratio_Lib_EC'])
+            (['Mean_intensity_in_contour_Lib', 'Contour_soma_ratio_Lib', \
+              'Mean_intensity_in_contour', \
+              'Mean_intensity_in_contour_Lib_EC', \
+              'Lib_Tag_contour_ratio_EC', 'Contour_soma_ratio_Lib_EC'])
         LoadSettingLayout.addWidget(self.Y_axisBox, 3, 1, 1, 3)
         LoadSettingLayout.addWidget(QLabel('Y axis: '), 3, 0)
         
@@ -297,6 +301,21 @@ class MainGUI(QWidget):
         self.WeightBoxSelectionFactor_2.setSingleStep(0.1)  
         LoadSettingLayout.addWidget(self.WeightBoxSelectionFactor_2, 3, 5)
         LoadSettingLayout.addWidget(QLabel("Weight:"), 3, 4)
+        
+        self.Z_axisBox = QComboBox()
+        self.Z_axisBox.addItems\
+            (['None', 'Contour_soma_ratio_Lib', 'Contour_soma_ratio', 'Contour_soma_ratio_Lib_EC'])
+        LoadSettingLayout.addWidget(self.Z_axisBox, 4, 1, 1, 3)
+        LoadSettingLayout.addWidget(QLabel('Z axis: '), 4, 0)
+        
+        self.WeightBoxSelectionFactor_3 = QDoubleSpinBox(self)
+        self.WeightBoxSelectionFactor_3.setDecimals(2)
+        self.WeightBoxSelectionFactor_3.setMinimum(0)
+        self.WeightBoxSelectionFactor_3.setMaximum(1)
+        self.WeightBoxSelectionFactor_3.setValue(0.0)
+        self.WeightBoxSelectionFactor_3.setSingleStep(0.1)  
+        LoadSettingLayout.addWidget(self.WeightBoxSelectionFactor_3, 4, 5)
+        LoadSettingLayout.addWidget(QLabel("Weight:"), 4, 4)
 
         LoadSettingContainer.setLayout(LoadSettingLayout)
         
@@ -412,10 +431,19 @@ class MainGUI(QWidget):
         
         self.normalOutputWritten('Start loading images...\n')
         
-        # For the brightness screening
         self.ProcessML = ProcessImageML()
         
-        if len(self.Tag_round_infor) == 1 and len(self.Lib_round_infor) == 1:
+        if len(self.Tag_round_infor) == 0 and len(self.Lib_round_infor) == 0:
+            # ===== General image analysis in folder. =====
+            if self.FilepathSwitchBox.currentText() == 'Z-max analysis':
+                # If need to do z-max projection first and then analyse on them
+                cell_data = self.ProcessML.analyze_images_in_folder(self.Analysis_saving_directory, generate_zmax = True)
+            else:
+                # Directly analyze images
+                cell_data = self.ProcessML.analyze_images_in_folder(self.Analysis_saving_directory)
+                                                                    
+        elif len(self.Tag_round_infor) == 1 and len(self.Lib_round_infor) == 1:
+            # ===== One GFP round, one Arch round. ===== 
             tag_folder = self.Tag_folder
             lib_folder = self.Lib_folder
         
@@ -429,8 +457,12 @@ class MainGUI(QWidget):
             
             DataFrames_filtered = ProcessImage.FilterDataFrames(self.Cell_DataFrame_Merged, self.Mean_intensity_in_contour_thres, self.Contour_soma_ratio_thres)
             
-            self.DataFrame_sorted = ProcessImage.Sorting_onTwoaxes(DataFrames_filtered, axis_1 = self.X_axisBox.currentText(), axis_2 = self.Y_axisBox.currentText(), 
-                                                                     weight_1 = self.WeightBoxSelectionFactor_1.value(), weight_2 = self.WeightBoxSelectionFactor_2.value())
+            self.DataFrame_sorted = ProcessImage.sort_on_axes(DataFrames_filtered, axis_1 = self.X_axisBox.currentText(), \
+                                                              axis_2 = self.Y_axisBox.currentText(), \
+                                                              axis_3 = self.Z_axisBox.currentText(), \
+                                                              weight_1 = self.WeightBoxSelectionFactor_1.value(), \
+                                                              weight_2 = self.WeightBoxSelectionFactor_2.value(), \
+                                                              weight_3 = self.WeightBoxSelectionFactor_3.value())
             
             print("Save CellsDataframe to Excel...")
             self.SaveCellsDataframetoExcel()
@@ -439,7 +471,7 @@ class MainGUI(QWidget):
             
         elif len(self.Tag_round_infor) == 0 and len(self.Lib_round_infor) > 2:
             
-            # For multiple single round wavelength experiment.
+            # ===== For multiple single round wavelength experiment. ===== 
             lib_folder = self.Lib_folder
             
             for round_index in self.Lib_round_infor:
@@ -448,7 +480,7 @@ class MainGUI(QWidget):
                 cell_Data = self.ProcessML.FluorescenceAnalysis(lib_folder, lib_round)
             
         elif len(self.Tag_round_infor) == 0 and len(self.Lib_round_infor) == 2:
-            # For KCL assay, two rounds of lib.
+            # ===== For KCL assay, two rounds of lib. ===== 
             print('===== Kcl analysis based on absolute contour intensity =====')
             lib_folder = self.Lib_folder
         
@@ -464,16 +496,19 @@ class MainGUI(QWidget):
             
             DataFrames_filtered = ProcessImage.FilterDataFrames(self.Cell_DataFrame_Merged, self.Mean_intensity_in_contour_thres, self.Contour_soma_ratio_thres)
             
-            self.DataFrame_sorted = ProcessImage.Sorting_onTwoaxes(DataFrames_filtered, axis_1 = self.X_axisBox.currentText(), axis_2 = self.Y_axisBox.currentText(), 
-                                                                      weight_1 = self.WeightBoxSelectionFactor_1.value(), weight_2 = self.WeightBoxSelectionFactor_2.value())
-            
+            self.DataFrame_sorted = ProcessImage.sort_on_axes(DataFrames_filtered, axis_1 = self.X_axisBox.currentText(), \
+                                                              axis_2 = self.Y_axisBox.currentText(), \
+                                                              axis_3 = self.Z_axisBox.currentText(), \
+                                                              weight_1 = self.WeightBoxSelectionFactor_1.value(), \
+                                                              weight_2 = self.WeightBoxSelectionFactor_2.value(), \
+                                                              weight_3 = self.WeightBoxSelectionFactor_3.value())            
             print("Save CellsDataframe to Excel...")
             self.DataFrame_sorted.to_excel(os.path.join(self.Tag_folder, datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'_Kcl_CellsProperties.xlsx'))
             
             self.UpdateSelectionScatter()
             
         elif len(self.Tag_round_infor) == 2 and len(self.Lib_round_infor) == 2:
-            # For KCL assay, two rounds of lib/tag.
+            # ===== For KCL assay, two rounds of lib/tag. ===== 
             print('===== Kcl analysis based on lib/tag contour ratio =====')
             tag_folder = self.Tag_folder
             lib_folder = self.Lib_folder
@@ -506,9 +541,12 @@ class MainGUI(QWidget):
 
             DataFrames_filtered = ProcessImage.FilterDataFrames(self.Cell_DataFrame_Merged, self.Mean_intensity_in_contour_thres, self.Contour_soma_ratio_thres)
             
-            self.DataFrame_sorted = ProcessImage.Sorting_onTwoaxes(DataFrames_filtered, axis_1 = self.X_axisBox.currentText(), axis_2 = self.Y_axisBox.currentText(), 
-                                                                      weight_1 = self.WeightBoxSelectionFactor_1.value(), weight_2 = self.WeightBoxSelectionFactor_2.value())
-
+            self.DataFrame_sorted = ProcessImage.sort_on_axes(DataFrames_filtered, axis_1 = self.X_axisBox.currentText(), \
+                                                              axis_2 = self.Y_axisBox.currentText(), \
+                                                              axis_3 = self.Z_axisBox.currentText(),\
+                                                              weight_1 = self.WeightBoxSelectionFactor_1.value(), \
+                                                              weight_2 = self.WeightBoxSelectionFactor_2.value(), \
+                                                              weight_3 = self.WeightBoxSelectionFactor_3.value())
             print("Save CellsDataframe to Excel...")
             self.DataFrame_sorted.to_excel(os.path.join(self.Tag_folder, datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'_Kcl_CellsProperties.xlsx'))
             
@@ -538,9 +576,10 @@ class MainGUI(QWidget):
         # --------------------------------------------------------------------
         DataFrames_filtered = ProcessImage.FilterDataFrames(self.Excelfile, self.Mean_intensity_in_contour_thres, self.Contour_soma_ratio_thres)
         
-        self.DataFrame_sorted = ProcessImage.Sorting_onTwoaxes(DataFrames_filtered, axis_1 = self.X_axisBox.currentText(), axis_2 = self.Y_axisBox.currentText(), 
-                                                                  weight_1 = self.WeightBoxSelectionFactor_1.value(), weight_2 = self.WeightBoxSelectionFactor_2.value())
-        
+        self.DataFrame_sorted = ProcessImage.sort_on_axes(DataFrames_filtered, axis_1 = self.X_axisBox.currentText(), \
+                                                          axis_2 = self.Y_axisBox.currentText(), axis_3 = self.Z_axisBox.currentText(),
+                                                          weight_1 = self.WeightBoxSelectionFactor_1.value(), weight_2 = self.WeightBoxSelectionFactor_2.value(), \
+                                                          weight_3 = self.WeightBoxSelectionFactor_3.value())        
         # try:
         #     print("Save CellsDataframe to Excel...")
         #     self.DataFrame_sorted.to_excel(os.path.join(self.Tag_folder, datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'_ReloadedEexcel_CellsProperties.xlsx'))
@@ -562,9 +601,10 @@ class MainGUI(QWidget):
 
         DataFrames_filtered = ProcessImage.FilterDataFrames(self.Cell_DataFrame_Merged, self.Mean_intensity_in_contour_thres, self.Contour_soma_ratio_thres)
         
-        self.DataFrame_sorted = ProcessImage.Sorting_onTwoaxes(DataFrames_filtered, axis_1 = self.X_axisBox.currentText(), axis_2 = self.Y_axisBox.currentText(), 
-                                                                  weight_1 = self.WeightBoxSelectionFactor_1.value(), weight_2 = self.WeightBoxSelectionFactor_2.value())
-
+        self.DataFrame_sorted = ProcessImage.sort_on_axes(DataFrames_filtered, axis_1 = self.X_axisBox.currentText(), axis_2 = self.Y_axisBox.currentText(), \
+                                                          axis_3 = self.Z_axisBox.currentText(),\
+                                                          weight_1 = self.WeightBoxSelectionFactor_1.value(), weight_2 = self.WeightBoxSelectionFactor_2.value(), \
+                                                          weight_3 = self.WeightBoxSelectionFactor_3.value())
         print("Save CellsDataframe to Excel...")
         self.DataFrame_sorted.to_excel(os.path.join(self.Tag_folder, datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'_Replot_CellsProperties.xlsx'))
         
@@ -579,14 +619,19 @@ class MainGUI(QWidget):
         None.
 
         """
-        self.EvaluatingPara_list = [self.X_axisBox.currentText(), self.Y_axisBox.currentText()]
+        if self.Z_axisBox.currentText() == 'None':
+            # if two axes analysed
+            self.EvaluatingPara_list = [self.X_axisBox.currentText(), self.Y_axisBox.currentText()]
+        else:
+            self.EvaluatingPara_list = [self.X_axisBox.currentText(), self.Y_axisBox.currentText(), self.Z_axisBox.currentText()]
         
         self.Matdisplay_Figure.clear()
 
         if len(self.EvaluatingPara_list) == 2:
             
             ax1 = self.Matdisplay_Figure.add_subplot(111)
-            ax1.scatter(self.DataFrame_sorted.loc[:,self.EvaluatingPara_list[0]], self.DataFrame_sorted.loc[:,self.EvaluatingPara_list[1]], s=np.pi*3, c='blue', alpha=0.5)
+            ax1.scatter(self.DataFrame_sorted.loc[:,self.EvaluatingPara_list[0]], self.DataFrame_sorted.loc[:,self.EvaluatingPara_list[1]], \
+                        s=np.pi*3, c='blue', alpha=0.5)
             ax1.set_xlabel(self.EvaluatingPara_list[0])
             ax1.set_ylabel(self.EvaluatingPara_list[1])
             self.Matdisplay_Figure.tight_layout()
@@ -597,9 +642,26 @@ class MainGUI(QWidget):
             self.TotalCellNum = len(self.DataFrame_sorted)
             self.normalOutputWritten('---- Total cells selected: {}; Total cells: {}----\n'.format(self.TotaNumofCellSelected, self.TotalCellNum))
             
-            saving_directory = os.path.join(self.Tag_folder, datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'_Screening scatters.html')
-            # self.ProcessML.showPlotlyScatter(self.DataFrame_sorted, x_axis=self.EvaluatingPara_list[0], y_axis=self.EvaluatingPara_list[1], saving_directory = saving_directory)
-                
+            # saving_directory = os.path.join(self.Tag_folder, datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'_Screening scatters.html')
+            # self.ProcessML.showPlotlyScatter\
+            #(self.DataFrame_sorted, x_axis=self.EvaluatingPara_list[0], y_axis=self.EvaluatingPara_list[1], saving_directory = saving_directory)
+
+        elif len(self.EvaluatingPara_list) == 3:
+            
+            ax1 = self.Matdisplay_Figure.add_subplot(111, projection='3d')
+            ax1.scatter(self.DataFrame_sorted.loc[:,self.EvaluatingPara_list[0]], self.DataFrame_sorted.loc[:,self.EvaluatingPara_list[1]], \
+                        self.DataFrame_sorted.loc[:,self.EvaluatingPara_list[2]], s=np.pi*3, c='blue', alpha=0.5)
+            ax1.set_xlabel(self.EvaluatingPara_list[0])
+            ax1.set_ylabel(self.EvaluatingPara_list[1])
+            ax1.set_zlabel(self.EvaluatingPara_list[2])
+            self.Matdisplay_Figure.tight_layout()
+            self.Matdisplay_Canvas.draw()
+            
+            # Some numbers ready for tracing back
+            self.TotaNumofCellSelected = len(self.DataFrame_sorted)
+            self.TotalCellNum = len(self.DataFrame_sorted)
+            self.normalOutputWritten('---- Total cells selected: {}; Total cells: {}----\n'.format(self.TotaNumofCellSelected, self.TotalCellNum))
+            
     def GoThroughTopCells(self, direction):
         """
         According to the direction, get the cell index in dataframe and display
@@ -746,7 +808,7 @@ class MainGUI(QWidget):
         
         # -------Show image in imageview-------------
         self.OriginalImg_item.setImage(np.fliplr(np.rot90(self.loaded_image_display)), autoLevels=True)
-        self.OriginalImg_item.setLevels((0, 1))
+        self.OriginalImg_item.setLevels((0, 3))
         
 #            self.Matdisplay_Figure.clear()
 #            ax1 = self.Matdisplay_Figure.add_subplot(111)
@@ -761,8 +823,9 @@ class MainGUI(QWidget):
         #-------------------Print details of cell of interest----------------
         self.normalOutputWritten('------------------IDNumber {}----------------\n'.format(self.CurrentRankCellpProperties.name))
         self.normalOutputWritten\
-            ('ID: {}\n{}: {}\n{}: {}\n{}: {}\n'.format(self.meta_data, self.EvaluatingPara_list[0], round(self.CurrentRankCellpProperties.loc[self.EvaluatingPara_list[0]], 4), \
-                                                                 self.EvaluatingPara_list[1], round(self.CurrentRankCellpProperties.loc[self.EvaluatingPara_list[1]], 4), 
+            ('ID: {}\n{}: {}\n{}: {}\n{}: {}\n'.format\
+            (self.meta_data, self.EvaluatingPara_list[0], round(self.CurrentRankCellpProperties.loc[self.EvaluatingPara_list[0]], 4), \
+                                                                self.EvaluatingPara_list[1], round(self.CurrentRankCellpProperties.loc[self.EvaluatingPara_list[1]], 4), 
                                                                  'IDNumber', self.CurrentRankCellpProperties.name))
         
     def display_ML_mask(self):
@@ -814,17 +877,27 @@ class MainGUI(QWidget):
         """
 #        if self.ButtonShowInScatter.isChecked():
         self.Matdisplay_Figure.clear()
-        ax1 = self.Matdisplay_Figure.add_subplot(111)
-        ax1.scatter(self.DataFrame_sorted.loc[:,self.EvaluatingPara_list[0]], self.DataFrame_sorted.loc[:,self.EvaluatingPara_list[1]], s=np.pi*3, c='blue', alpha=0.5)
-        ax1.scatter(self.DataFrame_sorted.iloc[self.pop_next_top_cell_counter-1, :].loc[self.EvaluatingPara_list[0]], \
-                    self.DataFrame_sorted.iloc[self.pop_next_top_cell_counter-1, :].loc[self.EvaluatingPara_list[1]], 
-                    s=np.pi*8, c='red', alpha=0.5)
-        ax1.set_xlabel(self.EvaluatingPara_list[0])
-        ax1.set_ylabel(self.EvaluatingPara_list[1])
-        self.Matdisplay_Figure.tight_layout()
-        self.Matdisplay_Canvas.draw()            
+        if len(self.EvaluatingPara_list) == 2:
+            ax1 = self.Matdisplay_Figure.add_subplot(111)
+            ax1.scatter(self.DataFrame_sorted.loc[:,self.EvaluatingPara_list[0]], self.DataFrame_sorted.loc[:,self.EvaluatingPara_list[1]], s=np.pi*3, c='blue', alpha=0.5)
+            ax1.scatter(self.DataFrame_sorted.iloc[self.pop_next_top_cell_counter-1, :].loc[self.EvaluatingPara_list[0]], \
+                        self.DataFrame_sorted.iloc[self.pop_next_top_cell_counter-1, :].loc[self.EvaluatingPara_list[1]], 
+                        s=np.pi*8, c='red', alpha=0.5)
+            ax1.set_xlabel(self.EvaluatingPara_list[0])
+            ax1.set_ylabel(self.EvaluatingPara_list[1])
+            self.Matdisplay_Figure.tight_layout()
+            self.Matdisplay_Canvas.draw()            
 #        else:
 #            self.GoThroughTopCells('null')
+        elif len(self.EvaluatingPara_list) == 3:
+            ax1 = self.Matdisplay_Figure.add_subplot(111, projection='3d')
+            ax1.scatter(self.DataFrame_sorted.loc[:,self.EvaluatingPara_list[0]], self.DataFrame_sorted.loc[:,self.EvaluatingPara_list[1]], \
+                        self.DataFrame_sorted.loc[:,self.EvaluatingPara_list[2]], s=np.pi*3, c='blue', alpha=0.5)
+            ax1.set_xlabel(self.EvaluatingPara_list[0])
+            ax1.set_ylabel(self.EvaluatingPara_list[1])
+            ax1.set_zlabel(self.EvaluatingPara_list[2])
+            self.Matdisplay_Figure.tight_layout()
+            self.Matdisplay_Canvas.draw()            
             
     def ShowSequenceScatter(self):
         """
@@ -837,19 +910,32 @@ class MainGUI(QWidget):
         """
 #        if self.ShowSequenceScatterButton.isChecked():
         self.Matdisplay_Figure.clear()
-        ax1 = self.Matdisplay_Figure.add_subplot(111)
         
-        ax1.scatter(self.DataFrame_sorted.loc[:,self.EvaluatingPara_list[0]], self.DataFrame_sorted.loc[:,self.EvaluatingPara_list[1]], s=np.pi*3, c='blue', alpha=0.5)
-        ax1.scatter(self.DataFrame_sorted.loc[self.SpecificIndexInArray, :].loc[self.EvaluatingPara_list[0]], \
-                    self.DataFrame_sorted.loc[self.SpecificIndexInArray, :].loc[self.EvaluatingPara_list[1]], 
-                    s=np.pi*8, c='red', alpha=0.5)
-
-        ax1.set_xlabel(self.EvaluatingPara_list[0])
-        ax1.set_ylabel(self.EvaluatingPara_list[1])
-        self.Matdisplay_Figure.tight_layout()
-        self.Matdisplay_Canvas.draw()            
-#        else:
-#            self.GoThroughTopCells('sequence')
+        if len(self.EvaluatingPara_list) == 2:
+            ax1 = self.Matdisplay_Figure.add_subplot(111)
+            ax1.scatter(self.DataFrame_sorted.loc[:,self.EvaluatingPara_list[0]], self.DataFrame_sorted.loc[:,self.EvaluatingPara_list[1]], \
+                        s=np.pi*3, c='blue', alpha=0.5)
+            ax1.scatter(self.DataFrame_sorted.loc[self.SpecificIndexInArray, :].loc[self.EvaluatingPara_list[0]], \
+                        self.DataFrame_sorted.loc[self.SpecificIndexInArray, :].loc[self.EvaluatingPara_list[1]], 
+                        s=np.pi*8, c='red', alpha=0.5)
+    
+            ax1.set_xlabel(self.EvaluatingPara_list[0])
+            ax1.set_ylabel(self.EvaluatingPara_list[1])
+            self.Matdisplay_Figure.tight_layout()
+            self.Matdisplay_Canvas.draw()            
+    #        else:
+    #            self.GoThroughTopCells('sequence')
+        elif len(self.EvaluatingPara_list) == 3:
+            ax1 = self.Matdisplay_Figure.add_subplot(111, projection='3d')
+            ax1.scatter(self.DataFrame_sorted.loc[self.SpecificIndexInArray, :].loc[self.EvaluatingPara_list[0]], \
+                        self.DataFrame_sorted.loc[self.SpecificIndexInArray, :].loc[self.EvaluatingPara_list[1]], \
+                        self.DataFrame_sorted.loc[self.SpecificIndexInArray, :].loc[self.EvaluatingPara_list[2]], \
+                        s=np.pi*8, c='red', alpha=0.5)
+            ax1.set_xlabel(self.EvaluatingPara_list[0])
+            ax1.set_ylabel(self.EvaluatingPara_list[1])
+            ax1.set_zlabel(self.EvaluatingPara_list[2])
+            self.Matdisplay_Figure.tight_layout()
+            self.Matdisplay_Canvas.draw()      
 
     def MoveToCoordinate(self):
         """

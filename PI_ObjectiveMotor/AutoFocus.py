@@ -121,7 +121,7 @@ class FocusFinder():
             # Generate a dictionary and find the position where has the highest focus degree.
             max_focus_pos = dict(zip(interpolated_fitted_curve, x_axis_new))[np.amax(interpolated_fitted_curve)]
             
-            if False: # Plot the fitting.
+            if True: # Plot the fitting.
                 plt.plot(sample_positions, np.asarray(degree_of_focus_list),'b+:',label='data')
                 plt.plot(x_axis_new, interpolated_fitted_curve,'ro:',label='fit')
                 plt.legend()
@@ -244,13 +244,17 @@ class FocusFinder():
             # Find the AOTF channel key
             for key in self.imaging_conditions:
                 if 'AO' in key:
+                    # like '488AO'
                     AOTF_channel_key = key
             
             # Set the AOTF first.
             self.AOTF_runner.sendSingleDigital('blankingall', True)
             self.AOTF_runner.sendSingleAnalog(AOTF_channel_key, self.imaging_conditions[AOTF_channel_key])
+            
             # Snap an image from camera
-            self.camera_image = self.HamamatsuCam_ins.SnapImage(self.imaging_conditions['exposure_time'])      
+            self.camera_image = self.HamamatsuCam_ins.SnapImage(self.imaging_conditions['exposure_time'])
+            time.sleep(0.5)
+            
             # Set back AOTF
             self.AOTF_runner.sendSingleDigital('blankingall', False)
             self.AOTF_runner.sendSingleAnalog(AOTF_channel_key, 0)
@@ -312,7 +316,13 @@ class FocusFinder():
     #     # Update total number of steps.
     #     self.steps_taken += 1
 if __name__ == "__main__":
-    ins = FocusFinder()
+    # ins = FocusFinder()
+    # ins.total_step_number = 7
+    # ins.init_step_size = 0.013
+    # ins.gaussian_fit() # will return false if there's no cell in view.
+    # ins.pi_device_instance.CloseMotorConnection()
+    
+    ins = FocusFinder(source_of_image = "Camera", imaging_conditions = {'488AO':3, 'exposure_time':0.005})
     ins.total_step_number = 7
     ins.init_step_size = 0.013
     ins.gaussian_fit() # will return false if there's no cell in view.

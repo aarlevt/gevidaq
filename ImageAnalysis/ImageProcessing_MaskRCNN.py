@@ -319,18 +319,25 @@ class ProcessImageML():
         
         return cell_Data
     
-    def analyze_images_in_folder(self, folder, show_result = True, save_mask = True, save_excel = True):
+    def analyze_images_in_folder(self, folder, generate_zmax = False, show_result = True, save_mask = True, save_excel = True):
         
         flat_cell_counted_in_folder = 0  
         total_cells_counted_in_folder = 0
         
+        # If need to do zmax projection first
+        if generate_zmax == True:
+            ProcessImage.cam_screening_post_processing(folder)
+            # Here a new folder for maxProjection is generated inside, change the path
+            folder = os.path.join(folder, 'maxProjection')
+            
         # Get a list of file names
         fileNameList = []
-        for file in os.listdir(folder):
+        for file in os.listdir(folder):       
             if "tif" in file and "LED" not in file:
                 fileNameList.append(file)
         print(fileNameList)
         
+        # Analyse each image
         for image_file_name in fileNameList:
             print(image_file_name)
             Rawimage = imread(os.path.join(folder, image_file_name))
@@ -426,9 +433,10 @@ if __name__ == "__main__":
     #     endtime = time.time()
     #     print(starttime-endtime)
         
-    # cell_data = ProcessML.analyze_single_image(img, show_each_cell = False)
+    # cell_data = ProcessML.analyze_single_image(img, show_each_cell = True)
     
-    cell_data = ProcessML.analyze_images_in_folder(folder=r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Vidya\2021-2-21 screening delizzia\images_before_background_substraction\WT 640 nm')
+    cell_data = ProcessML.analyze_images_in_folder\
+        (folder=r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Delizzia\2020-11-19_2020-11-19_10-14-32_trial_cam_screen', generate_zmax = True)
     
     
       
