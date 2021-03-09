@@ -13,7 +13,7 @@ from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QColor, QPen, QPixmap
 from PyQt5.QtWidgets import QWidget, QLabel, QGridLayout, QDoubleSpinBox, QPushButton, QGroupBox, QLineEdit,\
-                            QVBoxLayout, QHBoxLayout, QComboBox, QMessageBox, QSpinBox
+                            QVBoxLayout, QHBoxLayout, QComboBox, QMessageBox, QSpinBox, QTabWidget
 import pyqtgraph.exporters
 
 import pyqtgraph as pg
@@ -97,7 +97,7 @@ class PatchclampSealTestUI(QWidget):
         #----------------------------------------------------------------------
         #----------------------------------GUI---------------------------------
         #----------------------------------------------------------------------
-        self.setFixedSize(720,670)
+        # self.setFixedSize(720,670)
         self.setWindowTitle("Patchclamp Seal Test")
         
         self.ICON_RED_LED = "./Icons/off.png"
@@ -105,8 +105,8 @@ class PatchclampSealTestUI(QWidget):
         self.is_sealtesting = False
         
         #------------------------------Gains-----------------------------------
-        gainContainer = QGroupBox("Gains")
-        gainContainer.setFixedWidth(320)
+        gainContainer = StylishQT.roundQGroupBox(title = "Gains")
+        # gainContainer.setFixedWidth(320)
         gainLayout = QGridLayout()
         
         gainLayout.addWidget(QLabel("Input Voltage"), 0, 0)
@@ -131,8 +131,8 @@ class PatchclampSealTestUI(QWidget):
         
         gainContainer.setLayout(gainLayout)
         #------------------------------Wavesettings-----------------------------------
-        WavesettingsContainer = QGroupBox("Wave settings")
-        WavesettingsContainer.setFixedWidth(320)
+        WavesettingsContainer = StylishQT.roundQGroupBox(title = "Wave settings")
+        # WavesettingsContainer.setFixedWidth(320)
         WavesettingsContainerLayout = QGridLayout()
         
         WavesettingsContainerLayout.addWidget(QLabel("Voltage step(mV)"), 0, 0)
@@ -153,8 +153,8 @@ class PatchclampSealTestUI(QWidget):
         
         WavesettingsContainer.setLayout(WavesettingsContainerLayout)
         #------------------------------Membrane potential-----------------------------------
-        Vm_measureContainer = QGroupBox("Vm measurement")
-        Vm_measureContainer.setFixedWidth(320)
+        Vm_measureContainer = StylishQT.roundQGroupBox(title = "Vm measurement")
+        # Vm_measureContainer.setFixedWidth(320)
         Vm_measureContainerLayout = QGridLayout()
 
         Vm_measureContainerLayout.addWidget(QLabel("Clamping current(pA)"), 0, 0)
@@ -179,8 +179,8 @@ class PatchclampSealTestUI(QWidget):
         
         Vm_measureContainer.setLayout(Vm_measureContainerLayout)
         #------------------------------zap-----------------------------------
-        zapContainer = QGroupBox("ZAP")
-        zapContainer.setFixedWidth(320)
+        zapContainer = StylishQT.roundQGroupBox(title = "ZAP")
+        # zapContainer.setFixedWidth(320)
         zapContainerLayout = QGridLayout()
         
         self.ICON_zap = './Icons/zap.jpg'
@@ -214,19 +214,9 @@ class PatchclampSealTestUI(QWidget):
         
         zapContainer.setLayout(zapContainerLayout)
         #----------------------------Control-----------------------------------
-        controlContainer = QGroupBox("Control")
+        controlContainer = StylishQT.roundQGroupBox(title = "Control")
+        controlContainer.setFixedWidth(350)
         controlLayout = QGridLayout()
-    
-        self.startButton = StylishQT.runButton()
-        self.startButton.clicked.connect(lambda: self.measure())
-        # self.startButton.clicked.connect(self.setRedlight)
-        # self.startButton.clicked.connect(self.startUpdatingGUIThread)
-        controlLayout.addWidget(self.startButton, 0, 0)
-        
-        self.stopButton = StylishQT.stop_deleteButton()
-        self.stopButton.setEnabled(False)
-        self.stopButton.clicked.connect(lambda: self.stopMeasurement())
-        controlLayout.addWidget(self.stopButton, 0, 1)
         
 #        controlLayout.addWidget(QLabel("Holding Vm:"), 1, 0)
 #        self.HoldingList = QComboBox()
@@ -257,15 +247,29 @@ class PatchclampSealTestUI(QWidget):
         self.stopholdingbutton.clicked.connect(self.setRedlight)        
         controlLayout.addWidget(self.stopholdingbutton, 2, 2)        
         '''
-        controlLayout.addWidget(gainContainer, 0, 3)
+        controlLayout.addWidget(gainContainer, 0, 0, 1, 2)
         controlLayout.addWidget(WavesettingsContainer, 1, 0, 1, 2)
-        controlLayout.addWidget(Vm_measureContainer, 1, 3)
-        controlLayout.addWidget(zapContainer, 2, 3)        
+        controlLayout.addWidget(Vm_measureContainer, 2, 0, 1, 2)
+        controlLayout.addWidget(zapContainer, 3, 0, 1, 2)  
+        
+        self.startButton = StylishQT.runButton("Start seal-test")
+        self.startButton.clicked.connect(lambda: self.measure())
+        # self.startButton.setFixedWidth(120)
+        # self.startButton.clicked.connect(self.setRedlight)
+        # self.startButton.clicked.connect(self.startUpdatingGUIThread)
+        controlLayout.addWidget(self.startButton, 4, 0, 1, 1)
+        
+        self.stopButton = StylishQT.stop_deleteButton()
+        self.stopButton.setEnabled(False)
+        # self.stopButton.setFixedWidth(120)
+        self.stopButton.clicked.connect(lambda: self.stopMeasurement())
+        controlLayout.addWidget(self.stopButton, 4, 1, 1, 1)
+        
         controlContainer.setLayout(controlLayout)
         
         #-----------------------------Plots------------------------------------
-        plotContainer = QGroupBox("Output")
-        plotContainer.setFixedWidth(700)
+        plotContainer = StylishQT.roundQGroupBox(title = "Output")
+        plotContainer.setFixedWidth(350)
         self.plotLayout = QGridLayout() #We set the plotLayout as an attribute of the object (i.e. self.plotLayout instead of plotLayout)
                                         #This is to prevent the garbage collector of the C++ wrapper from deleting the layout and thus triggering errors.
                                         #Derived from: https://stackoverflow.com/questions/17914960/pyqt-runtimeerror-wrapped-c-c-object-has-been-deleted
@@ -274,35 +278,40 @@ class PatchclampSealTestUI(QWidget):
         self.outVolPlotWidget = SlidingWindow(200, title = "Voltage", unit = "V") #Should be bigger than the readvalue
         self.outCurPlotWidget = SlidingWindow(200, title = "Current", unit = "A") #Should be bigger than the readvalue
         
+        self.display_tab_widget = QTabWidget()
+        
         # self.plotLayout.addWidget(QLabel('Voltage (mV):'), 0, 0)
-        self.plotLayout.addWidget(self.outVolPlotWidget, 1, 0)
+        self.display_tab_widget.addTab(self.outCurPlotWidget, "Current")
+        # self.plotLayout.addWidget(self.outVolPlotWidget, 1, 0)
         # self.plotLayout.addWidget(QLabel('Current (pA):'), 0, 1)
-        self.plotLayout.addWidget(self.outCurPlotWidget, 1, 1)
+        self.display_tab_widget.addTab(self.outVolPlotWidget, "Voltage")
+        # self.plotLayout.addWidget(self.outCurPlotWidget, 1, 1)
         
         valueContainer = QGroupBox("Resistance/Capacitance")
-        self.valueLayout = QHBoxLayout()
+        self.valueLayout = QGridLayout()
         self.resistanceLabel = QLabel("Resistance: ")
         self.capacitanceLabel = QLabel("Capacitance: ")
         self.ratioLabel = QLabel("Ratio: ")
-        self.valueLayout.addWidget(self.resistanceLabel)
-        self.valueLayout.addWidget(self.capacitanceLabel)
-        self.valueLayout.addWidget(self.ratioLabel)
+        self.valueLayout.addWidget(self.resistanceLabel, 0, 0)
+        self.valueLayout.addWidget(self.capacitanceLabel, 0, 1)
+        self.valueLayout.addWidget(self.ratioLabel, 0, 2)
         
         self.pipette_resistance = QLineEdit(self)
         self.pipette_resistance.setPlaceholderText('Pipette resistance')
         self.pipette_resistance.setFixedWidth(100)
-        self.valueLayout.addWidget(self.pipette_resistance)
+        self.valueLayout.addWidget(self.pipette_resistance, 1, 0)
         
         self.savedataButton = QPushButton("Save figure")
         self.savedataButton.clicked.connect(lambda: self.savePatchfigure())
-        self.valueLayout.addWidget(self.savedataButton)        
+        self.valueLayout.addWidget(self.savedataButton, 1, 1)        
 
         self.resetButton = QPushButton("Reset Iplot")
         self.resetButton.clicked.connect(lambda: self.ResetCurrentImgView())
-        self.valueLayout.addWidget(self.resetButton) 
+        self.valueLayout.addWidget(self.resetButton, 1, 2) 
         
         valueContainer.setLayout(self.valueLayout)
-        self.plotLayout.addWidget(valueContainer, 2, 0, 1, 2)
+        self.plotLayout.addWidget(self.display_tab_widget, 0, 0, 1, 1)
+        self.plotLayout.addWidget(valueContainer, 2, 0, 1, 1)
         
         plotContainer.setLayout(self.plotLayout)
         #---------------------------Adding to master---------------------------

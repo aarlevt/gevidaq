@@ -20,7 +20,7 @@ from IPython import get_ipython
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtCore import pyqtSignal, QThread
-from PyQt5.QtWidgets import (QWidget,QLineEdit, QLabel, QGridLayout, QPushButton, QVBoxLayout, QProgressBar, QHBoxLayout, QListWidget,
+from PyQt5.QtWidgets import (QWidget,QLineEdit, QButtonGroup, QLabel, QGridLayout, QPushButton, QVBoxLayout, QProgressBar, QHBoxLayout, QListWidget,
                              QComboBox, QMessageBox, QPlainTextEdit, QGroupBox, QTabWidget, QCheckBox, QDoubleSpinBox, QSpinBox)
 import pyqtgraph as pg
 import pyqtgraph.exporters
@@ -31,9 +31,11 @@ if __name__ == "__main__":
     abspath = os.path.abspath(__file__)
     dname = os.path.dirname(abspath)
     os.chdir(dname+'/../')
-from NIDAQ.wavegenerator import (waveRecPic, generate_AO_for640, generate_AO_for488, generate_digital_waveform, generate_DO_forPerfusion,
-                                        generate_AO_for532, generate_AO_forpatch, generate_ramp, generate_AO)
+from NIDAQ.wavegenerator import (waveRecPic, generate_AO_for640, generate_digital_waveform,
+                                 generate_ramp, generate_AO)
 from NIDAQ.DAQoperator import DAQmission
+from ThorlabsFilterSlider.filterpyserial import ELL9Filter
+from GeneralUsage.ThreadingFunc import run_in_thread
 from PIL import Image
 
 import threading
@@ -144,7 +146,7 @@ class WaveformGenerator(QWidget):
         # Add tabs
         self.wavetabs.addTab(self.wavetab1,"Block")
         self.wavetabs.addTab(self.wavetab2,"Ramp")
-        self.wavetabs.addTab(self.wavetab3,"Import")
+        # self.wavetabs.addTab(self.wavetab3,"Import")
         self.wavetabs.addTab(self.wavetab4,"Galvo")
         self.wavetabs.addTab(self.wavetab5,"Photocycle")    
         
@@ -176,12 +178,6 @@ class WaveformGenerator(QWidget):
         self.ReadLayout.addWidget(self.SamplingRateTextbox, 0, 5)
         self.ReadLayout.addWidget(QLabel("Sampling rate:"), 0, 4)
         
-        # Checkbox for saving waveforms
-        self.checkbox_saveWaveforms= QCheckBox("Save wavefroms")
-#        self.checkbox_saveWaveforms.setChecked(True)
-        self.checkbox_saveWaveforms.setStyleSheet('color:CadetBlue;font:bold "Times New Roman"')
-        self.ReadLayout.addWidget(self.checkbox_saveWaveforms, 1, 4) 
-        
         # Read-in channels
         record_channel_container = StylishQT.roundQGroupBox(title = "Recording")
         record_channel_container_layout = QGridLayout()
@@ -202,9 +198,15 @@ class WaveformGenerator(QWidget):
         
         self.ReadLayout.addWidget(record_channel_container, 0, 2, 3, 1)
         
+        self.ReadLayout.addWidget(QLabel("Master clock:"), 1, 4)
+        
         self.clock_source = QComboBox()
         self.clock_source.addItems(['DAQ', 'Camera'])
         self.ReadLayout.addWidget(self.clock_source, 1, 5)
+        
+        self.button_import_np_load = QPushButton('Load waveforms', self)
+        self.ReadLayout.addWidget(self.button_import_np_load, 2, 5)
+        self.button_import_np_load.clicked.connect(self.load_wave_np)
         
         self.saving_prefix = ''
         
@@ -212,30 +214,57 @@ class WaveformGenerator(QWidget):
         executionContainer = QGroupBox("Execution")
         executionContainerLayout = QGridLayout() #self.AnalogLayout manager
         
-        executionContainerLayout.addWidget(QLabel('Progress:'), 0, 1)
+        # Checkbox for saving waveforms
+        self.checkbox_saveWaveforms= QCheckBox("Save wavefroms")
+#        self.checkbox_saveWaveforms.setChecked(True)
+        self.checkbox_saveWaveforms.setStyleSheet('color:CadetBlue;font:bold "Times New Roman"')
+        executionContainerLayout.addWidget(self.checkbox_saveWaveforms, 0, 0) 
+        
+        # Read-in channels
+        emission_channel_container = StylishQT.roundQGroupBox(title = "Emission filter")
+        emission_channel_container_layout = QGridLayout()
+        
+        self.FilterButtongroup = QButtonGroup()
+        
+        self.ArchEmissionbox = QCheckBox("Arch")
+        self.ArchEmissionbox.setStyleSheet('color:red;font:bold "Times New Roman"')
+        emission_channel_container_layout.addWidget(self.ArchEmissionbox, 0, 0)     
+        self.FilterButtongroup.addButton(self.ArchEmissionbox)
+        
+        self.GFPEmissionbox = QCheckBox("GFP/Citrine")
+        self.GFPEmissionbox.setStyleSheet('color:green;font:bold "Times New Roman"')
+        emission_channel_container_layout.addWidget(self.GFPEmissionbox, 1, 0)   
+        self.FilterButtongroup.addButton(self.GFPEmissionbox)
+        self.FilterButtongroup.setExclusive(True)
+        
+        emission_channel_container.setLayout(emission_channel_container_layout)
+        
+        executionContainerLayout.addWidget(emission_channel_container, 1, 0, 2, 1)
+        
+        executionContainerLayout.addWidget(QLabel('Progress:'), 0, 2)
         self.waveform_progressbar = QProgressBar(self)
         self.waveform_progressbar.setMaximumWidth(250)
         self.waveform_progressbar.setMinimumWidth(200)
         self.waveform_progressbar.setMaximum(100)
         self.waveform_progressbar.setStyleSheet('QProgressBar {color: black;border: 2px solid grey; border-radius:8px;text-align: center;}'
                                                 'QProgressBar::chunk {background-color: #CD96CD; width: 10px; margin: 0.5px;}')
-        executionContainerLayout.addWidget(self.waveform_progressbar, 0, 2)
+        executionContainerLayout.addWidget(self.waveform_progressbar, 0, 3)
         
         self.button_all = StylishQT.generateButton()
         self.button_all.setFixedWidth(110)
-        executionContainerLayout.addWidget(self.button_all, 0, 0)
+        executionContainerLayout.addWidget(self.button_all, 0, 1)
         self.button_all.clicked.connect(self.organize_waveforms)
 
         self.button_execute = StylishQT.runButton("Execute")
         self.button_execute.setEnabled(False)
         self.button_execute.setFixedWidth(110)
-        executionContainerLayout.addWidget(self.button_execute, 1, 0)
+        executionContainerLayout.addWidget(self.button_execute, 1, 1)
         
         self.button_execute.clicked.connect(self.execute_tread)   
         self.button_execute.clicked.connect(self.startProgressBar)     
                 
         self.button_clear_canvas = StylishQT.cleanButton(label = " Canvas")
-        executionContainerLayout.addWidget(self.button_clear_canvas, 2, 0)
+        executionContainerLayout.addWidget(self.button_clear_canvas, 2, 1)
         
         self.button_clear_canvas.clicked.connect(self.clear_canvas)  
         
@@ -457,33 +486,33 @@ class WaveformGenerator(QWidget):
         
         #----------------------------------------------Tab for importing waveform------------------------------------------------
         
-        self.importtablayout= QGridLayout()
-        self.import_tabs = QTabWidget()
-        self.npy_import_tab = QWidget()
-        self.npy_import_tablayout= QGridLayout()
-        self.matlab_import_tab = QWidget()
-        self.matlab_import_tablayout= QGridLayout()
+        # self.importtablayout= QGridLayout()
+        # self.import_tabs = QTabWidget()
+        # self.npy_import_tab = QWidget()
+        # self.npy_import_tablayout= QGridLayout()
+        # self.matlab_import_tab = QWidget()
+        # self.matlab_import_tablayout= QGridLayout()
         
-        self.npy_import_tab.setLayout(self.npy_import_tablayout)
-        self.matlab_import_tab.setLayout(self.matlab_import_tablayout)
-        self.import_tabs.addTab(self.npy_import_tab, 'Python')
-        self.import_tabs.addTab(self.matlab_import_tab, 'Matlab')
+        # self.npy_import_tab.setLayout(self.npy_import_tablayout)
+        # self.matlab_import_tab.setLayout(self.matlab_import_tablayout)
+        # self.import_tabs.addTab(self.npy_import_tab, 'Python')
+        # self.import_tabs.addTab(self.matlab_import_tab, 'Matlab')
         
-        # Python import tab
-        self.textbox_loadwave = QLineEdit(self)        
-        self.npy_import_tablayout.addWidget(self.textbox_loadwave, 0, 0)
+        # # Python import tab
+        # self.textbox_loadwave = QLineEdit(self)        
+        # self.npy_import_tablayout.addWidget(self.textbox_loadwave, 0, 0)
         
-        self.button_import_np_browse = QPushButton('Browse', self)
-        self.npy_import_tablayout.addWidget(self.button_import_np_browse, 0, 1) 
+        # self.button_import_np_browse = QPushButton('Browse', self)
+        # self.npy_import_tablayout.addWidget(self.button_import_np_browse, 0, 1) 
         
-        self.button_import_np_browse.clicked.connect(self.get_wave_file_np)
+        # self.button_import_np_browse.clicked.connect(self.get_wave_file_np)
         
-        self.button_import_np_load = QPushButton('Load', self)
-        self.npy_import_tablayout.addWidget(self.button_import_np_load, 0, 2)
-        self.button_import_np_load.clicked.connect(self.load_wave_np)
+        # self.button_import_np_load = QPushButton('Load', self)
+        # self.npy_import_tablayout.addWidget(self.button_import_np_load, 0, 2)
+        # self.button_import_np_load.clicked.connect(self.load_wave_np)
 
-        self.importtablayout.addWidget(self.import_tabs,0,0)
-        self.wavetab3.setLayout(self.importtablayout)
+        # self.importtablayout.addWidget(self.import_tabs,0,0)
+        # self.wavetab3.setLayout(self.importtablayout)
         
         #----------------------------------------------Tab for galvo------------------------------------------------
         #----------------------------------------------Galvo scanning----------------------------------------------
@@ -709,6 +738,9 @@ class WaveformGenerator(QWidget):
         self.textbox_loadwave.setText(self.wavenpfileName)
         
     def load_wave_np(self):
+        
+        self.wavenpfileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, 'Single File', 'M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data',"(*.npy)")        
+        
         temp_loaded_container = np.load(self.wavenpfileName, allow_pickle=True)
 
         try:
@@ -1149,7 +1181,7 @@ class WaveformGenerator(QWidget):
         self.waveform_data_dict = {}
 
     def organize_waveforms(self):
-
+        
         #-----------------Find the reference waveform length.------------------
         ReferenceWaveform_menu_text = self.ReferenceWaveform_menu.selectedItems()[0].text()
         
@@ -1300,10 +1332,33 @@ class WaveformGenerator(QWidget):
         exporter.export(os.path.join(self.savedirectory, datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'_'+self.saving_prefix+'_'+'Wavefroms_sr_'+ str(int(self.SamplingRateTextbox.value()))) + '.png')     
     
     def execute_tread(self):
+        if self.FilterButtongroup.checkedId() == -1:
+            # No emission filter configured.
+            pass
+        elif self.FilterButtongroup.checkedId() == -2:
+            # Arch filter selected.
+            move_emission_filter_thread = threading.Thread(target=self.filter_move_towards("COM15", 0))
+            move_emission_filter_thread.start() 
+            move_emission_filter_thread.join()
+            print("Emission filter moved to Arch.")
+            time.sleep(0.7)
+        elif self.FilterButtongroup.checkedId() == -3:
+            # Arch filter selected.
+            move_emission_filter_thread = threading.Thread(target=self.filter_move_towards("COM15", 1))
+            move_emission_filter_thread.start() 
+            move_emission_filter_thread.join()
+            print("Emission filter moved to GFP/Citrine.")
+            time.sleep(0.7)
+            
         run_DAQ_Waveforms_thread = threading.Thread(target=self.run_DAQ_Waveforms, daemon = False)
         run_DAQ_Waveforms_thread.start()
+
+    def filter_move_towards(self, COMport, pos):
+        ELL9Filter_ins = ELL9Filter(COMport)
+        ELL9Filter_ins.moveToPosition(pos)
         
     def run_DAQ_Waveforms(self):
+        # Execute the runWaveforms function from NIdaq
         self.adcollector = DAQmission()
         self.adcollector.runWaveforms(clock_source = self.clock_source.currentText(), sampling_rate = self.uiDaq_sample_rate,
                                       analog_signals = self.analog_array, digital_signals = self.digital_array, 
@@ -1311,7 +1366,7 @@ class WaveformGenerator(QWidget):
         self.adcollector.save_as_binary(self.savedirectory)
         
         self.button_execute.setEnabled(False)
-        
+    
     def load_waveforms(self, WaveformTuple):
         self.WaveformSamplingRate = WaveformTuple[0]
         self.WaveformAnalogContainer = WaveformTuple[1]

@@ -436,7 +436,8 @@ if __name__ == "__main__":
     # cell_data = ProcessML.analyze_single_image(img, show_each_cell = True)
     
     cell_data = ProcessML.analyze_images_in_folder\
-        (folder=r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Delizzia\2020-11-19_2020-11-19_10-14-32_trial_cam_screen', generate_zmax = True)
+        (folder=r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Delizzia\2021-02-25 Helios WT screening 1000ng 532nm\pos3', generate_zmax = True)
+        
     
     
       

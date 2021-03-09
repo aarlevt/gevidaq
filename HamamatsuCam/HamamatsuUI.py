@@ -58,7 +58,7 @@ class CameraUI(QMainWindow):
         self.ShowROIImgSwitch = False
         self.ROIselector_ispresented = False
         self.Live_sleeptime = 0.06666 # default camera live fps
-        self.default_folder = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data"
+        self.default_folder = "M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data"
         #----------------------------------------------------------------------
         #----------------------------------GUI---------------------------------
         #----------------------------------------------------------------------
@@ -1528,8 +1528,6 @@ class CameraUI(QMainWindow):
         #     self.CamSaving_directory_textbox.setText('...' + self.saving_path[len(self.saving_path)-35:len(self.saving_path)])
         # elif len(self.saving_path) > 1:
         #     self.CamSaving_directory_textbox.setText(self.saving_path)
-        print(os.path.join(self.saving_path, \
-                           self.CamSaving_filename_textbox.text() + str(datetime.now().strftime('%Y-%m-%d_%H-%M-%S')) + ".tif"))
  
     def get_file_dir(self):
         return os.path.join(self.saving_path, self.CamSaving_filename_textbox.text() + '_' + str(datetime.now().strftime('%Y-%m-%d_%H-%M-%S')) + ".tif")

@@ -158,6 +158,7 @@ class CamActuator:
         #         Snap and return captured image.
         #         - exposure_time: Exposure time of the camera.
         # =====================================================================
+        self.hcam.setPropertyValue("trigger_source", 'INTERNAL')
         self.hcam.setPropertyValue("exposure_time", exposure_time)
         
         self.hcam.setACQMode("fixed_length", number_frames = 1)

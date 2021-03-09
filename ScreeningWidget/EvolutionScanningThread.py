@@ -81,6 +81,7 @@ class ScanningExecutionThread(QThread):
             self.HamamatsuCam = CamActuator()
             self.HamamatsuCam.initializeCamera()
         else:
+            self.HamamatsuCam = None
             print('No camera involved.')
         
         """
@@ -614,6 +615,8 @@ class ScanningExecutionThread(QThread):
         ZStackNum = int(ZStackinfor[ZStackinfor.index('Focus')+5])
         ZStackStep = float(ZStackinfor[ZStackinfor.index('Being')+5:len(ZStackinfor)])
         
+        AutoFocusConfig = self.GeneralSettingDict['AutoFocusConfig']
+        
         # If manual focus correction applies, unpact the target focus infor.
         if len(self.GeneralSettingDict['FocusCorrectionMatrixDict']) > 0:
             FocusPosArray = self.GeneralSettingDict['FocusCorrectionMatrixDict']['RoundPackage_{}_Grid_{}'.format(EachRound+1, EachGrid)]
@@ -634,12 +637,17 @@ class ScanningExecutionThread(QThread):
             if auto_focus_flag == "yes":
                 
                 if self.coord_array['focus_position'] == -1.:
-                    instance_FocusFinder = FocusFinder(motor_handle = self.pi_device_instance)
+                    instance_FocusFinder = \
+                    FocusFinder(source_of_image = AutoFocusConfig['source_of_image'], init_search_range = AutoFocusConfig['init_search_range'], \
+                                total_step_number = AutoFocusConfig['total_step_number'], imaging_conditions = AutoFocusConfig['imaging_conditions'],\
+                                motor_handle = self.pi_device_instance, camera_handle = self.HamamatsuCam)
                     print("--------------Start auto-focusing-----------------")
-                    # instance_FocusFinder.total_step_number = 7
-                    # instance_FocusFinder.init_step_size = 0.013
-                    # self.auto_focus_position = instance_FocusFinder.gaussian_fit()
-                    self.auto_focus_position = instance_FocusFinder.bisection()
+                    if self.HamamatsuCam != None:
+                        # For camera AF
+                        self.auto_focus_position = instance_FocusFinder.gaussian_fit()
+                    else:
+                        # For PMT AF
+                        self.auto_focus_position = instance_FocusFinder.bisection()
                     
                     relative_move_coords = [[1550,0],[0,1550],[1550,1550]]
                     trial_num = 0
@@ -651,7 +659,12 @@ class ScanningExecutionThread(QThread):
                             time.sleep(1)
                             print('Now stage pos is {}'.format(self.ludlStage.getPos()))
                             
-                            self.auto_focus_position = instance_FocusFinder.bisection()
+                            if self.HamamatsuCam != None:
+                                # For camera AF
+                                self.auto_focus_position = instance_FocusFinder.gaussian_fit()
+                            else:
+                                # For PMT AF
+                                self.auto_focus_position = instance_FocusFinder.bisection()
                             # Move back 
                             self.ludlStage.moveRel(-1*relative_move_coords[trial_num][0],-1*relative_move_coords[trial_num][1])
                             
@@ -737,12 +750,17 @@ class ScanningExecutionThread(QThread):
             elif auto_focus_flag == "pure AF":
                 print("--------------Finding focus-----------------")
 
-                instance_FocusFinder = FocusFinder(motor_handle = self.pi_device_instance)
+                instance_FocusFinder = \
+                FocusFinder(source_of_image = AutoFocusConfig['source_of_image'], init_search_range = AutoFocusConfig['init_search_range'], \
+                            total_step_number = AutoFocusConfig['total_step_number'], imaging_conditions = AutoFocusConfig['imaging_conditions'],\
+                            motor_handle = self.pi_device_instance, camera_handle = self.HamamatsuCam)
                 print("--------------Start auto-focusing-----------------")
-                # instance_FocusFinder.total_step_number = 7
-                # instance_FocusFinder.init_step_size = 0.013
-                # self.auto_focus_position = instance_FocusFinder.gaussian_fit()
-                self.auto_focus_position = instance_FocusFinder.bisection()
+                if self.HamamatsuCam != None:
+                    # For camera AF
+                    self.auto_focus_position = instance_FocusFinder.gaussian_fit()
+                else:
+                    # For PMT AF
+                    self.auto_focus_position = instance_FocusFinder.bisection()
                 
                 relative_move_coords = [[1550,0],[0,1550],[1550,1550]]
                 trial_num = 0
@@ -754,7 +772,13 @@ class ScanningExecutionThread(QThread):
                         time.sleep(1)
                         print('Now stage pos is {}'.format(self.ludlStage.getPos()))
                         
-                        self.auto_focus_position = instance_FocusFinder.bisection()
+                        if self.HamamatsuCam != None:
+                            # For camera AF
+                            self.auto_focus_position = instance_FocusFinder.gaussian_fit()
+                        else:
+                            # For PMT AF
+                            self.auto_focus_position = instance_FocusFinder.bisection()
+                            
                         # Move back 
                         self.ludlStage.moveRel(-1*relative_move_coords[trial_num][0],-1*relative_move_coords[trial_num][1])
                         

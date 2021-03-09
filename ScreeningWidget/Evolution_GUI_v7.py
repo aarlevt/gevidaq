@@ -70,7 +70,7 @@ class Mainbody(QWidget):
         self.Quick_startContainerLayout = QGridLayout()
         
         self.prefixtextbox = QtWidgets.QLineEdit(self)
-        self.prefixtextbox.setPlaceholderText('Prefix')
+        self.prefixtextbox.setPlaceholderText('Folder prefix')
         self.prefixtextbox.setFixedWidth(80)
         self.prefixtextbox.returnPressed.connect(self.set_prefix)
         self.Quick_startContainerLayout.addWidget(self.prefixtextbox, 0, 0)
@@ -103,13 +103,19 @@ class Mainbody(QWidget):
         self.savedirectorytextbox.setPlaceholderText('Saving directory')
         self.savedirectorytextbox.setFixedWidth(300)
         self.savedirectorytextbox.returnPressed.connect(self.update_saving_directory)
-        self.GeneralSettingContainerLayout.addWidget(self.savedirectorytextbox, 0, 2, 1, 3)
+        self.GeneralSettingContainerLayout.addWidget(self.savedirectorytextbox, 0, 1, 1, 2)
+        
+        self.prefixtextbox = QtWidgets.QLineEdit(self)
+        self.prefixtextbox.setPlaceholderText('Folder prefix')
+        self.prefixtextbox.setFixedWidth(80)
+        self.prefixtextbox.returnPressed.connect(self.set_prefix)
+        self.GeneralSettingContainerLayout.addWidget(self.prefixtextbox, 0, 3)
         
         self.toolButtonOpenDialog = QtWidgets.QPushButton()
         self.toolButtonOpenDialog.setIcon(QIcon('./Icons/Browse.png')) 
         self.toolButtonOpenDialog.clicked.connect(self._open_file_dialog)
         
-        self.GeneralSettingContainerLayout.addWidget(self.toolButtonOpenDialog, 0, 1)
+        self.GeneralSettingContainerLayout.addWidget(self.toolButtonOpenDialog, 0, 0)
         
         ButtonConfigurePipeline = StylishQT.generateButton()
         ButtonConfigurePipeline.clicked.connect(self.ConfigGeneralSettings)
@@ -122,7 +128,7 @@ class Mainbody(QWidget):
         ButtonSavePipeline.clicked.connect(self.Savepipeline)
         
         self.ImportPipelineButton = StylishQT.loadButton()
-        self.GeneralSettingContainerLayout.addWidget(self.ImportPipelineButton, 0, 0)
+        self.GeneralSettingContainerLayout.addWidget(self.ImportPipelineButton, 0, 4)
         self.ImportPipelineButton.clicked.connect(self.GetPipelineNPFile)
 
         self.GeneralSettingContainerLayout.addWidget(ButtonConfigurePipeline, 0, 5)        
@@ -330,11 +336,12 @@ class Mainbody(QWidget):
         CamAFsettingsContainer.layout = CamAFsettingsContainerLayout     
 
         self.AFmethodCombox = QComboBox()
-        self.AFmethodCombox.addItems([ 'PMT', 'Camera'])
-        CamAFsettingsContainerLayout.addWidget(self.AFmethodCombox, 0, 0)
+        self.AFmethodCombox.addItems([ 'PMT auto-focus', 'Camera auto-focus'])
+        ScanSettingLayout.addWidget(self.AFmethodCombox, 0, 7)
+        # CamAFsettingsContainerLayout.addWidget(self.AFmethodCombox, 0, 0)
         # self.AFmethodCombox.currentIndexChanged().connect(lambda:DelInsightEvent)
         self.AFmethodCombox.currentIndexChanged.connect(lambda:self.AFsettings_container_stack.setCurrentIndex(self.AFmethodCombox.currentIndex()))
-        
+
         self.AFsettings_container_stack = QStackedWidget()
         
         #--------------------------------PMT auto focus---------------------------------
@@ -348,7 +355,7 @@ class Mainbody(QWidget):
         self.PMT_AF_init_step_sizeBox.setValue(0.010)
         self.PMT_AF_init_step_sizeBox.setSingleStep(0.001)  
         PMT_autofocus_setting_group_layout.addWidget(self.PMT_AF_init_step_sizeBox, 0, 1)  
-        PMT_autofocus_setting_group_layout.addWidget(QLabel("Init. searching step:"), 0, 0)        
+        PMT_autofocus_setting_group_layout.addWidget(QLabel("Init. searching step(mm):"), 0, 0)        
 
         self.PMT_AF_step_numBox = QSpinBox(self)
         self.PMT_AF_step_numBox.setMinimum(1)
@@ -378,15 +385,15 @@ class Mainbody(QWidget):
         self.Cam_AF_init_step_sizeBox.setDecimals(3)
         self.Cam_AF_init_step_sizeBox.setMinimum(0)
         self.Cam_AF_init_step_sizeBox.setMaximum(10)
-        self.Cam_AF_init_step_sizeBox.setValue(0.010)
+        self.Cam_AF_init_step_sizeBox.setValue(0.013)
         self.Cam_AF_init_step_sizeBox.setSingleStep(0.001)  
         Cam_autofocus_setting_group_layout.addWidget(self.Cam_AF_init_step_sizeBox, 0, 1)  
-        Cam_autofocus_setting_group_layout.addWidget(QLabel("Init. searching step:"), 0, 0)        
+        Cam_autofocus_setting_group_layout.addWidget(QLabel("Init. searching step(mm):"), 0, 0)        
 
         self.Cam_AF_step_numBox = QSpinBox(self)
         self.Cam_AF_step_numBox.setMinimum(1)
         self.Cam_AF_step_numBox.setMaximum(1000)
-        self.Cam_AF_step_numBox.setValue(5)
+        self.Cam_AF_step_numBox.setValue(7)
         self.Cam_AF_step_numBox.setSingleStep(1)
         Cam_autofocus_setting_group_layout.addWidget(self.Cam_AF_step_numBox, 0, 3)
         Cam_autofocus_setting_group_layout.addWidget(QLabel("Step number:"), 0, 2)
@@ -409,7 +416,7 @@ class Mainbody(QWidget):
         Cam_autofocus_setting_group_layout.addWidget(self.Cam_AF_AOTF_valueBox, 1, 3)
         
         self.Cam_AF_AOTF_settingBox = QComboBox()
-        self.Cam_AF_AOTF_settingBox.addItems([ 'AOTF power for 488:', 'AOTF power for 532:', 'AOTF power for 640:'])
+        self.Cam_AF_AOTF_settingBox.addItems([ '488AO:', '532AO', '640AO'])
         Cam_autofocus_setting_group_layout.addWidget(self.Cam_AF_AOTF_settingBox, 1, 2)
         
         self.Cam_autofocus_setting_group.setLayout(Cam_autofocus_setting_group_layout)
@@ -918,12 +925,24 @@ class Mainbody(QWidget):
         if self.OpenTwoPLaserShutterCheckbox.isChecked():
             StartUpEvents.append('Shutter_Open')
         
+        if self.AFmethodCombox.currentIndex() == 0:
+            # If use PMT auto-focus
+            AutoFocusConfig = {'source_of_image': "PMT", 'init_search_range': self.PMT_AF_init_step_sizeBox.value(), \
+                               'total_step_number': self.PMT_AF_step_numBox.value(), 'imaging_conditions': {'edge_volt':self.PMT_AF_scan_voltBox.value()}}
+        elif self.AFmethodCombox.currentIndex() == 1:
+            # If use camera auto-focus
+            AutoFocusConfig = {'source_of_image': "Camera", 'init_search_range': self.Cam_AF_init_step_sizeBox.value(), \
+                               'total_step_number': self.Cam_AF_step_numBox.value(), \
+                               'imaging_conditions': {self.Cam_AF_AOTF_settingBox.currentText(): self.Cam_AF_AOTF_valueBox.value(), 'exposure_time':self.Cam_AF_ExposureBox.value()}}
+            
+        self.normalOutputWritten('Auto-focus :{}'.format(AutoFocusConfig))
+            
         # Interpolate in between the focus correction positions
         FocusCorrectionMatrixDict = {}#self.upsize_focus_matrix()
             
-        generalnamelist = ['savedirectory', 'FocusCorrectionMatrixDict', 'FocusStackInfoDict', 'StageGridOffset', 'Meshgrid', 'StartUpEvents']
+        generalnamelist = ['savedirectory', 'FocusCorrectionMatrixDict', 'FocusStackInfoDict', 'StageGridOffset', 'Meshgrid', 'StartUpEvents', 'AutoFocusConfig']
         
-        generallist = [savedirectory, FocusCorrectionMatrixDict, self.FocusStackInfoDict, StageGridOffset, meshrepeat, StartUpEvents]
+        generallist = [savedirectory, FocusCorrectionMatrixDict, self.FocusStackInfoDict, StageGridOffset, meshrepeat, StartUpEvents, AutoFocusConfig]
         
         for item in range(len(generallist)):
             self.GeneralSettingDict[generalnamelist[item]] = generallist[item]

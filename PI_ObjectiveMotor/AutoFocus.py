@@ -30,7 +30,7 @@ import numpy as np
 
 class FocusFinder():
     
-    def __init__(self, source_of_image = "PMT", init_step_size = 0.010, total_step_number = 5, imaging_conditions = {'edge_volt':5}, \
+    def __init__(self, source_of_image = "PMT", init_search_range = 0.010, total_step_number = 5, imaging_conditions = {'edge_volt':5}, \
                  motor_handle = None, camera_handle = None, twophoton_handle = None, *args, **kwargs):
         """
         
@@ -39,7 +39,7 @@ class FocusFinder():
         ----------
         source_of_image : string, optional
             The input source of image. The default is PMT.
-        init_step_size : int, optional
+        init_search_range : int, optional
             The step size when first doing coarse searching. The default is 0.010.
         total_step_number : int, optional
             Number of steps in total to find optimal focus. The default is 5.
@@ -60,7 +60,7 @@ class FocusFinder():
         super().__init__(*args, **kwargs)
         
         # The step size when first doing coarse searching.
-        self.init_step_size = init_step_size
+        self.init_search_range = init_search_range
         
         # Number of steps in total to find optimal focus.
         self.total_step_number = total_step_number
@@ -98,9 +98,9 @@ class FocusFinder():
     def gaussian_fit(self):
         
         # The upper edge.
-        upper_position = self.current_pos + self.init_step_size
+        upper_position = self.current_pos + self.init_search_range
         # The lower edge.
-        lower_position = self.current_pos - self.init_step_size
+        lower_position = self.current_pos - self.init_search_range
         
         # Generate the sampling positions.
         sample_positions = np.linspace(lower_position, upper_position, self.total_step_number)
@@ -132,10 +132,13 @@ class FocusFinder():
             
             max_focus_pos = round(max_focus_pos, 6)
             print(max_focus_pos)
+            self.pi_device_instance.move(max_focus_pos)
             # max_focus_pos_focus_degree = self.evaluate_focus(round(max_focus_pos, 6))
         except:
-            print("Fitting failed.")
-            max_focus_pos = [False, self.current_pos]
+            print("Fitting failed. Find max in the list.")
+            
+            max_focus_pos = sample_positions[degree_of_focus_list.index(max(degree_of_focus_list))]
+            print(max_focus_pos)
             
         return max_focus_pos
         
@@ -150,9 +153,9 @@ class FocusFinder():
 
         """
         # The upper edge in which we run bisection.
-        upper_position = self.current_pos + self.init_step_size
+        upper_position = self.current_pos + self.init_search_range
         # The lower edge in which we run bisection.
-        lower_position = self.current_pos - self.init_step_size
+        lower_position = self.current_pos - self.init_search_range
 
         for step_index in range(1, self.total_step_number + 1):   
             # In each step of bisection finding.
@@ -264,10 +267,10 @@ class FocusFinder():
             plt.show()
             
             if False:
-                with skimtiff.TiffWriter(os.path.join(r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Xin\2021-2-5 camera auto-focus\trial1', str(obj_position).replace(".", "_")+ '.tif')) as tif:                
+                with skimtiff.TiffWriter(os.path.join(r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Xin\2021-03-06 Camera AF\beads', str(obj_position).replace(".", "_")+ '.tif')) as tif:                
                     tif.save(self.camera_image.astype('float32'), compress=0)
                             
-            degree_of_focus = ProcessImage.local_entropy(self.camera_image.astype('float32'))
+            degree_of_focus = ProcessImage.variance_of_laplacian(self.camera_image.astype('float32'))
                 
         time.sleep(0.2)
         
@@ -284,27 +287,27 @@ class FocusFinder():
     #     if self.turning_point >= 1 and self.steps_taken != 1:
     #         self.steps_taken_after_turning = 
             
-    #     self.init_step_size *= (1/2) ** (self.steps_taken_after_turning)
+    #     self.init_search_range *= (1/2) ** (self.steps_taken_after_turning)
         
     #     # if focus degree increases, move one step forwards.
     #     if self.current_degree_of_focus > self.previous_degree_of_focus:
-    #         PIMotor.move(self.pi_device_instance.pidevice, self.current_pos + self.init_step_size)
+    #         PIMotor.move(self.pi_device_instance.pidevice, self.current_pos + self.init_search_range)
             
     #     else: # else move downwards.
         
-    #         self.init_step_size *= -1 
+    #         self.init_search_range *= -1 
             
     #         # If the first attempt goes towards the wrong direction, 
     #         # turn around and move one step the other way.
     #         if self.steps_taken == 1 and self.turning_point == 1:
     #             # Move two step downwards.
-    #             PIMotor.move(self.pi_device_instance.pidevice, self.current_pos + 2 * self.init_step_size)
+    #             PIMotor.move(self.pi_device_instance.pidevice, self.current_pos + 2 * self.init_search_range)
     #             # Clean up trace, make sure the correct condition for first attempt.
     #             self.steps_taken = 0
     #             self.turning_point = 0
             
     #         else: # In normal bisection situation.
-    #             PIMotor.move(self.pi_device_instance.pidevice, self.current_pos + self.init_step_size)
+    #             PIMotor.move(self.pi_device_instance.pidevice, self.current_pos + self.init_search_range)
     #             # Add one turning point.
     #             self.turning_point += 1
             
@@ -318,12 +321,12 @@ class FocusFinder():
 if __name__ == "__main__":
     # ins = FocusFinder()
     # ins.total_step_number = 7
-    # ins.init_step_size = 0.013
+    # ins.init_search_range = 0.013
     # ins.gaussian_fit() # will return false if there's no cell in view.
     # ins.pi_device_instance.CloseMotorConnection()
     
     ins = FocusFinder(source_of_image = "Camera", imaging_conditions = {'488AO':3, 'exposure_time':0.005})
     ins.total_step_number = 7
-    ins.init_step_size = 0.013
+    ins.init_search_range = 0.013
     ins.gaussian_fit() # will return false if there's no cell in view.
     ins.pi_device_instance.CloseMotorConnection()

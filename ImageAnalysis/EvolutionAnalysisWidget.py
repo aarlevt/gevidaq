@@ -130,7 +130,7 @@ class MainGUI(QWidget):
         ButtonPickedResetCoordImg.clicked.connect(self.ResetPickedIndex)
         ImageButtonContainerLayout.addWidget(ButtonPickedResetCoordImg, 0, 7)
         
-        ButtonRankPreviousCoordImg = QPushButton('Previous', self)
+        ButtonRankPreviousCoordImg = QPushButton('Previous ←', self)
         ButtonRankPreviousCoordImg.setShortcut('a')
         ButtonRankPreviousCoordImg.clicked.connect(lambda: self.GoThroughTopCells('previous'))
         ImageButtonContainerLayout.addWidget(ButtonRankPreviousCoordImg, 1, 6)
@@ -145,7 +145,7 @@ class MainGUI(QWidget):
         self.ShowLibImgButton.clicked.connect(lambda: self.GoThroughTopCells('null'))
         ImageButtonContainerLayout.addWidget(self.ShowLibImgButton, 2, 7)
         
-        ButtonRankNextCoordImg = QPushButton('Next', self)
+        ButtonRankNextCoordImg = QPushButton('Next →', self)
         ButtonRankNextCoordImg.setShortcut('d')
         ButtonRankNextCoordImg.clicked.connect(lambda: self.GoThroughTopCells('next'))
         ImageButtonContainerLayout.addWidget(ButtonRankNextCoordImg, 1, 7)
@@ -230,7 +230,7 @@ class MainGUI(QWidget):
         LoadSettingLayout = QGridLayout()
         
         self.FilepathSwitchBox = QComboBox()
-        self.FilepathSwitchBox.addItems(['Tag', 'Lib', 'Z-max analysis'])
+        self.FilepathSwitchBox.addItems(['Tag', 'Lib', 'Cam Z-max'])
         LoadSettingLayout.addWidget(self.FilepathSwitchBox, 1, 0)
         
         self.AnalysisRoundBox = QSpinBox(self)
@@ -435,7 +435,7 @@ class MainGUI(QWidget):
         
         if len(self.Tag_round_infor) == 0 and len(self.Lib_round_infor) == 0:
             # ===== General image analysis in folder. =====
-            if self.FilepathSwitchBox.currentText() == 'Z-max analysis':
+            if self.FilepathSwitchBox.currentText() == 'Cam Z-max':
                 # If need to do z-max projection first and then analyse on them
                 cell_data = self.ProcessML.analyze_images_in_folder(self.Analysis_saving_directory, generate_zmax = True)
             else:

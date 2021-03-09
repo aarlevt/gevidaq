@@ -101,12 +101,15 @@ class Mainbody(QWidget):
         self.tabs.addTab(self.Camera_WidgetInstance,"Camera imaging")
         self.tabs.addTab(self.Galvo_WidgetInstance,"PMT imaging")
         self.tabs.addTab(self.Waveformer_WidgetInstance,"Waveform")
-        self.tabs.addTab(self.PatchClamp_WidgetInstance,"Patch clamp")    
+        # self.tabs.addTab(self.PatchClamp_WidgetInstance,"Patch clamp")    
         self.tabs.addTab(self.Coordinate_WidgetInstance, "Coordinates")
         self.tabs.addTab(self.Analysis_WidgetInstance,"Image analysis")
         # =============================================================================
         
-        self.savedirectory = os.path.join(os.path.expanduser("~"), "Desktop") #'M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data'
+        try:
+            self.savedirectory = 'M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data'
+        except:
+            self.savedirectory = os.path.join(os.path.expanduser("~"), "Desktop") #'M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data'
         
         """
         # =============================================================================
@@ -183,7 +186,7 @@ class Mainbody(QWidget):
         self.shutter2PButton.setGraphicsEffect(QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2))
         self.LEDButton.setGraphicsEffect(QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2))
         
-        self.layout.addWidget(self.shutter2PButton, 4, 2)
+        self.layout.addWidget(self.shutter2PButton, 3, 3)
         self.layout.addWidget(self.LEDButton, 4, 3)
         
         # =============================================================================
@@ -207,13 +210,13 @@ class Mainbody(QWidget):
         #         GUI for AOTF
         # =============================================================================             
         self.AOTFWidgetInstance = NIDAQ.AOTFWidget.AOTFWidgetUI()
-        self.layout.addWidget(self.AOTFWidgetInstance, 6, 0, 1, 2)
+        self.layout.addWidget(self.AOTFWidgetInstance, 6, 0, 1, 3)
         
         # =============================================================================
         #         GUI for DMD-mini
         # =============================================================================             
         self.DMDminiWidgetInstance = CoordinatesManager.DMDminiWidget.DMDminiWidgetUI()
-        self.layout.addWidget(self.DMDminiWidgetInstance, 6, 2, 1, 2)
+        self.layout.addWidget(self.DMDminiWidgetInstance, 6, 3, 1, 1)
 
         # =============================================================================
         #         GUI for fliter silder
@@ -244,10 +247,10 @@ class Mainbody(QWidget):
         self.open_Insight = StylishQT.FancyPushButton(40, 50, color1=(176,224,230), color2=(135,206,250))
         self.open_Insight.setIcon(QIcon("./Icons/two_photon.png"))
         self.open_Insight.setToolTip("Open 2-p laser widget")
-        self.open_Insight.setIconSize(QSize(50, 50))
-        self.open_Insight.setFixedWidth(100)
+        self.open_Insight.setIconSize(QSize(45, 45))
+        self.open_Insight.setFixedWidth(65)
         self.open_Insight.clicked.connect(self.open_Insight_UI)
-        self.layout.addWidget(self.open_Insight, 4, 0, 1, 1)
+        self.layout.addWidget(self.open_Insight, 3, 1, 2, 1)
         self.open_Insight.setGraphicsEffect(QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2))
         # =============================================================================
         #         GUI for evolution screening     
@@ -256,10 +259,22 @@ class Mainbody(QWidget):
         self.open_screening_button.setIcon(QIcon("./Icons/Screening1.png"))
         self.open_screening_button.setToolTip("Open screening widget")
         self.open_screening_button.setIconSize(QSize(45, 45))
-        self.open_screening_button.setFixedWidth(100)
+        self.open_screening_button.setFixedWidth(65)
         self.open_screening_button.clicked.connect(self.open_screening)
-        self.layout.addWidget(self.open_screening_button, 4, 1, 1, 1)
+        self.layout.addWidget(self.open_screening_button, 3, 0, 2, 1)
         self.open_screening_button.setGraphicsEffect(QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2))
+        # =============================================================================
+        #         GUI for open_sealtest
+        # =============================================================================
+        self.open_sealtest_button = StylishQT.FancyPushButton(40, 50, color1=(255,153,255), color2=(204,208,255))
+        # self.open_sealtest_button.setIcon(QIcon('./Icons/Hamamatsu.png'))
+        self.open_sealtest_button.setText("Seal test")
+        self.open_sealtest_button.setToolTip("Open sealtest widget")
+        self.open_sealtest_button.setIconSize(QSize(45, 45))
+        self.open_sealtest_button.setFixedWidth(65)
+        self.open_sealtest_button.clicked.connect(self.open_sealtest)
+        self.layout.addWidget(self.open_sealtest_button, 3, 2, 2, 1)
+        self.open_sealtest_button.setGraphicsEffect(QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2))
         
         #**************************************************************************************************************************************        
         #self.setLayout(pmtmaster)
@@ -288,7 +303,7 @@ class Mainbody(QWidget):
         # DMD widget.
         self.Camera_WidgetInstance.signal_SnapImg.connect(self.Coordinate_WidgetInstance.receive_image_from_camera)
         
-        self.Camera_WidgetInstance.default_folder = self.savedirectory
+        # self.Camera_WidgetInstance.default_folder = self.savedirectory
         '''
         ***************************************************************************************************************************************
         ************************************************************END of GUI*****************************************************************
@@ -323,7 +338,7 @@ class Mainbody(QWidget):
     # =============================================================================
     # Set the savedirectory and prefix of Waveform widget in syn.
     def set_saving_directory(self):
-        self.savedirectory = str(QtWidgets.QFileDialog.getExistingDirectory())
+        self.savedirectory = str(QtWidgets.QFileDialog.getExistingDirectory(directory='M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data'))
         self.savedirectorytextbox.setText(self.savedirectory)
         
         # Assert saving directories in other widgets
@@ -331,11 +346,7 @@ class Mainbody(QWidget):
         self.Waveformer_WidgetInstance.savedirectory = self.savedirectory        
         self.Analysis_WidgetInstance.savedirectory = self.savedirectory
         self.PatchClamp_WidgetInstance.saving_dir = self.savedirectory
-        
-        try:
-            self.camWindow.default_folder = self.savedirectory
-        except:
-            pass
+        self.Camera_WidgetInstance.default_folder = self.savedirectory
         
         self.set_prefix()
     
@@ -383,6 +394,9 @@ class Mainbody(QWidget):
     def open_screening(self):
         self.open_screening_UIWindow = ScreeningWidget.Evolution_GUI_v7.Mainbody()
         self.open_screening_UIWindow.show()
+        
+    def open_sealtest(self):
+        self.PatchClamp_WidgetInstance.show()
     # =============================================================================
     #     Fucs for console display
     # =============================================================================
@@ -397,8 +411,7 @@ class Mainbody(QWidget):
         
     def Init_Meta_Text(self):
         Init_Meta_Text = \
-        "=========Meta Text========\n\
-Construct: \n\nTwo-photon wavelength: \nTwo-photon power: \nTwo-photon ND value: \nPMT amplification: \n\
+        "=========Meta Text======== \n\nConstruct: \n\nPipette pulling program: \nHeat: \nVelocity: \nDelay: \nPressure: \nRamp: \n\nTwo-photon wavelength: \nTwo-photon power: \nTwo-photon ND value: \nPMT amplification: \n\
 =======================\n"
         
         self.console_text_edit.clear()

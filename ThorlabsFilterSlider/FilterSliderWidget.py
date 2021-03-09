@@ -284,6 +284,7 @@ class FilterSliderWidgetUI(QWidget):
             self.run_in_thread(self.filter_move_towards("COM7", 3))
             
         if self.FilterButtongroup_3.checkedId() == -2:
+            # Move to Arch
             self.run_in_thread(self.filter_move_towards("COM15", 0))
         elif self.FilterButtongroup_3.checkedId() == -3:
             self.run_in_thread(self.filter_move_towards("COM15", 1))
