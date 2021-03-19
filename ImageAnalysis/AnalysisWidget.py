@@ -27,15 +27,17 @@ import csv
 import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
+from scipy import signal
+from scipy.ndimage.filters import uniform_filter1d
 from skimage.io import imread
 import threading
-
+import time
 # Ensure that the Widget can be run either independently or as part of Tupolev.
 if __name__ == "__main__":
     abspath = os.path.abspath(__file__)
     dname = os.path.dirname(abspath)
     os.chdir(dname+'/../')
-from ImageAnalysis.ImageProcessing import ProcessImage
+from ImageAnalysis.ImageProcessing import ProcessImage, CurveFit
 import ImageAnalysis.Plotanalysis
 
 
@@ -55,7 +57,7 @@ class AnalysisWidgetUI(QWidget):
         self.setMinimumSize(1250,850)
         self.setWindowTitle("AnalysisWidget")
         self.layout = QGridLayout(self)
-        self.savedirectory = r"C:/Users/Mels Jagt/OneDrive/Documenten/BEP/Curve Fitting Analysis/Archon Analysis Data/Archon2"
+        self.savedirectory = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Patch clamp"
         self.OC = 0.1 # Patch clamp constant
         #**************************************************************************************************************************************
         #--------------------------------------------------------------------------------------------------------------------------------------
@@ -65,17 +67,22 @@ class AnalysisWidgetUI(QWidget):
         readimageContainer = QGroupBox("Readin images")
         self.readimageLayout = QGridLayout()
         
+        self.Construct_name = QLineEdit(self)
+        self.Construct_name.setPlaceholderText("Enter construct name")
+        self.Construct_name.setFixedWidth(150)
+        self.readimageLayout.addWidget(self.Construct_name, 1, 0)
+        
         self.switch_Vp_or_camtrace = QComboBox()
-        self.switch_Vp_or_camtrace.addItems(['With Vp', 'Camera trace'])
+        self.switch_Vp_or_camtrace.addItems(['Correlate to Vp', 'Correlate to video'])
         self.readimageLayout.addWidget(self.switch_Vp_or_camtrace, 1, 1)
         
-        self.readimageLayout.addWidget(QLabel('Video of interest:'), 1, 0)
+        # self.readimageLayout.addWidget(QLabel('Video of interest:'), 1, 0)
        
-        self.textbox_filename = QLineEdit(self)        
-        self.readimageLayout.addWidget(self.textbox_filename, 1, 2)
+        self.textbox_directory_name = QLineEdit(self)        
+        self.readimageLayout.addWidget(self.textbox_directory_name, 1, 4)
         
-        self.button_browse = QPushButton('Browse', self)
-        self.readimageLayout.addWidget(self.button_browse, 1, 3) 
+        self.button_browse = QPushButton('Set data folder', self)
+        self.readimageLayout.addWidget(self.button_browse, 1, 5) 
         
         self.button_browse.clicked.connect(self.getfile)
 
@@ -83,67 +90,29 @@ class AnalysisWidgetUI(QWidget):
         self.button_load.setStyleSheet("QPushButton {color:white;background-color: blue; border-style: outset;border-radius: 10px;border-width: 2px;font: bold 14px;padding: 6px}"
                                        "QPushButton:pressed {color:black;background-color: blue; border-style: outset;border-radius: 10px;border-width: 2px;font: bold 14px;padding: 6px}"
                                        "QPushButton:hover:!pressed {color:gray;background-color: blue; border-style: outset;border-radius: 10px;border-width: 2px;font: bold 14px;padding: 6px}")
-        self.readimageLayout.addWidget(self.button_load, 1, 4) 
+        self.readimageLayout.addWidget(self.button_load, 1, 6)
+        self.button_load.clicked.connect(self.start_analysis)
         
         self.Spincamsamplingrate = QSpinBox(self)
-        self.Spincamsamplingrate.setMaximum(2000)
-        self.Spincamsamplingrate.setValue(250)
-        self.Spincamsamplingrate.setSingleStep(250)
-        self.readimageLayout.addWidget(self.Spincamsamplingrate, 1, 6)
-        self.readimageLayout.addWidget(QLabel("Camera FPS:"), 1, 5)
+        self.Spincamsamplingrate.setMaximum(20000)
+        self.Spincamsamplingrate.setValue(1000)
+        self.Spincamsamplingrate.setSingleStep(500)
+        self.readimageLayout.addWidget(self.Spincamsamplingrate, 1, 3)
+        self.readimageLayout.addWidget(QLabel("Camera FPS:"), 1, 2)
         
         self.button_clearpolts = QPushButton('Clear', self)
-        self.readimageLayout.addWidget(self.button_clearpolts, 1, 7)         
+        self.readimageLayout.addWidget(self.button_clearpolts, 1, 8)         
         
         self.button_clearpolts.clicked.connect(self.clearplots)
         
-        self.button_load.clicked.connect(self.loadtiffile)
-        self.button_load.clicked.connect(lambda: self.loadcurve(self.fileName))
-        
-        # Background substraction
-        self.switch_bg_Video_or_image = QComboBox()
-        self.switch_bg_Video_or_image.addItems(['Video', 'Image','ROI'])
-        self.readimageLayout.addWidget(self.switch_bg_Video_or_image, 2, 1)
-       
-        self.readimageLayout.addWidget(QLabel('Background:'), 2, 0)
-       
-        self.textbox_Background_filename = QLineEdit(self)        
-        self.readimageLayout.addWidget(self.textbox_Background_filename, 2, 2)
-        
-        self.button_Background_browse = QPushButton('Browse', self)
-        self.readimageLayout.addWidget(self.button_Background_browse, 2, 3) 
-        
-        self.button_Background_browse.clicked.connect(self.getfile_background)
 
-        self.button_Background_load = QPushButton('Substract', self)
+        self.button_Background_load = QPushButton('Analyse', self)
         self.button_Background_load.setStyleSheet("QPushButton {color:white;background-color: orange; border-style: outset;border-radius: 10px;border-width: 2px;font: bold 14px;padding: 6px}"
                                        "QPushButton:pressed {color:black;background-color: blue; border-style: outset;border-radius: 10px;border-width: 2px;font: bold 14px;padding: 6px}"
                                        "QPushButton:hover:!pressed {color:gray;background-color: orange; border-style: outset;border-radius: 10px;border-width: 2px;font: bold 14px;padding: 6px}")
-        self.readimageLayout.addWidget(self.button_Background_load, 2, 4) 
+        self.readimageLayout.addWidget(self.button_Background_load, 1, 7) 
         
-        self.button_Background_load.clicked.connect(self.substract_background)        
-        
-        self.button_display_trace = QPushButton('Display', self)
-        self.button_display_trace.setStyleSheet("QPushButton {color:white;background-color: Green; border-style: outset;border-radius: 10px;border-width: 2px;font: bold 14px;padding: 6px}"
-                                       "QPushButton:pressed {color:black;background-color: blue; border-style: outset;border-radius: 10px;border-width: 2px;font: bold 14px;padding: 6px}"
-                                       "QPushButton:hover:!pressed {color:gray;background-color: Green; border-style: outset;border-radius: 10px;border-width: 2px;font: bold 14px;padding: 6px}")
-        self.readimageLayout.addWidget(self.button_display_trace, 2, 6) 
-        
-        self.button_display_trace.clicked.connect(lambda: self.displayElectricalsignal())
-        self.button_display_trace.clicked.connect(lambda: self.displayConfiguredWaveform())
-        self.button_display_trace.clicked.connect(lambda: self.displaycamtrace())        
-               
-        self.switch_export_trace = QComboBox()
-        self.switch_export_trace.addItems(['Cam trace', 'Weighted trace'])
-        self.readimageLayout.addWidget(self.switch_export_trace, 2, 5)
-        
-        self.button_export_trace = QPushButton('Export', self)
-        self.button_export_trace.setStyleSheet("QPushButton {color:white;background-color: Green; border-style: outset;border-radius: 10px;border-width: 2px;font: bold 14px;padding: 6px}"
-                                       "QPushButton:pressed {color:black;background-color: blue; border-style: outset;border-radius: 10px;border-width: 2px;font: bold 14px;padding: 6px}"
-                                       "QPushButton:hover:!pressed {color:gray;background-color: Green; border-style: outset;border-radius: 10px;border-width: 2px;font: bold 14px;padding: 6px}")
-        self.readimageLayout.addWidget(self.button_export_trace, 2, 7) 
-        
-        self.button_export_trace.clicked.connect(self.export_trace)
+        self.button_Background_load.clicked.connect(self.finish_analysis)
         
         readimageContainer.setLayout(self.readimageLayout)
         readimageContainer.setMaximumHeight(120)
@@ -153,102 +122,6 @@ class AnalysisWidgetUI(QWidget):
         Display_Layout = QGridLayout()
         # Setting tabs
         Display_Container_tabs = QTabWidget()
-        
-        #------------------------------------------------------I, V display window-------------------------------------------------------
-        self.VIdisplay_Layout = QGridLayout()
-
-        #Wavefrom window
-        self.pw_preset_waveform = pg.PlotWidget(title='Executed waveform')
-        self.pw_preset_waveform.setLabel('bottom', 'Time', units='s')
-        self.pw_preset_waveform.setLabel('left', 'Voltage', units='V')
-        self.VIdisplay_Layout.addWidget(self.pw_preset_waveform, 0,0) 
-        
-        #Voltage window
-        self.pw_patch_voltage = pg.PlotWidget(title='Voltage plot')
-        self.pw_patch_voltage.setLabel('bottom', 'Time', units='s')
-        self.pw_patch_voltage.setLabel('left', 'Voltage', units='mV')        
-        
-        self.VIdisplay_Layout.addWidget(self.pw_patch_voltage, 1,0)
-        
-        #Current window
-        self.pw_patch_current = pg.PlotWidget(title='Current plot')
-        self.pw_patch_current.setLabel('bottom', 'Time', units='s')
-        self.pw_patch_current.setLabel('left', 'Current', units='pA')
-        self.VIdisplay_Layout.addWidget(self.pw_patch_current, 2,0) 
-        
-        '''        
-        self.datadislay_label = pg.LabelItem(justify='right')
-        self.pw_patch_current.addItem(self.datadislay_label)
-        '''
-        #cross hair
-        self.vLine = pg.InfiniteLine(pos=0.4, angle=90, movable=True)
-        self.pw_patch_current.addItem(self.vLine, ignoreBounds=True)
-        
-        #Camera trace window
-        self.pw_patch_camtrace = pg.PlotWidget(title='Trace plot')
-        self.pw_patch_camtrace.setLabel('bottom', 'Time', units='s')
-        self.pw_patch_camtrace.setLabel('left', 'signal', units=' counts/ms')
-        
-        
-        #self.pw_patch_camtrace.addLegend(offset=(20,5)) # Add legend here, Plotitem with name will be automated displayed.
-        self.VIdisplay_Layout.addWidget(self.pw_patch_camtrace, 3,0) 
-
-        self.vLine_cam = pg.InfiniteLine(pos=0.4, angle=90, movable=True)
-        self.pw_patch_camtrace.addItem(self.vLine_cam, ignoreBounds=True)
-
-#        self.Curvedisplay_Container.setLayout(self.Curvedisplay_Layout)
-#        self.Curvedisplay_Container.setMaximumHeight(550)
-        
-        self.vLine.sigPositionChangeFinished.connect(self.showpointdata)
-        self.vLine_cam.sigPositionChangeFinished.connect(self.showpointdata_camtrace)                
-# =============================================================================
-#         #------------------------------------------------------Matplot display window-------------------------------------------------------
-# #        self.Curvedisplay_Layout = QGridLayout()
-# #
-# #        # a figure instance to plot on
-# #        self.Matdisplay_figure = Figure()
-# #
-# #        # this is the Canvas Widget that displays the `figure`
-# #        # it takes the `figure` instance as a parameter to __init__
-# #        self.Matdisplay_figure_canvas = FigureCanvas(self.Matdisplay_figure)
-# #
-# #        # this is the Navigation widget
-# #        # it takes the Canvas widget and a parent
-# #        self.Matdisplay_toolbar = NavigationToolbar(self.Matdisplay_figure_canvas, self)
-# #
-# #        # Just some button connected to `plot` method
-# #        self.Matdisplay_button =QPushButton('Select nest folder')
-# #        self.Matdisplay_button.clicked.connect(self.Matdisplay_plot)
-# #        self.Matdisplay_draw_button =QPushButton('Draw!')
-# #        self.Matdisplay_draw_button.clicked.connect(self.matdisplay_draw)       
-# #        
-# #        self.Matdisplay_clear_button =QPushButton('Clear')
-# #        self.Matdisplay_clear_button.clicked.connect(self.matdisplay_clear)       
-# #        
-# #        self.Curvedisplay_savedirectorytextbox = QtWidgets.QLineEdit(self)
-# #        self.Curvedisplay_Layout.addWidget(self.Curvedisplay_savedirectorytextbox, 0, 3)
-# #        # set the layout
-# #        self.Curvedisplay_Layout.addWidget(self.Matdisplay_toolbar, 1, 0, 1, 5)
-# #        self.Curvedisplay_Layout.addWidget(self.Matdisplay_figure_canvas, 2, 0, 1, 5)
-# #        self.Curvedisplay_Layout.addWidget(self.Matdisplay_button, 0, 4)
-# #        self.Curvedisplay_Layout.addWidget(self.Matdisplay_draw_button, 0, 5)
-# #        self.Curvedisplay_Layout.addWidget(self.Matdisplay_clear_button, 0, 6)
-# #        
-# #        self.checkboxWaveform = QCheckBox("Waveform")
-# #        self.checkboxWaveform.setStyleSheet('color:CadetBlue;font:bold "Times New Roman"')
-# #        self.checkboxWaveform.setChecked(True)
-# #        self.Curvedisplay_Layout.addWidget(self.checkboxWaveform, 0, 0)  
-# #        
-# #        self.checkboxTrace = QCheckBox("Recorded trace")
-# #        self.checkboxTrace.setStyleSheet('color:CadetBlue;font:bold "Times New Roman"')
-# #        self.Curvedisplay_Layout.addWidget(self.checkboxTrace, 0, 1)  
-# #        
-# #        self.checkboxCam = QCheckBox("Cam trace")
-# #        self.checkboxCam.setStyleSheet('color:CadetBlue;font:bold "Times New Roman"')
-# #        
-# #        self.Curvedisplay_Layout.addWidget(self.checkboxCam, 0, 2)
-# =============================================================================
-        
 
         #------------------------------------------------------Image Analysis-Average window-------------------------------------------------------
         image_display_container_layout = QGridLayout()
@@ -265,18 +138,6 @@ class AnalysisWidgetUI(QWidget):
         self.pw_averageimage.view.addItem(self.roi_average)
         #self.pw_weightimage = weightedimagewindow()
         self.imageanalysisLayout_average.addWidget(self.pw_averageimage, 0, 0, 5, 3)
-    
-        #self.imageanalysisLayout_average.addWidget(self.pw_averageimage, 0, 0, 3, 3)
-        
-        self.button_average = QPushButton('Average', self)
-        self.button_average.setMaximumWidth(120)
-        self.imageanalysisLayout_average.addWidget(self.button_average, 0, 3) 
-        self.button_average.clicked.connect(self.calculateaverage)
-        
-        self.button_bg_average = QPushButton('Background Mean', self)
-        self.button_bg_average.setMaximumWidth(120)
-        self.imageanalysisLayout_average.addWidget(self.button_bg_average, 1, 3) 
-        self.button_bg_average.clicked.connect(self.calculateaverage_bg)
         
         imageanalysis_average_Container.setLayout(self.imageanalysisLayout_average)
         imageanalysis_average_Container.setMinimumHeight(180)
@@ -294,44 +155,19 @@ class AnalysisWidgetUI(QWidget):
         #self.pw_weightimage = weightedimagewindow()
         self.imageanalysisLayout_weight.addWidget(self.pw_weightimage, 0, 0, 5, 3)
         
-        self.button_weight = QPushButton('Weight', self)
-        self.button_weight.setMaximumWidth(120)
-        self.imageanalysisLayout_weight.addWidget(self.button_weight, 0, 3) 
-        self.button_weight.clicked.connect(self.calculateweight)
-        
-        self.button_weighttrace = QPushButton('Weighted Trace', self)
-        self.button_weighttrace.setMaximumWidth(120)
-        self.imageanalysisLayout_weight.addWidget(self.button_weighttrace, 1, 3) 
-        self.button_weighttrace.clicked.connect(self.displayweighttrace)
-        
-        self.button_roi_weighttrace = QPushButton('ROI-Weighted Trace', self)
-        self.button_roi_weighttrace.setMaximumWidth(120)
-        self.imageanalysisLayout_weight.addWidget(self.button_roi_weighttrace, 2, 3) 
-        self.button_roi_weighttrace.clicked.connect(self.displayROIweighttrace)
-        
-        self.button_weight_save = QPushButton('Save image', self)
-        self.button_weight_save.setMaximumWidth(120)
-        self.imageanalysisLayout_weight.addWidget(self.button_weight_save, 3, 3) 
-        self.button_weight_save.clicked.connect(lambda: self.save_analyzed_image('weight_image'))
-        
-        self.button_weight_save_trace = QPushButton('Save trace', self)
-        self.button_weight_save_trace.setMaximumWidth(120)
-        self.imageanalysisLayout_weight.addWidget(self.button_weight_save_trace, 4, 3) 
-        self.button_weight_save_trace.clicked.connect(lambda: self.save_analyzed_image('weight_trace'))
-        
         imageanalysis_weight_Container.setLayout(self.imageanalysisLayout_weight)
         imageanalysis_weight_Container.setMinimumHeight(180)
         
         image_display_container_layout.addWidget(imageanalysis_average_Container, 0, 0)
-        image_display_container_layout.addWidget(imageanalysis_weight_Container, 1, 0)
+        image_display_container_layout.addWidget(imageanalysis_weight_Container, 0, 1)
         
         #----------------------------------------------------------------------
         Display_Container_tabs_tab3 = ImageAnalysis.Plotanalysis.PlotAnalysisGUI()
 #        Display_Container_tabs_tab3.setLayout(self.Curvedisplay_Layout)
         
         #----------------------------------------------------------------------
-        Display_Container_tabs_tab2 = QWidget()
-        Display_Container_tabs_tab2.setLayout(self.VIdisplay_Layout)        
+        # Display_Container_tabs_tab2 = QWidget()
+        # Display_Container_tabs_tab2.setLayout(self.VIdisplay_Layout)        
         
         #----------------------------------------------------------------------
         Display_Container_tabs_Galvo_WidgetInstance = QWidget()
@@ -361,7 +197,7 @@ class AnalysisWidgetUI(QWidget):
         
         # Add tabs
         Display_Container_tabs.addTab(Display_Container_tabs_Galvo_WidgetInstance,"Graph display")
-        Display_Container_tabs.addTab(Display_Container_tabs_tab2,"Patch display")        
+        # Display_Container_tabs.addTab(Display_Container_tabs_tab2,"Patch display")        
         Display_Container_tabs.addTab(Display_Container_tabs_tab3,"Patch perfusion")
         # Display_Container_tabs.addTab(self.Display_Container_tabs_Cellselection,"Cell selection")
         Display_Container_tabs.addTab(Display_Container_tabs_tab4,"show trace")
@@ -381,20 +217,37 @@ class AnalysisWidgetUI(QWidget):
         #--------------------------------------------------------------------------------------------------------------------------------------  
         #**************************************************************************************************************************************        
     def getfile(self):
-        self.fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, 'Single File', 'M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data',"Image files (*.jpg *.tif)")
-        self.textbox_filename.setText(self.fileName)
+        self.main_directory = str(QtWidgets.QFileDialog.getExistingDirectory(directory='M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data'))
+        self.textbox_directory_name.setText(self.main_directory)
         
-    def loadtiffile(self):
-        print('Loading...')
-        self.MessageToMainGUI('Loading...'+'\n')        
-#        loadtif_thread = loadtif_Thread(self.fileName)
-#        loadtif_thread.videostack_signal.connect(self.ReceiveVideo)
-#        loadtif_thread.start()
-#        loadtif_thread.wait()
-        t1 = threading.Thread(target = self.loadtiffile_thread)
+        for file in os.listdir(self.main_directory):
+			# For Labview generated data.
+            if file.endswith(".tif") or file.endswith(".TIF"):
+                self.fileName = self.main_directory + '/'+file
+                print(self.fileName)
+        
+    def start_analysis(self):
+        
+        get_ipython().run_line_magic('matplotlib', 'qt')
+        
+        if not os.path.exists(os.path.join(self.main_directory, 'Analysis results')):
+            # If the folder is not there, create the folder
+            os.mkdir(os.path.join(self.main_directory, 'Analysis results')) 
+        
+        print('Loading data...')
+        self.MessageToMainGUI('Loading data...'+'\n')        
+
+        t1 = threading.Thread(target = self.load_data_thread)
         t1.start()
         
-    def loadtiffile_thread(self):
+        get_ipython().run_line_magic('matplotlib', 'inline')
+        
+    def finish_analysis(self):
+        t2 = threading.Thread(target = self.finish_analysis_thread)
+        t2.start()        
+        
+    def load_data_thread(self):
+        # Load tif video file.
         self.videostack = imread(self.fileName)
         print(self.videostack.shape)
         self.MessageToMainGUI('Video size: '+str(self.videostack.shape)+'\n')
@@ -402,6 +255,32 @@ class AnalysisWidgetUI(QWidget):
         self.roi_weighted.maxBounds= QRectF(0,0,self.videostack.shape[2],self.videostack.shape[1])
         print('Loading complete, ready to fire')
         self.MessageToMainGUI('Loading complete, ready to fire'+'\n')
+        
+        # Load wave files.
+        self.loadcurve()
+        
+        # display electrical signals
+        self.display_electrical_signals()
+        
+        time.sleep(0.5)
+        # Calculate the mean intensity of video, for background substraction.
+        self.video_mean()
+        
+    def finish_analysis_thread(self):
+        # Calculate the background
+        self.calculate_background_from_ROI_average()
+        
+        # Substract background
+        self.substract_background()
+        
+        # calculate_weight
+        self.calculate_weight()
+        
+        # display_weighted_trace
+        self.display_weighted_trace()
+        
+        # Fit on weighted trace and sumarize the statistics.
+        self.fit_on_trace()
         
     def ReceiveVideo(self, videosentin):  
 
@@ -413,344 +292,233 @@ class AnalysisWidgetUI(QWidget):
         print('Loading complete, ready to fire')
         self.MessageToMainGUI('Loading complete, ready to fire'+'\n')
         
-    def loadcurve(self, filepath):
-        for file in os.listdir(os.path.dirname(self.fileName)):
+    def loadcurve(self):
+        """
+        Load the 1D array files, like voltage, current recordings or waveform information.
+
+        Returns
+        -------
+        None.
+
+        """
+        for file in os.listdir(self.main_directory):
 			# For Labview generated data.
             if file.endswith(".Ip"):
-                self.Ipfilename = os.path.dirname(self.fileName) + '/'+file
+                self.Ipfilename = self.main_directory + '/'+file
                 curvereadingobjective_i =  ProcessImage.readbinaryfile(self.Ipfilename)               
                 self.Ip, self.samplingrate_curve = curvereadingobjective_i.readbinarycurve()                
                 self.Ip = self.Ip[0:len(self.Ip)-2]
                 
             elif file.endswith(".Vp"):
-                self.Vpfilename = os.path.dirname(self.fileName) + '/'+file
+                self.Vpfilename = self.main_directory + '/'+file
                 curvereadingobjective_V =  ProcessImage.readbinaryfile(self.Vpfilename)               
                 self.Vp, self.samplingrate_curve = curvereadingobjective_V.readbinarycurve()                
                 self.Vp = self.Vp[0:len(self.Vp)-2] # Here -2 because there are two extra recording points in the recording file.
             
 			# For python generated data
             elif file.startswith('Vp'):
-                self.Vpfilename_npy = os.path.dirname(self.fileName) + '/'+file
+                self.Vpfilename_npy = self.main_directory + '/'+file
                 curvereadingobjective_V =  np.load(self.Vpfilename_npy)
+                print(curvereadingobjective_V[10])
                 self.Vp = curvereadingobjective_V[5:len(curvereadingobjective_V)]
                 self.samplingrate_curve = curvereadingobjective_V[0]
                 self.Vp = self.Vp[0:-2]
                 
             elif file.startswith('Ip'):
-                self.Ipfilename_npy = os.path.dirname(self.fileName) + '/'+file
+                self.Ipfilename_npy = self.main_directory + '/'+file
                 curvereadingobjective_I =  np.load(self.Ipfilename_npy)
+                print('I raw: {}'.format(curvereadingobjective_I[1000]))
                 self.Ip = curvereadingobjective_I[5:len(curvereadingobjective_I)]
                 self.Ip = self.Ip[0:-2]
                 self.samplingrate_curve = curvereadingobjective_I[0]
                 
-            elif 'Wavefroms_sr_' and 'npy' in file:
-                self.Waveform_filename_npy = os.path.dirname(self.fileName) + '/'+file
+            elif 'Wavefroms_sr_' in file and 'npy' in file:
+                self.Waveform_filename_npy = self.main_directory + '/'+file
                 # Read in configured waveforms
                 configwave_wavenpfileName = self.Waveform_filename_npy
                 self.waveform_display_temp_loaded_container = np.load(configwave_wavenpfileName, allow_pickle=True)
                 self.samplingrate_display_curve = int(float(configwave_wavenpfileName[configwave_wavenpfileName.find('sr_')+3:-4]))
-                print(self.samplingrate_display_curve)
+                print('Wavefroms_sampling rate: {}'.format(self.samplingrate_display_curve))
                 
     def getfile_background(self):
         self.fileName_background, _ = QtWidgets.QFileDialog.getOpenFileName(self, 'Single File', 'M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data',"Image files (*.jpg *.tif)")
         self.textbox_Background_filename.setText(self.fileName_background)
         
     def substract_background(self):
-        print('Loading...')
-        if self.switch_bg_Video_or_image.currentText() == 'Video':
-            self.videostack_background = imread(self.fileName_background)
-            print(self.videostack_background.shape)
-            self.videostack = self.videostack - self.videostack_background
-            print('Substraction complete.')
-        elif self.switch_bg_Video_or_image.currentText() == 'ROI':
-            unique, counts = np.unique(self.averageimage_ROI_mask,return_counts=True)
-            count_dict = dict(zip(unique, counts))
-            print('number of 1 and 0:'+str(count_dict))
-            for i in range(self.videostack.shape[0]):
-                ROI_bg = self.videostack[i][self.roi_avg_coord_raw_start:self.roi_avg_coord_raw_start+self.averageimage_ROI_mask.shape[0], self.roi_avg_coord_col_start:self.roi_avg_coord_col_start+self.averageimage_ROI_mask.shape[1]] * self.averageimage_ROI_mask
-                bg_mean = np.sum(ROI_bg)/count_dict[1] # Sum of all pixel values and devided by non-zero pixel number
-                self.videostack[i] = np.where(self.videostack[i] - bg_mean < 0, 0, self.videostack[i] - bg_mean)
-            print('ROI background correction done.')
+        """
+        Substract the background from the original video.
 
-    def displayElectricalsignal(self):
-        if self.switch_Vp_or_camtrace.currentText() == 'With Vp':
-            self.patchcurrentlabel = np.arange(len(self.Ip))/self.samplingrate_curve
+        Returns
+        -------
+        None.
+
+        """
+        print('Loading...')
+        
+        self.background_rolling_average_number = int(self.samplingrate_cam/5)
+        print("background_rolling_average_number is : {}".format(self.background_rolling_average_number))
+        
+        # if self.switch_bg_Video_or_image.currentText() == 'Video':
+        #     self.videostack_background = imread(self.fileName_background)
+        #     print(self.videostack_background.shape)
+        #     self.videostack = self.videostack - self.videostack_background
+        #     print('Substraction complete.')
             
-            self.PlotDataItem_patchcurrent = PlotDataItem(self.patchcurrentlabel, self.Ip*1000/self.OC)
-            self.PlotDataItem_patchcurrent.setPen('b')
-            self.pw_patch_current.addItem(self.PlotDataItem_patchcurrent)
+        # elif self.switch_bg_Video_or_image.currentText() == 'ROI':
+            
+        unique, counts = np.unique(self.averageimage_ROI_mask,return_counts=True)
+        count_dict = dict(zip(unique, counts))
+        print('number of 1 and 0:'+str(count_dict))
+        
+        self.background_trace = []
+        
+        for i in range(self.videostack.shape[0]):
+            ROI_bg = self.videostack[i]\
+            [self.roi_avg_coord_raw_start:self.roi_avg_coord_raw_start+self.averageimage_ROI_mask.shape[0], \
+             self.roi_avg_coord_col_start:self.roi_avg_coord_col_start+self.averageimage_ROI_mask.shape[1]] * self.averageimage_ROI_mask
+            
+            # Sum of all pixel values and devided by non-zero pixel number
+            bg_mean = np.sum(ROI_bg)/count_dict[1] 
+            
+            self.background_trace.append(bg_mean)
+
+        fig, ax0 = plt.subplots()
+        fig.suptitle("Raw ROI background trace")
+        plt.plot(self.cam_time_label, self.background_trace)
+        ax0.set_xlabel('time(s)')
+        ax0.set_ylabel('Pixel values')
+        fig.savefig(os.path.join(self.main_directory, 'Analysis results//ROI raw background trace.png'))
+        plt.show() 
+        
+        # Use rolling average to smooth the background trace
+        self.background_trace = uniform_filter1d(self.background_trace, size=self.background_rolling_average_number)
+        
+        fig, ax1 = plt.subplots()
+        fig.suptitle("Smoothed background trace")
+
+        plt.plot(self.cam_time_label, self.background_trace)
+        ax1.set_xlabel('time(s)')
+        ax1.set_ylabel('Pixel values')
+        fig.savefig(os.path.join(self.main_directory, 'Analysis results//Smoothed background trace.png'))
+        plt.show()    
+        
+        # For each frame in video, substract the background
+        for i in range(self.videostack.shape[0]):
+            
+            raw_frame = self.videostack[i]
+            
+            background_mean = self.background_trace[i]
+            
+            background_mean_2d = background_mean * np.ones((self.videostack.shape[1], self.videostack.shape[2]))
+            
+            self.videostack[i] = np.abs(raw_frame - background_mean_2d)
+            
+        print('ROI background correction done.')
+        
+        # Show the background corrected trace.
+        self.mean_camera_counts_backgroubd_substracted = []
+        for i in range(self.videostack.shape[0]):
+            self.mean_camera_counts_backgroubd_substracted.append(np.mean(self.videostack[i]))
+        
+        fig2, ax2 = plt.subplots()
+        fig2.suptitle("Mean camera intensity after backgroubd substracted")
+        plt.plot(self.cam_time_label, self.mean_camera_counts_backgroubd_substracted)
+        ax2.set_xlabel('time(s)')
+        ax2.set_ylabel('Pixel values')
+        fig2.savefig(os.path.join(self.main_directory, 'Analysis results//Mean camera intensity after backgroubd substracted.png'))
+        plt.show()
+        
+        # Updates the mean intensity
+        self.imganalysis_averageimage = np.mean(self.videostack, axis = 0)
+        self.pw_averageimage.setImage(self.imganalysis_averageimage)
+        
+        fig3 = plt.figure()
+        fig3.suptitle("Mean intensity")
+        plt.imshow(self.imganalysis_averageimage)
+        fig3.savefig(os.path.join(self.main_directory, 'Analysis results//Mean intensity.png'))
+        plt.show()
+
+    def display_electrical_signals(self):
+        """
+        Display the patch clamp electrode recored membrane potential and current signals.
+
+        Returns
+        -------
+        None.
+
+        """
+        if self.switch_Vp_or_camtrace.currentIndex() == 0:
+            
+            self.patchcurrentlabel = np.arange(len(self.Ip))/self.samplingrate_curve
             
             self.patchvoltagelabel = np.arange(len(self.Vp))/self.samplingrate_curve
             
-            self.PlotDataItem_patchvoltage = PlotDataItem(self.patchvoltagelabel, self.Vp*1000/10)
-            self.PlotDataItem_patchvoltage.setPen('w')
-            self.pw_patch_voltage.addItem(self.PlotDataItem_patchvoltage)
+            self.electrical_signals_figure, (ax1, ax2) = plt.subplots(2, 1)
+            # plt.title('Electrode recording')
+            # Current here is already
+            # Probe gain: low-100M ohem
+            # DAQ recording / 10**8 (voltage to current)* 10**12 (A to pA) == pA
+            ax1.plot(self.patchcurrentlabel, self.Ip*10000, label='Current', color='b')
+            ax1.set_title('Electrode recording')        
+            ax1.set_xlabel('time(s)')
+            ax1.set_ylabel('Current (pA)')
+            # ax1.legend()
+            
+            # ax2 = self.electrical_signals_figure.add_subplot(212)
+            # *1000: convert to mV; /10 is to correct for the *10 add on at patch amplifier.
+            ax2.plot(self.patchvoltagelabel, self.Vp*1000/10, label='Voltage', color='b')
+            # ax2.set_title('Voltage')        
+            ax2.set_xlabel('time(s)')
+            ax2.set_ylabel('Volt (mV)')
+            # ax2.legend()
+            
+            plt.show()
+            self.electrical_signals_figure.savefig(os.path.join(self.main_directory, 'Analysis results//Electrode recording.png'))
         else:
-            pass
-            
-    def displayConfiguredWaveform(self):
-        """
-        Display the saved NI configured waveforms
-        """
-        try:
-            reference_length=len(self.waveform_display_temp_loaded_container[0]['Waveform'])
-            self.time_xlabel_all_waveform = np.arange(reference_length)/self.samplingrate_display_curve
-            
-            for i in range(len(self.waveform_display_temp_loaded_container)):
-                if self.waveform_display_temp_loaded_container[i]['Sepcification'] == '640AO':
-                    self.display_finalwave_640AO = self.waveform_display_temp_loaded_container[i]['Waveform']
-                    self.display_PlotDataItem_640AO = PlotDataItem(self.time_xlabel_all_waveform, self.display_finalwave_640AO, downsample = 10)
-                    self.display_PlotDataItem_640AO.setPen('r')
-                    #self.Display_PlotDataItem_640AO.setDownsampling(ds=(int(self.textboxAA.value())/10), method='mean')
-                    self.pw_preset_waveform.addItem(self.display_PlotDataItem_640AO)
-                    
-                    self.displaytextitem_640AO = pg.TextItem(text='640 AO', color=('r'), anchor=(0, 0))
-                    self.displaytextitem_640AO.setPos(1, 4)
-                    self.pw_preset_waveform.addItem(self.displaytextitem_640AO)
-                if self.waveform_display_temp_loaded_container[i]['Sepcification'] == '488AO':
-                    self.display_finalwave_488AO = self.waveform_display_temp_loaded_container[i]['Waveform']
-                    self.display_PlotDataItem_488AO = PlotDataItem(self.time_xlabel_all_waveform, self.display_finalwave_488AO, downsample = 10)
-                    self.display_PlotDataItem_488AO.setPen('b')
-                    #self.Display_PlotDataItem_640AO.setDownsampling(ds=(int(self.textboxAA.value())/10), method='mean')
-                    self.pw_preset_waveform.addItem(self.display_PlotDataItem_488AO)
-                    
-                    self.displaytextitem_488AO = pg.TextItem(text='488 AO', color=('b'), anchor=(0, 0))
-                    self.displaytextitem_488AO.setPos(1, 2)
-                    self.pw_preset_waveform.addItem(self.displaytextitem_488AO)
-                    
-                if self.waveform_display_temp_loaded_container[i]['Sepcification'] == 'patchAO':
-                    self.display_finalwave_patchAO = self.waveform_display_temp_loaded_container[i]['patchAO']
-                    self.display_PlotDataItem_patchAO = PlotDataItem(self.time_xlabel_all_waveform, self.display_finalwave_patchAO, downsample = 10)
-                    self.display_PlotDataItem_patchAO.setPen(100, 100, 0)
-                    #self.Display_PlotDataItem_640AO.setDownsampling(ds=(int(self.textboxAA.value())/10), method='mean')
-                    self.pw_preset_waveform.addItem(self.display_PlotDataItem_patchAO)
-                    
-                    self.displaytextitem_patchAO = pg.TextItem(text='patchAO', color=(100, 100, 0), anchor=(0, 0))
-                    self.displaytextitem_patchAO.setPos(1, 3)
-                    self.pw_preset_waveform.addItem(self.displaytextitem_patchAO)
-                    
-                if self.waveform_display_temp_loaded_container[i]['Sepcification'] == 'Perfusion_8':
-                    self.display_finalwave_Perfusion_8 = self.waveform_display_temp_loaded_container[i]['Waveform']
-                    self.display_PlotDataItem_Perfusion_8 = PlotDataItem(self.time_xlabel_all_waveform, self.display_finalwave_Perfusion_8, downsample = 10)
-                    self.display_PlotDataItem_Perfusion_8.setPen(154,205,50)
-                    #self.Display_PlotDataItem_640AO.setDownsampling(ds=(int(self.textboxAA.value())/10), method='mean')
-                    self.pw_preset_waveform.addItem(self.display_PlotDataItem_Perfusion_8)
-                    
-                    self.displaytextitem_Perfusion_8 = pg.TextItem(text='Perfusion_8', color=(154,205,50), anchor=(0, 0))
-                    self.displaytextitem_Perfusion_8.setPos(1, -6)
-                    self.pw_preset_waveform.addItem(self.displaytextitem_Perfusion_8)
-                if self.waveform_display_temp_loaded_container[i]['Sepcification'] == 'Perfusion_7':
-                    self.display_finalwave_Perfusion_7 = self.waveform_display_temp_loaded_container[i]['Waveform']
-                    self.display_PlotDataItem_Perfusion_7.setPen(127,255,212)
-                    #self.Display_PlotDataItem_640AO.setDownsampling(ds=(int(self.textboxAA.value())/10), method='mean')
-                    self.pw_preset_waveform.addItem(self.display_PlotDataItem_Perfusion_7)
-                    
-                    self.displaytextitem_Perfusion_7 = pg.TextItem(text='Perfusion_7', color=(127,255,212), anchor=(0, 0))
-                    self.displaytextitem_Perfusion_7.setPos(1, -5)
-                    self.pw_preset_waveform.addItem(self.displaytextitem_Perfusion_7)
-        except:
             pass
         
-    def showpointdata(self):
+        
+    def video_mean(self):
         """
-        Functions for the display of vertical lines added in patch windows.
-        """
-        try:
-            self.pw_patch_current.removeItem(self.currenttextitem)
-        except:
-            self.currenttextitem=pg.TextItem(text='0',color=(255,204,255), anchor=(0, 1))
-            self.currenttextitem.setPos(round(self.vLine.value(), 2), 0)
-            self.pw_patch_current.addItem(self.currenttextitem)
-            
-            index = (np.abs(np.arange(len(self.Ip))-self.vLine.value()*self.samplingrate_curve)).argmin()
-            
-            self.currenttextitem.setText(str(round(self.vLine.value(), 2))+' s,I='+str(round(self.Ip[int(index)]*1000/self.OC, 2))+' pA')
-        else:
-            self.currenttextitem=pg.TextItem(text='0',color=(255,204,255), anchor=(0, 1))
-            self.currenttextitem.setPos(round(self.vLine.value(), 2), 0)
-            self.pw_patch_current.addItem(self.currenttextitem)
-            
-            index = (np.abs(np.arange(len(self.Ip))-self.vLine.value()*self.samplingrate_curve)).argmin()
-            
-            self.currenttextitem.setText(str(round(self.vLine.value(), 2))+' s,I='+str(round(self.Ip[int(index)]*1000/self.OC, 2))+' pA')    
+        Calculating the average 2d image from the video.
 
-    def showpointdata_camtrace(self):
-        if self.line_cam_trace_selection == 1:
-            try:
-                self.pw_patch_camtrace.removeItem(self.camtracetextitem)
-            except:
-                self.camtracetextitem=pg.TextItem(text='0',color=(255,204,255), anchor=(0, 1))
-                self.camtracetextitem.setPos(round(self.vLine_cam.value(), 2), 0)
-                self.pw_patch_camtrace.addItem(self.camtracetextitem)
-                
-                index = (np.abs(np.arange(len(self.camsignalsum))-self.vLine_cam.value()*self.samplingrate_cam)).argmin()
-                
-                self.camtracetextitem.setText('Sum of pixel values:'+str(self.camsignalsum[int(index)]))
-            else:
-                self.camtracetextitem=pg.TextItem(text='0',color=(255,204,255), anchor=(0, 1))
-                self.camtracetextitem.setPos(round(self.vLine_cam.value(), 2), 0)
-                self.pw_patch_camtrace.addItem(self.camtracetextitem)
-                
-                index = (np.abs(np.arange(len(self.camsignalsum))-self.vLine_cam.value()*self.samplingrate_cam)).argmin()
-                
-                self.camtracetextitem.setText('Sum of pixel values:'+str(self.camsignalsum[int(index)]))
-        else:
-            try:
-                self.pw_patch_camtrace.removeItem(self.camtracetextitem)
-            except:
-                self.camtracetextitem=pg.TextItem(text='0',color=(255,204,255), anchor=(0, 1))
-                self.camtracetextitem.setPos(round(self.vLine_cam.value(), 2), 0)
-                self.pw_patch_camtrace.addItem(self.camtracetextitem)
-                
-                index = (np.abs(np.arange(len(self.weighttrace_data))-self.vLine_cam.value()*self.samplingrate_cam)).argmin()
-                
-                self.camtracetextitem.setText('Weighted trace:'+str(self.weighttrace_data[int(index)]))
-            else:
-                self.camtracetextitem=pg.TextItem(text='0',color=(255,204,255), anchor=(0, 1))
-                self.camtracetextitem.setPos(round(self.vLine_cam.value(), 2), 0)
-                self.pw_patch_camtrace.addItem(self.camtracetextitem)
-                
-                index = (np.abs(np.arange(len(self.weighttrace_data))-self.vLine_cam.value()*self.samplingrate_cam)).argmin()
-                
-                self.camtracetextitem.setText('Weighted trace:'+str(self.weighttrace_data[int(index)]))
-    
-    def displaycamtrace(self):
-        self.line_cam_trace_selection = 1
-        self.line_cam_weightedtrace_selection = 0
-        
-        self.samplingrate_cam = self.Spincamsamplingrate.value()
-        
-        self.camsignalsum = np.zeros(len(self.videostack))
-        for i in range(len(self.videostack)):
-            self.camsignalsum[i] = np.sum(self.videostack[i])
-            
-        self.patchcamtracelabel = np.arange(len(self.camsignalsum))/self.samplingrate_cam
-        
-        self.PlotDataItem_patchcam = PlotDataItem(self.patchcamtracelabel, self.camsignalsum, name = 'Pixel sum trace')
-        self.PlotDataItem_patchcam.setPen('w')
-        self.pw_patch_camtrace.addItem(self.PlotDataItem_patchcam)        
-        
-#    def Matdisplay_plot(self):
-#        self.Nest_data_directory = str(QtWidgets.QFileDialog.getExistingDirectory())
-#        self.Curvedisplay_savedirectorytextbox.setText(self.Nest_data_directory)
-        
-#    def matdisplay_draw(self):
-#        self.Nest_data_directory = self.Curvedisplay_savedirectorytextbox.text()
-#        get_ipython().run_line_magic('matplotlib', 'qt')
-#        
-#        self.cam_trace_fluorescence_dictionary = {}
-#        self.cam_trace_fluorescence_filename_dictionary = {}
-#        self.region_file_name = []
-#        
-#        for file in os.listdir(self.Nest_data_directory):
-#            if 'Wavefroms_sr_' in file:
-#                self.wave_fileName = os.path.join(self.Nest_data_directory, file)
-#            elif file.endswith('csv'): # Quick dirty fix
-#                self.recorded_cam_fileName = os.path.join(self.Nest_data_directory, file)
-#                
-#                self.samplingrate_cam = self.Spincamsamplingrate.value()
-#                self.cam_trace_time_label = np.array([])
-#                self.cam_trace_fluorescence_value = np.array([])
-#                
-#                with open(self.recorded_cam_fileName, newline='') as csvfile:
-#                    spamreader = csv.reader(csvfile, delimiter=' ', quotechar='|')
-#                    for column in spamreader:
-#                        coords = column[0].split(",")
-#                        if coords[0] != 'X': # First row and column is 'x, y'
-#                            self.cam_trace_time_label = np.append(self.cam_trace_time_label, int(coords[0]))
-#                            self.cam_trace_fluorescence_value = np.append(self.cam_trace_fluorescence_value, float(coords[1]))
-#                self.cam_trace_fluorescence_dictionary["region_{0}".format(len(self.region_file_name)+1)] = self.cam_trace_fluorescence_value
-#                self.cam_trace_fluorescence_filename_dictionary["region_{0}".format(len(self.region_file_name)+1)] = file
-#                self.region_file_name.append(file)
-#            elif 'Vp' in file:
-#                self.recorded_wave_fileName = os.path.join(self.Nest_data_directory, file)
-#
-#        # Read in configured waveforms
-#        configwave_wavenpfileName = self.wave_fileName#r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Patch clamp\2019-11-29 patch-perfusion-Archon1\trial-1\perfusion2\2019-11-29_15-51-16__Wavefroms_sr_100.npy'
-#        temp_loaded_container = np.load(configwave_wavenpfileName, allow_pickle=True)
-#
-#        Daq_sample_rate = int(float(configwave_wavenpfileName[configwave_wavenpfileName.find('sr_')+3:-4]))
-#        
-#        self.Checked_display_list = ['Waveform']
-#        if self.checkboxTrace.isChecked():
-#            self.Checked_display_list = np.append(self.Checked_display_list, 'Recorded_trace')
-#        if self.checkboxCam.isChecked():
-#            self.Checked_display_list = np.append(self.Checked_display_list, 'Cam_trace')
-#        
-##            Vm_diff = round(np.mean(Vm[100:200]) - np.mean(Vm[-200:-100]), 2)
-#        
-#        reference_length=len(temp_loaded_container[0]['Waveform'])
-#        xlabel_all = np.arange(reference_length)/Daq_sample_rate
-#        
-#        #plt.figure()
-#        if len(self.Checked_display_list) == 2:
-#            ax1 = self.Matdisplay_figure.add_subplot(211)
-#            ax2 = self.Matdisplay_figure.add_subplot(212)
-##                self.Matdisplay_figure, (ax1, ax2) = plt.subplots(2, 1)
-#        elif len(self.Checked_display_list) == 3:
-##                self.Matdisplay_figure, (ax1, ax2, ax3) = plt.subplots(3, 1)
-#            ax1 = self.Matdisplay_figure.add_subplot(221)
-#            ax2 = self.Matdisplay_figure.add_subplot(222)
-#            ax3 = self.Matdisplay_figure.add_subplot(223)
-#        for i in range(len(temp_loaded_container)):
-#            if temp_loaded_container[i]['Sepcification'] == '640AO':
-#                ax1.plot(xlabel_all, temp_loaded_container[i]['Waveform'], label='640AO', color='r')
-#            elif temp_loaded_container[i]['Sepcification'] == '488AO':
-#                ax1.plot(xlabel_all, temp_loaded_container[i]['Waveform'], label='488AO', color='b')
-#            elif temp_loaded_container[i]['Sepcification'] == 'Perfusion_8':
-#                ax1.plot(xlabel_all, temp_loaded_container[i]['Waveform'], label='KCL')
-#            elif temp_loaded_container[i]['Sepcification'] == 'Perfusion_7':
-#                ax1.plot(xlabel_all, temp_loaded_container[i]['Waveform'], label='EC')
-#            elif temp_loaded_container[i]['Sepcification'] == 'Perfusion_2':
-#                ax1.plot(xlabel_all, temp_loaded_container[i]['Waveform'], label='Suction')
-#        ax1.set_title('Output waveforms')        
-#        ax1.set_xlabel('time(s)')
-#        ax1.set_ylabel('Volt')
-#        ax1.legend()
-#
-#        if 'Recorded_trace' in self.Checked_display_list:
-#    #        plt.yticks(np.round(np.arange(min(Vm), max(Vm), 0.05), 2))      
-#            # Read in recorded waves
-#            Readin_fileName = self.recorded_wave_fileName#r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Patch clamp\2019-11-29 patch-perfusion-Archon1\trial-2\Vp2019-11-29_17-31-18.npy'
-#            
-#            if 'Vp' in os.path.split(Readin_fileName)[1]: # See which channel is recorded
-#                Vm = np.load(Readin_fileName, allow_pickle=True)
-#                Vm = Vm[4:-1]# first 5 are sampling rate, Daq coffs
-#                Vm[0]=Vm[1]
-#            
-#            ax2.set_xlabel('time(s)')        
-#            ax2.set_title('Recording')
-#            ax2.set_ylabel('V (Vm*10)')
-#            ax2.plot(xlabel_all, Vm, label = 'Vm')
-#            #ax2.annotate('Vm diff = '+str(Vm_diff*100)+'mV', xy=(0, max(Vm)-0.1))        
-#            ax2.legend()
-#        elif 'Recorded_trace' not in self.Checked_display_list and len(self.Checked_display_list) == 2:
-#            ax2.plot(self.cam_trace_time_label/self.samplingrate_cam, self.cam_trace_fluorescence_dictionary["region_{0}".format(0+1)], label = 'Fluorescence')
-#            ax2.set_xlabel('time(s)')        
-#            ax2.set_title('ROI Fluorescence')#+' ('+str(self.cam_trace_fluorescence_filename_dictionary["region_{0}".format(region_number+1)])+')')
-#            ax2.set_ylabel('CamCounts')
-#            ax2.legend()
-#            
-#        if len(self.Checked_display_list) == 3:
-#            ax3.plot(self.cam_trace_time_label/self.samplingrate_cam, self.cam_trace_fluorescence_dictionary["region_{0}".format(0+1)], label = 'Fluorescence')
-#            ax3.set_xlabel('time(s)')        
-#            ax3.set_title('ROI Fluorescence')#+' ('+str(self.cam_trace_fluorescence_filename_dictionary["region_{0}".format(region_number+1)])+')')
-#            ax3.set_ylabel('CamCounts')
-#            ax3.legend()
-#        #plt.autoscale(enable=True, axis="y", tight=False)
-#        self.Matdisplay_figure.tight_layout()
-#        self.Matdisplay_figure_canvas.draw()
-#        #get_ipython().run_line_magic('matplotlib', 'inline')
-        
-#    def matdisplay_clear(self):
-#        self.Matdisplay_figure.clear()
-        
-    def calculateaverage(self):
+        Returns
+        -------
+        None.
+
+        """
         self.imganalysis_averageimage = np.mean(self.videostack, axis = 0)
         self.pw_averageimage.setImage(self.imganalysis_averageimage)
-        #self.pw_averageimage.average_imgItem.setImage(self.imganalysis_averageimage)
-    
-    def calculateaverage_bg(self):
+        self.samplingrate_cam = self.Spincamsamplingrate.value()        
+        self.cam_time_label = np.arange(self.videostack.shape[0])/self.samplingrate_cam
+        
+        fig = plt.figure()
+        fig.suptitle("Mean intensity of raw video")
+        plt.imshow(self.imganalysis_averageimage)
+        fig.savefig(os.path.join(self.main_directory, 'Analysis results//Mean intensity of raw video.png'))
+        plt.show()
+        
+        self.mean_camera_counts = []
+        for i in range(self.videostack.shape[0]):
+            self.mean_camera_counts.append(np.mean(self.videostack[i]))
+                
+        fig2, ax2 = plt.subplots()
+        fig2.suptitle("Mean intensity trace of raw video")
+        plt.plot(self.cam_time_label, self.mean_camera_counts)
+        ax2.set_xlabel('time(s)')
+        ax2.set_ylabel('Pixel values')
+        fig2.savefig(os.path.join(self.main_directory, 'Analysis results//Mean intensity trace of raw video.png'))
+        plt.show()
+            
+    def calculate_background_from_ROI_average(self):
+        """
+        Calculate the mean background value from the ROI selector.
+
+        Returns
+        -------
+        None.
+
+        """
         self.averageimage_imageitem = self.pw_averageimage.getImageItem()
         self.averageimage_ROI = self.roi_average.getArrayRegion(self.imganalysis_averageimage, self.averageimage_imageitem)
         self.averageimage_ROI_mask = np.where(self.averageimage_ROI > 0, 1, 0)
@@ -761,149 +529,117 @@ class AnalysisWidgetUI(QWidget):
         self.roi_avg_coord_col_end = round(self.roi_average_Bounds.bottomRight().x())
         self.roi_avg_coord_raw_start = round(self.roi_average_Bounds.topLeft().y())
         self.roi_avg_coord_raw_end = round(self.roi_average_Bounds.bottomRight().y())
-
-        #print(self.roi_average_pos)
-#        plt.figure()
-#        plt.imshow(self.averageimage_ROI_mask, cmap = plt.cm.gray)
-#        plt.show()
         
-#        plt.figure()
-#        plt.imshow(self.imganalysis_averageimage[self.roi_coord_raw_start:self.roi_coord_raw_end, self.roi_coord_col_start:self.roi_coord_col_end], cmap = plt.cm.gray)
-#        plt.show()
-        
-#        print(self.averageimage_ROI[13:15,13:15])
-#        print(self.imganalysis_averageimage[self.roi_coord_raw_start:self.roi_coord_raw_end, self.roi_coord_col_start:self.roi_coord_col_end][13:15,13:15])
     def calculateweight(self): 
-        t2 = threading.Thread(target = self.calculateweight_thread)
+        t2 = threading.Thread(target = self.calculate_weight)
         t2.start()
     
-    def calculateweight_thread(self):        
-        if self.switch_Vp_or_camtrace.currentText() == 'With Vp':
+    def calculate_weight(self):
+        """
+        Calculate the pixels weights using correlation between the video and voltage reocrding.
+
+        Returns
+        -------
+        None.
+
+        """
+        if self.switch_Vp_or_camtrace.currentIndex() == 0:
             self.samplingrate_cam = self.Spincamsamplingrate.value()
             self.downsample_ratio = int(self.samplingrate_curve/self.samplingrate_cam) 
             
-            print(self.downsample_ratio)
-            print(self.samplingrate_cam)
-            print(self.samplingrate_curve)
+            print("Vp downsampling ratio: {}".format(self.downsample_ratio))
+            print("Sampling rate camera: {}".format(self.samplingrate_cam))
+            print("Sampling rate DAQ: {}".format(self.samplingrate_curve))
             
-            self.Vp_downsample = self.Vp.reshape(-1, self.downsample_ratio).mean(axis=1)
+            try:
+                self.Vp_downsample = self.Vp.reshape(-1, self.downsample_ratio).mean(axis=1)
+                
+                self.Vp_downsample = self.Vp_downsample[0:len(self.videostack)]
+            except:
+                print("Vp downsampling ratio is not an integer.")
+                small_ratio = int(np.floor(self.samplingrate_curve/self.samplingrate_cam))
+                resample_length = int(len(self.videostack) * small_ratio)
+                self.Vp_downsample = signal.resample(self.Vp, resample_length)
+                plt.figure()
+                plt.plot(self.Vp_downsample)
+                plt.show()
+
+                self.Vp_downsample = self.Vp_downsample.reshape(-1, small_ratio).mean(axis=1)
+                self.Vp_downsample = self.Vp_downsample[0:len(self.videostack)]
             
-            self.Vp_downsample = self.Vp_downsample[0:len(self.videostack)]
-            
-            self.corrimage, self.weightimage, self.sigmaimage = ProcessImage.extractV(self.videostack, self.Vp_downsample*1000/10) # *1000: convert to mV; /10 is to correct for the *10 add on at patch amplifier.
+            print(self.videostack.shape, self.Vp_downsample.shape)
+            self.corrimage, self.weightimage, self.sigmaimage = ProcessImage.extractV(self.videostack, self.Vp_downsample*1000/10) 
+            # *1000: convert to mV; /10 is to correct for the *10 add on at patch amplifier.
     
             self.pw_weightimage.setImage(self.weightimage)
             
-        elif self.switch_Vp_or_camtrace.currentText() == 'Camera trace':
+        elif self.switch_Vp_or_camtrace.currentIndex() == 1:
             self.corrimage, self.weightimage, self.sigmaimage = ProcessImage.extractV(self.videostack, self.camsignalsum*1000/10)
     
             self.pw_weightimage.setImage(self.weightimage)
 
+        fig = plt.figure()
+        fig.suptitle("Weighted pixels")
+        plt.imshow(self.weightimage)
+        fig.savefig(os.path.join(self.main_directory, 'Analysis results//Weighted pixel image.png'))
+        np.save(os.path.join(self.main_directory,'Analysis results//Weighted pixel image.npy'), self.weightimage)
+        plt.show()                
+
+    def display_weighted_trace(self):     
+        """
+        Display the mean sum weight and display frame by frame.
+
+        Returns
+        -------
+        None.
+
+        """
+        self.videolength = len(self.videostack)    
         
-    def displayweighttrace(self):     
-        try:
-            self.pw_patch_camtrace.removeItem(self.camtracetextitem) # try to remove text besides line, not a good way to do so.
-            
-            self.line_cam_trace_selection = 0 #This is the vertical line for easy value display
-            self.line_cam_weightedtrace_selection = 1
-            
-            self.samplingrate_cam = self.Spincamsamplingrate.value()
-            self.videolength = len(self.videostack)
-            self.pw_patch_camtrace.removeItem(self.PlotDataItem_patchcam)      
-    
-            k=np.tile(self.weightimage/np.sum(self.weightimage)*self.videostack.shape[1]*self.videostack.shape[2], (self.videolength,1,1))# datv = squeeze(mean(mean(mov.*repmat(Wv./sum(Wv(:))*movsize(1)*movsize(2), [1 1 length(sig)]))));
-            self.weighttrace_tobetime = self.videostack*k
-            
-            self.weighttrace_data = np.zeros(self.videolength)
-            for i in range(self.videolength):
-                self.weighttrace_data[i] = np.mean(self.weighttrace_tobetime[i])
-                
-            self.patchcamtracelabel_weighted = np.arange(self.videolength)/self.samplingrate_cam
-            
-            self.PlotDataItem_patchcam_weighted = PlotDataItem(self.patchcamtracelabel_weighted, self.weighttrace_data, name = 'Weighted signal trace')
-            self.PlotDataItem_patchcam_weighted.setPen('c')
-            self.pw_patch_camtrace.addItem(self.PlotDataItem_patchcam_weighted)       
-        except:
-            self.line_cam_trace_selection = 0
-            self.line_cam_weightedtrace_selection = 1
-            
-            self.samplingrate_cam = self.Spincamsamplingrate.value()
-            self.videolength = len(self.videostack)
-            self.pw_patch_camtrace.removeItem(self.PlotDataItem_patchcam)      
-    
-            k=np.tile(self.weightimage/np.sum(self.weightimage)*self.videostack.shape[1]*self.videostack.shape[2], (self.videolength,1,1))
-            self.weighttrace_tobetime = self.videostack*k
-            
-            self.weighttrace_data = np.zeros(self.videolength)
-            for i in range(self.videolength):
-                self.weighttrace_data[i] = np.mean(self.weighttrace_tobetime[i])
-                
-            self.patchcamtracelabel_weighted = np.arange(self.videolength)/self.samplingrate_cam
-            
-            self.PlotDataItem_patchcam_weighted = PlotDataItem(self.patchcamtracelabel_weighted, self.weighttrace_data, name = 'Weighted signal trace')
-            self.PlotDataItem_patchcam_weighted.setPen('c')
-            self.pw_patch_camtrace.addItem(self.PlotDataItem_patchcam_weighted)
-            
-            
-    def displayROIweighttrace(self):
-        print('Under construction!')
-        try:
-            self.pw_patch_camtrace.removeItem(self.camtracetextitem) # try to remove text besides line, not a good way to do so.
-            
-            self.line_cam_trace_selection = 0
-            self.line_cam_weightedtrace_selection = 1
-            
-            self.samplingrate_cam = self.Spincamsamplingrate.value()
-            self.videolength = len(self.videostack)
-            self.pw_patch_camtrace.removeItem(self.PlotDataItem_patchcam)      
-            
-            self.weightimage_imageitem = self.pw_weightimage.getImageItem()
-            self.weightimage_ROI = self.roi_weighted.getArrayRegion(self.weightimage, self.weightimage_imageitem)
-            k=np.tile(self.weightimage_ROI/np.sum(self.weightimage_ROI)*self.videostack.shape[1]*self.videostack.shape[2], (self.videolength,1,1)) #itrace = squeeze(sum(sum(movie_in.*repmat(inpoly, [1, 1, nframes]))))/sum(inpoly(:));
-            self.weighttrace_tobetime = self.videostack*k 
-            
-            self.weighttrace_data = np.zeros(self.videolength)
-            for i in range(self.videolength):
-                self.weighttrace_data[i] = np.mean(self.weighttrace_tobetime[i])
-                
-            self.patchcamtracelabel_weighted = np.arange(self.videolength)/self.samplingrate_cam
-            
-            self.PlotDataItem_patchcam_weighted = PlotDataItem(self.patchcamtracelabel_weighted, self.weighttrace_data, name = 'Weighted signal trace')
-            self.PlotDataItem_patchcam_weighted.setPen('c')
-            self.pw_patch_camtrace.addItem(self.PlotDataItem_patchcam_weighted)       
-        except:
-            self.line_cam_trace_selection = 0
-            self.line_cam_weightedtrace_selection = 1
-            
-            self.samplingrate_cam = self.Spincamsamplingrate.value()
-            self.videolength = len(self.videostack)
-            self.pw_patch_camtrace.removeItem(self.PlotDataItem_patchcam)      
-    
-            self.weightimage_imageitem = self.pw_weightimage.getImageItem()
-            self.weightimage_ROI = self.roi_weighted.getArrayRegion(self.weightimage, self.weightimage_imageitem)
-            k=np.tile(self.weightimage_ROI/np.sum(self.weightimage_ROI)*self.videostack.shape[1]*self.videostack.shape[2], (self.videolength,1,1))
-            self.weighttrace_tobetime = self.videostack*k
-            
-            self.weighttrace_data = np.zeros(self.videolength)
-            for i in range(self.videolength):
-                self.weighttrace_data[i] = np.mean(self.weighttrace_tobetime[i])
-                
-            self.patchcamtracelabel_weighted = np.arange(self.videolength)/self.samplingrate_cam
-            
-            self.PlotDataItem_patchcam_weighted = PlotDataItem(self.patchcamtracelabel_weighted, self.weighttrace_data, name = 'Weighted signal trace')
-            self.PlotDataItem_patchcam_weighted.setPen('c')
-            self.pw_patch_camtrace.addItem(self.PlotDataItem_patchcam_weighted)
+        # datv = squeeze(mean(mean(mov.*repmat(Wv./sum(Wv(:))*movsize(1)*movsize(2), [1 1 length(sig)]))));
+        k=np.tile(self.weightimage/np.sum(self.weightimage)*self.videostack.shape[1]*self.videostack.shape[2], (self.videolength,1,1))
+        self.weighttrace_tobetime = self.videostack*k
         
+        self.weight_trace_data = np.zeros(self.videolength)
+        for i in range(self.videolength):
+            self.weight_trace_data[i] = np.mean(self.weighttrace_tobetime[i])
+            
+        self.patch_camtrace_label_weighted = np.arange(self.videolength)/self.samplingrate_cam
+        
+        np.save(os.path.join(self.main_directory,'Analysis results//Weighted_trace.npy'), self.weight_trace_data)
+        
+        fig, ax1 = plt.subplots()
+        fig.suptitle("Weighted pixel trace")
+        plt.plot(self.patch_camtrace_label_weighted, self.weight_trace_data)
+        ax1.set_xlabel('time(s)')
+        ax1.set_ylabel('Weighted trace(counts)')
+        fig.savefig(os.path.join(self.main_directory, 'Analysis results//Weighted pixel trace.png'))
+        plt.show()
+
+
+    def fit_on_trace(self):
+        """
+        Using curve fit function to calculate all the statistics.
+
+        Returns
+        -------
+        None.
+
+        """
+        fit = CurveFit\
+        (self.weight_trace_data, self.Vp*1000/10, camera_fps = self.samplingrate_cam, DAQ_Hz = self.samplingrate_display_curve, rhodopsin = self.Construct_name.text())    
+        fit.Photobleach()
+        fit.IsolatePeriods()
+        fit.TransformCurves()
+        fit.CurveAveraging()
+        fit.ExponentialFitting()
+        fit.Statistics()
+
     def save_analyzed_image(self, catag):
         if catag == 'weight_image':
             Localimg = Image.fromarray(self.weightimage) #generate an image object
             Localimg.save(os.path.join(self.savedirectory, 'Weight_' +datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'.tif')) #save as tif
      
-    def export_trace(self):
-        if self.switch_export_trace.currentText() == 'Cam trace':
-            np.save(os.path.join(self.savedirectory,'Cam_trace'), self.camsignalsum)
-        elif self.switch_export_trace.currentText() == 'Weighted trace':
-            np.save(os.path.join(self.savedirectory,'Weighted_trace'), self.weighttrace_data)
         
     def clearplots(self):
         self.pw_patch_voltage.clear()
@@ -921,21 +657,6 @@ class AnalysisWidgetUI(QWidget):
     def MessageToMainGUI(self, text):
         self.MessageBack.emit(text)
         
-        
-    # def show_cellselection_gui(self):
-        
-    #     try:
-    #         import CellSelectionGUI_ML
-    #         self.Cellselection_UI = CellSelectionGUI_ML.MainGUI()
-
-    #     except:
-    #         import ImageAnalysis.CellSelectionGUI_ML
-    #         self.Cellselection_UI = ImageAnalysis.CellSelectionGUI_ML.MainGUI()
-        
-    #     self.show_cellselection_gui_button.hide()
-    #     self.Display_Container_tabs_Cellselection_layout.addWidget(self.Cellselection_UI, 0,0)
-        
-    #     self.Cellselection_UI.signal_DMDcontour.connect(self.send_DMD_mask_contour)
         
     def send_DMD_mask_contour(self, contour_from_cellselection):
         self.Cellselection_DMD_mask_contour.emit(contour_from_cellselection)

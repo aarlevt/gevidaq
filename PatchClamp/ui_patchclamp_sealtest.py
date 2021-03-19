@@ -97,7 +97,7 @@ class PatchclampSealTestUI(QWidget):
         #----------------------------------------------------------------------
         #----------------------------------GUI---------------------------------
         #----------------------------------------------------------------------
-        # self.setFixedSize(720,670)
+        self.setFixedHeight(700)
         self.setWindowTitle("Patchclamp Seal Test")
         
         self.ICON_RED_LED = "./Icons/off.png"
@@ -275,7 +275,7 @@ class PatchclampSealTestUI(QWidget):
                                         #Derived from: https://stackoverflow.com/questions/17914960/pyqt-runtimeerror-wrapped-c-c-object-has-been-deleted
                                         # and http://enki-editor.org/2014/08/23/Pyqt_mem_mgmt.html
         
-        self.outVolPlotWidget = SlidingWindow(200, title = "Voltage", unit = "V") #Should be bigger than the readvalue
+        # self.outVolPlotWidget = SlidingWindow(200, title = "Voltage", unit = "V") #Should be bigger than the readvalue
         self.outCurPlotWidget = SlidingWindow(200, title = "Current", unit = "A") #Should be bigger than the readvalue
         
         self.display_tab_widget = QTabWidget()
@@ -284,7 +284,7 @@ class PatchclampSealTestUI(QWidget):
         self.display_tab_widget.addTab(self.outCurPlotWidget, "Current")
         # self.plotLayout.addWidget(self.outVolPlotWidget, 1, 0)
         # self.plotLayout.addWidget(QLabel('Current (pA):'), 0, 1)
-        self.display_tab_widget.addTab(self.outVolPlotWidget, "Voltage")
+        # self.display_tab_widget.addTab(self.outVolPlotWidget, "Voltage")
         # self.plotLayout.addWidget(self.outCurPlotWidget, 1, 1)
         
         valueContainer = QGroupBox("Resistance/Capacitance")
@@ -335,11 +335,13 @@ class PatchclampSealTestUI(QWidget):
     def ResetCurrentImgView(self):
         """Closes the widget nicely, making sure to clear the graphics scene and release memory."""
         self.outCurPlotWidget.close()
-
+        # self.outVolPlotWidget.close()
+        
         # Replot the imageview
         self.outCurPlotWidget = SlidingWindow(200, title = "Current", unit = "A")
         
-        self.plotLayout.addWidget(self.outCurPlotWidget, 1, 1)
+        self.display_tab_widget.addTab(self.outCurPlotWidget, "Current")
+        # self.display_tab_widget.addTab(self.outVolPlotWidget, "Voltage")
         
     def measure(self):
         """Pop up window asking to check the gains.
@@ -436,7 +438,7 @@ class PatchclampSealTestUI(QWidget):
     def startUpdatingGUI(self):
         while self.is_sealtesting == True:   
             try:
-                self.outVolPlotWidget.append_(self.voltOut)
+                # self.outVolPlotWidget.append_(self.voltOut)
                 self.outCurPlotWidget.append_(self.curOut)
                 self.updateGraphs()
                 self.updateLabels(self.curOut, self.voltOut)
@@ -447,7 +449,7 @@ class PatchclampSealTestUI(QWidget):
     def updateGraphs(self):
         """Update graphs."""
         self.outCurPlotWidget.updateWindow()
-        self.outVolPlotWidget.updateWindow()
+        # self.outVolPlotWidget.updateWindow()
     
     def updateLabels(self, curOut, voltOut):
         """Update the resistance and capacitance labels.

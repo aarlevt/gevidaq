@@ -615,7 +615,10 @@ class ScanningExecutionThread(QThread):
         ZStackNum = int(ZStackinfor[ZStackinfor.index('Focus')+5])
         ZStackStep = float(ZStackinfor[ZStackinfor.index('Being')+5:len(ZStackinfor)])
         
-        AutoFocusConfig = self.GeneralSettingDict['AutoFocusConfig']
+        try:
+            AutoFocusConfig = self.GeneralSettingDict['AutoFocusConfig']
+        except:
+            pass
         
         # If manual focus correction applies, unpact the target focus infor.
         if len(self.GeneralSettingDict['FocusCorrectionMatrixDict']) > 0:

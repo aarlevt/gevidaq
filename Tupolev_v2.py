@@ -267,8 +267,8 @@ class Mainbody(QWidget):
         #         GUI for open_sealtest
         # =============================================================================
         self.open_sealtest_button = StylishQT.FancyPushButton(40, 50, color1=(255,153,255), color2=(204,208,255))
-        # self.open_sealtest_button.setIcon(QIcon('./Icons/Hamamatsu.png'))
-        self.open_sealtest_button.setText("Seal test")
+        self.open_sealtest_button.setIcon(QIcon('./Icons/patchclamp.png'))
+        # self.open_sealtest_button.setText("Seal test")
         self.open_sealtest_button.setToolTip("Open sealtest widget")
         self.open_sealtest_button.setIconSize(QSize(45, 45))
         self.open_sealtest_button.setFixedWidth(65)

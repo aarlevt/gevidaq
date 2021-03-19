@@ -576,6 +576,7 @@ class CameraUI(QMainWindow):
         self.StartStreamButton.setToolTip("Stream")
         self.StartStreamButton.setIcon(QIcon('./Icons/StartStreaming.png'))        
         self.StartStreamButton.setCheckable(True)
+        self.StartStreamButton.setEnabled(False)
         self.StartStreamButton.clicked.connect(self.StreamingSwitchEvent)
         CameraAcquisitionTab_2.layout.addWidget(self.StartStreamButton, 5, 3)
         
@@ -1273,6 +1274,8 @@ class CameraUI(QMainWindow):
         None.
 
         """
+        self.GetKeyCameraProperties()
+        
         with skimtiff.TiffWriter(self.get_file_dir(), append = False, imagej = False)as tif:
             tif.save(self.Live_image, description=self.metaData, compress=0)
         
@@ -1391,9 +1394,11 @@ class CameraUI(QMainWindow):
         if self.CamStreamActionContainer.isEnabled():
             self.CamStreamActionContainer.setEnabled(False)
             self.CamSaving_directory_textbox.setEnabled(False)
+            self.StartStreamButton.setEnabled(True)
         else:
             self.CamStreamActionContainer.setEnabled(True)
-            self.CamSaving_directory_textbox.setEnabled(True)      
+            self.CamSaving_directory_textbox.setEnabled(True)
+            self.StartStreamButton.setEnabled(False)
             
         # Set the number of buffers get prepared.
         self.BufferNumber = self.StreamBufferTotalFrames_spinbox.value()
@@ -1510,7 +1515,7 @@ class CameraUI(QMainWindow):
             + str(round(AcquisitionEndTime,2)) + " seconds, saving video takes {} seconds.".format(round(time.time()-write_starttime, 2)))
         
         
-        self.StartStreamButton.setEnabled(True)
+        self.StartStreamButton.setEnabled(False)
         self.CamStreamActionContainer.setEnabled(True)
         self.StreamStatusStackedWidget.setCurrentIndex(0)
         self.CamStreamIsFree.setText("Acquisition done. Frames acquired: {}.".format(self.imageCount))

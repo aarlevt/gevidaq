@@ -385,7 +385,7 @@ class Mainbody(QWidget):
         self.Cam_AF_init_step_sizeBox.setDecimals(3)
         self.Cam_AF_init_step_sizeBox.setMinimum(0)
         self.Cam_AF_init_step_sizeBox.setMaximum(10)
-        self.Cam_AF_init_step_sizeBox.setValue(0.013)
+        self.Cam_AF_init_step_sizeBox.setValue(0.016)
         self.Cam_AF_init_step_sizeBox.setSingleStep(0.001)  
         Cam_autofocus_setting_group_layout.addWidget(self.Cam_AF_init_step_sizeBox, 0, 1)  
         Cam_autofocus_setting_group_layout.addWidget(QLabel("Init. searching step(mm):"), 0, 0)        
@@ -416,7 +416,7 @@ class Mainbody(QWidget):
         Cam_autofocus_setting_group_layout.addWidget(self.Cam_AF_AOTF_valueBox, 1, 3)
         
         self.Cam_AF_AOTF_settingBox = QComboBox()
-        self.Cam_AF_AOTF_settingBox.addItems([ '488AO:', '532AO', '640AO'])
+        self.Cam_AF_AOTF_settingBox.addItems([ '488AO', '532AO', '640AO'])
         Cam_autofocus_setting_group_layout.addWidget(self.Cam_AF_AOTF_settingBox, 1, 2)
         
         self.Cam_autofocus_setting_group.setLayout(Cam_autofocus_setting_group_layout)

@@ -42,9 +42,9 @@ import cv2
 class ProcessImage():
     #%%
     """
-    # ==========================================================================================================================================================
-    # ************************************  Retrive scanning scheme and read in images. ************************************ 
-    # ==========================================================================================================================================================
+    # =========================================================================
+    #       Retrive scanning scheme and read in images.
+    # =========================================================================
     """
 
     def ReadinImgs_Roundstack(Nest_data_directory, rowIndex, colIndex):
@@ -144,9 +144,9 @@ class ProcessImage():
 
     #%%
     """           
-    # ==========================================================================================================================================================
-    # ************************************    Individual image processing    ************************************    
-    # ==========================================================================================================================================================
+    # =========================================================================
+    #       Individual image processing    
+    # =========================================================================
     """
     
     def generate_mask(imagestack,  openingfactor=2, closingfactor=3, binary_adaptive_block_size=335):
@@ -2092,15 +2092,15 @@ class ProcessImage():
         # Reshape the 1D readin_voltage_variance into 3D.
         readin_voltage_variance_3D = np.resize(readin_voltage_variance,(voltagelength,1,1))
         
-        corrimage = readin_video_variance.copy()
+        readin_video_variance_copy = readin_video_variance.copy()
         
         # At each frame, get the product of video_variance and voltage_variance
         #  = DV*DF
         for i in range(voltagelength):
-            corrimage[i] = corrimage[i]*readin_voltage_variance_3D[i]
+            readin_video_variance_copy[i] = readin_video_variance_copy[i]*readin_voltage_variance_3D[i]
             
         # Normalize to magnitude of voltage changes (DV*DF./DV^2) = DF/DV
-        corrimage = np.mean(corrimage, axis = 0)/np.mean(((readin_voltage_variance)**2)) 
+        corrimage = np.mean(readin_video_variance_copy, axis = 0)/np.mean(((readin_voltage_variance)**2)) 
         
         # Calculate a dV estimate at each pixel, based on the linear regression.
         corrmat = np.tile(corrimage, (voltagelength,1,1))
@@ -2115,13 +2115,15 @@ class ProcessImage():
         for i in range(voltagelength):
             # At each frame, compute the variance between predicted "voltage" and input voltage.
             imtermediate[i] = (estimate_DV[i] - readin_voltage_variance_3D[i])**2
-        sigmaimage = np.mean(imtermediate, axis = 0)
+        sigmaimage = np.mean(imtermediate, axis = 0) # 2D
         
         # Weightimg scales inverted with variance between input voltage and measured "voltage";
         # Variance is expressed in units of voltage squared. standard way to do it would be to cast input voltage in form of fit and leave data as data. 
-        weightimage = 1/sigmaimage
+        weightimage = 1/sigmaimage # 1/v**2
                                             
         weightimage[np.isnan(weightimage)] = 0
+        # Normalize it, so that there's no unit.
+        # At each pixel position, generate a percentage weight of this pixel, e.g., 0 for background pixels.
         weightimage = weightimage/np.mean(weightimage)
         
         estimate_DV[np.isnan(estimate_DV)] = 0 #Set places where imgs2 == NaN to zero
@@ -2582,8 +2584,6 @@ class ProcessImage():
             
         return Stitched_image_dict
 
-
-
     def retrieve_focus_map(Nest_data_directory):
         """
         Retrieve the objective motor position from images meta data, and map it.
@@ -2648,8 +2648,513 @@ class ProcessImage():
             focus_map_dict[Each_round] = final_focus_map_holder
             
         return focus_map_dict        
+    #%%
+    # =============================================================================
+    #     Curve fitting, adapted from Mels' code.
+    # =============================================================================
 
+class CurveFit:
+    
+    def __init__(self, fluorescence, waveform, camera_fps, DAQ_Hz, skip = 1, analysis_storing_folder = None, rhodopsin = 'Not specified'):
         
+        #### Input for initialization of the class ####
+        #fluorescence   = Weighted trace of fluorescence signal
+        #waveform       = waveform generated with Native Instruments DAQ
+        #rhodopsin      = label for the data (e.g., 'Helios4')
+        #Total_time     = Total recording time of camera
+        #camera_fps     = Frames per second of the recording camera
+        #V_Hz           = Frequency of the periodic voltage waveform
+        #DAQ_Hz         = Sampling frequency of provided voltage waveform
+        #skip           = Skip(number of periods in the beginning) to period where rhodopsin has reach steady state fluorescence
+        self.camera_fps = camera_fps
+        self.DAQ_Hz = DAQ_Hz
+        self.skip = int(skip)
+        self.fluorescence = fluorescence
+        self.time = (np.arange(len(self.fluorescence))+1)*1/self.camera_fps #Time axis for fluorescence signal
+        self.rhodopsin = rhodopsin
+        self.waveform = waveform[7:] #First 5 elements are meta data. Last or first 2 can be neglected
+        self.total_time = round(len(self.waveform)/DAQ_Hz)
+        self.waveformcopy = self.waveform.copy()
+        self.timewaveform = (np.arange(len(self.waveform))+1)*1/self.DAQ_Hz #Time axis for waveform signal
+    
+    def Photobleach(self):
+        
+        #Bi-exponential curve for the fitting algorithm        
+        def bleachfunc(t, a, t1, b, t2):
+            return a*np.exp(-(t/t1)) + b*np.exp(-(t/t2))
+        
+        #Parameter bounds for the parameters in the bi-exponential function
+        parameter_bounds = ([0, 0, 0, 0], [np.inf, np.inf, np.inf, np.inf])
+         
+        #popt   = Optimal parameters for the curve fit
+        #pcov   = The estimated covariance of popt
+        popt, pcov = curve_fit(bleachfunc, self.time, self.fluorescence, bounds = parameter_bounds, maxfev = 500000)
+        
+        #Vizualization before photobleach normalization
+        fig1, ax = plt.subplots()
+        p01, = ax.plot(self.time, self.fluorescence, color = (0, 0, 0.4), linestyle = 'None', marker = 'o', markersize = 0.5, markerfacecolor = (0, 0, 0.9), label = "Experimental data")
+        p02, = ax.plot(self.time, bleachfunc(self.time, *popt), color = (0.9, 0, 0), label = "Bi-exponential fit")
+        ax.set_title(self.rhodopsin, size=14)
+        ax.set_ylabel('Fluorescence (a.u.)', fontsize=11)
+        ax.set_xlabel('Time (s)', fontsize=11)
+        ax.legend([p02, p01], ["Bi-exponential fit", "Experimental data"])
+        ax.spines['right'].set_visible(False)
+        ax.spines['top'].set_visible(False)
+        ax.xaxis.set_ticks_position('bottom')
+        ax.yaxis.set_ticks_position('left')
+        plt.show()
+        #Uncomment if you want to save the figure
+        #plt.savefig()
+        
+        #Normalization of fluorescence signal (e.g., division by the fit)
+        self.fluorescence = np.true_divide(self.fluorescence,bleachfunc(self.time, *popt))
+        
+        #Vizualization after photobleach normalization
+        fig2, ax = plt.subplots()
+        p03, = ax.plot(self.time, self.fluorescence)
+        ax.set_title(self.rhodopsin, size=14)
+        ax.set_ylabel('Fluorescence (a.u.)', fontsize=11)
+        ax.set_xlabel('Time (s)', fontsize=11)
+        ax.spines['right'].set_visible(False)
+        ax.spines['top'].set_visible(False)
+        ax.xaxis.set_ticks_position('bottom')
+        ax.yaxis.set_ticks_position('left')
+        plt.show()
+        #Uncomment if you want to save the figure
+        #plt.savefig()
+        
+        #Vizualization of waveform provided      
+        fig3, ax = plt.subplots()
+        p04, = ax.plot(self.timewaveform, self.waveform*1000/10) # *1000 is to convert to mV; 10 is to correct for the *10 gain at the patch clamp amplifier.
+        ax.set_title('Voltage waveform', size=14)
+        ax.set_ylabel('Voltage (mV)', fontsize=11)
+        ax.set_xlabel('Time (s)', fontsize=11)
+        ax.spines['right'].set_visible(False)
+        ax.spines['top'].set_visible(False)
+        ax.xaxis.set_ticks_position('bottom')
+        ax.yaxis.set_ticks_position('left')
+        plt.show()
+        #Uncomment if you want to save the figure
+        #plt.savefig()
+        
+        #Store parameters for the photobleach bi-exponential fit
+        #The conditionals make sure that 't1' is always the fast
+        #time component and 't2' is the slow time component
+        if popt[1] < popt[3]:
+            self.photobleach_a = popt[0]
+            self.photobleach_t1 = popt[1]
+            self.photobleach_b = popt[2]
+            self.photobleach_t2 = popt[3]
+            self.photobleach_ratio1 = popt[0]/(popt[0]+popt[2])
+            self.photobleach_ratio2 = 1 - self.photobleach_ratio1         
+        else:
+            self.photobleach_a = popt[2]
+            self.photobleach_t1 = popt[3]
+            self.photobleach_b = popt[0]
+            self.photobleach_t2 = popt[1]
+            self.photobleach_ratio1 = popt[2]/(popt[0]+popt[2]) 
+            self.photobleach_ratio2 = 1 - self.photobleach_ratio1
+            
+        return self.photobleach_t1, self.photobleach_t2, self.photobleach_ratio1           
+        
+        
+    def IsolatePeriods(self):
+        
+        #Initialize empty periodic fluorescence and periodic time list
+        self.periods_fluorescence = []
+        self.periods_time = []
+
+        #Find the midpoint of a step provided in the waveform
+        self.midpoint = (np.amax(self.waveform) + np.amin(self.waveform))/2
+        
+        #True values        = values belonging top of square wave
+        #False values       = values belonging to bottom of square wave
+        self.waveform = self.waveform > self.midpoint
+        self.waveform[:2] = True #This line is redundant if you skip the first 7 values of the waveform
+        self.waveform_time_matrix = np.column_stack((self.waveform, self.timewaveform))
+        
+        #Find indices where steps happen
+        self.step_idx = np.argwhere(np.diff(self.waveform_time_matrix[:,0]) != 0).reshape(-1) + 1
+        
+        ##### Initialize empty lists needed for the next for loop ####
+        #fluorescence_list_true     = list for fluorescence signal belonging to top of square wave
+        #fluorescence_list_false    = list for fluorescence signal belonging to bottom of square wave
+        #time_list_true             = list for time points belonging to top of square wave
+        #time_list_false            = list for time points belonging to bottom of square wave
+        #time_difference            = list for trigger time difference (difference between time point of fluorescence signal 
+        #                             and voltage waveform directly after each step)
+        #counter                    = 
+        self.fluorescence_list_true = []
+        self.fluorescence_list_false = []
+        self.time_list_true = []
+        self.time_list_false = []    
+        self.time_difference = []
+        self.counter = 0 #Keep track of what number of voltagr step you are
+        
+        for (I,t) in zip(self.fluorescence, self.time):
+            #Only consider waveform data corresponding to t_waveform < t_fluorescence
+            #Next step is to check if the data point in the signal belongs to the top or 
+            #bottom of the square wave
+            self.filtered_matrix = self.waveform_time_matrix[self.waveform_time_matrix[:,1] < t]
+            self.check = self.filtered_matrix[-1,0]
+            
+            #If self.check = True, then data point belongs to top of square wave
+            #we collect all the following data in a list untill a new step in the waveform
+            #is reached. Then we pass on the data as a single isolated period to the empty
+            #self.periods_fluorescence list
+            if self.check:
+                if len(self.fluorescence_list_false) != 0:
+                    #Sent list to collection of subsets. To avoid doing every iteration,
+                    #we empty the list again so that this conditional is not satisfied
+                    self.periods_fluorescence.append(np.array(self.fluorescence_list_false))
+                    self.periods_time.append(np.array(self.time_list_false))
+                    
+                    self.fluorescence_list_false = []
+                    self.time_list_false = []
+                
+                #Keep track of time difference 
+                if len(self.fluorescence_list_true) == 0:
+                    self.time_difference.append(abs(self.waveform_time_matrix[self.step_idx[self.counter],1]-t))
+                    
+                    if t > self.time[0]:
+                        self.counter += 1
+                    
+                #Expand list as long as no new voltage step is reached  
+                self.fluorescence_list_true.append(I)
+                self.time_list_true.append(t)
+                
+            #Same procedure but not the recriprocal for self.check = False
+            else:
+                if len(self.fluorescence_list_true) != 0:
+                    self.periods_fluorescence.append(np.array(self.fluorescence_list_true))
+                    self.periods_time.append(np.array(self.time_list_true))
+                    
+                    self.fluorescence_list_true = []
+                    self.time_list_true = []
+                    
+                if len(self.fluorescence_list_false) == 0:
+                    self.time_difference.append(abs(self.waveform_time_matrix[self.step_idx[self.counter],1]-t))
+                    
+                    if t > self.time[0]:
+                        self.counter += 1
+                    
+                self.fluorescence_list_false.append(I)
+                self.time_list_false.append(t)
+            
+            #In the last iteration of the loop you send the subset with the following code
+            if I == self.fluorescence[-1]:
+                self.periods_fluorescence.append(np.array(self.fluorescence_list_false))
+                self.periods_time.append(np.array(self.time_list_false))
+                
+        # Retrieve the voltage step frequency.
+        self.V_Hz = int(round((self.counter+1)/2)/self.total_time)
+        print("Voltage step frequency is {}.".format(self.V_Hz))
+        
+        #Overwrite first value for correction
+        self.time_difference[0] = abs(self.waveform_time_matrix[0,1] - self.time[0])
+        
+        #Now tidy the data so that every isolated signal has the same length
+        #Since the isolated signal are not equal in length we have to use the numpy.mask data
+        #transformation to trim the rows. We do not consider data points that exceed
+        #the minimum length of the rows.
+        def TidyData(arrs):
+            lens = [len(ii) for ii in arrs]
+            arr = np.ma.empty((len(arrs),np.max(lens)))
+            arr.mask = True
+            for idx, l in enumerate(arrs):
+                arr[idx,:len(l)] = l
+            return arr[:, :np.min(lens)]
+        
+        self.periods_fluorescence = TidyData(self.periods_fluorescence)
+        self.periods_time = TidyData(self.periods_time)
+        
+    def TransformCurves(self):
+        
+        #### Initialize empty lists ####
+        #vertical_translation       = will store vertical translations (flourescence elevation) for every isolated period 
+        #horizontal_translation     = will store horizontal translations (time lapse) for every isolated period
+        #transformed_periods        = will store the isolated fluorescence signals after transformation
+        #transformed_periods        = will store the isolated time signals after transformation
+        #initial_fluorescence       = will store fluorescence signal at t = 0 for every isolated subset
+        self.vertical_translation = []
+        self.horizontal_translation = []
+        self.transformed_periods_fluorescence = []
+        self.transformed_periods_time = []     
+        
+        #Apply transformations
+        for ii in range(len(self.periods_fluorescence)):
+            self.vertical_translation.append(np.mean(self.periods_fluorescence[ii][-round(0.4*len(self.periods_fluorescence[ii])):]))
+            self.horizontal_translation.append(self.periods_time[ii][0] - self.time_difference[ii])
+                 
+            self.transformed_periods_fluorescence.append(self.periods_fluorescence[ii] - self.vertical_translation[ii])
+            self.transformed_periods_time.append(self.periods_time[ii] - self.horizontal_translation[ii])
+            
+        #Add signal at t=0 for every subset. Since this is not recorded due to the time difference we have to
+        #manually add it
+        self.transformed_periods_fluorescence = np.array(self.transformed_periods_fluorescence)
+        self.transformed_periods_time = np.array(self.transformed_periods_time)
+        self.initial_fluorescence = -np.diff(self.vertical_translation)
+        self.initial_fluorescence = np.append(self.initial_fluorescence[1], self.initial_fluorescence).reshape(len(self.periods_fluorescence),1) 
+        
+        self.transformed_periods_fluorescence = np.append(self.initial_fluorescence, self.transformed_periods_fluorescence, axis=1)
+        self.transformed_periods_time = np.append(np.zeros((len(self.periods_fluorescence),1)), self.transformed_periods_time, axis = 1)
+        
+    def CurveAveraging(self):
+        
+        def normalize_array(array):
+            max_value = np.amax(array)
+            min_value = np.amin(array)
+            for i in range(len(array)):
+                array[i] = (array[i] - min_value) / (max_value - min_value)
+            return array
+        
+        #The upswings belong to the even rows, and downswings to the odd rows
+        self.fluorescence_upswing = self.transformed_periods_fluorescence[::2]
+        self.fluorescence_downswing = self.transformed_periods_fluorescence[1::2]
+        
+        self.time_upswing = self.transformed_periods_time[::2]
+        self.time_downswing = self.transformed_periods_time[1::2]
+        
+        #Get average and standard deviation for upswing and downswing respectively
+        self.avg_fluorescence_upswing = np.mean(self.fluorescence_upswing[self.skip:], axis = 0)
+        self.std_fluorescence_upswing = np.std(self.fluorescence_upswing[self.skip:], ddof=1, axis = 0)
+        
+        self.avg_fluorescence_downswing = np.mean(self.fluorescence_downswing[self.skip:], axis = 0)
+        self.std_fluorescence_downswing = np.std(self.fluorescence_downswing[self.skip:], ddof=1, axis = 0)
+        
+        self.avg_fluorescence_upswing_normalized = normalize_array(np.mean(self.fluorescence_upswing[self.skip:], axis = 0))
+        self.std_fluorescence_upswing_normalized = np.std(normalize_array(self.fluorescence_upswing[self.skip:]), ddof=1, axis = 0)
+        
+        self.avg_fluorescence_downswing_normalized = normalize_array(np.mean(self.fluorescence_downswing[self.skip:], axis = 0))
+        self.std_fluorescence_downswing_normalized = np.std(normalize_array(self.fluorescence_downswing[self.skip:]), ddof=1, axis = 0)
+        
+        self.avg_time_upswing = np.mean(self.time_upswing[self.skip:], axis = 0)
+        self.std_time_upswing = np.std(self.time_upswing[self.skip:], ddof = 1, axis = 0)
+        
+        self.avg_time_downswing = np.mean(self.time_downswing[self.skip:], axis = 0)
+        self.std_time_downswing = np.std(self.time_downswing[self.skip:], ddof = 1, axis = 0)
+        
+        #Stack the averaged signals on top of each other. This seems quite redundant, however is necessary to get it into
+        #the right data format for the bi_exponential fit algorithm in the following ExponentialFitting() method.
+        self.total_number_of_periods = self.total_time/(1/self.V_Hz)
+        self.transformed_periods_fluorescence = np.tile(np.array([self.avg_fluorescence_upswing, self.avg_fluorescence_downswing]), (int(self.total_number_of_periods),1))              
+        self.transformed_periods_time = np.tile(np.array([self.avg_time_upswing, self.avg_time_downswing]), (int(self.total_number_of_periods),1))
+        
+        #Vizualization of curve averaging (together)
+        # fig4, ax = plt.subplots()
+        # p05, = ax.plot(self.avg_time_upswing, self.avg_fluorescence_upswing, label = "Upswing", color='blue')
+        # p06, = ax.plot(self.avg_time_downswing, self.avg_fluorescence_downswing, label = "Downswing", color=(0.9, 0.4, 0))
+        # ax.fill_between(self.avg_time_upswing, self.avg_fluorescence_upswing + self.std_fluorescence_upswing, self.avg_fluorescence_upswing - self.std_fluorescence_upswing, facecolor='blue', alpha=0.5)
+        # ax.fill_between(self.avg_time_downswing, self.avg_fluorescence_downswing + self.std_fluorescence_downswing, self.avg_fluorescence_downswing - self.std_fluorescence_downswing, facecolor=(0.9, 0.4, 0), alpha=0.5)
+        # ax.set_title(self.rhodopsin, size=14)
+        # ax.set_ylabel('Fluorescence (a.u.)', fontsize = 11)
+        # ax.set_xlabel('Time (s)', fontsize = 11)
+        # ax.legend([p06, p05], ["Downswing", "upswing"])
+        # ax.spines['right'].set_visible(False)
+        # ax.spines['top'].set_visible(False)
+        # ax.xaxis.set_ticks_position('bottom')
+        # ax.yaxis.set_ticks_position('left')
+        # ax.set_ylim([np.amin(self.transformed_periods_fluorescence[0]) - 0.020,  np.amax(self.transformed_periods_fluorescence[1]) + 0.020])
+        #Uncomment if you want to save the figure
+        #plt.savefig()
+
+        #Vizualization of curve averaging (seperate)
+        fig4_1, ax_1 = plt.subplots()
+        p05, = ax_1.plot(self.avg_time_upswing*1000, self.avg_fluorescence_upswing_normalized, label = "Upswing", color='blue')
+        ax_1.fill_between(self.avg_time_upswing*1000, self.avg_fluorescence_upswing_normalized + self.std_fluorescence_upswing_normalized, self.avg_fluorescence_upswing_normalized - self.std_fluorescence_upswing_normalized, facecolor='blue', alpha=0.5)
+        ax_1.set_title("Upswing", size=14)
+        ax_1.set_ylabel('Fluorescence (a.u.)', fontsize = 11)
+        ax_1.set_xlabel('Time (ms)', fontsize = 11)
+        ax_1.spines['right'].set_visible(False)
+        ax_1.spines['top'].set_visible(False)
+        ax_1.xaxis.set_ticks_position('bottom')
+        ax_1.yaxis.set_ticks_position('left')
+        plt.show()
+        
+        fig4_2, ax_2 = plt.subplots()
+        p06, = ax_2.plot(self.avg_time_downswing*1000, self.avg_fluorescence_downswing_normalized, label = "Downswing", color=(0.9, 0.4, 0))
+        ax_2.fill_between(self.avg_time_downswing*1000, self.avg_fluorescence_downswing_normalized + self.std_fluorescence_downswing_normalized, self.avg_fluorescence_downswing_normalized - self.std_fluorescence_downswing_normalized, facecolor=(0.9, 0.4, 0), alpha=0.5)
+        ax_2.set_title("Downswing", size=14)
+        ax_2.set_ylabel('Fluorescence (a.u.)', fontsize = 11)
+        ax_2.set_xlabel('Time (ms)', fontsize = 11)
+        ax_2.spines['right'].set_visible(False)
+        ax_2.spines['top'].set_visible(False)
+        ax_2.xaxis.set_ticks_position('bottom')
+        ax_2.yaxis.set_ticks_position('left')
+        plt.show()
+        
+    def ExponentialFitting(self):
+        
+        #Intialize empty lists
+        #bi_exponential_ratio       = will store amplitude of time constants
+        #time_constant_parameters   = will store optimal time constants, extracted from parameters_fit
+        #scaler_parameters          = will store optimal scaler paramters, extracted from parameters_fit
+        self.bi_exponential_ratio = []
+        self.time_constant_parameters = [[],[]]
+        self.scalar_parameters = [[],[]]
+        
+        #Initialize figure before for-loop
+        fig5, ax = plt.subplots()
+        
+        #Loop over every isolated period. For this reason we needed to stack the isolated periods
+        #at the end of the CurveAveraging() method. Hence, this code also works for data that 
+        #is not averaged when you skip over the CurveAveraging method.
+        for ii in range(len(self.periods_fluorescence)):
+            
+            #Bi-exponential function for the fitting algorithm
+            def func(t, a, t1, b, t2):
+                return a*np.exp(-(t/t1)) + b*np.exp(-(t/t2))
+            
+            #Upswings can only have negative scalar parameters
+            if (ii % 2) == 0:
+                parameter_bounds = ([-np.inf, 0, -np.inf, 0], [0, 0.1, 0, 0.1])
+            #Downswings can only have positive scalar parameters
+            else:
+                parameter_bounds = ([0, 0, 0, 0], [np.inf, 0.1, np.inf, 0.1])
+            
+            #Curve fitting of every isolated signal, similar to the photobleach algorithm
+            popt, pcov = curve_fit(func, self.transformed_periods_time[ii], self.transformed_periods_fluorescence[ii], bounds = parameter_bounds, maxfev = 500000)
+            
+            
+            #Store optimal parameters in an ordered fashion. Similar reasoning as with the 
+            #photobleach
+            if popt[1] <= popt[3]:
+                self.bi_exponential_ratio.append(popt[0]/(popt[0]+popt[2]))
+                
+                self.time_constant_parameters[0].append(popt[1])
+                self.time_constant_parameters[1].append(popt[3])   
+                
+                self.scalar_parameters[0].append(popt[0])
+                self.scalar_parameters[1].append(popt[2]) 
+            else:
+                self.bi_exponential_ratio.append(popt[2]/(popt[0]+popt[2]))
+                
+                self.time_constant_parameters[0].append(popt[3])
+                self.time_constant_parameters[1].append(popt[1])
+                
+                self.scalar_parameters[0].append(popt[2])
+                self.scalar_parameters[1].append(popt[0])
+                
+            #Plot every isolated signal and its corresponding fit. Be aware of that when we apply CurveAveraging(), then
+            #we have the same for every upswing and the same for every downswing. Neglect periods that we skip
+            p07, = ax.plot(self.periods_time[ii], self.periods_fluorescence[ii], linestyle = 'None', marker = 'o', markersize = 2, markerfacecolor = (0, 0, 0.9), label = "Experimental data")
+            if ii > self.skip:
+                p08, = ax.plot(self.transformed_periods_time[ii] + self.horizontal_translation[ii], func(self.transformed_periods_time[ii], *popt) + self.vertical_translation[ii], color = (0.9, 0, 0), label = "Bi-exponential fit")           
+        
+        #Axis and labels for fig5
+        ax.set_ylabel('Fluorescence (a.u.)', fontsize = 11)
+        ax.set_xlabel('Time(s)', fontsize = 11)
+        ax.legend([p08, p07], ["Bi-exponential fit", "Experimental data"])
+        ax.spines['right'].set_visible(False)
+        ax.spines['top'].set_visible(False)
+        ax.xaxis.set_ticks_position('bottom')
+        ax.yaxis.set_ticks_position('left')
+        plt.show()
+        #Uncomment if you want to save the figure
+        #plt.savefig()
+    
+    def Statistics(self):
+        
+        #Data transformation to put it in a nice Numpy format
+        self.time_constant_parameters = np.array(self.time_constant_parameters.copy()).transpose()
+        self.time_constant_upswing = self.time_constant_parameters[::2,:]
+        self.time_constant_downswing = self.time_constant_parameters[1::2,:]
+        
+        #delta F/F and steady-state fluorescence values, not normalized
+        # self.vertical_translation[::2]: The upper step values.
+        # self.vertical_translation[1::2]: The lower step values.
+        self.intensity_ratio = np.true_divide(np.array(self.vertical_translation[::2]) - np.array(self.vertical_translation[1::2]), np.array(self.vertical_translation[1::2]))
+        # self.intensity_ratio = np.true_divide(self.vertical_translation[::2], self.vertical_translation[1::2])
+        self.avg_intensity_ratio = np.mean(self.intensity_ratio[self.skip:])
+        self.std_intensity_ratio = np.std(self.intensity_ratio[self.skip:], ddof=1)
+        # self.DeltaF = f'{self.avg_intensity_ratio:.6f} +/- {self.std_intensity_ratio:.6f}'
+        
+        #Amplitude of fast time constant
+        #Upswing
+        self.avg_bi_exponential_ratio_upswing = np.mean(self.bi_exponential_ratio[::2][self.skip:]) 
+        self.std_bi_exponential_ratio_upswing = np.std(self.bi_exponential_ratio[::2][self.skip:], ddof=1)
+        self.amplitude_upswing = f'{self.avg_bi_exponential_ratio_upswing:.6f} +/- {self.std_bi_exponential_ratio_upswing:.6f}'
+        
+        #Downswing
+        self.avg_bi_exponential_ratio_downswing = np.mean(self.bi_exponential_ratio[1::2][self.skip:]) 
+        self.std_bi_exponential_ratio_downswing = np.std(self.bi_exponential_ratio[1::2][self.skip:], ddof=1)
+        self.amplitude_downswing = f'{self.avg_bi_exponential_ratio_downswing:.6f} +/- {self.std_bi_exponential_ratio_downswing:.6f}'
+        
+        #Time constant statistics
+        #Upswing
+        self.avg_fast_time_constant_upswing = np.mean(self.time_constant_upswing[self.skip:,0]) 
+        self.std_fast_time_constant_upswing = np.std(self.time_constant_upswing[self.skip:,0], ddof=1)
+        self.fastconstant_upswing = f'{self.avg_fast_time_constant_upswing:.6f} +/- {self.std_fast_time_constant_upswing:.6f}'
+        
+        self.avg_slow_time_constant_upswing = np.mean(self.time_constant_upswing[self.skip:,1]) 
+        self.std_slow_time_constant_upswing = np.std(self.time_constant_upswing[self.skip:,1], ddof=1)
+        self.slowconstant_upswing = f'{self.avg_slow_time_constant_upswing:.6f} +/- {self.std_slow_time_constant_upswing:.6f}'
+        
+        #Downswing
+        self.avg_fast_time_constant_downswing = np.mean(self.time_constant_downswing[self.skip:,0]) 
+        self.std_fast_time_constant_downswing = np.std(self.time_constant_downswing[self.skip:,0], ddof=1)
+        self.fastconstant_downswing = f'{self.avg_fast_time_constant_downswing:.6f} +/- {self.std_fast_time_constant_downswing:.6f}'
+        
+        self.avg_slow_time_constant_downswing = np.mean(self.time_constant_downswing[self.skip:,1]) 
+        self.std_slow_time_constant_downswing = np.std(self.time_constant_downswing[self.skip:,1], ddof=1)
+        self.slowconstant_downswing = f'{self.avg_slow_time_constant_downswing:.6f} +/- {self.std_slow_time_constant_downswing:.6f}'
+        
+        self.statistics_test = '\n' + 'STATISTICS FOR SUBSET FIT' + "\n" + \
+            '---------------------------------------------------' + "\n" + \
+            'dF/F (normalized)    = ' + str(round(self.avg_intensity_ratio*100, 4)) + "% +/- " +  str(round(self.std_intensity_ratio*100, 4)) + "%\n" + "\n" + \
+            'Upswing' + "\n" + \
+            't_fast up                = ' + self.fastconstant_upswing + ' s'+ "\n" + \
+            't_slow up                = ' + self.slowconstant_upswing + ' s'+ "\n" + \
+            'Amplitude up             = ' + self.amplitude_upswing + "\n" + "\n" + \
+            'Downswing' + "\n" + \
+            't_fast down              = ' + self.fastconstant_downswing + ' s' + "\n" + \
+            't_slow down              = ' + self.slowconstant_downswing + ' s' + "\n" + \
+            'Amplitude down           = ' + self.amplitude_downswing + "\n" + "\n" + \
+            'STATISTICS FOR PHOTOBLEACH' + "\n" + \
+            '---------------------------------------------------' + "\n" + \
+            't1                       = ' + f'{self.photobleach_t1:.6f}' + ' s' + "\n" + \
+            'a                        = ' + f'{self.photobleach_a:.6f}' + "\n" + \
+            't2                       = ' + f'{self.photobleach_t2:.6f}' + ' s' + "\n" + \
+            'b                        = ' + f'{self.photobleach_b:.6f}' + "\n" + \
+            'ratio1                   = ' + f'{self.photobleach_ratio1:.6f}' + "\n" + \
+            'ratio2                   = ' + f'{self.photobleach_ratio2:.6f}' + "\n"
+        
+        print(self.statistics_test)
+        
+        # with open(os.path.join(self.savedirectory, "meta_text.txt"), 'w') as output_file:
+        #     output_file.write(meta_text)
+        
+        return self.avg_fast_time_constant_upswing, self.avg_slow_time_constant_upswing, \
+                self.avg_bi_exponential_ratio_upswing, self.avg_fast_time_constant_downswing, \
+                self.avg_slow_time_constant_downswing, self.avg_bi_exponential_ratio_downswing, \
+                self.avg_intensity_ratio,  self.std_intensity_ratio
+            
+    def Normalization(self, V0, V1, V0_reference, V1_reference):
+        
+        #Assumtion that the fluorescence signal, F(V), is linear with V
+        #self.V0, self.V1, self.V0_reference, self.V1_reference = [int(x) for x in input('V0 V1 V0_reference V1_reference ').split()]
+        self.V0, self.V1, self.V0_reference, self.V1_reference = V0, V1, V0_reference, V1_reference
+        
+        self.dV = self.V1 - self.V0
+        self.dF = np.array(self.vertical_translation[::2]) - np.array(self.vertical_translation[1::2])
+        
+        self.topdiff = self.V1_reference - self.V1
+        self.lowdiff = self.V0_reference - self.V0
+        
+        self.slope = self.dF/self.dV
+        
+        self.F1 = self.vertical_translation[::2] + self.slope*self.topdiff
+        self.F0 = self.vertical_translation[1::2] + self.slope*self.lowdiff
+        
+        self.intensity_ratio = self.F1/self.F0
+        
+        self.avg_intensity_ratio = np.mean(self.intensity_ratio[self.skip:])
+        self.std_intensity_ratio = np.std(self.intensity_ratio[self.skip:], ddof = 1)
+        
+        print(self.avg_intensity_ratio)
+        return self.avg_intensity_ratio, self.std_intensity_ratio
+    
+    
 if __name__ == "__main__":
     from skimage.io import imread
     import time
