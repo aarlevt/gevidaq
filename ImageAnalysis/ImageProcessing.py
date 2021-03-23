@@ -2655,7 +2655,7 @@ class ProcessImage():
 
 class CurveFit:
     
-    def __init__(self, fluorescence, waveform, camera_fps, DAQ_Hz, skip = 1, analysis_storing_folder = None, rhodopsin = 'Not specified'):
+    def __init__(self, fluorescence, waveform, camera_fps, DAQ_Hz, skip = 1, main_directory = None, rhodopsin = 'Not specified'):
         
         #### Input for initialization of the class ####
         #fluorescence   = Weighted trace of fluorescence signal
@@ -2676,7 +2676,8 @@ class CurveFit:
         self.total_time = round(len(self.waveform)/DAQ_Hz)
         self.waveformcopy = self.waveform.copy()
         self.timewaveform = (np.arange(len(self.waveform))+1)*1/self.DAQ_Hz #Time axis for waveform signal
-    
+        self.main_directory = main_directory
+        
     def Photobleach(self):
         
         #Bi-exponential curve for the fitting algorithm        
@@ -2703,8 +2704,8 @@ class CurveFit:
         ax.xaxis.set_ticks_position('bottom')
         ax.yaxis.set_ticks_position('left')
         plt.show()
-        #Uncomment if you want to save the figure
-        #plt.savefig()
+        if self.main_directory != None:
+            fig1.savefig((os.path.join(self.main_directory, 'Analysis results//Fluorescence trace with fitting.png')))
         
         #Normalization of fluorescence signal (e.g., division by the fit)
         self.fluorescence = np.true_divide(self.fluorescence,bleachfunc(self.time, *popt))
@@ -2712,7 +2713,7 @@ class CurveFit:
         #Vizualization after photobleach normalization
         fig2, ax = plt.subplots()
         p03, = ax.plot(self.time, self.fluorescence)
-        ax.set_title(self.rhodopsin, size=14)
+        ax.set_title("Bleach corrected fluorescence trace", size=14)
         ax.set_ylabel('Fluorescence (a.u.)', fontsize=11)
         ax.set_xlabel('Time (s)', fontsize=11)
         ax.spines['right'].set_visible(False)
@@ -2720,20 +2721,20 @@ class CurveFit:
         ax.xaxis.set_ticks_position('bottom')
         ax.yaxis.set_ticks_position('left')
         plt.show()
-        #Uncomment if you want to save the figure
-        #plt.savefig()
+        if self.main_directory != None:
+            fig2.savefig((os.path.join(self.main_directory, 'Analysis results//Bleach corrected fluorescence trace.png')))
         
         #Vizualization of waveform provided      
-        fig3, ax = plt.subplots()
-        p04, = ax.plot(self.timewaveform, self.waveform*1000/10) # *1000 is to convert to mV; 10 is to correct for the *10 gain at the patch clamp amplifier.
-        ax.set_title('Voltage waveform', size=14)
-        ax.set_ylabel('Voltage (mV)', fontsize=11)
-        ax.set_xlabel('Time (s)', fontsize=11)
-        ax.spines['right'].set_visible(False)
-        ax.spines['top'].set_visible(False)
-        ax.xaxis.set_ticks_position('bottom')
-        ax.yaxis.set_ticks_position('left')
-        plt.show()
+        # fig3, ax = plt.subplots()
+        # p04, = ax.plot(self.timewaveform, self.waveform*1000/10) # *1000 is to convert to mV; 10 is to correct for the *10 gain at the patch clamp amplifier.
+        # ax.set_title('Voltage waveform', size=14)
+        # ax.set_ylabel('Voltage (mV)', fontsize=11)
+        # ax.set_xlabel('Time (s)', fontsize=11)
+        # ax.spines['right'].set_visible(False)
+        # ax.spines['top'].set_visible(False)
+        # ax.xaxis.set_ticks_position('bottom')
+        # ax.yaxis.set_ticks_position('left')
+        # plt.show()
         #Uncomment if you want to save the figure
         #plt.savefig()
         
@@ -2970,7 +2971,9 @@ class CurveFit:
         ax_1.xaxis.set_ticks_position('bottom')
         ax_1.yaxis.set_ticks_position('left')
         plt.show()
-        
+        if self.main_directory != None:
+            fig4_1.savefig((os.path.join(self.main_directory, 'Analysis results//Averaged upswing trace.png')))
+            
         fig4_2, ax_2 = plt.subplots()
         p06, = ax_2.plot(self.avg_time_downswing*1000, self.avg_fluorescence_downswing_normalized, label = "Downswing", color=(0.9, 0.4, 0))
         ax_2.fill_between(self.avg_time_downswing*1000, self.avg_fluorescence_downswing_normalized + self.std_fluorescence_downswing_normalized, self.avg_fluorescence_downswing_normalized - self.std_fluorescence_downswing_normalized, facecolor=(0.9, 0.4, 0), alpha=0.5)
@@ -2982,7 +2985,9 @@ class CurveFit:
         ax_2.xaxis.set_ticks_position('bottom')
         ax_2.yaxis.set_ticks_position('left')
         plt.show()
-        
+        if self.main_directory != None:
+            fig4_2.savefig((os.path.join(self.main_directory, 'Analysis results//Averaged downswing trace.png')))
+            
     def ExponentialFitting(self):
         
         #Intialize empty lists
@@ -3050,8 +3055,8 @@ class CurveFit:
         ax.xaxis.set_ticks_position('bottom')
         ax.yaxis.set_ticks_position('left')
         plt.show()
-        #Uncomment if you want to save the figure
-        #plt.savefig()
+        if self.main_directory != None:
+            fig5.savefig((os.path.join(self.main_directory, 'Analysis results//Exponential fit trace.png')))
     
     def Statistics(self):
         
@@ -3120,9 +3125,9 @@ class CurveFit:
             'ratio2                   = ' + f'{self.photobleach_ratio2:.6f}' + "\n"
         
         print(self.statistics_test)
-        
-        # with open(os.path.join(self.savedirectory, "meta_text.txt"), 'w') as output_file:
-        #     output_file.write(meta_text)
+        if self.main_directory != None:        
+            with open(os.path.join(self.main_directory, "Analysis results//Statistics (sensitivity {}).txt".format(str(round(self.avg_intensity_ratio*100, 4)))), 'w') as output_file:
+                output_file.write(self.statistics_test)
         
         return self.avg_fast_time_constant_upswing, self.avg_slow_time_constant_upswing, \
                 self.avg_bi_exponential_ratio_upswing, self.avg_fast_time_constant_downswing, \

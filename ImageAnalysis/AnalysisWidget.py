@@ -627,7 +627,8 @@ class AnalysisWidgetUI(QWidget):
 
         """
         fit = CurveFit\
-        (self.weight_trace_data, self.Vp*1000/10, camera_fps = self.samplingrate_cam, DAQ_Hz = self.samplingrate_display_curve, rhodopsin = self.Construct_name.text())    
+        (self.weight_trace_data, self.Vp*1000/10, camera_fps = self.samplingrate_cam, DAQ_Hz = self.samplingrate_display_curve, \
+         main_directory = self.main_directory, rhodopsin = self.Construct_name.text())    
         fit.Photobleach()
         fit.IsolatePeriods()
         fit.TransformCurves()
@@ -642,17 +643,10 @@ class AnalysisWidgetUI(QWidget):
      
         
     def clearplots(self):
-        self.pw_patch_voltage.clear()
-        self.pw_patch_current.clear()
-        self.pw_patch_camtrace.clear()
+        self.pw_weightimage.clear()
+        self.pw_averageimage.clear()
                 
-        self.vLine_cam = pg.InfiniteLine(pos=0.4, angle=90, movable=True)
-        self.pw_patch_camtrace.addItem(self.vLine_cam, ignoreBounds=True)
-        self.vLine = pg.InfiniteLine(pos=0.4, angle=90, movable=True)
-        self.pw_patch_current.addItem(self.vLine, ignoreBounds=True)
-        
-        self.vLine.sigPositionChangeFinished.connect(self.showpointdata)
-        self.vLine_cam.sigPositionChangeFinished.connect(self.showpointdata_camtrace)
+        self.videostack = None
 
     def MessageToMainGUI(self, text):
         self.MessageBack.emit(text)
