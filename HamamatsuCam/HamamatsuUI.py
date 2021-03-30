@@ -47,7 +47,8 @@ pg.setConfigOption('leftButtonPan', False)
 
 class CameraUI(QMainWindow):
     
-    signal_SnapImg = pyqtSignal(np.ndarray)
+    output_signal_SnapImg = pyqtSignal(np.ndarray)
+    output_signal_LiveImg = pyqtSignal(np.ndarray)
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -1260,7 +1261,9 @@ class CameraUI(QMainWindow):
             time.sleep(self.Live_sleeptime)
 
             self.UpdateScreen(self.Live_image)
-        
+            
+            self.output_signal_LiveImg.emit(self.Live_image)
+            
     def StopLIVE(self):
         self.isLiving = False
         self.hcam.stopAcquisition()
@@ -1335,7 +1338,7 @@ class CameraUI(QMainWindow):
             
             self.UpdateScreen(self.SnapImage)
             
-            self.signal_SnapImg.emit(self.SnapImage)
+            self.output_signal_SnapImg.emit(self.SnapImage)
             
             self.Live_image = self.SnapImage
             
@@ -1347,7 +1350,7 @@ class CameraUI(QMainWindow):
                   
             self.UpdateScreen(self.SnapImage)
             
-            self.signal_SnapImg.emit(self.SnapImage)
+            self.output_signal_SnapImg.emit(self.SnapImage)
         
         # Reset the live switch button.
         self.LiveButton.setChecked(False)

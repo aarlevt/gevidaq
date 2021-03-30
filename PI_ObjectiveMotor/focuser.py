@@ -12,8 +12,12 @@ if __name__ == "__main__":
     abspath = os.path.abspath(__file__)
     dname = os.path.dirname(abspath)
     os.chdir(dname+'/../')
-from pipython import GCSDevice
-from pipython import pitools 
+    
+try:
+    from pipython import GCSDevice
+    from pipython import pitools 
+except:
+    print("pipython not configured.")
 
 class PIMotor:
 
@@ -34,41 +38,43 @@ class PIMotor:
         None.
 
         """
-        CONTROLLERNAME = 'C-863.11'
-        #STAGES = None
-        STAGES = ('M-110.1DG')
-        REFMODE = ('FNL')
+        try:
+            CONTROLLERNAME = 'C-863.11'
+            #STAGES = None
+            STAGES = ('M-110.1DG')
+            REFMODE = ('FNL')
+            
+            # Get the path to dll in the same folder.
+            abspath = os.path.abspath(__file__)
+            dname = os.path.dirname(abspath) + '/PI_GCS2_DLL_x64.dll'
+            print(dname)
+            
+            self.pidevice = GCSDevice(gcsdll = dname)
+            print(self.pidevice.EnumerateUSB())
+            # InterfaceSetupDlg() is an interactive dialog. There are other methods to
+            # connect to an interface without user interaction.
+            serialstring = self.pidevice.EnumerateUSB()
+            print(serialstring[0])
+            #pidevice.InterfaceSetupDlg(key='sample')
+            # pidevice.ConnectRS232(comport=1, baudrate=115200)
+            self.pidevice.ConnectUSB(serialnum='PI C-863 Mercury SN 0185500828')
+            # pidevice.ConnectTCPIP(ipaddress='192.168.178.42')
         
-        # Get the path to dll in the same folder.
-        abspath = os.path.abspath(__file__)
-        dname = os.path.dirname(abspath) + '/PI_GCS2_DLL_x64.dll'
-        print(dname)
+            # Each PI controller supports the qIDN() command which returns an
+            # identification string with a trailing line feed character which
+            # we "strip" away.
         
-        self.pidevice = GCSDevice(gcsdll = dname)
-        print(self.pidevice.EnumerateUSB())
-        # InterfaceSetupDlg() is an interactive dialog. There are other methods to
-        # connect to an interface without user interaction.
-        serialstring = self.pidevice.EnumerateUSB()
-        print(serialstring[0])
-        #pidevice.InterfaceSetupDlg(key='sample')
-        # pidevice.ConnectRS232(comport=1, baudrate=115200)
-        self.pidevice.ConnectUSB(serialnum='PI C-863 Mercury SN 0185500828')
-        # pidevice.ConnectTCPIP(ipaddress='192.168.178.42')
-    
-        # Each PI controller supports the qIDN() command which returns an
-        # identification string with a trailing line feed character which
-        # we "strip" away.
-    
-        print('connected: {}'.format(self.pidevice.qIDN().strip()))
-    
-        # Show the version info which is helpful for PI support when there
-        # are any issues.
-    
-        if self.pidevice.HasqVER():
-            print('version info: {}'.format(self.pidevice.qVER().strip()))
-    #    allaxes = self.pidevice.qSAI_ALL()
-#        return self.pidevice
+            print('connected: {}'.format(self.pidevice.qIDN().strip()))
         
+            # Show the version info which is helpful for PI support when there
+            # are any issues.
+        
+            if self.pidevice.HasqVER():
+                print('version info: {}'.format(self.pidevice.qVER().strip()))
+        #    allaxes = self.pidevice.qSAI_ALL()
+    #        return self.pidevice
+        except:
+            print("PI device not initilized.")
     
     def move(self, target_pos):  
         #pidevice.StopAll()

@@ -134,7 +134,7 @@ class AnalysisWidgetUI(QWidget):
         self.pw_averageimage.ui.roiBtn.hide()
         self.pw_averageimage.ui.menuBtn.hide()   
 
-        self.roi_average = pg.PolyLineROI([[0,0], [10,10], [10,30], [30,10]], closed=True)
+        self.roi_average = pg.PolyLineROI([[0,0], [0,30],[30,30], [30,0]], closed=True)
         self.pw_averageimage.view.addItem(self.roi_average)
         #self.pw_weightimage = weightedimagewindow()
         self.imageanalysisLayout_average.addWidget(self.pw_averageimage, 0, 0, 5, 3)
@@ -150,7 +150,7 @@ class AnalysisWidgetUI(QWidget):
         self.pw_weightimage.ui.roiBtn.hide()
         self.pw_weightimage.ui.menuBtn.hide()
         
-        self.roi_weighted = pg.PolyLineROI([[0,0], [10,10], [10,30], [30,10]], closed=True)
+        self.roi_weighted = pg.PolyLineROI([[0,0], [0,30],[30,30], [30,0]], closed=True)
         self.pw_weightimage.view.addItem(self.roi_weighted)
         #self.pw_weightimage = weightedimagewindow()
         self.imageanalysisLayout_weight.addWidget(self.pw_weightimage, 0, 0, 5, 3)
@@ -282,6 +282,8 @@ class AnalysisWidgetUI(QWidget):
         # Fit on weighted trace and sumarize the statistics.
         self.fit_on_trace()
         
+        print("============ Analysis done. ============")
+        
     def ReceiveVideo(self, videosentin):  
 
         self.videostack = videosentin
@@ -382,24 +384,24 @@ class AnalysisWidgetUI(QWidget):
             
             self.background_trace.append(bg_mean)
 
-        fig, ax0 = plt.subplots()
+        fig, ax0 = plt.subplots(figsize=(8.0, 5.8))
         fig.suptitle("Raw ROI background trace")
         plt.plot(self.cam_time_label, self.background_trace)
         ax0.set_xlabel('time(s)')
         ax0.set_ylabel('Pixel values')
-        fig.savefig(os.path.join(self.main_directory, 'Analysis results//ROI raw background trace.png'))
+        fig.savefig(os.path.join(self.main_directory, 'Analysis results//ROI raw background trace.png'), dpi=1000)
         plt.show() 
         
         # Use rolling average to smooth the background trace
-        self.background_trace = uniform_filter1d(self.background_trace, size=self.background_rolling_average_number)
+        self.background_trace = uniform_filter1d(uniform_filter1d(self.background_trace, size=self.background_rolling_average_number), size=self.background_rolling_average_number*2)
         
-        fig, ax1 = plt.subplots()
+        fig, ax1 = plt.subplots(figsize=(8.0, 5.8))
         fig.suptitle("Smoothed background trace")
 
         plt.plot(self.cam_time_label, self.background_trace)
         ax1.set_xlabel('time(s)')
         ax1.set_ylabel('Pixel values')
-        fig.savefig(os.path.join(self.main_directory, 'Analysis results//Smoothed background trace.png'))
+        fig.savefig(os.path.join(self.main_directory, 'Analysis results//Smoothed background trace.png'), dpi=1000)
         plt.show()    
         
         # For each frame in video, substract the background
@@ -420,22 +422,22 @@ class AnalysisWidgetUI(QWidget):
         for i in range(self.videostack.shape[0]):
             self.mean_camera_counts_backgroubd_substracted.append(np.mean(self.videostack[i]))
         
-        fig2, ax2 = plt.subplots()
+        fig2, ax2 = plt.subplots(figsize=(8.0, 5.8))
         fig2.suptitle("Mean camera intensity after backgroubd substracted")
         plt.plot(self.cam_time_label, self.mean_camera_counts_backgroubd_substracted)
         ax2.set_xlabel('time(s)')
         ax2.set_ylabel('Pixel values')
-        fig2.savefig(os.path.join(self.main_directory, 'Analysis results//Mean camera intensity after backgroubd substracted.png'))
+        fig2.savefig(os.path.join(self.main_directory, 'Analysis results//Mean camera intensity after backgroubd substracted.png'), dpi=1000)
         plt.show()
         
         # Updates the mean intensity
         self.imganalysis_averageimage = np.mean(self.videostack, axis = 0)
         self.pw_averageimage.setImage(self.imganalysis_averageimage)
         
-        fig3 = plt.figure()
+        fig3 = plt.figure(figsize=(8.0, 5.8))
         fig3.suptitle("Mean intensity")
         plt.imshow(self.imganalysis_averageimage)
-        fig3.savefig(os.path.join(self.main_directory, 'Analysis results//Mean intensity.png'))
+        fig3.savefig(os.path.join(self.main_directory, 'Analysis results//Mean intensity.png'), dpi=1000)
         plt.show()
 
     def display_electrical_signals(self):
@@ -473,7 +475,7 @@ class AnalysisWidgetUI(QWidget):
             # ax2.legend()
             
             plt.show()
-            self.electrical_signals_figure.savefig(os.path.join(self.main_directory, 'Analysis results//Electrode recording.png'))
+            self.electrical_signals_figure.savefig(os.path.join(self.main_directory, 'Analysis results//Electrode recording.png'), dpi=1000)
         else:
             pass
         
@@ -492,22 +494,22 @@ class AnalysisWidgetUI(QWidget):
         self.samplingrate_cam = self.Spincamsamplingrate.value()        
         self.cam_time_label = np.arange(self.videostack.shape[0])/self.samplingrate_cam
         
-        fig = plt.figure()
+        fig = plt.figure(figsize=(8.0, 5.8))
         fig.suptitle("Mean intensity of raw video")
         plt.imshow(self.imganalysis_averageimage)
-        fig.savefig(os.path.join(self.main_directory, 'Analysis results//Mean intensity of raw video.png'))
+        fig.savefig(os.path.join(self.main_directory, 'Analysis results//Mean intensity of raw video.png'), dpi=1000)
         plt.show()
         
         self.mean_camera_counts = []
         for i in range(self.videostack.shape[0]):
             self.mean_camera_counts.append(np.mean(self.videostack[i]))
                 
-        fig2, ax2 = plt.subplots()
+        fig2, ax2 = plt.subplots(figsize=(8.0, 5.8))
         fig2.suptitle("Mean intensity trace of raw video")
         plt.plot(self.cam_time_label, self.mean_camera_counts)
         ax2.set_xlabel('time(s)')
         ax2.set_ylabel('Pixel values')
-        fig2.savefig(os.path.join(self.main_directory, 'Analysis results//Mean intensity trace of raw video.png'))
+        fig2.savefig(os.path.join(self.main_directory, 'Analysis results//Mean intensity trace of raw video.png'), dpi=1000)
         plt.show()
             
     def calculate_background_from_ROI_average(self):
@@ -578,10 +580,10 @@ class AnalysisWidgetUI(QWidget):
     
             self.pw_weightimage.setImage(self.weightimage)
 
-        fig = plt.figure()
+        fig = plt.figure(figsize=(8.0, 5.8))
         fig.suptitle("Weighted pixels")
         plt.imshow(self.weightimage)
-        fig.savefig(os.path.join(self.main_directory, 'Analysis results//Weighted pixel image.png'))
+        fig.savefig(os.path.join(self.main_directory, 'Analysis results//Weighted pixel image.png'), dpi=1000)
         np.save(os.path.join(self.main_directory,'Analysis results//Weighted pixel image.npy'), self.weightimage)
         plt.show()                
 
@@ -608,12 +610,12 @@ class AnalysisWidgetUI(QWidget):
         
         np.save(os.path.join(self.main_directory,'Analysis results//Weighted_trace.npy'), self.weight_trace_data)
         
-        fig, ax1 = plt.subplots()
+        fig, ax1 = plt.subplots(figsize=(8.0, 5.8))
         fig.suptitle("Weighted pixel trace")
         plt.plot(self.patch_camtrace_label_weighted, self.weight_trace_data)
         ax1.set_xlabel('time(s)')
         ax1.set_ylabel('Weighted trace(counts)')
-        fig.savefig(os.path.join(self.main_directory, 'Analysis results//Weighted pixel trace.png'))
+        fig.savefig(os.path.join(self.main_directory, 'Analysis results//Weighted pixel trace.png'), dpi=1000)
         plt.show()
 
 
@@ -633,6 +635,7 @@ class AnalysisWidgetUI(QWidget):
         fit.IsolatePeriods()
         fit.TransformCurves()
         fit.CurveAveraging()
+        fit.fit_on_averaged_curve()
         fit.ExponentialFitting()
         fit.Statistics()
 

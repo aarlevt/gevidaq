@@ -301,7 +301,7 @@ class Mainbody(QWidget):
 
         # Connect camera with DMD widget, so that snapped images are shown in 
         # DMD widget.
-        self.Camera_WidgetInstance.signal_SnapImg.connect(self.Coordinate_WidgetInstance.receive_image_from_camera)
+        self.Camera_WidgetInstance.output_signal_SnapImg.connect(self.Coordinate_WidgetInstance.receive_image_from_camera)
         
         # self.Camera_WidgetInstance.default_folder = self.savedirectory
         '''

@@ -332,9 +332,14 @@ class ProcessImageML():
             
         # Get a list of file names
         fileNameList = []
-        for file in os.listdir(folder):       
-            if "tif" in file and "LED" not in file:
+        for file in os.listdir(folder):   
+            # If the background image is taken to substract out
+            if "background" in file:
+                background_substraction = True
+                background_image = imread(os.path.join(folder, file))
+            elif "tif" in file and "LED" not in file:
                 fileNameList.append(file)
+                
         print(fileNameList)
         
         # Analyse each image
@@ -342,6 +347,9 @@ class ProcessImageML():
             print(image_file_name)
             Rawimage = imread(os.path.join(folder, image_file_name))
 
+            if background_substraction == True:
+                Rawimage = np.abs(Rawimage - background_image)
+                
             # Analyze each image
             # Run the detection on input image.
             MLresults = self.DetectionOnImage(Rawimage, axis = None, show_result = show_result)
