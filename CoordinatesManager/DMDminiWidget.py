@@ -42,6 +42,9 @@ class DMDminiWidgetUI(QWidget):
         self.setWindowTitle("DMD mini")
         self.layout = QGridLayout(self)
         
+        # Set the timing between dark phase, in micro-second.
+        self.gap_between_dark_phase = 9000000
+        
         DMDminiWidgetContainer = StylishQT.roundQGroupBox(title = 'DMD-mini', background_color = 'azure')
         DMDminiWidgetContainer.setFixedHeight(150)
         DMDminiWidgetContainer.setFixedWidth(80)
@@ -83,7 +86,7 @@ class DMDminiWidgetUI(QWidget):
             repeat = True
             # frame_time = int(self.frame_rate_textbox.text())
             self.DMD_actuator.set_repeat(repeat)
-            self.DMD_actuator.set_timing(1000000)
+            self.DMD_actuator.set_timing(self.gap_between_dark_phase)
 
             # Set the binary mode of DMD.
             ALP_BIN_MODE =			2104	#	Binary mode: select from ALP_BIN_NORMAL and ALP_BIN_UNINTERRUPTED (AlpSeqControl) 

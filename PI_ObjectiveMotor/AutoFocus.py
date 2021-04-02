@@ -95,7 +95,7 @@ class FocusFinder():
             else:
                 self.HamamatsuCam_ins = camera_handle
     
-    def gaussian_fit(self):
+    def gaussian_fit(self, move_to_focus = True):
         
         # The upper edge.
         upper_position = self.current_pos + self.init_search_range
@@ -139,6 +139,9 @@ class FocusFinder():
             
             max_focus_pos = sample_positions[degree_of_focus_list.index(max(degree_of_focus_list))]
             print(max_focus_pos)
+            
+        if move_to_focus == True:
+            self.pi_device_instance.move(max_focus_pos)
             
         return max_focus_pos
         

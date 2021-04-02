@@ -320,7 +320,28 @@ class ProcessImageML():
         return cell_Data
     
     def analyze_images_in_folder(self, folder, generate_zmax = False, show_result = True, save_mask = True, save_excel = True):
-        
+        """
+        Given the folder, perform general analysis over the images in it.
+
+        Parameters
+        ----------
+        folder : str
+            Path to the folder.
+        generate_zmax : bool, optional
+            Whether to calcaulate the z-max projection first. The default is False.
+        show_result : bool, optional
+            If show the machine learning segmentation results. The default is True.
+        save_mask : bool, optional
+            DESCRIPTION. The default is True.
+        save_excel : bool, optional
+            DESCRIPTION. The default is True.
+
+        Returns
+        -------
+        cell_Data : pd.dataframe
+            DESCRIPTION.
+
+        """
         flat_cell_counted_in_folder = 0  
         total_cells_counted_in_folder = 0
         
@@ -329,15 +350,24 @@ class ProcessImageML():
             ProcessImage.cam_screening_post_processing(folder)
             # Here a new folder for maxProjection is generated inside, change the path
             folder = os.path.join(folder, 'maxProjection')
+        
+        # If background images are taken
+        if os.path.exists(os.path.join(folder, 'background')):
+            # If the background image is taken to substract out
+            background_substraction = True
             
+            # Get all the background files names
+            background_fileNameList = []
+            for file in os.listdir(os.path.join(folder, 'background')):
+                if "tif" in file:            
+                    background_fileNameList.append(os.path.join(folder, 'background', file))
+            
+            background_image = ProcessImage.image_stack_calculation(background_fileNameList, operation = "mean")
+                
         # Get a list of file names
         fileNameList = []
-        for file in os.listdir(folder):   
-            # If the background image is taken to substract out
-            if "background" in file:
-                background_substraction = True
-                background_image = imread(os.path.join(folder, file))
-            elif "tif" in file and "LED" not in file:
+        for file in os.listdir(folder):
+            if "tif" in file and "LED" not in file:
                 fileNameList.append(file)
                 
         print(fileNameList)

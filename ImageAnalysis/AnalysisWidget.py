@@ -266,6 +266,8 @@ class AnalysisWidgetUI(QWidget):
         # Calculate the mean intensity of video, for background substraction.
         self.video_mean()
         
+        print("=========== Ready for analyse. =============")
+        
     def finish_analysis_thread(self):
         # Calculate the background
         self.calculate_background_from_ROI_average()
@@ -629,7 +631,7 @@ class AnalysisWidgetUI(QWidget):
 
         """
         fit = CurveFit\
-        (self.weight_trace_data, self.Vp*1000/10, camera_fps = self.samplingrate_cam, DAQ_Hz = self.samplingrate_display_curve, \
+        (self.weight_trace_data, self.Vp*1000/10, camera_fps = self.samplingrate_cam, DAQ_sampling_rate = self.samplingrate_display_curve, \
          main_directory = self.main_directory, rhodopsin = self.Construct_name.text())    
         fit.Photobleach()
         fit.IsolatePeriods()
@@ -637,6 +639,7 @@ class AnalysisWidgetUI(QWidget):
         fit.CurveAveraging()
         fit.fit_on_averaged_curve()
         fit.ExponentialFitting()
+        fit.extract_sensitivity()
         fit.Statistics()
 
     def save_analyzed_image(self, catag):
