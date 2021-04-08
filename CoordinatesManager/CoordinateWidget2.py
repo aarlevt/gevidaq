@@ -183,7 +183,7 @@ class CoordinatesWidgetUI(QWidget):
         self.removeSelectionButton.clicked.connect(self.remove_selection)
         
         self.maskGeneratorContainerLayout.addWidget(self.addRoiButton, 0, 0)
-        self.maskGeneratorContainerLayout.addWidget(self.createMaskButton, 2, 0)
+        self.maskGeneratorContainerLayout.addWidget(self.createMaskButton, 2, 1)
         self.maskGeneratorContainerLayout.addWidget(self.deleteMaskButton, 2, 2)
         self.maskGeneratorContainerLayout.addWidget(self.removeSelectionButton, 2, 3)
         # self.maskGeneratorContainerLayout.addWidget(self.loadMaskFromFileButton, 2, 1)

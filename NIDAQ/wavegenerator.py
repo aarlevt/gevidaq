@@ -570,3 +570,73 @@ class generate_AO():
         
         self.finalwave_ = sig+sig2      
         return self.finalwave_
+
+##########################################################################################
+# Dark probe code
+##########################################################################################
+
+def dark_probe(samplingrate,cameraframerate,dt_min,dt_max,dt_step,flash=True,t_start=1.,t_flash=4.,t_dark=5.,t_on=15.,t_probe=0.5):
+    savedirectory="M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data/Marco/phd/2021-04-08 NovArch dark probe/"
+
+    n=int((dt_max-dt_min)/dt_step)+1
+    Dt=np.linspace(dt_min,dt_max,n)
+    
+    T=t_start+flash*(t_flash+t_dark)+n*(t_on+t_dark+t_probe)+np.sum(Dt)
+    
+    samples=int(samplingrate*T)
+    sig=np.zeros([samples])
+    camera_signal=np.zeros([samples])
+    
+    t_0=t_start
+    if flash:
+        a=int(t_start*samplingrate)
+        b=int((t_start+t_flash)*samplingrate)
+        sig[a:b]=1
+        t_0=t_0+t_flash+t_dark
+    
+    for dt in Dt:
+        a=int(t_0*samplingrate)
+        b=int((t_0+t_on)*samplingrate)
+        camera_start=int((t_0+t_on)*samplingrate-5)
+        sig[a:b]=1
+        t_0=t_0+t_on+dt
+        
+        c=int(t_0*samplingrate)
+        d=int((t_0+t_probe)*samplingrate)
+        camera_stop=int((t_0+t_probe)*samplingrate+5)
+        sig[c:d]=1
+        t_0=t_0+t_probe+t_dark
+        
+        camera_signal[camera_start:camera_stop]=1
+        
+    sig=5*sig
+        
+    x=np.linspace(0,T,len(sig))
+    squarewave=0.5*(signal.square(2*np.pi*cameraframerate*x)+1)
+    camera_signal=camera_signal*squarewave
+
+    # count=0
+    # for i in range(samples-1):
+    #     if camera_signal[i+1]>camera_signal[i]:
+    #         count=count+1○
+    # print(count)
+    
+    # plt.plot(x,sig)
+    # plt.plot(x,camera_signal)
+    # plt.show()
+   
+   
+    dataType_analog = np.dtype([('Waveform', float, (len(sig),)), ('Sepcification', 'U20')])
+    dataType_digital = np.dtype([('Waveform', bool, (len(camera_signal),)), ('Sepcification', 'U20')])
+    analog_array = np.zeros(1, dtype = dataType_analog)
+    digital_array = np.zeros(1, dtype = dataType_digital)         
+    analog_array[0] = np.array([(sig, '640AO')], dtype = dataType_analog)
+    digital_array[0] = np.array([(camera_signal, 'cameratrigger')], dtype = dataType_digital)
+    
+    ciao=[] # Variable name 'ciao' was defined by Nicolo Ceffa.
+    ciao.append(analog_array[0])
+    ciao.append(digital_array[0])
+
+    np.save(savedirectory+'DarkProbe_min'+format(dt_min).replace('.','')+'-max'+format(dt_max).replace('.','')+'-step'+format(dt_step).replace('.','')+'_cr_'+format(cameraframerate)+'_sr_'+format(samplingrate), ciao)
+    
+    return True

@@ -308,7 +308,7 @@ class ProcessImageML():
         return cell_Data
                 
     def analyze_single_image(self, Rawimage, axis = None, show_result = True, show_each_cell = False):
-    
+        
         MLresults = self.DetectionOnImage(Rawimage, axis = axis, show_result = show_result)
 
         cell_Data, cell_counted_inRound, total_cells_counted_in_coord = \
@@ -458,12 +458,13 @@ if __name__ == "__main__":
     
     # ProcessML = ProcessImageML(WeigthPath = r"C:\MaskRCNN\MaskRCNNGit\MaskRCNN\MaskRCNN\Data\Xin_training_200epoch_2021_1_20\cell20210121T2259\mask_rcnn_cell_0200.h5")
     # ProcessML = ProcessImageML(WeigthPath = r"C:\MaskRCNN\MaskRCNNGit\MaskRCNN\MaskRCNN\Data\Xin_training\cell20210107T1533\mask_rcnn_cell_0050.h5")
-    ProcessML = ProcessImageML()
+    ProcessML = ProcessImageML(WeigthPath = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Martijn\SpikingHek.h5")
+    # ProcessML = ProcessImageML()
     # ProcessML.config.WeigthPath = r"C:\MaskRCNN\MaskRCNNGit\MaskRCNN\MaskRCNN\Data\Xin_training\cell20210107T1533\mask_rcnn_cell_0050.h5"
     print(ProcessML.config.WeigthPath)
     # 5.6s for each detection
     img_name = \
-    r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2021-01-13_WT Archon KC 8by8\Round1_Grid0_Coords10_R0C7925_PMT_0Zmax.tif"
+    r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Xin\Screening data example\camera image\488-1.TIF"
     img = skimage.io.imread(img_name)
     # for _ in range(1):    
     #     starttime = time.time()
@@ -471,10 +472,10 @@ if __name__ == "__main__":
     #     endtime = time.time()
     #     print(starttime-endtime)
         
-    # cell_data = ProcessML.analyze_single_image(img, show_each_cell = True)
+    cell_data = ProcessML.analyze_single_image(img, show_each_cell = True)
     
-    cell_data = ProcessML.analyze_images_in_folder\
-        (folder=r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Delizzia\2021-02-25 Helios WT screening 1000ng 532nm\pos3', generate_zmax = True)
+    # cell_data = ProcessML.analyze_images_in_folder\
+    #     (folder=r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Delizzia\2021-02-25 Helios WT screening 1000ng 532nm\pos3', generate_zmax = True)
         
     
     

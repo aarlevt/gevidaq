@@ -3116,7 +3116,7 @@ class CurveFit:
         p07, = ax.plot(self.avg_time_upswing*1000, self.avg_fluorescence_upswing, label = "Experimental data", color='blue', alpha=0.5)
         ax.fill_between(self.avg_time_upswing*1000, self.avg_fluorescence_upswing + self.std_fluorescence_upswing, self.avg_fluorescence_upswing - self.std_fluorescence_upswing, facecolor='blue', alpha=0.5)
         p08, = ax.plot(self.avg_time_upswing*1000, func(self.avg_time_upswing, *popt), color = (0.9, 0, 0), label = "Bi-exponential fit")           
-    
+        
         #Axis and labels for fig
         ax.set_title("Bi-exponential fitting of averaged up-swings", size=14)
         ax.set_ylabel('Fluorescence (a.u.)', fontsize = 11)

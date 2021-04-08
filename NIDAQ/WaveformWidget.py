@@ -604,7 +604,7 @@ class WaveformGenerator(QWidget):
         self.GalvoContourLastTextbox.setValue(1000)
         self.GalvoContourLastTextbox.setSingleStep(500)
         self.galvo_contour_tablayout.addWidget(self.GalvoContourLastTextbox, 0, 3)
-        self.galvo_contour_tablayout.addWidget(QLabel("Last(ms):"), 0, 2)        
+        self.galvo_contour_tablayout.addWidget(QLabel("Duration(ms):"), 0, 2)        
         
         self.normal_galvo_tab.setLayout(self.galvo_raster_tablayout)
         self.contour_galvo_tab.setLayout(self.galvo_contour_tablayout)
@@ -738,7 +738,14 @@ class WaveformGenerator(QWidget):
         self.textbox_loadwave.setText(self.wavenpfileName)
         
     def load_wave_np(self):
-        
+        """
+        Load the pre-configured waveforms saved in np format.
+
+        Returns
+        -------
+        None.
+
+        """
         self.wavenpfileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, 'Single File', 'M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data',"(*.npy)")        
         
         temp_loaded_container = np.load(self.wavenpfileName, allow_pickle=True)
@@ -768,9 +775,18 @@ class WaveformGenerator(QWidget):
     
     #%%
     def add_waveform_analog(self):
+        """
+        Add analog waveforms.The waveform_data_dict dictionary will collect all
+        the waveforms, with the key being the channel name.
+        
+        Returns
+        -------
+        None.
+
+        """
         # make sure that the square wave tab is active now
         channel_keyword = self.current_Analog_channel.currentText()
-        
+
         #----------------------Square waves-----------------------------------
         if self.wavetabs.currentIndex() == 0:
                 
@@ -789,7 +805,8 @@ class WaveformGenerator(QWidget):
             self.generate_graphy(channel_keyword, self.waveform_data_dict[channel_keyword])                  
         
         #----------------------------Galvo scanning---------------------------
-        if self.wavetabs.currentIndex() == 3:
+        if self.wavetabs.currentIndex() == 2:
+
             if self.galvos_tabs.currentIndex() == 0:
 
                 self.waveform_data_dict[channel_keyword] = self.generate_galvos()
@@ -823,7 +840,14 @@ class WaveformGenerator(QWidget):
     #%%
             
     def add_waveform_digital(self):
-        
+        """
+        Add digital signals to the collection.
+
+        Returns
+        -------
+        None.
+
+        """
         channel_keyword = self.Digital_channel_combox.currentText()
         
         if channel_keyword != "galvotrigger":
@@ -1181,7 +1205,22 @@ class WaveformGenerator(QWidget):
         self.waveform_data_dict = {}
 
     def organize_waveforms(self):
+        """
+        Each waveforms are first placed into a structure array with data tpye: np.dtype([('Waveform', float, (length_of_sig,)), ('Sepcification', 'U20')])
+        and then append to a list and saved as np file.
         
+        It's the last step before executing waveforms.
+
+        Returns
+        -------
+        TYPE
+            DESCRIPTION.
+        TYPE
+            DESCRIPTION.
+        TYPE
+            DESCRIPTION.
+
+        """
         #-----------------Find the reference waveform length.------------------
         ReferenceWaveform_menu_text = self.ReferenceWaveform_menu.selectedItems()[0].text()
         
@@ -1377,6 +1416,19 @@ class WaveformGenerator(QWidget):
     
         
     def recive_data(self, data_waveformreceived):
+        """
+        Display the recorded signals after execution.
+
+        Parameters
+        ----------
+        data_waveformreceived : TYPE
+            DESCRIPTION.
+
+        Returns
+        -------
+        None.
+
+        """
         self.adcollector.save_as_binary(self.savedirectory)
         self.channel_number = len(data_waveformreceived)
         if self.channel_number == 1:            

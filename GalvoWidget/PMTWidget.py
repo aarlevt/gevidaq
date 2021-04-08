@@ -114,7 +114,7 @@ class PMTWidgetUI(QWidget):
         self.pmtContourLayout.addWidget(self.pmt_handlenum_Label,1,0)
         
         self.contour_strategy = QComboBox()
-        self.contour_strategy.addItems(['Manual','Uniform'])
+        self.contour_strategy.addItems(['Non-uniform','Uniform'])
         self.pmtContourLayout.addWidget(self.contour_strategy, 1, 1)        
         
         self.pointsinContour = QSpinBox(self)
@@ -310,7 +310,7 @@ class PMTWidgetUI(QWidget):
         
     def generate_contour(self):
         """
-        getLocalHandlePositions IS THE FUNCTION TO GRAP COORDINATES FROM IMAGEITEM REGARDLESS OF IMAGEITEM ZOOMING OR PANNING!!!
+        getSceneHandlePositions IS THE FUNCTION TO GRAP COORDINATES FROM IMAGEITEM REGARDLESS OF IMAGEITEM ZOOMING OR PANNING!!!
         """
         self.ROIhandles = self.roi.getHandles()
         self.ROIhandles_nubmer = len(self.ROIhandles)
@@ -326,7 +326,7 @@ class PMTWidgetUI(QWidget):
         for i in range(self.ROIhandles_nubmer):
             self.handle_scene_coordinate_position_array[i] = np.array([self.handle_scene_coordinate_position_raw_list[i][1].x(), self.handle_scene_coordinate_position_raw_list[i][1].y()])
         
-        if self.contour_strategy.currentText() == 'Manual':
+        if self.contour_strategy.currentText() == 'Non-uniform':
             #Interpolation
             self.point_num_per_line = int(self.contour_point_number/self.ROIhandles_nubmer)
             self.Interpolation_number = self.point_num_per_line-1
