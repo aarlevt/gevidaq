@@ -893,6 +893,10 @@ class MainGUI(QWidget):
             ax1 = self.Matdisplay_Figure.add_subplot(111, projection='3d')
             ax1.scatter(self.DataFrame_sorted.loc[:,self.EvaluatingPara_list[0]], self.DataFrame_sorted.loc[:,self.EvaluatingPara_list[1]], \
                         self.DataFrame_sorted.loc[:,self.EvaluatingPara_list[2]], s=np.pi*3, c='blue', alpha=0.5)
+            ax1.scatter(self.DataFrame_sorted.iloc[self.pop_next_top_cell_counter-1, :].loc[self.EvaluatingPara_list[0]], \
+                        self.DataFrame_sorted.iloc[self.pop_next_top_cell_counter-1, :].loc[self.EvaluatingPara_list[1]], \
+                        self.DataFrame_sorted.iloc[self.pop_next_top_cell_counter-1, :].loc[self.EvaluatingPara_list[2]], \
+                        s=np.pi*8, c='red', alpha=0.5)
             ax1.set_xlabel(self.EvaluatingPara_list[0])
             ax1.set_ylabel(self.EvaluatingPara_list[1])
             ax1.set_zlabel(self.EvaluatingPara_list[2])

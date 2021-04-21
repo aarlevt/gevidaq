@@ -49,6 +49,7 @@ class CameraUI(QMainWindow):
     
     output_signal_SnapImg = pyqtSignal(np.ndarray)
     output_signal_LiveImg = pyqtSignal(np.ndarray)
+    output_signal_camera_handle = pyqtSignal(object)
     
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -97,7 +98,7 @@ class CameraUI(QMainWindow):
         """
         CameraSettingContainer = StylishQT.roundQGroupBox(title = 'General settings')
         CameraSettingContainer.setFixedHeight(370)
-        CameraSettingContainer.setMaximumWidth(325)
+        CameraSettingContainer.setMaximumWidth(332)
         CameraSettingLayout = QGridLayout()
         
         self.CamStatusLabel = QLabel('Camera not connected.')
@@ -127,12 +128,12 @@ class CameraUI(QMainWindow):
         1.6 electrons (r.m.s.)), and the slow scan readout speed can achieve even lower noise (0.8 electrons (median), 1.4 electrons (r.m.s.))\
         with a frame rate of 30 fps for full resolution.")
         CameraSettingTab_1.layout.addWidget(Label_readoutspeed, 2, 0)
-        self.ReadoutSpeedSwitchButton = StylishQT.MySwitch('Normal', 'yellow', 'Fast', 'cyan', width = 50)
+        self.ReadoutSpeedSwitchButton = StylishQT.MySwitch('Normal', 'yellow', 'Fast', 'cyan', width = 42)
         self.ReadoutSpeedSwitchButton.clicked.connect(self.ReadoutSpeedSwitchEvent)
         CameraSettingTab_1.layout.addWidget(self.ReadoutSpeedSwitchButton, 2, 1, 1, 2)
         
-        self.DefectCorrectionButton = QPushButton("Pixel correction")
-#        self.DefectCorrectionButton.setFixedWidth(100)
+        self.DefectCorrectionButton = QPushButton("Pixel corr.")
+        # self.DefectCorrectionButton.setFixedWidth(80)
         self.DefectCorrectionButton.setCheckable(True)
         self.DefectCorrectionButton.setChecked(True)
         self.DefectCorrectionButton.clicked.connect(self.DefectCorrectionSwitchEvent)

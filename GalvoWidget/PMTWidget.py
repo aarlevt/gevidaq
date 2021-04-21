@@ -16,20 +16,21 @@ from PyQt5.QtWidgets import (QWidget, QButtonGroup, QLabel, QSlider, QSpinBox, Q
 import pyqtgraph as pg
 import sys
 import numpy as np
-
-from GalvoWidget.pmt_thread import pmtimagingTest, pmtimagingTest_contour
 from PIL import Image
-
+from datetime import datetime
 from pyqtgraph import PlotDataItem
 import os
+import matplotlib.pyplot as plt
 # Ensure that the Widget can be run either independently or as part of Tupolev.
 if __name__ == "__main__":
     abspath = os.path.abspath(__file__)
     dname = os.path.dirname(abspath)
     os.chdir(dname+'/../')
-from datetime import datetime
-import matplotlib.pyplot as plt
+
+from GeneralUsage.ThreadingFunc import run_in_thread
 from NIDAQ.constants import HardwareConstants
+from GalvoWidget.pmt_thread import pmtimagingTest, pmtimagingTest_contour
+from GalvoWidget.GalvoScan_backend import PMT_zscan
 import StylishQT
 
 
@@ -59,7 +60,7 @@ class PMTWidgetUI(QWidget):
         #-----------------------------------------------------------GUI for PMT tab------------------------------------------------------------
         #--------------------------------------------------------------------------------------------------------------------------------------  
         #**************************************************************************************************************************************        
-        pmtimageContainer = QGroupBox("PMT image")
+        pmtimageContainer = StylishQT.roundQGroupBox(title = "PMT image")
         self.pmtimageLayout = QGridLayout()
         
         self.pmtvideoWidget = pg.ImageView()
@@ -68,13 +69,13 @@ class PMTWidgetUI(QWidget):
         self.pmtvideoWidget.resize(400,400)
         self.pmtimageLayout.addWidget(self.pmtvideoWidget, 0, 0)
         
-        pmtroiContainer = QGroupBox("PMT ROI")
+        pmtroiContainer = StylishQT.roundQGroupBox(title = "PMT ROI")
         self.pmtimageroiLayout = QGridLayout()
         
         self.pmt_roiwidget = pg.GraphicsLayoutWidget()
         self.pmt_roiwidget.resize(150,150)
         self.pmt_roiwidget.addLabel('ROI', row=0, col=0) 
-        # create ROI
+        #--------------------------- create ROI ------------------------------
         self.vb_2 = self.pmt_roiwidget.addViewBox(row=1, col=0, lockAspect=True, colspan=1)
         self.vb_2.name = 'ROI'
         
@@ -97,13 +98,14 @@ class PMTWidgetUI(QWidget):
         self.pmtimageroiLayout.addWidget(self.pmt_roiwidget, 0, 0)
         
         pmtimageContainer.setMinimumWidth(850)
-        pmtroiContainer.setMaximumHeight(380)
+        pmtroiContainer.setFixedHeight(480)
 #        pmtroiContainer.setMaximumWidth(300)
         
         pmtimageContainer.setLayout(self.pmtimageLayout)
         pmtroiContainer.setLayout(self.pmtimageroiLayout)
+        
         #----------------------------Contour-----------------------------------        
-        pmtContourContainer = QGroupBox("Contour selection")
+        pmtContourContainer = StylishQT.roundQGroupBox(title = "Contour selection")
         pmtContourContainer.setFixedWidth(280)
         self.pmtContourLayout = QGridLayout()
         #contour_Description = QLabel("Handle number updates when parking mouse cursor upon ROI. Points in contour are divided evenly between handles.")
@@ -151,17 +153,23 @@ class PMTWidgetUI(QWidget):
         self.pmtContourLayout.addWidget(self.stopButton_contour, 5, 1)
         
         pmtContourContainer.setLayout(self.pmtContourLayout)
+        
         #----------------------------Control-----------------------------------
-        controlContainer = QGroupBox("Galvo Scanning Panel")
-        controlContainer.setFixedWidth(280)
-        self.controlLayout = QGridLayout()
+        # controlContainer = StylishQT.roundQGroupBox(title = "Galvo Scanning Panel")
+        # controlContainer.setFixedWidth(280)
+        self.scanning_tabs = QTabWidget()
+        self.scanning_tabs.setFixedWidth(280)
+        
+        #---------------------------- Continuous scanning -----------------------------------
+        Continuous_widget = QWidget()
+        controlLayout = QGridLayout()
         
         self.pmt_fps_Label = QLabel("Per frame: ")
-        self.controlLayout.addWidget(self.pmt_fps_Label, 5, 0)
+        controlLayout.addWidget(self.pmt_fps_Label, 5, 0)
     
         self.saveButton_pmt = StylishQT.saveButton()
         self.saveButton_pmt.clicked.connect(lambda: self.saveimage_pmt())
-        self.controlLayout.addWidget(self.saveButton_pmt, 5, 1)
+        controlLayout.addWidget(self.saveButton_pmt, 5, 1)
     
         self.startButton_pmt = StylishQT.runButton("")
         self.startButton_pmt.setFixedHeight(32)
@@ -169,57 +177,130 @@ class PMTWidgetUI(QWidget):
         self.startButton_pmt.clicked.connect(lambda:self.buttonenabled('rasterscan', 'start'))
         self.startButton_pmt.clicked.connect(lambda: self.measure_pmt())
 
-        self.controlLayout.addWidget(self.startButton_pmt, 6, 0)
+        controlLayout.addWidget(self.startButton_pmt, 6, 0)
         
         self.stopButton = StylishQT.stop_deleteButton()
         self.stopButton.setFixedHeight(32)
         self.stopButton.clicked.connect(lambda:self.buttonenabled('rasterscan', 'stop'))
         self.stopButton.clicked.connect(lambda: self.stopMeasurement_pmt())
         self.stopButton.setEnabled(False)
-        self.controlLayout.addWidget(self.stopButton, 6, 1)
+        controlLayout.addWidget(self.stopButton, 6, 1)
         
-        #-----------------------------------Galvo scanning------------------------------------------------------------------------
-        self.textboxAA_pmt = QSpinBox(self)
-        self.textboxAA_pmt.setMinimum(0)
-        self.textboxAA_pmt.setMaximum(1000000)
-        self.textboxAA_pmt.setValue(500000)
-        self.textboxAA_pmt.setSingleStep(100000)        
-        self.controlLayout.addWidget(self.textboxAA_pmt, 1, 1)        
-        self.controlLayout.addWidget(QLabel("Sampling rate:"), 1, 0)
+        #---------------------Galvo scanning-----------------------------------
+        self.continuous_scanning_sr_spinbox = QSpinBox(self)
+        self.continuous_scanning_sr_spinbox.setMinimum(0)
+        self.continuous_scanning_sr_spinbox.setMaximum(1000000)
+        self.continuous_scanning_sr_spinbox.setValue(500000)
+        self.continuous_scanning_sr_spinbox.setSingleStep(100000)        
+        controlLayout.addWidget(self.continuous_scanning_sr_spinbox, 1, 1)        
+        controlLayout.addWidget(QLabel("Sampling rate:"), 1, 0)
         
-        #self.controlLayout.addWidget(QLabel("Galvo raster scanning : "), 1, 0)
-        self.textbox1B_pmt = QSpinBox(self)
-        self.textbox1B_pmt.setMinimum(-10)
-        self.textbox1B_pmt.setMaximum(10)
-        self.textbox1B_pmt.setValue(3)
-        self.textbox1B_pmt.setSingleStep(1)        
-        self.controlLayout.addWidget(self.textbox1B_pmt, 2, 1)
-        self.controlLayout.addWidget(QLabel("Volt range:"), 2, 0)
+        #controlLayout.addWidget(QLabel("Galvo raster scanning : "), 1, 0)
+        self.continuous_scanning_Vrange_spinbox = QSpinBox(self)
+        self.continuous_scanning_Vrange_spinbox.setMinimum(-10)
+        self.continuous_scanning_Vrange_spinbox.setMaximum(10)
+        self.continuous_scanning_Vrange_spinbox.setValue(3)
+        self.continuous_scanning_Vrange_spinbox.setSingleStep(1)        
+        controlLayout.addWidget(self.continuous_scanning_Vrange_spinbox, 2, 1)
+        controlLayout.addWidget(QLabel("Volt range:"), 2, 0)
         
         self.Scanning_pixel_num_combobox = QSpinBox(self)
         self.Scanning_pixel_num_combobox.setMinimum(0)
         self.Scanning_pixel_num_combobox.setMaximum(1000)
         self.Scanning_pixel_num_combobox.setValue(500)
         self.Scanning_pixel_num_combobox.setSingleStep(244)        
-        self.controlLayout.addWidget(self.Scanning_pixel_num_combobox, 3, 1)
-        self.controlLayout.addWidget(QLabel("Pixel number:"), 3, 0)
+        controlLayout.addWidget(self.Scanning_pixel_num_combobox, 3, 1)
+        controlLayout.addWidget(QLabel("Pixel number:"), 3, 0)
 
-        self.textbox1H_pmt = QSpinBox(self)
-        self.textbox1H_pmt.setMinimum(1)
-        self.textbox1H_pmt.setMaximum(20)
-        self.textbox1H_pmt.setValue(1)
-        self.textbox1H_pmt.setSingleStep(1)
-        self.controlLayout.addWidget(self.textbox1H_pmt, 4, 1)
-        self.controlLayout.addWidget(QLabel("average over:"), 4, 0)
+        self.continuous_scanning_average_spinbox = QSpinBox(self)
+        self.continuous_scanning_average_spinbox.setMinimum(1)
+        self.continuous_scanning_average_spinbox.setMaximum(20)
+        self.continuous_scanning_average_spinbox.setValue(1)
+        self.continuous_scanning_average_spinbox.setSingleStep(1)
+        controlLayout.addWidget(self.continuous_scanning_average_spinbox, 4, 1)
+        controlLayout.addWidget(QLabel("average over:"), 4, 0)
         
-        controlContainer.setLayout(self.controlLayout)
+        Continuous_widget.setLayout(controlLayout)
+        
+        #-------------------------- stack scanning ----------------------------
+        Zstack_widget = QWidget()
+        Zstack_Layout = QGridLayout()
+        
+        self.stack_scanning_sampling_rate_spinbox = QSpinBox(self)
+        self.stack_scanning_sampling_rate_spinbox.setMinimum(0)
+        self.stack_scanning_sampling_rate_spinbox.setMaximum(1000000)
+        self.stack_scanning_sampling_rate_spinbox.setValue(500000)
+        self.stack_scanning_sampling_rate_spinbox.setSingleStep(100000)        
+        Zstack_Layout.addWidget(self.stack_scanning_sampling_rate_spinbox, 1, 1)        
+        Zstack_Layout.addWidget(QLabel("Sampling rate:"), 1, 0)
+
+        self.stack_scanning_Vrange_spinbox = QSpinBox(self)
+        self.stack_scanning_Vrange_spinbox.setMinimum(-10)
+        self.stack_scanning_Vrange_spinbox.setMaximum(10)
+        self.stack_scanning_Vrange_spinbox.setValue(3)
+        self.stack_scanning_Vrange_spinbox.setSingleStep(1)        
+        Zstack_Layout.addWidget(self.stack_scanning_Vrange_spinbox, 2, 1)
+        Zstack_Layout.addWidget(QLabel("Volt range:"), 2, 0)
+        
+        self.stack_scanning_Pnumber_spinbox = QSpinBox(self)
+        self.stack_scanning_Pnumber_spinbox.setMinimum(0)
+        self.stack_scanning_Pnumber_spinbox.setMaximum(1000)
+        self.stack_scanning_Pnumber_spinbox.setValue(500)
+        self.stack_scanning_Pnumber_spinbox.setSingleStep(244)        
+        Zstack_Layout.addWidget(self.stack_scanning_Pnumber_spinbox, 3, 1)
+        Zstack_Layout.addWidget(QLabel("Pixel number:"), 3, 0)
+
+        self.stack_scanning_Avgnumber_spinbox = QSpinBox(self)
+        self.stack_scanning_Avgnumber_spinbox.setMinimum(1)
+        self.stack_scanning_Avgnumber_spinbox.setMaximum(20)
+        self.stack_scanning_Avgnumber_spinbox.setValue(1)
+        self.stack_scanning_Avgnumber_spinbox.setSingleStep(1)
+        Zstack_Layout.addWidget(self.stack_scanning_Avgnumber_spinbox, 4, 1)
+        Zstack_Layout.addWidget(QLabel("average over:"), 4, 0)        
+
+        self.stack_scanning_stepsize_spinbox = QDoubleSpinBox(self)
+        self.stack_scanning_stepsize_spinbox.setMinimum(-10000)
+        self.stack_scanning_stepsize_spinbox.setMaximum(10000)
+        self.stack_scanning_stepsize_spinbox.setDecimals(6)
+        self.stack_scanning_stepsize_spinbox.setSingleStep(0.001)
+        self.stack_scanning_stepsize_spinbox.setValue(0.004)
+        Zstack_Layout.addWidget(self.stack_scanning_stepsize_spinbox, 5, 1)
+        Zstack_Layout.addWidget(QLabel("Step size(mm):"), 5, 0)        
+        
+        self.stack_scanning_depth_spinbox = QDoubleSpinBox(self)
+        self.stack_scanning_depth_spinbox.setMinimum(-10000)
+        self.stack_scanning_depth_spinbox.setMaximum(10000)
+        self.stack_scanning_depth_spinbox.setDecimals(6)
+        self.stack_scanning_depth_spinbox.setSingleStep(0.001)
+        self.stack_scanning_depth_spinbox.setValue(0.012)
+        Zstack_Layout.addWidget(self.stack_scanning_depth_spinbox, 6, 1)
+        Zstack_Layout.addWidget(QLabel("Depth(mm):"), 6, 0)
+        
+        self.startButton_stack_scanning = StylishQT.runButton("")
+        self.startButton_stack_scanning.setFixedHeight(32)
+        self.startButton_stack_scanning.setCheckable(True)
+        self.startButton_stack_scanning.clicked.connect(lambda:self.buttonenabled('stackscan', 'start'))
+        self.startButton_stack_scanning.clicked.connect(lambda: run_in_thread(self.start_Zstack_scanning))
+        Zstack_Layout.addWidget(self.startButton_stack_scanning, 7, 0)
+        
+        self.stopButton_stack_scanning = StylishQT.stop_deleteButton()
+        self.stopButton_stack_scanning.setFixedHeight(32)
+        self.stopButton_stack_scanning.clicked.connect(lambda:self.buttonenabled('stackscan', 'stop'))
+        self.stopButton_stack_scanning.clicked.connect(lambda: run_in_thread(self.stop_Zstack_scanning))
+        self.stopButton_stack_scanning.setEnabled(False)
+        Zstack_Layout.addWidget(self.stopButton_stack_scanning, 7, 1)
+        
+        Zstack_widget.setLayout(Zstack_Layout)
+        
+        self.scanning_tabs.addTab(Continuous_widget, 'Continuous scanning')
+        self.scanning_tabs.addTab(Zstack_widget, 'Stack scanning')
         
         #---------------------------Set tab1 layout---------------------------
 #        pmtmaster = QGridLayout()
         self.layout.addWidget(pmtimageContainer, 0,0,3,1)
         self.layout.addWidget(pmtroiContainer,1,1)       
         self.layout.addWidget(pmtContourContainer,2,1)
-        self.layout.addWidget(controlContainer,0,1)
+        self.layout.addWidget(self.scanning_tabs,0,1)
         
 #        self.layout.setLayout(pmtmaster)
         
@@ -232,7 +313,6 @@ class PMTWidgetUI(QWidget):
         
         if button == 'rasterscan':
             if switch == 'start':
-
                 self.startButton_pmt.setEnabled(False)
                 self.stopButton.setEnabled(True)
                     
@@ -248,20 +328,27 @@ class PMTWidgetUI(QWidget):
                 self.do_contour_sacn.setEnabled(True)
                 self.stopButton_contour.setEnabled(False)
                 
-                
+        elif button == 'stackscan':
+            if switch == 'start':
+                self.startButton_stack_scanning.setEnabled(False)
+                self.stopButton_stack_scanning.setEnabled(True)
+                    
+            elif switch == 'stop':
+                self.startButton_stack_scanning.setEnabled(True)
+                self.stopButton_stack_scanning.setEnabled(False)            
                 
     def measure_pmt(self):
-        self.Daq_sample_rate_pmt = int(self.textboxAA_pmt.value())
+        self.Daq_sample_rate_pmt = int(self.continuous_scanning_sr_spinbox.value())
         
         # Voltage settings, by default it's equal range square.
-        self.Value_voltXMax = self.textbox1B_pmt.value()
+        self.Value_voltXMax = self.continuous_scanning_Vrange_spinbox.value()
         self.Value_voltXMin = self.Value_voltXMax*-1
         Value_voltYMin = self.Value_voltXMin
         Value_voltYMax = self.Value_voltXMax
         
         self.Value_xPixels = int(self.Scanning_pixel_num_combobox.value())
         Value_yPixels = self.Value_xPixels
-        self.averagenum =int(self.textbox1H_pmt.value())
+        self.averagenum =int(self.continuous_scanning_average_spinbox.value())
         
         Totalscansamples = self.pmtTest.setWave(self.Daq_sample_rate_pmt, self.Value_voltXMin, self.Value_voltXMax, Value_voltYMin, Value_voltYMax, self.Value_xPixels, Value_yPixels, self.averagenum)
         time_per_frame_pmt = Totalscansamples/self.Daq_sample_rate_pmt
@@ -614,7 +701,30 @@ class PMTWidgetUI(QWidget):
         self.textitem_galvos = pg.TextItem(text='Contour', color=('w'), anchor=(1, 1))
         self.textitem_galvos.setPos(0, 5)
         self.pw.addItem(self.textitem_galvos)
-        
+    
+    def start_Zstack_scanning(self):
+        """
+        Create the stack scanning instance and run.
+
+        Returns
+        -------
+        None.
+
+        """
+        saving_dir = self.savedirectory
+        z_depth = self.stack_scanning_depth_spinbox.value()
+        z_step_size = self.stack_scanning_stepsize_spinbox.value()
+        imaging_conditions = {'Daq_sample_rate': self.stack_scanning_sampling_rate_spinbox.value(), \
+                              'edge_volt':self.stack_scanning_Vrange_spinbox.value(), \
+                              'pixel_number': self.stack_scanning_Pnumber_spinbox.value(),\
+                              'average_number': self.stack_scanning_Avgnumber_spinbox.value()}  
+            
+        self.zstack_ins = PMT_zscan(saving_dir, z_depth, z_step_size, imaging_conditions)
+        self.zstack_ins.start_scan()
+    
+    def stop_Zstack_scanning(self):
+        self.zstack_ins.stop_scan()
+    
     def MessageToMainGUI(self, text):
         self.MessageBack.emit(text)
                     

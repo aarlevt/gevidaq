@@ -344,6 +344,7 @@ class ProcessImageML():
         """
         flat_cell_counted_in_folder = 0  
         total_cells_counted_in_folder = 0
+        background_substraction = False
         
         # If need to do zmax projection first
         if generate_zmax == True:

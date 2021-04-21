@@ -12,7 +12,8 @@ from nidaqmx.constants import AcquisitionType, TaskMode
 from nidaqmx.stream_writers import AnalogMultiChannelWriter, DigitalMultiChannelWriter
 from nidaqmx.stream_readers import AnalogSingleChannelReader
 from PyQt5.QtCore import pyqtSignal, QThread
-
+import skimage.external.tifffile as skimtiff
+import time
 import os
 # Ensure that the Widget can be run either independently or as part of Tupolev.
 if __name__ == "__main__":
@@ -25,11 +26,14 @@ import NIDAQ.wavegenerator
 from NIDAQ.wavegenerator import blockWave
 from NIDAQ.constants import MeasurementConstants
 
+from PI_ObjectiveMotor.focuser import PIMotor
+
+
 class RasterScan():
     
     def __init__(self, Daq_sample_rate, edge_volt, pixel_number = 500, average_number = 1, continuous = False, return_image = True):
         """
-        
+        Object to run raster PMT scanning.
 
         Parameters
         ----------
@@ -136,12 +140,119 @@ class RasterScan():
                     self.image_PMT= self.data_PMT[:, 70:326]*-1
                 
                 return self.image_PMT
-                
+
+
+class PMT_zscan():
+    
+    def __init__(self, saving_dir, z_depth, z_step_size = 0.004,            
+                  imaging_conditions = {'Daq_sample_rate': 500000, 'edge_volt':5, 'pixel_number': 500,'average_number':2}, \
+                  motor_handle = None, twophoton_handle = None, *args, **kwargs):
+        """
+        Object to run Z-stack scanning.
+
+        Parameters
+        ----------
+        saving_dir : str
+            Directory to save images.
+        z_depth : float
+            The depth of scanning.
+        z_step_size : float, optional
+            Each z step size. The default is 0.004.
+        imaging_conditions : dict, optional
+            Dictionary containing imaging parameters.
+            The default is {'Daq_sample_rate': 500000, 'edge_volt':5, 'pixel_number': 500,'average_number':2}.
+        motor_handle : TYPE, optional
+            Handle to use objective motor. The default is None.
+        twophoton_handle : TYPE, optional
+            Handle to control two-photon laser. The default is None.
+        *args : TYPE
+            DESCRIPTION.
+        **kwargs : TYPE
+            DESCRIPTION.
+
+        Returns
+        -------
+        None.
+
+        """
+        
+        self.scanning_flag = True
+        self.saving_dir = saving_dir
+        
+        if motor_handle == None:
+            # Connect the objective if the handle is not provided.
+            self.pi_device_instance = PIMotor()
+        else:
+            self.pi_device_instance = motor_handle
+            
+        # Current position of the focus.
+        self.current_pos = self.pi_device_instance.GetCurrentPos()
+        
+        # The step size when first doing coarse searching.
+        z_depth_start = self.current_pos
+        z_depth_end = z_depth + z_depth_start
+        
+        # Number of steps in total to find optimal focus.
+        self.total_step_number = round((z_depth_end - self.current_pos)/z_step_size)
+
+        # Generate the sampling positions.
+        self.z_stack_positions = np.linspace(z_depth_start, z_depth_end, self.total_step_number)
+        print(self.z_stack_positions)
+        # Parameters for imaging.
+        self.RasterScanins = RasterScan(imaging_conditions['Daq_sample_rate'],\
+                           imaging_conditions['edge_volt'],\
+                           imaging_conditions['pixel_number'],\
+                           imaging_conditions['average_number'])
+            
+    def start_scan(self):
+
+        for self.each_pos_index in range(len(self.z_stack_positions)):
+            if self.scanning_flag == True:
+                # Go through each position and get image.
+                self.make_PMT_iamge(round(self.z_stack_positions[self.each_pos_index], 6))
+            else:
+                break
+    
+    def stop_scan(self):
+        self.scanning_flag = False
+        
+    def make_PMT_iamge(self, obj_position = None):
+        """
+        Take PMT image at certain objective position.
+
+        Parameters
+        ----------
+        obj_position : float, optional
+            The target objective position. The default is None.
+
+        """
+        
+        if obj_position != None:
+            self.pi_device_instance.move(obj_position)
+            
+        # Get the image.
+        self.galvo_image = self.RasterScanins.run()
+        plt.figure()
+        plt.imshow(self.galvo_image)
+        plt.show()
+        
+        meta_infor = 'index_' + str(self.each_pos_index) + '_pos_' + str(obj_position)
+        
+        if True:
+            with skimtiff.TiffWriter(os.path.join(self.saving_dir, meta_infor, '.tif')) as tif:                
+                tif.save(self.galvo_image.astype('float32'), compress=0)
+        time.sleep(0.5)
+
+        
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
-    galvo = RasterScan(Daq_sample_rate = 500000, edge_volt = 5)
-    image = galvo.run()
-    plt.figure()
-    plt.imshow(image)
-    plt.show()
+    # galvo = RasterScan(Daq_sample_rate = 500000, edge_volt = 5)
+    # image = galvo.run()
+    # plt.figure()
+    # plt.imshow(image)
+    # plt.show()
+    
+    z_stack = PMT_zscan(r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Xin\2021-04-18 Filter bleed through\New folder',\
+                        z_depth = 0.012)
+    z_stack.start_scan()
         

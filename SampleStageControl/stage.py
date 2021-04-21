@@ -79,7 +79,7 @@ class LudlStage:
             else:
                 return False, False
     
-    @Try_until_Success
+    # @Try_until_Success
     def moveAbs(self, x, y):
         """
         Moves the motor to an absolute position defined by X and Y.
@@ -210,14 +210,14 @@ class LudlStage:
 if __name__ == "__main__":
     
     ludlStage = LudlStage("COM12")
-    
-    step = 1500
-    for i in range(10): # Repeat twice
-        print('start moving..')
-        # for _ in range(2):
-        #     ludlStage.moveAbs(i * step,i * step)
+    ludlStage.moveAbs(1000,1000)
+    # step = 1500
+    # for i in range(10): # Repeat twice
+    #     print('start moving..')
+    #     # for _ in range(2):
+    #     #     ludlStage.moveAbs(i * step,i * step)
             
-        #     time.sleep(0.5)
-        ludlStage.moveAbs(i * step,i * step)
+    #     #     time.sleep(0.5)
+    #     ludlStage.moveAbs(i * step,i * step)
         
-        time.sleep(1)
+    #     time.sleep(1)

@@ -2710,7 +2710,7 @@ class ProcessImage():
 
 class CurveFit:
     
-    def __init__(self, fluorescence, waveform, camera_fps, DAQ_sampling_rate, skip = 1, main_directory = None, rhodopsin = 'Not specified'):
+    def __init__(self, fluorescence, waveform, camera_fps, DAQ_sampling_rate, skip = 3, main_directory = None, rhodopsin = 'Not specified'):
         
         #### Input for initialization of the class ####
         #fluorescence   = Weighted trace of fluorescence signal
@@ -3102,14 +3102,14 @@ class CurveFit:
         popt, pcov = curve_fit(func, self.avg_time_upswing, self.avg_fluorescence_upswing, bounds = parameter_bounds, maxfev = 500000)
         
         # Find the fast and slow constant
-        fast_constant = min([popt[1], popt[3]])
-        slow_constant = max([popt[1], popt[3]])
+        self.upswing_fast_constant = min([popt[1], popt[3]])
+        self.upswing_slow_constant = max([popt[1], popt[3]])
         
         # Get the fast component percentage.
         if popt[1] > popt[3]:
-            fast_component_percentage = 1 - popt[2]
+            self.upswing_fast_component_percentage = 1 - popt[2]
         else:
-            fast_component_percentage = popt[2]
+            self.upswing_fast_component_percentage = popt[2]
         
         #Plot every isolated signal and its corresponding fit. Be aware of that when we apply CurveAveraging(), then
         #we have the same for every upswing and the same for every downswing. Neglect periods that we skip
@@ -3121,7 +3121,7 @@ class CurveFit:
         ax.set_title("Bi-exponential fitting of averaged up-swings", size=14)
         ax.set_ylabel('Fluorescence (a.u.)', fontsize = 11)
         ax.set_xlabel('Time(ms)', fontsize = 11)
-        ax.legend([p08, p07], ["Fit ({} ms/ {} ms, fast component percentage: {}%)".format(str(fast_constant*1000)[:5], str(slow_constant*1000)[:5], str(fast_component_percentage*100)[:5]), "Experimental data"])
+        ax.legend([p08, p07], ["Fit ({} ms/ {} ms, fast component percentage: {}%)".format(str(self.upswing_fast_constant*1000)[:5], str(self.upswing_slow_constant*1000)[:5], str(self.upswing_fast_component_percentage*100)[:5]), "Experimental data"])
         ax.spines['right'].set_visible(False)
         ax.spines['top'].set_visible(False)
         ax.xaxis.set_ticks_position('bottom')
@@ -3144,14 +3144,14 @@ class CurveFit:
         popt, pcov = curve_fit(func, self.avg_time_downswing, self.avg_fluorescence_downswing, bounds = parameter_bounds, maxfev = 500000)
 
         # Find the fast and slow constant
-        fast_constant = min([popt[1], popt[3]])
-        slow_constant = max([popt[1], popt[3]])
+        self.downswing_fast_constant = min([popt[1], popt[3]])
+        self.downswing_slow_constant = max([popt[1], popt[3]])
         
         # Get the fast component percentage.
         if popt[1] > popt[3]:
-            fast_component_percentage = 1 - popt[2]
+            self.downswing_fast_component_percentage = 1 - popt[2]
         else:
-            fast_component_percentage = popt[2]
+            self.downswing_fast_component_percentage = popt[2]
             
         #Plot every isolated signal and its corresponding fit. Be aware of that when we apply CurveAveraging(), then
         #we have the same for every upswing and the same for every downswing. Neglect periods that we skip
@@ -3163,14 +3163,14 @@ class CurveFit:
         ax2.set_title("Bi-exponential fitting of averaged down-swings", size=14)
         ax2.set_ylabel('Fluorescence (a.u.)', fontsize = 11)
         ax2.set_xlabel('Time(ms)', fontsize = 11)
-        ax2.legend([p10, p09], ["Fit ({} ms/ {} ms, fast component percentage: {}%)".format(str(fast_constant*1000)[:5], str(slow_constant*1000)[:5], str(fast_component_percentage*100)[:5]), "Experimental data"])
+        ax2.legend([p10, p09], ["Fit ({} ms/ {} ms, fast component percentage: {}%)".format(str(self.downswing_fast_constant*1000)[:5], str(self.downswing_slow_constant*1000)[:5], str(self.downswing_fast_component_percentage*100)[:5]), "Experimental data"])
         ax2.spines['right'].set_visible(False)
         ax2.spines['top'].set_visible(False)
         ax2.xaxis.set_ticks_position('bottom')
         ax2.yaxis.set_ticks_position('left')
         plt.show()
         if self.main_directory != None:
-            fig.savefig((os.path.join(self.main_directory, 'Analysis results//Bi-exponential fitting of averaged down-swings.png')), dpi=1200)    
+            fig2.savefig((os.path.join(self.main_directory, 'Analysis results//Bi-exponential fitting of averaged down-swings.png')), dpi=1200)    
         # except:
         #     print('fit_on_averaged_curve failed.')
         
@@ -3369,12 +3369,12 @@ class CurveFit:
             '---------------------------------------------------' + "\n" + \
             'dF/F (normalized)    = ' + str(round(self.avg_intensity_ratio*100, 4)) + "% +/- " +  str(round(self.std_intensity_ratio*100, 4)) + "%\n" + "\n" + \
             'Upswing' + "\n" + \
-            't_fast up                = ' + self.fastconstant_upswing + ' s'+ "\n" + \
-            't_slow up                = ' + self.slowconstant_upswing + ' s'+ "\n" + \
+            't_fast up                = ' + str(self.upswing_fast_constant)[:8] + ' s, ' + str(self.upswing_fast_component_percentage*100)[:5] + "%\n" + \
+            't_slow up                = ' + str(self.upswing_slow_constant)[:8] + ' s' + "\n" + \
             'Amplitude up             = ' + self.amplitude_upswing + "\n" + "\n" + \
             'Downswing' + "\n" + \
-            't_fast down              = ' + self.fastconstant_downswing + ' s' + "\n" + \
-            't_slow down              = ' + self.slowconstant_downswing + ' s' + "\n" + \
+            't_fast down              = ' + str(self.downswing_fast_constant)[:8] + ' s, ' + str(self.downswing_fast_component_percentage*100)[:5] + "%\n" + \
+            't_slow down              = ' + str(self.downswing_slow_constant)[:8] + ' s, ' + "\n" + \
             'Amplitude down           = ' + self.amplitude_downswing + "\n" + "\n" + \
             'STATISTICS FOR PHOTOBLEACH' + "\n" + \
             '---------------------------------------------------' + "\n" + \

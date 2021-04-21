@@ -102,6 +102,7 @@ class AnalysisWidgetUI(QWidget):
         
         self.run_analysis_button = StylishQT.runButton()
         self.run_analysis_button.setFixedWidth(100)
+        self.run_analysis_button.setEnabled(False)
         self.readimageLayout.addWidget(self.run_analysis_button, 1, 7) 
         
         self.run_analysis_button.clicked.connect(self.finish_analysis)
@@ -133,6 +134,7 @@ class AnalysisWidgetUI(QWidget):
         self.pw_averageimage.ui.menuBtn.hide()   
 
         self.roi_average = pg.PolyLineROI([[0,0], [0,30],[30,30], [30,0]], closed=True)
+        self.roi_average = pg.RectROI([0,0],[30,30], centered=True, sideScalers=True)
         self.pw_averageimage.view.addItem(self.roi_average)
         #self.pw_weightimage = weightedimagewindow()
         self.imageanalysisLayout_average.addWidget(self.pw_averageimage, 0, 0, 5, 3)
@@ -254,6 +256,7 @@ class AnalysisWidgetUI(QWidget):
         t2.start()        
         
     def load_data_thread(self):
+        self.button_load.setEnabled(False)
         # Load tif video file.
         self.videostack = imread(self.fileName)
         print(self.videostack.shape)
@@ -261,7 +264,7 @@ class AnalysisWidgetUI(QWidget):
         self.roi_average.maxBounds= QRectF(0,0,self.videostack.shape[2],self.videostack.shape[1])
         self.roi_weighted.maxBounds= QRectF(0,0,self.videostack.shape[2],self.videostack.shape[1])
         print('============ Loading complete, ready to fire ============ ')
-        self.MessageToMainGUI('============ Loading complete, ready to fire ============'+'\n')
+        self.MessageToMainGUI('=== Loading complete, ready to fire ==='+'\n')
         
         # Load wave files.
         self.loadcurve()
@@ -274,8 +277,11 @@ class AnalysisWidgetUI(QWidget):
         self.video_mean()
         
         print("=========== Ready for analyse. =============")
+        self.button_load.setEnabled(False)
+        self.run_analysis_button.setEnabled(True)
         
     def finish_analysis_thread(self):
+        self.MessageToMainGUI('=== Analysis start.. ==='+'\n')
         # Calculate the background
         self.calculate_background_from_ROI_average()
         
@@ -292,7 +298,10 @@ class AnalysisWidgetUI(QWidget):
         self.fit_on_trace()
         
         print("============ Analysis done. ============")
-        self.MessageToMainGUI('============ Analysis done. ============'+'\n')
+        self.MessageToMainGUI('=== Analysis done. ==='+'\n')
+        
+        self.button_load.setEnabled(True)
+        self.run_analysis_button.setEnabled(False)
         
     def ReceiveVideo(self, videosentin):  
 
@@ -672,6 +681,9 @@ class AnalysisWidgetUI(QWidget):
      
         
     def clearplots(self):
+        self.button_load.setEnabled(True)
+        self.run_analysis_button.setEnabled(False)
+        
         self.pw_weightimage.clear()
         self.pw_averageimage.clear()
                 
