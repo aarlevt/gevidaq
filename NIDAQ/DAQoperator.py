@@ -351,8 +351,13 @@ class DAQmission(
                     master_Task_readin.ai_channels.add_ai_voltage_chan(
                         self.channel_LUT["Vp"]
                     )
+                # =============================================================================
+                #     For the current measurement, we use the voltage channel in DAQ
+                #     and convert to current later devided by current gain and patch
+                #     probe resistance.
+                # =============================================================================
                 if "Ip" in self.readin_channels:
-                    master_Task_readin.ai_channels.add_ai_current_chan(
+                    master_Task_readin.ai_channels.add_ai_voltage_chan(
                         self.channel_LUT["Ip"]
                     )
                 # ----------------------------------------------------------
@@ -643,7 +648,7 @@ class DAQmission(
                         self.channel_LUT["Vp"]
                     )
                 if "Ip" in self.readin_channels:
-                    master_Task_readin.ai_channels.add_ai_current_chan(
+                    master_Task_readin.ai_channels.add_ai_voltage_chan(
                         self.channel_LUT["Ip"]
                     )
 

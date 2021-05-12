@@ -15,6 +15,7 @@ from PyQt5.QtCore import pyqtSignal, QThread
 import skimage.external.tifffile as skimtiff
 import time
 import os
+import matplotlib.pyplot as plt
 
 # Ensure that the Widget can be run either independently or as part of Tupolev.
 if __name__ == "__main__":
@@ -265,6 +266,8 @@ class PMT_zscan:
                 )
             else:
                 break
+            
+        self.pi_device_instance.CloseMotorConnection()
 
     def stop_scan(self):
         self.scanning_flag = False
@@ -285,15 +288,15 @@ class PMT_zscan:
 
         # Get the image.
         self.galvo_image = self.RasterScanins.run()
-        plt.figure()
-        plt.imshow(self.galvo_image)
-        plt.show()
+        # plt.figure()
+        # plt.imshow(self.galvo_image)
+        # plt.show()
 
         meta_infor = "index_" + str(self.each_pos_index) + "_pos_" + str(obj_position)
 
         if True:
             with skimtiff.TiffWriter(
-                os.path.join(self.saving_dir, meta_infor, ".tif")
+                os.path.join(self.saving_dir, meta_infor + ".tif")
             ) as tif:
                 tif.save(self.galvo_image.astype("float32"), compress=0)
         time.sleep(0.5)

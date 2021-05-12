@@ -425,7 +425,9 @@ class Mainbody(QWidget):
     def set_saving_directory(self):
         self.savedirectory = str(
             QtWidgets.QFileDialog.getExistingDirectory(
-                directory="M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data"
+                caption="Set saving directory",
+                directory=""
+                # options = QFileDialog.DontUseNativeDialog
             )
         )
         self.savedirectorytextbox.setText(self.savedirectory)

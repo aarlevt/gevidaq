@@ -619,7 +619,7 @@ class ProcessImageML:
 
 if __name__ == "__main__":
     import skimage
-
+    import time
     # from skimage.io import imread
     # =============================================================================
 
@@ -638,15 +638,16 @@ if __name__ == "__main__":
     # ProcessML.config.WeigthPath = r"C:\MaskRCNN\MaskRCNNGit\MaskRCNN\MaskRCNN\Data\Xin_training\cell20210107T1533\mask_rcnn_cell_0050.h5"
     print(ProcessML.config.WeigthPath)
     # 5.6s for each detection
-    img_name = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Xin\Screening data example\camera image\488-1.TIF"
+    img_name = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\ML images\image segmentation for liposomes\PolyYOLOLiposomeDataset\imgs\2020_06_25_sample1_001_00001.jpg"
     img = skimage.io.imread(img_name)
-    # for _ in range(1):
-    #     starttime = time.time()
-    #     ProcessML.DetectionOnImage(img, show_result = True)
-    #     endtime = time.time()
-    #     print(starttime-endtime)
+    for _ in range(5):
+        starttime = time.time()
+        ProcessML.DetectionOnImage(img, show_result = True)
+        endtime = time.time()
+        print(endtime-starttime)
 
-    cell_data = ProcessML.analyze_single_image(img, show_each_cell=True)
+    # cell_data = ProcessML.analyze_single_image(img, show_each_cell=True)
+    # ProcessML.DetectionOnImage(img, show_result = True)
 
     # cell_data = ProcessML.analyze_images_in_folder\
     #     (folder=r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Delizzia\2021-02-25 Helios WT screening 1000ng 532nm\pos3', generate_zmax = True)

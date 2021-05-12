@@ -169,7 +169,7 @@ class ObjMotorWidgetUI(QWidget):
 
         self.FocusSlider = QScrollBar(Qt.Horizontal)
         self.FocusSlider.setMinimum(2500000)
-        self.FocusSlider.setMaximum(4500000)
+        self.FocusSlider.setMaximum(4800000)
         #        self.FocusSlider.setTickPosition(QSlider.TicksBothSides)
         #        self.FocusSlider.setTickInterval(1000000)
         self.FocusSlider.setStyleSheet("color:white; background: lightblue")

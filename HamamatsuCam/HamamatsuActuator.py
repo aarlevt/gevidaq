@@ -54,6 +54,7 @@ class CamActuator:
         #         Load dcamapi.dll version: 19.12.641.5901
         # =============================================================================
         """
+        self.isLiving = False
         self.isStreaming = False
         self.isSaving = False
         self.metaData = "Hamamatsu C13440-20CU "
@@ -199,6 +200,31 @@ class CamActuator:
         self.hcam.stopAcquisition()
 
         return ImageSnapped
+    
+    def LIVE(self):
+        # =====================================================================
+        #         Start the continuous stream
+        # =====================================================================
+        self.isLiving = True
+        self.hcam.acquisition_mode = "run_till_abort"
+        self.hcam.startAcquisition()
+
+        while self.isLiving == True:
+            [
+                frames,
+                dims,
+            ] = (
+                self.hcam.getFrames()
+            )  # frames is a list with HCamData type, with np_array being the image.
+            self.Live_image = np.resize(frames[-1].np_array, (dims[1], dims[0]))
+
+            self.subarray_vsize = dims[1]
+            self.subarray_hsize = dims[0]
+    
+    def StopLIVE(self):
+        self.isLiving = False
+        # Stop the acquisition
+        self.hcam.stopAcquisition()        
 
     def StartStreaming(self, BufferNumber, **kwargs):
         # =====================================================================

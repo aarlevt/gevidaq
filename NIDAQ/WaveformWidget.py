@@ -832,42 +832,45 @@ class WaveformGenerator(QWidget):
         self.wavenpfileName, _ = QtWidgets.QFileDialog.getOpenFileName(
             self,
             "Single File",
-            "M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data",
+            "",
             "(*.npy)",
         )
-
-        temp_loaded_container = np.load(self.wavenpfileName, allow_pickle=True)
-
+        
         try:
-            self.uiDaq_sample_rate = int(os.path.split(self.wavenpfileName)[1][20:-4])
-        except:
+            temp_loaded_container = np.load(self.wavenpfileName, allow_pickle=True)
+    
             try:
-                self.uiDaq_sample_rate = int(
-                    float(self.wavenpfileName[self.wavenpfileName.find("sr_") + 3 : -4])
-                )  # Locate sr_ in the file name to get sampling rate.
+                self.uiDaq_sample_rate = int(os.path.split(self.wavenpfileName)[1][20:-4])
             except:
-                self.uiDaq_sample_rate = 50000
-
-        if self.uiDaq_sample_rate != int(self.SamplingRateTextbox.value()):
-            print("ERROR: Sampling rates is different!")
-
-        self.PlotDataItem_dict = {}
-        self.waveform_data_dict = {}
-
-        for i in range(len(temp_loaded_container)):
-
-            channel_keyword = temp_loaded_container[i]["Sepcification"]
-
-            if (
-                channel_keyword != "galvos_X_contour"
-                and channel_keyword != "galvos_Y_contour"
-            ):
-                self.waveform_data_dict[channel_keyword] = temp_loaded_container[i][
-                    "Waveform"
-                ]
-                self.generate_graphy(
-                    channel_keyword, self.waveform_data_dict[channel_keyword]
-                )
+                try:
+                    self.uiDaq_sample_rate = int(
+                        float(self.wavenpfileName[self.wavenpfileName.find("sr_") + 3 : -4])
+                    )  # Locate sr_ in the file name to get sampling rate.
+                except:
+                    self.uiDaq_sample_rate = 50000
+    
+            if self.uiDaq_sample_rate != int(self.SamplingRateTextbox.value()):
+                print("ERROR: Sampling rates is different!")
+    
+            self.PlotDataItem_dict = {}
+            self.waveform_data_dict = {}
+    
+            for i in range(len(temp_loaded_container)):
+    
+                channel_keyword = temp_loaded_container[i]["Sepcification"]
+    
+                if (
+                    channel_keyword != "galvos_X_contour"
+                    and channel_keyword != "galvos_Y_contour"
+                ):
+                    self.waveform_data_dict[channel_keyword] = temp_loaded_container[i][
+                        "Waveform"
+                    ]
+                    self.generate_graphy(
+                        channel_keyword, self.waveform_data_dict[channel_keyword]
+                    )
+        except:
+            print("File not valid.")
 
     #%%
     def add_waveform_analog(self):
@@ -1469,7 +1472,8 @@ class WaveformGenerator(QWidget):
 
     def organize_waveforms(self):
         """
-        Each waveforms are first placed into a structure array with data tpye: np.dtype([('Waveform', float, (length_of_sig,)), ('Sepcification', 'U20')])
+        Each waveforms are first placed into a structure array with data tpye: 
+        np.dtype([('Waveform', float, (length_of_sig,)), ('Sepcification', 'U20')])
         and then append to a list and saved as np file.
 
         It's the last step before executing waveforms.

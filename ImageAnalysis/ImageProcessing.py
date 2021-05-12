@@ -3156,7 +3156,76 @@ class ProcessImage:
         interpolated = f(xnew)
 
         return interpolated
+    
+    def threshold_seperator(array, threshold):
+        """
+        Given a array and a threshold, devide the array into above and below parts,
+        return the index range for both.
 
+        Parameters
+        ----------
+        array : np.array
+            DESCRIPTION.
+        threshold : float
+            Threshold for deviding.
+
+        Returns
+        -------
+        upper_index_dict : dict
+            DESCRIPTION.
+        lower_index_dict : dict
+            DESCRIPTION.
+
+        """
+        upper_index_dict = {}
+        lower_index_dict = {}
+        
+        for i in range(2):
+        # Each loop for either upper or lower part
+            if i == 0:
+                qualified_index_array = np.where(array >= threshold)[0]
+            else:
+                qualified_index_array = np.where(array < threshold)[0]
+            
+            # Generate the discontinue index list
+            discontinue_index_list = []
+            for qualified_index in range(len(qualified_index_array)):
+                if qualified_index > 0:
+                    # Find the disconnect point
+                    if qualified_index_array[qualified_index] - qualified_index_array[qualified_index-1] > 1:
+                        discontinue_index_list.append(qualified_index)
+                        
+            phase_index = 0
+            
+            for index in range(len(discontinue_index_list) + 1):
+                if phase_index == 0:
+                # For the first phase detected
+                    start_index = 0
+                    start_index_of_next_phase = discontinue_index_list[0] -1
+                    
+                elif phase_index < len(discontinue_index_list):
+                # For the middle ones
+                    start_index = discontinue_index_list[index - 1]
+                    start_index_of_next_phase = discontinue_index_list[index] -1
+                    
+                elif phase_index == len(discontinue_index_list):
+                # For the end of the phase
+                    start_index = discontinue_index_list[index - 1]
+                    start_index_of_next_phase = len(qualified_index_array) -1
+            
+                if i == 0:
+                # For the upper part
+                    upper_index_dict["phase {}".format(str(phase_index))] = [qualified_index_array[start_index], qualified_index_array[start_index_of_next_phase] + 1]
+
+                else:
+                # For the lower part
+                    lower_index_dict["phase {}".format(str(phase_index))] = [qualified_index_array[start_index], qualified_index_array[start_index_of_next_phase] + 1]
+                    
+                phase_index += 1                    
+                
+        return upper_index_dict, lower_index_dict
+                        
+            
     #%%
     # =============================================================================
     #     2-D array processing
@@ -3767,11 +3836,47 @@ class ProcessImage:
             focus_map_dict[Each_round] = final_focus_map_holder
 
         return focus_map_dict
-
+    
     #%%
     # =============================================================================
-    #     Curve fitting, adapted from Mels' code.
+    #     For photo current calculation
     # =============================================================================
+
+    def PhotoCurrent(
+        main_directory,
+        marker = "blankingall",
+        rhodopsin="Not specified",
+    ):  
+        
+        main_directory = main_directory
+
+        for file in os.listdir(main_directory):
+            if "Wavefroms_sr_" in file and "npy" in file:
+                wave_fileName = os.path.join(main_directory, file)
+                temp_wave_container = np.load(wave_fileName, allow_pickle=True)
+            if "Ip" in file and "npy" in file:
+                current_fileName = os.path.join(main_directory, file)
+                temp_current_container = np.load(current_fileName, allow_pickle=True)
+                # Here in raw file, first 5 numbers are meta data, then in the beginning
+                # and the end both have a 0 extra recording to reset the NIDAQ channel.
+                current_curve = temp_current_container[6:len(temp_current_container)-1]
+                
+        # Get the blanking waveform as indication of laser on and off.
+        for i in temp_wave_container:
+            if i['Sepcification'] == marker:
+                blanking_waveform = i['Waveform'][1:len(i['Waveform'])-1]
+
+        laser_on_phases, laser_off_phases= ProcessImage.threshold_seperator(blanking_waveform, 1)
+        print(laser_on_phases)
+        
+        for phase_key in laser_on_phases:
+            
+            current_each_phase = current_curve[laser_on_phases[phase_key][0] : laser_on_phases[phase_key][1]]
+            plt.figure()
+            plt.plot(current_each_phase)
+            plt.show()
+            
+            print(np.mean(current_each_phase))
 
     #%%
     # =============================================================================
@@ -4919,6 +5024,8 @@ class CurveFit:
         return self.avg_intensity_ratio, self.std_intensity_ratio
 
 
+
+
 if __name__ == "__main__":
     from skimage.io import imread
     import time
@@ -4966,7 +5073,8 @@ if __name__ == "__main__":
     find_focus = False
     registration = False
     merge_dataFrames = False
-    cam_screening_analysis = True
+    cam_screening_analysis = False
+    photo_current = True
 
     if stitch_img == True:
         Nest_data_directory = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2020-12-19_2020-12-19_18-41-18_Lib9_Q1_1TO16_NOPURO"
@@ -5036,3 +5144,6 @@ if __name__ == "__main__":
         ProcessImage.cam_screening_post_processing(
             r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Delizzia\2020-11-19_2020-11-19_10-14-32_trial_cam_screen"
         )
+        
+    elif photo_current == True:
+        ProcessImage.PhotoCurrent(r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Patch clamp\2021-03-30 GR D121E\cell3\photocurrent")

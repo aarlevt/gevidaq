@@ -958,25 +958,10 @@ class PlotAnalysisGUI(QWidget):
         #        self.pmtimageLayout.addWidget(self.v_directorytextbox, 2, 0)
 
         self.toolButtonOpenDialog = QtWidgets.QPushButton("Select folder")
-        #        self.toolButtonOpenDialog.setStyleSheet("QPushButton {color:teal;background-color: pink; border-style: outset;border-radius: 10px;border-width: 2px;font: bold 14px;padding: 6px}"
-        #                                                "QPushButton:pressed {color:yellow;background-color: pink; border-style: outset;border-radius: 10px;border-width: 2px;font: bold 14px;padding: 6px}")
 
-        # self.toolButtonOpenDialog.setObjectName("toolButtonOpenDialog")
         self.toolButtonOpenDialog.clicked.connect(self._open_file_dialog)
 
-        #        self.toolButtonOpenDialog_v = QtWidgets.QPushButton('Recorded trace file')
-        #        #self.toolButtonOpenDialog_v.setObjectName("toolButtonOpenDialog")
-        #        self.toolButtonOpenDialog_v.clicked.connect(self.getfile_voltage)
-
-        #        self.cam_directorytextbox = QtWidgets.QLineEdit(self)
-        #        self.pmtimageLayout.addWidget(self.cam_directorytextbox, 3, 0)
-        #        self.toolButtonOpenDialog_cam = QtWidgets.QPushButton('Cam trace file')
-        # self.toolButtonOpenDialog_cam.setObjectName("toolButtonOpenDialog")
-        #        self.toolButtonOpenDialog_cam.clicked.connect(self.getfile_cam)
-
         self.pmtimageLayout.addWidget(self.toolButtonOpenDialog, 1, 1)
-        #        self.pmtimageLayout.addWidget(self.toolButtonOpenDialog_v, 2, 1)
-        #        self.pmtimageLayout.addWidget(self.toolButtonOpenDialog_cam, 3, 1)
 
         self.toolButtonLoad = QtWidgets.QPushButton("Graph")
         self.toolButtonLoad.setStyleSheet(
@@ -992,14 +977,6 @@ class PlotAnalysisGUI(QWidget):
     def _open_file_dialog(self):
         self.Nest_data_directory = str(QtWidgets.QFileDialog.getExistingDirectory())
         self.savedirectorytextbox.setText(self.Nest_data_directory)
-
-    #    def getfile(self):
-    #        self.wave_fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, 'Single File', r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\2019-12-10 insert movement testing\Archon_KClassay_15s\2019-12-10_18-06-12__Wavefroms_sr_100.npy')
-
-    #    def getfile_voltage(self):
-    #        self.recorded_wave_fileName, _ = QtWidgets.QFileDialog.getOpenFileName(self, 'Single File', r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\2019-12-06 Perfusion fluorescence test\Novarch2\Vp2019-12-06_17-31-05.npy')
-
-    #    def getfile_cam(self):# For csv file
 
     def show_graphy(self):
         get_ipython().run_line_magic("matplotlib", "qt")
