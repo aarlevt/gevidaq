@@ -214,8 +214,12 @@ class CoordinatesWidgetUI(QWidget):
         self.createMaskButton.clicked.connect(self.create_mask)
         self.deleteMaskButton.clicked.connect(self.delete_mask)
         self.removeSelectionButton.clicked.connect(self.remove_selection)
-
+        
+        self.addBlankMaskButton = QPushButton("Add blank")
+        # self.addBlankMaskButton.clicked.connect(self.create_mask)
+        
         self.maskGeneratorContainerLayout.addWidget(self.addRoiButton, 0, 0)
+        self.maskGeneratorContainerLayout.addWidget(self.addBlankMaskButton, 2, 0)
         self.maskGeneratorContainerLayout.addWidget(self.createMaskButton, 2, 1)
         self.maskGeneratorContainerLayout.addWidget(self.deleteMaskButton, 2, 2)
         self.maskGeneratorContainerLayout.addWidget(self.removeSelectionButton, 2, 3)
@@ -430,7 +434,10 @@ class CoordinatesWidgetUI(QWidget):
                 )
 
             list_of_rois.append(vertices)
-
+        # array([[   0,   0],
+        #        [2048,   0],
+        #        [2048, 2048,
+        #        [   0, 2048]])
         return list_of_rois
 
     def create_mask(self):

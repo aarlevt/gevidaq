@@ -386,6 +386,7 @@ class WaveformGenerator(QWidget):
         self.AnalogStartingAmpTextbox.setMinimum(-10)
         self.AnalogStartingAmpTextbox.setMaximum(10)
         self.AnalogStartingAmpTextbox.setValue(5)
+        self.AnalogStartingAmpTextbox.setDecimals(5)
         self.AnalogStartingAmpTextbox.setSingleStep(0.5)
         self.wavetablayout.addWidget(self.AnalogStartingAmpTextbox, 2, 1)
 
@@ -398,6 +399,7 @@ class WaveformGenerator(QWidget):
         self.AnalogStepTextbox = QDoubleSpinBox(self)
         self.AnalogStepTextbox.setMinimum(-10)
         self.AnalogStepTextbox.setMaximum(10)
+        self.AnalogStepTextbox.setDecimals(4)
         self.AnalogStepTextbox.setValue(5)
         self.AnalogStepTextbox.setSingleStep(0.5)
         self.wavetablayout.addWidget(self.AnalogStepTextbox, 2, 3)
@@ -510,6 +512,7 @@ class WaveformGenerator(QWidget):
         self.textbox_photocycleG = QDoubleSpinBox(self)
         self.textbox_photocycleG.setMinimum(-10)
         self.textbox_photocycleG.setMaximum(10)
+        self.textbox_photocycleG.setDecimals(5)
         self.textbox_photocycleG.setValue(2)
         self.textbox_photocycleG.setSingleStep(0.5)
         self.photocycletablayout.addWidget(self.textbox_photocycleG, 2, 1)
@@ -804,12 +807,17 @@ class WaveformGenerator(QWidget):
         #        self.setLayout(pmtmaster)
         self.layout.addWidget(self.tabs, 0, 0)
         self.setLayout(self.layout)
-
-        # **************************************************************************************************************************************
+        
+        # Automatically switch to galvo settings
+        if self.current_Analog_channel.currentIndex() == 0:
+            print(1112132)
+            self.wavetabs.setCurrentIndex(2)
+            
+            
+#%%
         # --------------------------------------------------------------------------------------------------------------------------------------
         # ------------------------------------------------Functions for Waveform Tab------------------------------------------------------------
         # --------------------------------------------------------------------------------------------------------------------------------------
-        # **************************************************************************************************************************************
 
     def get_wave_file_np(self):
         self.wavenpfileName, _ = QtWidgets.QFileDialog.getOpenFileName(

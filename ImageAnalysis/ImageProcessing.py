@@ -3861,6 +3861,9 @@ class ProcessImage:
                 # and the end both have a 0 extra recording to reset the NIDAQ channel.
                 current_curve = temp_current_container[6:len(temp_current_container)-1]
                 
+                plt.figure()
+                plt.plot(current_curve)
+                plt.show()
         # Get the blanking waveform as indication of laser on and off.
         for i in temp_wave_container:
             if i['Sepcification'] == marker:
@@ -3876,7 +3879,7 @@ class ProcessImage:
             plt.plot(current_each_phase)
             plt.show()
             
-            print(np.mean(current_each_phase))
+            print("Mean value of each phase: {}".format(np.mean(current_each_phase)))
 
     #%%
     # =============================================================================

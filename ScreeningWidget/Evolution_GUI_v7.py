@@ -286,13 +286,16 @@ class Mainbody(QWidget):
         self.ScanstepTextbox.setValue(1585)
         self.ScanstepTextbox.setSingleStep(500)
         ScanSettingLayout.addWidget(self.ScanstepTextbox, 1, 1)
-        ScanSettingLayout.addWidget(QLabel("Step size:"), 1, 0)
+        ScanSettingLayout.addWidget(QLabel("Stage scanning step size:"), 1, 0)
 
         self.AutoFocusGapTextbox = QSpinBox(self)
         self.AutoFocusGapTextbox.setMinimum(0)
         self.AutoFocusGapTextbox.setMaximum(100000)
         self.AutoFocusGapTextbox.setValue(0)
         self.AutoFocusGapTextbox.setSingleStep(2)
+        self.AutoFocusGapTextbox.setToolTip(
+            "For example if =2 then there's 1 coordinate between AF. If =0, all AF settings are omitted. In pure-AF mode, put the same as the first AF round."
+        )
         # if value = 0, then no auto-focus.
         ScanSettingLayout.addWidget(self.AutoFocusGapTextbox, 0, 5)
         ScanSettingLayout.addWidget(QLabel("Auto focus grid steps:"), 0, 4)
@@ -317,7 +320,7 @@ class Mainbody(QWidget):
         self.FocusStackStepTextbox.setValue(0.002)
         self.FocusStackStepTextbox.setSingleStep(0.001)
         ScanSettingLayout.addWidget(self.FocusStackStepTextbox, 1, 7)
-        ScanSettingLayout.addWidget(QLabel("Focus stack step(mm):"), 1, 6)
+        ScanSettingLayout.addWidget(QLabel("Focus stack step size(mm):"), 1, 6)
 
         ScanContainer.setLayout(ScanSettingLayout)
 
@@ -404,7 +407,7 @@ class Mainbody(QWidget):
             self.PMT_AF_init_step_sizeBox, 0, 1
         )
         PMT_autofocus_setting_group_layout.addWidget(
-            QLabel("Init. searching step(mm):"), 0, 0
+            QLabel("Init. searching range(mm):"), 0, 0
         )
 
         self.PMT_AF_step_numBox = QSpinBox(self)
@@ -413,7 +416,7 @@ class Mainbody(QWidget):
         self.PMT_AF_step_numBox.setValue(5)
         self.PMT_AF_step_numBox.setSingleStep(1)
         PMT_autofocus_setting_group_layout.addWidget(self.PMT_AF_step_numBox, 0, 3)
-        PMT_autofocus_setting_group_layout.addWidget(QLabel("Step number:"), 0, 2)
+        PMT_autofocus_setting_group_layout.addWidget(QLabel("Searching increment number:"), 0, 2)
 
         self.PMT_AF_scan_voltBox = QSpinBox(self)
         self.PMT_AF_scan_voltBox.setMinimum(1)
@@ -443,7 +446,7 @@ class Mainbody(QWidget):
             self.Cam_AF_init_step_sizeBox, 0, 1
         )
         Cam_autofocus_setting_group_layout.addWidget(
-            QLabel("Init. searching step(mm):"), 0, 0
+            QLabel("Init. searching range(mm):"), 0, 0
         )
 
         self.Cam_AF_step_numBox = QSpinBox(self)
@@ -452,7 +455,7 @@ class Mainbody(QWidget):
         self.Cam_AF_step_numBox.setValue(7)
         self.Cam_AF_step_numBox.setSingleStep(1)
         Cam_autofocus_setting_group_layout.addWidget(self.Cam_AF_step_numBox, 0, 3)
-        Cam_autofocus_setting_group_layout.addWidget(QLabel("Step number:"), 0, 2)
+        Cam_autofocus_setting_group_layout.addWidget(QLabel("Searching increment number:"), 0, 2)
 
         self.Cam_AF_ExposureBox = QDoubleSpinBox(self)
         self.Cam_AF_ExposureBox.setDecimals(5)

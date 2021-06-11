@@ -515,6 +515,15 @@ class MainGUI(QWidget):
                 )
 
         # =============================================================================
+        #         # ===== General image analysis in folder. =====
+        # =============================================================================
+        if len(self.Tag_round_infor) == 0 and len(self.Lib_round_infor) == 1:
+
+            # Directly analyze images
+            cell_data = self.ProcessML.analyze_images_in_folder(
+                self.Analysis_saving_directory)
+                    
+        # =============================================================================
         #         # ===== One GFP round, one Arch round. =====
         # =============================================================================
         elif len(self.Tag_round_infor) == 1 and len(self.Lib_round_infor) == 1:
