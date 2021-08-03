@@ -209,7 +209,8 @@ class AnalysisWidgetUI(QWidget):
         # self.show_cellselection_gui_button.clicked.connect(self.show_cellselection_gui)
         # self.Display_Container_tabs_Cellselection_layout.addWidget(self.show_cellselection_gui_button, 0,0)
         # self.Display_Container_tabs_Cellselection.setLayout(self.Display_Container_tabs_Cellselection_layout)
-
+        
+        #----------------------Show trace--------------------------------------
         Display_Container_tabs_tab4 = QWidget()
         Display_Container_tabs_tab4_layout = QGridLayout()
 
@@ -615,7 +616,7 @@ class AnalysisWidgetUI(QWidget):
             # plt.title('Electrode recording')
             # Current here is already
             # Probe gain: low-100M ohem
-            # DAQ recording / 10**8 (voltage to current)* 10**12 (A to pA) == pA
+            # [DAQ recording / 10**8 (voltage to current)]* 10**12 (A to pA) == pA
             ax1.plot(
                 self.patchcurrentlabel, self.Ip * 10000, label="Current", color="b"
             )
@@ -887,20 +888,38 @@ class AnalysisWidgetUI(QWidget):
     def get_single_waveform(self):
         self.single_waveform_fileName, _ = QtWidgets.QFileDialog.getOpenFileName(
             self,
-            "Single File",
-            "M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data",
-            "Image files (*.npy)",
+            "Single File"
         )
         self.textbox_single_waveform_filename.setText(self.single_waveform_fileName)
 
         self.single_waveform = np.load(
             self.single_waveform_fileName, allow_pickle=True
-        )[5:]
+        )
 
         try:
-            plt.figure()
-            plt.plot(self.single_waveform)
-            plt.show()
+            if 'Ip' in self.single_waveform_fileName:
+            # If plotting the patch current
+                self.Ip = self.single_waveform[5:]
+                
+                fig, ax = plt.subplots()
+                plt.plot(self.Ip * 10000)
+                ax.set_title("Patch current")
+                ax.set_ylabel("Current (pA)")
+                ax.set_xlabel("Samples")
+            elif 'Vp' in self.single_waveform_fileName:
+                # If plotting the patch voltage
+                self.Vp = self.single_waveform[5:]
+                
+                fig, ax = plt.subplots()
+                plt.plot(self.Vp * 1000 / 10)
+                ax.set_title("Patch voltage")
+                ax.set_ylabel("Volt (mV)")
+                ax.set_xlabel("Samples")
+            else:
+                plt.figure()
+                plt.plot(self.single_waveform_fileName)
+                plt.show()
+            
         except:
             pass
 

@@ -336,26 +336,34 @@ class Mainbody(QWidget):
         )
         TwoPLaserSettingLayout.addWidget(self.TwoPLaserFilterCheckbox, 0, 0)
 
+        TwoPLaserSettingLayout.addWidget(QLabel("2-P wavelength:"), 0, 1)
+        
         self.TwoPLaserWavelengthbox = QSpinBox(self)
         self.TwoPLaserWavelengthbox.setMinimum(680)
         self.TwoPLaserWavelengthbox.setMaximum(1300)
         self.TwoPLaserWavelengthbox.setSingleStep(100)
         self.TwoPLaserWavelengthbox.setValue(900)
-        TwoPLaserSettingLayout.addWidget(self.TwoPLaserWavelengthbox, 0, 1)
+        TwoPLaserSettingLayout.addWidget(self.TwoPLaserWavelengthbox, 0, 2)
 
         self.TwoPLaserShutterCombox = QComboBox()
         self.TwoPLaserShutterCombox.addItems(["No shutter event", "Open", "Close"])
-        TwoPLaserSettingLayout.addWidget(self.TwoPLaserShutterCombox, 1, 1)
+        TwoPLaserSettingLayout.addWidget(self.TwoPLaserShutterCombox, 0, 3)
 
         # --------filter------------
+        self.FilterCheckbox = QCheckBox("Filter event only")
+        self.FilterCheckbox.setStyleSheet(
+            'color:blue;font:bold "Times New Roman"'
+        )
+        TwoPLaserSettingLayout.addWidget(self.FilterCheckbox, 1, 0)
+        
         NDfilterlabel = QLabel("ND filter:")
-        TwoPLaserSettingLayout.addWidget(NDfilterlabel, 0, 3)
-        NDfilterlabel.setAlignment(Qt.AlignRight)
+        TwoPLaserSettingLayout.addWidget(NDfilterlabel, 1, 1)
+        # NDfilterlabel.setAlignment(Qt.AlignRight)
         self.NDfilterCombox = QComboBox()
         self.NDfilterCombox.addItems(
-            ["2.3", "0.3", "0.5", "1", "1.1", "1.3", "1.5", "2", "2.5", "3"]
+            ["2", "0.3", "0.5", "1", "1.1", "1.3", "1.5", "2.3", "2.5", "3"]
         )
-        TwoPLaserSettingLayout.addWidget(self.NDfilterCombox, 0, 4)
+        TwoPLaserSettingLayout.addWidget(self.NDfilterCombox, 1, 2)
 
         Emifilterlabel = QLabel("Emission filter:")
         TwoPLaserSettingLayout.addWidget(Emifilterlabel, 1, 3)
@@ -885,7 +893,7 @@ class Mainbody(QWidget):
     def AddFilterEvent(self):
         CurrentRoundSequence = self.RoundOrderBox.value()
 
-        if self.TwoPLaserFilterCheckbox.isChecked():
+        if self.FilterCheckbox.isChecked() or self.TwoPLaserFilterCheckbox.isChecked():
 
             self.RoundQueueDict["FilterEvents"].append(
                 "Round_{}_ND_ToPos_{}".format(

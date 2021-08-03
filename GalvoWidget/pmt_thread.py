@@ -116,11 +116,17 @@ class pmtimaging_continuous_Thread(QThread):
                 self.data_PMT = np.reshape(
                     Dataholder_average, (self.ypixelnumber, self.ScanArrayXnum)
                 )
-
-                if self.ypixelnumber == 500:
-                    self.data_PMT = self.data_PMT[:, 50:550] * -1
-                elif self.ypixelnumber == 256:
-                    self.data_PMT = self.data_PMT[:, 70:326] * -1
+                
+                if self.sampleRate == 500000:
+                    if self.ypixelnumber == 500:
+                        self.data_PMT = self.data_PMT[:, 50:550] * -1
+                    elif self.ypixelnumber == 256:
+                        self.data_PMT = self.data_PMT[:, 70:326] * -1
+                elif self.sampleRate == 250000:
+                    if self.ypixelnumber == 500:
+                        self.data_PMT = self.data_PMT[:, 25:525] * -1
+                    elif self.ypixelnumber == 256:
+                        self.data_PMT = self.data_PMT[:, 25:525] * -1
 
                 self.measurement.emit(self.data_PMT)
 

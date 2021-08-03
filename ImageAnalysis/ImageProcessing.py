@@ -1365,6 +1365,86 @@ class ProcessImage:
             return
 
         return ContourArray_forDaq
+    
+    def SNR_2P_calculation(
+        path,
+        method = "Average over each contour 100 points"
+    ):
+        """
+        Measuring the SNR of 2p contour scan on proteins.
+        By default using 50k sampling rate, 500 scans per second and data from 10s.
+
+        Parameters
+        ----------
+        path : TYPE
+            DESCRIPTION.
+        method : TYPE, optional
+            DESCRIPTION. The default is "Average over each contour 100 points".
+
+        Returns
+        -------
+        None.
+
+        """
+        cell=np.load(path,allow_pickle=True)
+        
+        method = "Average over each contour 100 points"
+        # method = "Average over 5000 trials"
+        
+        
+        if method == "Average over each contour 100 points":
+            avg_cell_trace = np.mean(cell.reshape(5000, 100), axis = 1)
+            
+            plt.figure()
+            plt.title('Average trace')
+            plt.plot(avg_cell_trace)
+            plt.show()  
+            
+            fluorescence_trace_normalized = ProcessImage.Biexponential_fit(avg_cell_trace, sampling_rate = 500)
+            
+            SNR = ProcessImage.signal_to_noise(fluorescence_trace_normalized[200:1000])
+            
+            plt.figure()
+            plt.title('Normalized trace, SNR = {}'.format(SNR))
+            plt.plot(fluorescence_trace_normalized[200:1000])
+            plt.show()
+            
+        elif method == "Average over 5000 trials":
+            # Average over 5000 traces
+            avg_cell_trace = np.mean(cell.reshape(5000, 100), axis = 0)
+            
+            plt.figure()
+            plt.title('Average trace')
+            plt.plot(avg_cell_trace)
+            plt.show()  
+                    
+            std_list = []
+            for each_point_index in range(100):
+                
+                # collect each time position over all loops
+                individual_points_array = []
+                for i in range(5000):
+                    individual_points_array.append(cell[100 * i + each_point_index])
+                
+                if each_point_index == 17:
+                    sample_point_array = individual_points_array
+                    std_sample_point = np.std(np.array(sample_point_array))
+                    
+                    plt.figure()
+                    plt.title('Point 17, over 5000 trials(SNR = {})'.format(ProcessImage.signal_to_noise(sample_point_array)))
+                    plt.hist(sample_point_array, 100)
+                    plt.show()
+                            
+                    # Average over 50 points
+                    avg_std_sample_point = np.mean(np.array(sample_point_array).reshape(50, 100), axis = 0)       
+                    plt.figure()
+                    plt.title('Point 17, SNR = {}'.format(ProcessImage.signal_to_noise(avg_std_sample_point)))
+                    plt.hist(avg_std_sample_point, 30)
+                    plt.xlim(0.2, 0.6)
+                    plt.show()        
+                    
+                std_each_point = np.std(np.array(individual_points_array))
+                std_list.append(std_each_point)
 
     #%%
     # =============================================================================
@@ -1792,16 +1872,16 @@ class ProcessImage:
                 # after here intensityimage_intensity is changed from contour labeled with number 5 to binary image.
 
                 cell_contour_mask_dilated = ProcessImage.inward_mask_dilation(
-                    cell_contour_mask, CellMask_roi, dilation_parameter=8
+                    cell_contour_mask, CellMask_roi, dilation_parameter=7
                 )
-
+                
                 # Trim the contour mask
                 cell_contour_mask_processed = opening(
                     cell_contour_mask_dilated, square(4)
                 )
 
                 if show_each_cell == True:
-                    fig, axs = plt.subplots(3)
+                    fig, axs = plt.subplots(2)
                     # fig.suptitle('Individual cell mask')
                     axs[0].imshow(RawImg_roi)
                     axs[0].set_title("Cell image")
@@ -1809,75 +1889,93 @@ class ProcessImage:
                     axs[1].imshow(cell_contour_mask_dilated, cmap="gray")
                     axs[1].set_title("Cell contour mask")
                     axs[1].set_xticks([])
-                    axs[2].imshow(cell_contour_mask_processed, cmap="gray")
-                    axs[2].set_title("Cell contour trimed")
-                    axs[2].set_xticks([])
+                    # axs[2].imshow(cell_contour_mask_processed, cmap="gray")
+                    # axs[2].set_title("Cell contour trimed")
+                    # axs[2].set_xticks([])
+                    plt.show()
+                
                 # -------------Calculate intensity based on masks---------------
+                # Mean pixel value of cell membrane.
                 cell_contour_meanIntensity = np.mean(
                     RawImg_roi[np.where(cell_contour_mask_dilated == 1)]
-                )  # Mean pixel value of cell membrane.
+                )
+                
+                # Mean pixel value of whole cell area.
                 cell_area_meanIntensity = np.mean(
                     RawImg_roi[np.where(CellMask_roi == 1)]
-                )  # Mean pixel value of whole cell area.
-
+                )
+                
+                # Mean pixel value of soma area.
                 cell_soma_mask = CellMask_roi - cell_contour_mask_dilated
                 cell_soma_meanIntensity = np.mean(
                     RawImg_roi[np.where(cell_soma_mask == 1)]
-                )  # Mean pixel value of soma area.
+                )
+                
+                # Calculate the contour/soma intensity ratio.
                 cell_contourSoma_ratio = round(
                     cell_contour_meanIntensity / cell_soma_meanIntensity, 5
-                )  # Calculate the contour/soma intensity ratio.
-
+                )  
+                
                 boundingbox_info = "minr{}_maxr{}_minc{}_maxc{}".format(
                     ROIlist[0], ROIlist[2], ROIlist[1], ROIlist[3]
                 )
-
-                if flat_cell_counted_inImage == 0:
-                    Cell_DataFrame = pd.DataFrame(
-                        [
+                
+                if False:
+                    # print("Membrane pixel number: {}".format(len(np.where(cell_contour_mask_dilated == 1)[0])))
+                    print("Confidence score: {}".format(MLresults['scores'][eachROI]))
+                    print("Cell pixel number: {}".format(len(np.where(CellMask_roi == 1)[0])))
+                    print("Mean pixel value of contour {}".format(cell_contour_meanIntensity))
+                    print("Mean pixel value of whole cell area {}".format(cell_area_meanIntensity))
+                    print(" contour/soma intensity ratio {}".format(cell_contourSoma_ratio))
+                
+                # If the cell is too big or small, skip it.
+                if len(np.where(CellMask_roi == 1)[0]) < 2500 or len(np.where(CellMask_roi == 1)[0]) > 500:
+                    if flat_cell_counted_inImage == 0:
+                        Cell_DataFrame = pd.DataFrame(
                             [
-                                ImgNameInfor,
-                                boundingbox_info,
-                                cell_area_meanIntensity,
-                                cell_contour_meanIntensity,
-                                cell_contourSoma_ratio,
-                            ]
-                        ],
-                        columns=[
-                            "ImgNameInfor",
-                            "BoundingBox",
-                            "Mean_intensity",
-                            "Mean_intensity_in_contour",
-                            "Contour_soma_ratio",
-                        ],
-                        index=["Cell {}".format(add_up_cell_counted_number)],
-                    )
-                else:
-                    Cell_DataFrame_new = pd.DataFrame(
-                        [
+                                [
+                                    ImgNameInfor,
+                                    boundingbox_info,
+                                    cell_area_meanIntensity,
+                                    cell_contour_meanIntensity,
+                                    cell_contourSoma_ratio,
+                                ]
+                            ],
+                            columns=[
+                                "ImgNameInfor",
+                                "BoundingBox",
+                                "Mean_intensity",
+                                "Mean_intensity_in_contour",
+                                "Contour_soma_ratio",
+                            ],
+                            index=["Cell {}".format(add_up_cell_counted_number)],
+                        )
+                    else:
+                        Cell_DataFrame_new = pd.DataFrame(
                             [
-                                ImgNameInfor,
-                                boundingbox_info,
-                                cell_area_meanIntensity,
-                                cell_contour_meanIntensity,
-                                cell_contourSoma_ratio,
-                            ]
-                        ],
-                        columns=[
-                            "ImgNameInfor",
-                            "BoundingBox",
-                            "Mean_intensity",
-                            "Mean_intensity_in_contour",
-                            "Contour_soma_ratio",
-                        ],
-                        index=["Cell {}".format(add_up_cell_counted_number)],
-                    )
-                    Cell_DataFrame = Cell_DataFrame.append(Cell_DataFrame_new)
-
-                add_up_cell_counted_number += 1
-                flat_cell_counted_inImage += 1
-
-                total_cells_identified += 1
+                                [
+                                    ImgNameInfor,
+                                    boundingbox_info,
+                                    cell_area_meanIntensity,
+                                    cell_contour_meanIntensity,
+                                    cell_contourSoma_ratio,
+                                ]
+                            ],
+                            columns=[
+                                "ImgNameInfor",
+                                "BoundingBox",
+                                "Mean_intensity",
+                                "Mean_intensity_in_contour",
+                                "Contour_soma_ratio",
+                            ],
+                            index=["Cell {}".format(add_up_cell_counted_number)],
+                        )
+                        Cell_DataFrame = Cell_DataFrame.append(Cell_DataFrame_new)
+    
+                    add_up_cell_counted_number += 1
+                    flat_cell_counted_inImage += 1
+    
+                    total_cells_identified += 1
 
             elif MLresults["class_ids"][eachROI] == 2:  # Round cells
 
@@ -3224,7 +3322,77 @@ class ProcessImage:
                 phase_index += 1                    
                 
         return upper_index_dict, lower_index_dict
-                        
+    
+    def Biexponential_fit(data, sampling_rate):
+        """
+        Give a 1D trace, do bi-exponential fit on it.
+
+        Parameters
+        ----------
+        data : TYPE
+            DESCRIPTION.
+        sampling_rate : TYPE
+            DESCRIPTION.
+
+        Returns
+        -------
+        TYPE
+            DESCRIPTION.
+
+        """
+        time_axis = np.arange(len(data))/sampling_rate
+        
+        # Bi-exponential curve for the fitting algorithm
+        def bleachfunc(t, a, t1, b, t2):
+            return a * np.exp(-(t / t1)) + b * np.exp(-(t / t2))
+    
+        # Parameter bounds for the parameters in the bi-exponential function
+        parameter_bounds = ([0, 0, 0, 0], [np.inf, np.inf, np.inf, np.inf])
+    
+        # popt   = Optimal parameters for the curve fit
+        # pcov   = The estimated covariance of popt
+        popt, pcov = curve_fit(
+            bleachfunc,
+            time_axis,
+            data,
+            bounds=parameter_bounds,
+            maxfev=500000,
+        )
+    
+        # Vizualization before photobleach normalization
+        fig1, ax = plt.subplots(figsize=(8.0, 5.8))
+        (p01,) = ax.plot(
+            time_axis,
+            data,
+            color=(0, 0, 0.4),
+            linestyle="None",
+            marker="o",
+            markersize=0.5,
+            markerfacecolor=(0, 0, 0.9),
+            label="Experimental data",
+        )
+        (p02,) = ax.plot(
+            time_axis,
+            bleachfunc(time_axis, *popt),
+            color=(0.9, 0, 0),
+            label="Bi-exponential fit",
+        )
+        # ax.set_title(self.rhodopsin, size=14)
+        ax.set_ylabel("Fluorescence (counts)", fontsize=11)
+        ax.set_xlabel("Time (s)", fontsize=11)
+        ax.legend([p02, p01], ["Bi-exponential fit", "Experimental data"])
+        ax.spines["right"].set_visible(False)
+        ax.spines["top"].set_visible(False)
+        ax.xaxis.set_ticks_position("bottom")
+        ax.yaxis.set_ticks_position("left")
+        plt.show()
+    
+        # Normalization of fluorescence signal (e.g., division by the fit)
+        fluorescence_trace_normalized = np.true_divide(
+            data, bleachfunc(time_axis, *popt)
+        )
+        
+        return fluorescence_trace_normalized              
             
     #%%
     # =============================================================================
@@ -3432,7 +3600,7 @@ class ProcessImage:
 
         return similar_img_list, img_diff_list
 
-    def find_infocus_from_stack(Nest_data_directory, save_image=True):
+    def find_infocus_from_stack(Nest_data_directory, file_keyword = "tif", method = "variance_of_laplacian", save_image=True):
         """
         Given the directory, walk through all the images with 'Zmax' in its name
         and find the image with highest focus degree.
@@ -3449,40 +3617,44 @@ class ProcessImage:
         None.
 
         """
-        (
-            RoundNumberList,
-            CoordinatesList,
-            fileNameList,
-        ) = ProcessImage.retrive_scanning_scheme(Nest_data_directory)
-
+        fileNameList = []
+        for file in os.listdir(Nest_data_directory):
+            if file_keyword  in file or "TIF" in file:
+                fileNameList.append(os.path.join(Nest_data_directory, file))
+        
+        img_stack = []
         for each_file_name in fileNameList:
             # For each coordinate, find all position files in the stack, according to Zmax file name.
-            file_name_stack = []
-            for file in os.listdir(Nest_data_directory):
-                if each_file_name[0 : each_file_name.index("Zmax")] + "Zpos" in file:
-                    file_name_stack.append(file)
+            # file_name_stack = []
+            # for file in os.listdir(Nest_data_directory):
+            #     if each_file_name[0 : each_file_name.index("Zmax")] + "Zpos" in file:
+            #         file_name_stack.append(file)
+            # print(file_name_stack)
+            
+            # for file in file_name_stack: 
+            img_stack.append(imread(each_file_name))
+            
+        focus_degree_list, index_highest_focus_degree = ProcessImage.find_infocus_from_list(
+            img_stack, 
+            method
+        )
+        
+        print(fileNameList[index_highest_focus_degree])
+        
+        if save_image == True:
+            # Save the file.
+            with skimtiff.TiffWriter(
+                os.path.join(
+                    Nest_data_directory,
+                    each_file_name[0 : each_file_name.index("max")] + "focus.tif",
+                ),
+                imagej=True,
+            ) as tif:
+                tif.save(
+                    img_stack[index_highest_focus_degree].astype("float32"), compress=0
+                )
 
-            img_stack = []
-            for file in file_name_stack:
-                img_stack.append(imread(os.path.join(Nest_data_directory, file)))
-
-            img_with_highest_focus_degree = ProcessImage.find_infocus_from_list(
-                img_stack
-            )
-            if save_image == True:
-                # Save the file.
-                with skimtiff.TiffWriter(
-                    os.path.join(
-                        Nest_data_directory,
-                        each_file_name[0 : each_file_name.index("max")] + "focus.tif",
-                    ),
-                    imagej=True,
-                ) as tif:
-                    tif.save(
-                        img_with_highest_focus_degree.astype("float32"), compress=0
-                    )
-
-    def find_infocus_from_list(img_stack):
+    def find_infocus_from_list(img_stack, method):
         """
         Find the most in-focus image from the image list.
 
@@ -3499,13 +3671,16 @@ class ProcessImage:
         """
         focus_degree_list = []
         for each_img in img_stack:
-            focus_degree_list.append(ProcessImage.local_entropy(each_img))
-
-        img_highest_focus_degree = img_stack[
-            focus_degree_list.index(max(focus_degree_list))
-        ]
-
-        return img_highest_focus_degree
+            if method == "local_entropy":
+                focus_degree_list.append(ProcessImage.local_entropy(each_img))
+            elif method == "variance_of_laplacian":
+                focus_degree_list.append(ProcessImage.variance_of_laplacian(each_img.astype("float32")))
+            
+        print(focus_degree_list)
+        
+        index_highest_focus_degree = focus_degree_list.index(max(focus_degree_list))
+        
+        return focus_degree_list, index_highest_focus_degree
 
     def cam_screening_post_processing(directory, save_max_projection=True):
 
@@ -5073,11 +5248,11 @@ if __name__ == "__main__":
     # =============================================================================
     stitch_img = False
     retrievefocus_map = False
-    find_focus = False
+    find_focus = True
     registration = False
     merge_dataFrames = False
     cam_screening_analysis = False
-    photo_current = True
+    photo_current = False
 
     if stitch_img == True:
         Nest_data_directory = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2020-12-19_2020-12-19_18-41-18_Lib9_Q1_1TO16_NOPURO"
@@ -5098,7 +5273,8 @@ if __name__ == "__main__":
 
     elif find_focus == True:
         ProcessImage.find_infocus_from_stack(
-            r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2020-11-05_2020-11-05_22-20-31_WT z3 gap3"
+            r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Xin\2021-07-02 camera AF test",
+            save_image = False
         )
 
     elif registration == True:

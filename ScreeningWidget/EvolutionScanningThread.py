@@ -52,6 +52,8 @@ class ScanningExecutionThread(QThread):
         self.wavelength_offset = (
             0  # An offset of 0.002 mm is observed between 900 and 1280 nm.
         )
+        # Ditch the worst focus image from stack of more than 2.
+        self.ditch_worst_focus = False
 
     #%%
     def run(self):
@@ -346,6 +348,9 @@ class ScanningExecutionThread(QThread):
                                 )
                             )
                             # -----Suppose now it's the 3rd stack position-----
+                            # Check if focus degree decreased on the 2nd pos,
+                            # if so change the obj moveing direction.
+                            self.focus_degree_decreasing = False
                             if len(self.stack_focus_degree_list) == 2:
                                 if (
                                     self.stack_focus_degree_list[-1]
@@ -362,6 +367,8 @@ class ScanningExecutionThread(QThread):
                                     print(
                                         "Focus degree decreasing, run the other direction."
                                     )
+                                    
+                                    self.focus_degree_decreasing = True
                             # -------------------------------------------------
 
                             print("Target focus pos: {}".format(self.FocusPos))
@@ -372,6 +379,7 @@ class ScanningExecutionThread(QThread):
 
                             time.sleep(0.3)
                         else:
+                            self.focus_degree_decreasing = False
                             # No Z-stack or auto-focus.
                             self.ZStackOrder = 1
                             self.FocusPos = self.init_focus_position
@@ -1122,6 +1130,8 @@ class ScanningExecutionThread(QThread):
         )
         self.adcollector.save_as_binary(self.scansavedirectory)
         self.recorded_raw_data = self.adcollector.get_raw_data()
+        
+        # Reconstruct the image from np array and save it.
         self.Process_raw_data()
 
         # ------------------Camera saving-------------------
@@ -1232,7 +1242,7 @@ class ScanningExecutionThread(QThread):
                 ]  # Crop size based on: M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Xin\2019-12-30 2p beads area test 4um
                 # self.PMT_image_reconstructed = self.PMT_image_reconstructed[:, 70:326] # for 256*256 images
 
-                # Evaluate the focus degree of re-constructed image.
+                #=== Evaluate the focus degree of re-constructed image. =======
                 self.FocusDegree_img_reconstructed = ProcessImage.local_entropy(
                     self.PMT_image_reconstructed.astype("float32")
                 )
@@ -1292,7 +1302,23 @@ class ScanningExecutionThread(QThread):
                             )
 
                         else:
-
+                            # Before stack the 3rd image, if focus degree of the 2nd image
+                            # is increasing, delete the 1st image from the max-projection
+                            # stack as it's the worst, else if focus degree of the 2nd image
+                            # is decreasing, delete the 2nd as it's the worst.
+                            
+                            if self.ditch_worst_focus == True:
+                                if self.ZStackOrder >= 3:
+                                    if self.focus_degree_decreasing == False:
+                                        # Delete the first image.
+                                        self.PMT_image_maxprojection_stack = np.delete(
+                                            self.PMT_image_maxprojection_stack, 0,axis = 0)
+                                    else:
+                                        # Delete the 2nd image.
+                                        self.PMT_image_maxprojection_stack = np.delete(
+                                            self.PMT_image_maxprojection_stack, 1,axis = 0)                       
+                            
+                            # Stack the newest image onto the max-projection stack.
                             self.PMT_image_maxprojection_stack = np.concatenate(
                                 (
                                     self.PMT_image_maxprojection_stack,
@@ -1306,7 +1332,7 @@ class ScanningExecutionThread(QThread):
                             self.PMT_image_reconstructed[np.newaxis, :, :]
                         )
 
-                # Save the max projection image
+                #============== Save the max projection image =================
                 if self.ZStackOrder == self.ZStackNum:
                     self.PMT_image_maxprojection = np.max(
                         self.PMT_image_maxprojection_stack, axis=0

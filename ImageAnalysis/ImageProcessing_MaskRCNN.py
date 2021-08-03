@@ -209,6 +209,7 @@ class ProcessImageML:
                 MLresults["masks"],
                 MLresults["class_ids"],
                 class_names=[None, None, None, None],
+                scores = MLresults['scores'],#None
                 centre_coors=MLresults["Centre_coor"],
                 Centre_coor_radius=2,
                 WhiteSpace=(0, 0),
@@ -630,23 +631,23 @@ if __name__ == "__main__":
     lib_round = "Round2"
 
     # ProcessML = ProcessImageML(WeigthPath = r"C:\MaskRCNN\MaskRCNNGit\MaskRCNN\MaskRCNN\Data\Xin_training_200epoch_2021_1_20\cell20210121T2259\mask_rcnn_cell_0200.h5")
-    # ProcessML = ProcessImageML(WeigthPath = r"C:\MaskRCNN\MaskRCNNGit\MaskRCNN\MaskRCNN\Data\Xin_training\cell20210107T1533\mask_rcnn_cell_0050.h5")
-    ProcessML = ProcessImageML(
-        WeigthPath=r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Martijn\SpikingHek.h5"
-    )
+    ProcessML = ProcessImageML(WeigthPath = r"C:\MaskRCNN\MaskRCNNGit\MaskRCNN\MaskRCNN\Data\Xin_training\cell20210107T1533\mask_rcnn_cell_0050.h5")
+    # ProcessML = ProcessImageML(
+    #     WeigthPath=r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Martijn\SpikingHek.h5"
+    # )
     # ProcessML = ProcessImageML()
     # ProcessML.config.WeigthPath = r"C:\MaskRCNN\MaskRCNNGit\MaskRCNN\MaskRCNN\Data\Xin_training\cell20210107T1533\mask_rcnn_cell_0050.h5"
     print(ProcessML.config.WeigthPath)
     # 5.6s for each detection
-    img_name = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\ML images\image segmentation for liposomes\PolyYOLOLiposomeDataset\imgs\2020_06_25_sample1_001_00001.jpg"
+    img_name = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2021-07-23_11-08-46_QuasAr1 WT\selected for check\Round2_Grid0_Coords2_R0C1585_PMT_0Zmax.tif"
     img = skimage.io.imread(img_name)
-    for _ in range(5):
-        starttime = time.time()
-        ProcessML.DetectionOnImage(img, show_result = True)
-        endtime = time.time()
-        print(endtime-starttime)
+    # for _ in range(5):
+    #     starttime = time.time()
+    #     ProcessML.DetectionOnImage(img, show_result = True)
+    #     endtime = time.time()
+    #     print(endtime-starttime)
 
-    # cell_data = ProcessML.analyze_single_image(img, show_each_cell=True)
+    cell_data = ProcessML.analyze_single_image(img, show_each_cell=True)
     # ProcessML.DetectionOnImage(img, show_result = True)
 
     # cell_data = ProcessML.analyze_images_in_folder\

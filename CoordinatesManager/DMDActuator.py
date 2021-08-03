@@ -116,7 +116,7 @@ class DMDActuator:
             print("ALP_BIN_MODE: Operation without dark phase.")
         print("ALP_OFF_TIME: {} μs (total inactive projection time)".format(OFF_TIME))
         print("Number of pictures in sequence: {}".format(PICNUM))
-        print("minimum duration of the display of one picture in μs: {}".format(MIN_PICTURE_TIME))
+        print("minimum duration of the display of one picture in μs(MIN_PICTURE_TIME): {}".format(MIN_PICTURE_TIME))
         # if TRIGGER_TYPE == 2009:
         #     print("TRIGGER_TYPE: ALP_EDGE_RISING")
         # else:

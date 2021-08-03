@@ -14,7 +14,7 @@ Created on Tue Jul  7 10:44:31 2020
     
 Adding 'laser' to CoordinateWidget2 signal list.
 """
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import (
     QWidget,
     QPushButton,
@@ -37,18 +37,21 @@ from PyQt5.QtWidgets import (
     QLineEdit,
 )
 
-from PyQt5.QtCore import QThread, pyqtSignal, Qt
+from PyQt5.QtCore import pyqtSignal
 from PyQt5 import QtGui
 
+import sys
+import os
 
+# Ensure that the Widget can be run either independently or as part of Tupolev.
+if __name__ == "__main__":
+    abspath = os.path.abspath(__file__)
+    dname = os.path.dirname(abspath)
+    os.chdir(dname + "/../")
+    
 from CoordinatesManager import DMDActuator, Registrator, CoordinateTransformations
 from ImageAnalysis.ImageProcessing import ProcessImage
-
-import sys
-
-sys.path.append("../")
-import os
-from StylishQT import MySwitch, roundQGroupBox, SquareImageView
+from StylishQT import roundQGroupBox
 import matplotlib.pyplot as plt
 from skimage.color import rgb2gray
 import numpy as np
@@ -73,8 +76,11 @@ class DMDWidget(QWidget):
 
     def init_gui(self):
         layout = QGridLayout()
-
-        self.setFixedSize(320, 400)
+        
+        # In microsec, the dark time between frame changes.
+        self.ALP_OFF_TIME = 44
+        
+        self.setFixedSize(320, 450)
 
         self.box = roundQGroupBox()
         self.box.setTitle("DMD control")
@@ -184,9 +190,9 @@ class DMDWidget(QWidget):
         # self.ALP_ALP_BIN_MODE_Combox.currentIndexChanged.connect(self.set_repeat_from_BIN_MODE)
         settings_container_layout.addWidget(self.ALP_ALP_BIN_MODE_Combox, 3, 1)
 
-        self.frame_rate_textbox = QLineEdit()
-        self.frame_rate_textbox.setValidator(QtGui.QIntValidator())
-        self.frame_rate_textbox.setText("1000000")  # Default 33334
+        self.Illumination_time_textbox = QLineEdit()
+        self.Illumination_time_textbox.setValidator(QtGui.QIntValidator())
+        self.Illumination_time_textbox.setText("1000000")  # Default 33334
 
         self.repeat_imgseq_button = QCheckBox()
         self.repeat_imgseq_button.setChecked(True)
@@ -198,9 +204,19 @@ class DMDWidget(QWidget):
         )
 
         settings_container_layout.addWidget(Illumination_time_label, 4, 0)
-        settings_container_layout.addWidget(self.frame_rate_textbox, 4, 1)
-        settings_container_layout.addWidget(QLabel("Repeat sequence:"), 5, 0)
-        settings_container_layout.addWidget(self.repeat_imgseq_button, 5, 1)
+        settings_container_layout.addWidget(self.Illumination_time_textbox, 4, 1)
+        
+        illumination_time_calculation_button = QPushButton("Fill in illu. time for Hz:")
+        settings_container_layout.addWidget(illumination_time_calculation_button, 5, 0)
+        illumination_time_calculation_button.clicked.connect(self.calculate_illumination_time_for_frequency)
+        
+        self.expected_projection_frequency_textbox = QLineEdit()
+        self.expected_projection_frequency_textbox.setValidator(QtGui.QIntValidator())
+        self.expected_projection_frequency_textbox.setText("2000")
+        settings_container_layout.addWidget(self.expected_projection_frequency_textbox, 5, 1)
+        
+        settings_container_layout.addWidget(QLabel("Repeat sequence:"), 6, 0)
+        settings_container_layout.addWidget(self.repeat_imgseq_button, 6, 1)
 
         box_layout.addWidget(self.connect_button, 0, 0)
         box_layout.addWidget(self.register_button, 0, 1)
@@ -227,6 +243,19 @@ class DMDWidget(QWidget):
             self.DMD_actuator.disconnect_DMD()
             del self.DMD_actuator
             self.connect_button.setText("Connect")
+            
+    def calculate_illumination_time_for_frequency(self):
+        
+        # In theroy resting time between frames can be 0 us.
+        cool_down_time_between_pictures = 3 
+        
+        expected_frequency = int(self.expected_projection_frequency_textbox.text())
+        
+        illumination_time = int(1/expected_frequency*1000000) - 1 - \
+                            self.ALP_OFF_TIME - \
+                            cool_down_time_between_pictures
+
+        self.Illumination_time_textbox.setText(str(illumination_time))
 
     def register(self, laser):
         self.sig_start_registration.emit()
@@ -358,7 +387,7 @@ class DMDWidget(QWidget):
         self.DMD_actuator.send_data_to_DMD(np.ones((1024, 768)))
 
         repeat = self.repeat_imgseq_button.isChecked()
-        frame_time = int(self.frame_rate_textbox.text())
+        frame_time = int(self.Illumination_time_textbox.text())
         self.DMD_actuator.set_repeat(repeat)
         self.DMD_actuator.set_timing(frame_time)
 
@@ -437,7 +466,7 @@ class DMDWidget(QWidget):
             )
 
         repeat = self.repeat_imgseq_button.isChecked()
-        frame_time = int(self.frame_rate_textbox.text())
+        frame_time = int(self.Illumination_time_textbox.text())
         self.DMD_actuator.set_repeat(repeat)
         self.DMD_actuator.set_timing(frame_time)
         print(f"DMD illumination time is set to {frame_time} μs.")

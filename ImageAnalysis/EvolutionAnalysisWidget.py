@@ -240,7 +240,7 @@ class MainGUI(QWidget):
         self.Contour_soma_ratio_thres_box.setDecimals(4)
         self.Contour_soma_ratio_thres_box.setMinimum(-10)
         self.Contour_soma_ratio_thres_box.setMaximum(10)
-        self.Contour_soma_ratio_thres_box.setValue(1.000)
+        self.Contour_soma_ratio_thres_box.setValue(0.950)
         self.Contour_soma_ratio_thres_box.setSingleStep(0.0001)
         IPLayout.addWidget(self.Contour_soma_ratio_thres_box, 0, 1)
 
@@ -249,7 +249,7 @@ class MainGUI(QWidget):
         self.Mean_intensity_in_contour_thres_box.setDecimals(4)
         self.Mean_intensity_in_contour_thres_box.setMinimum(-10)
         self.Mean_intensity_in_contour_thres_box.setMaximum(10)
-        self.Mean_intensity_in_contour_thres_box.setValue(0.000)
+        self.Mean_intensity_in_contour_thres_box.setValue(0.250)
         self.Mean_intensity_in_contour_thres_box.setSingleStep(0.0001)
         IPLayout.addWidget(self.Mean_intensity_in_contour_thres_box, 0, 3)
 

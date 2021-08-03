@@ -170,10 +170,16 @@ class RasterScan:
                 )
 
                 # Cut off the flying back part.
-                if self.pixel_number == 500:
-                    self.image_PMT = self.data_PMT[:, 50:550] * -1
-                elif self.pixel_number == 256:
-                    self.image_PMT = self.data_PMT[:, 70:326] * -1
+                if self.Daq_sample_rate == 500000:
+                    if self.pixel_number == 500:
+                        self.image_PMT = self.data_PMT[:, 50:550] * -1
+                    elif self.pixel_number == 256:
+                        self.image_PMT = self.data_PMT[:, 70:326] * -1
+                elif self.Daq_sample_rate == 250000:
+                    if self.pixel_number == 500:
+                        self.image_PMT = self.data_PMT[:, 25:525] * -1
+                    elif self.pixel_number == 256:
+                        self.image_PMT = self.data_PMT[:, 25:525] * -1
 
                 return self.image_PMT
 
@@ -241,7 +247,12 @@ class PMT_zscan:
         z_depth_end = z_depth + z_depth_start
 
         # Number of steps in total to find optimal focus.
-        self.total_step_number = round((z_depth_end - self.current_pos) / z_step_size)
+        if z_depth != 0:
+            self.total_step_number = round((z_depth_end - self.current_pos) / z_step_size)
+        else:
+            # If doing repeating imaging at the same position, 
+            # z_depth becomes the number of repeats.
+            self.total_step_number = int(z_step_size)
 
         # Generate the sampling positions.
         self.z_stack_positions = np.linspace(
