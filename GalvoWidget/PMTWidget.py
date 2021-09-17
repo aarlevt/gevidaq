@@ -226,7 +226,7 @@ class PMTWidgetUI(QWidget):
         self.continuous_scanning_sr_spinbox = QSpinBox(self)
         self.continuous_scanning_sr_spinbox.setMinimum(0)
         self.continuous_scanning_sr_spinbox.setMaximum(1000000)
-        self.continuous_scanning_sr_spinbox.setValue(500000)
+        self.continuous_scanning_sr_spinbox.setValue(250000)
         self.continuous_scanning_sr_spinbox.setSingleStep(100000)
         controlLayout.addWidget(self.continuous_scanning_sr_spinbox, 1, 1)
         controlLayout.addWidget(QLabel("Sampling rate:"), 1, 0)
@@ -265,7 +265,7 @@ class PMTWidgetUI(QWidget):
         self.stack_scanning_sampling_rate_spinbox = QSpinBox(self)
         self.stack_scanning_sampling_rate_spinbox.setMinimum(0)
         self.stack_scanning_sampling_rate_spinbox.setMaximum(1000000)
-        self.stack_scanning_sampling_rate_spinbox.setValue(500000)
+        self.stack_scanning_sampling_rate_spinbox.setValue(250000)
         self.stack_scanning_sampling_rate_spinbox.setSingleStep(100000)
         Zstack_Layout.addWidget(self.stack_scanning_sampling_rate_spinbox, 1, 1)
         Zstack_Layout.addWidget(QLabel("Sampling rate:"), 1, 0)
@@ -310,7 +310,12 @@ class PMTWidgetUI(QWidget):
         self.stack_scanning_depth_spinbox.setSingleStep(0.001)
         self.stack_scanning_depth_spinbox.setValue(0.012)
         Zstack_Layout.addWidget(self.stack_scanning_depth_spinbox, 6, 1)
-        Zstack_Layout.addWidget(QLabel("Depth(mm):"), 6, 0)
+        
+        depth_label = QLabel("Depth(mm):")
+        Zstack_Layout.addWidget(depth_label, 6, 0)
+        depth_label.setToolTip(
+            "In case of not changing z-position, set here to 0."
+        )
 
         self.startButton_stack_scanning = StylishQT.runButton("")
         self.startButton_stack_scanning.setFixedHeight(32)

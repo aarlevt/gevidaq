@@ -173,10 +173,16 @@ class ProcessImageML:
                 )
 
             RoundNumberList = list(dict.fromkeys(RoundNumberList))  # Remove Duplicates
-
-            CoordinatesList.append(
-                eachfilename[eachfilename.index("Coord") : eachfilename.index("_PMT")]
-            )
+            
+            if "_PMT" in eachfilename:
+                CoordinatesList.append(
+                    eachfilename[eachfilename.index("Coord") : eachfilename.index("_PMT")]
+                )
+            elif "_Cam" in eachfilename:
+                CoordinatesList.append(
+                    eachfilename[eachfilename.index("Coord") : eachfilename.index("_Cam")]
+                )                
+                
             CoordinatesList = list(dict.fromkeys(CoordinatesList))
 
         #        print(RoundNumberList, CoordinatesList, fileNameList)
@@ -274,12 +280,43 @@ class ProcessImageML:
         # RoundNumberList, CoordinatesList, fileNameList = self.retrive_scanning_scheme(folder, file_keyword = 'Zfocus')
 
         if not os.path.exists(os.path.join(folder, "MLimages_{}".format(round_num))):
-            # If the folder is not there, create the folder
+            # If the folder is not there, create the folder to store ML segmentations
             os.mkdir(os.path.join(folder, "MLimages_{}".format(round_num)))
 
         for EachRound in RoundNumberList:
 
             cells_counted_in_round = 0
+            
+            background_substraction = False
+            # =============================================================================
+            #             For background_substraction
+            # =============================================================================    
+            # If background images are taken
+            background_images_folder = os.path.join(folder, "background {}".format(EachRound))
+            # print(background_images_folder)
+            if os.path.exists(background_images_folder):
+                # If the background image is taken to substract out
+                background_substraction = True
+                print("Run background substraction.")
+    
+                # Get all the background files names
+                background_fileNameList = []
+                for file in os.listdir(background_images_folder):
+                    if "tif" in file and "calculated background" not in file:
+                        background_fileNameList.append(
+                            os.path.join(background_images_folder, file)
+                        )
+    
+                background_image = ProcessImage.image_stack_calculation(
+                    background_fileNameList, operation="mean"
+                )
+    
+                # Save the individual file.
+                with skimtiff.TiffWriter(
+                    os.path.join(background_images_folder, "calculated background.tif"),
+                    imagej=True,
+                ) as tif:
+                    tif.save(background_image.astype(np.int16), compress=0)
 
             if EachRound == round_num:
 
@@ -289,7 +326,7 @@ class ProcessImageML:
                 for EachCoord in CoordinatesList:
 
                     # =============================================================================
-                    #             For tag fluorescence:
+                    #             For fluorescence:
                     # =============================================================================
                     print(EachCoord)
                     # -------------- readin image---------------
@@ -298,13 +335,17 @@ class ProcessImageML:
                             EachCoord in Eachfilename[1]
                             and EachRound in Eachfilename[1]
                         ):
-                            if "0Zmax" in Eachfilename[1]:
+                            if "Zmax" in Eachfilename[1]:
                                 ImgNameInfor = Eachfilename[1][
                                     0 : len(Eachfilename[1]) - 14
                                 ]  # get rid of '_PMT_0Zmax.tif' in the name.
-                            elif "0Zfocus" in Eachfilename[1]:
+                            elif "Zfocus" in Eachfilename[1]:
                                 ImgNameInfor = Eachfilename[1][
                                     0 : len(Eachfilename[1]) - 16
+                                ]  # get rid of '_PMT_0Zfocus.tif' in the name.
+                            elif "Zpos1" in Eachfilename[1]:
+                                ImgNameInfor = Eachfilename[1][
+                                    0 : len(Eachfilename[1])
                                 ]  # get rid of '_PMT_0Zfocus.tif' in the name.
                             _imagefilename = os.path.join(folder, Eachfilename[1])
                     # ------------------------------------------
@@ -314,6 +355,13 @@ class ProcessImageML:
                     # =========================================================================
                     # Imagepath      = self.Detector._fixPathName(_imagefilename)
                     Rawimage = imread(_imagefilename)
+                    
+                    # Background substraction
+                    if background_substraction == True:
+                        Rawimage = np.abs(Rawimage - background_image)
+                        # plt.figure()
+                        # plt.imshow(Rawimage)
+                        # plt.show()
 
                     #                    if ClearImgBef == True:
                     #                        # Clear out junk parts to make it esaier for ML detection.
@@ -354,7 +402,8 @@ class ProcessImageML:
 
                     # segmentationImg = Image.fromarray(fig) #generate an image object
                     # segmentationImg.save(os.path.join(folder, 'MLimages_{}\{}.tif'.format(round_num, ImgNameInfor)))#save as tif
-
+                    
+                    # Use retrieveDataFromML from ImageProcessing.py to extract numbers.
                     if self.cell_counted_inRound == 0:
                         (
                             cell_Data,
@@ -365,6 +414,7 @@ class ProcessImageML:
                             MLresults,
                             str(ImgNameInfor),
                             self.cell_counted_inRound,
+                            show_each_cell = False
                         )
                     else:
                         (
@@ -376,6 +426,7 @@ class ProcessImageML:
                             MLresults,
                             str(ImgNameInfor),
                             self.cell_counted_inRound,
+                            show_each_cell = False
                         )
                         if len(Cell_Data_new) > 0:
                             cell_Data = cell_Data.append(Cell_Data_new)

@@ -50,8 +50,24 @@ import cv2
 
 # import plotly.express as px
 
-# ================================================================ProcessImage============================================================
 class ProcessImage:
+    #%%
+    """
+    -- Retrive scanning scheme and read in images.
+    -- Individual image processing (traditional).
+    -- Contour scanning processing.
+    -- ROI and mask generation, DMD related.
+    -- MaskRCNN related.
+    -- Pixel weighting.
+    -- 1-D array processing.
+    -- 2-D array processing.
+    -- Screening data post-processing.
+    -- Images stitching.
+    -- For photo current calculation.
+    -- PMT contour scan processing.
+    -- For making graphs.
+    
+    """
     #%%
     """
     # =========================================================================
@@ -181,7 +197,7 @@ class ProcessImage:
     #%%
     """           
     # =========================================================================
-    #       Individual image processing    
+    #       Individual image processing (traditional)  
     # =========================================================================
     """
 
@@ -1447,9 +1463,11 @@ class ProcessImage:
                 std_list.append(std_each_point)
 
     #%%
+    """
     # =============================================================================
     #     ROI and mask generation, DMD related
     # =============================================================================
+    """
     def CreateBinaryMaskFromRoiCoordinates(
         list_of_rois,
         fill_contour=False,
@@ -1758,9 +1776,11 @@ class ProcessImage:
         return np.vstack((Qx, Qy))
 
     #%%
+    """
     # =============================================================================
     #     MaskRCNN related
     # =============================================================================
+    """
     def convert_for_MaskRCNN(input_img):
         """Convert the image size and bit-depth to make it suitable for MaskRCNN detection.
 
@@ -2961,9 +2981,11 @@ class ProcessImage:
             return Rawimage
 
     #%%
+    """
     # =============================================================================
     #     Pixel weighting
     # =============================================================================
+    """
     def readbinaryfile(filepath):
         """
         Read in the binary files, which has 'Ip' or 'Vp' as suffix that comes from old Labview code.
@@ -3124,9 +3146,11 @@ class ProcessImage:
         return corrimage, weightimage, sigmaimage
 
     #%%
+    """
     # =============================================================================
     #     1-D array processing
     # =============================================================================
+    """
     def signal_to_noise(a, axis=0, ddof=0):
         """
         The signal-to-noise ratio of the input data.
@@ -3395,9 +3419,11 @@ class ProcessImage:
         return fluorescence_trace_normalized              
             
     #%%
+    """
     # =============================================================================
     #     2-D array processing
     # =============================================================================
+    """
     def variance_of_laplacian(image):
         """
         Compute the Laplacian of the image and then return the focus
@@ -3535,9 +3561,11 @@ class ProcessImage:
         return output
 
     #%%
+    """
     # =============================================================================
     #     Screening data post-processing
     # =============================================================================
+    """
     def find_repeat_imgs(Nest_data_directory, similarity_thres=0.04):
         """
         Find repeating images inside diretory.
@@ -3672,7 +3700,7 @@ class ProcessImage:
         focus_degree_list = []
         for each_img in img_stack:
             if method == "local_entropy":
-                focus_degree_list.append(ProcessImage.local_entropy(each_img))
+                focus_degree_list.append(ProcessImage.local_entropy(each_img, amax=None))
             elif method == "variance_of_laplacian":
                 focus_degree_list.append(ProcessImage.variance_of_laplacian(each_img.astype("float32")))
             
@@ -3747,9 +3775,11 @@ class ProcessImage:
         # return img_zstack_list
 
     #%%
+    """
     # =============================================================================
     #     Images stitching
     # =============================================================================
+    """
     def image_stitching(Nest_data_directory, row_data_folder=True):
         """
         Stitch all screening images together into one.
@@ -4013,54 +4043,359 @@ class ProcessImage:
         return focus_map_dict
     
     #%%
+    """
     # =============================================================================
     #     For photo current calculation
     # =============================================================================
-
+    """
     def PhotoCurrent(
         main_directory,
         marker = "blankingall",
         rhodopsin="Not specified",
     ):  
-        
+        """
+        Calculate and display the photocurrent.
+
+        Parameters
+        ----------
+        main_directory : TYPE
+            DESCRIPTION.
+        marker : TYPE, optional
+            DESCRIPTION. The default is "blankingall".
+        rhodopsin : TYPE, optional
+            DESCRIPTION. The default is "Not specified".
+         : TYPE
+            DESCRIPTION.
+
+        Returns
+        -------
+        None.
+
+        """
         main_directory = main_directory
 
         for file in os.listdir(main_directory):
             if "Wavefroms_sr_" in file and "npy" in file:
                 wave_fileName = os.path.join(main_directory, file)
                 temp_wave_container = np.load(wave_fileName, allow_pickle=True)
+                
+                wave_file_sampling_rate = int(file[file.index("sr_")+3:file.index(".npy")])
+                
             if "Ip" in file and "npy" in file:
                 current_fileName = os.path.join(main_directory, file)
                 temp_current_container = np.load(current_fileName, allow_pickle=True)
                 # Here in raw file, first 5 numbers are meta data, then in the beginning
                 # and the end both have a 0 extra recording to reset the NIDAQ channel.
-                current_curve = temp_current_container[6:len(temp_current_container)-1]
+                # Probe gain: low-100M ohem
+                # [DAQ recording / 10**8 (voltage to current)]* 10**12 (A to pA) == pA
+                current_curve = temp_current_container[6:len(temp_current_container)-1] * 10000
                 
-                plt.figure()
-                plt.plot(current_curve)
-                plt.show()
+                patchcurrentlabel = np.arange(len(current_curve)) / wave_file_sampling_rate
+                
         # Get the blanking waveform as indication of laser on and off.
         for i in temp_wave_container:
             if i['Sepcification'] == marker:
                 blanking_waveform = i['Waveform'][1:len(i['Waveform'])-1]
 
         laser_on_phases, laser_off_phases= ProcessImage.threshold_seperator(blanking_waveform, 1)
-        print(laser_on_phases)
         
+        laser_on_phase_current = []
         for phase_key in laser_on_phases:
             
-            current_each_phase = current_curve[laser_on_phases[phase_key][0] : laser_on_phases[phase_key][1]]
-            plt.figure()
-            plt.plot(current_each_phase)
-            plt.show()
+            current_each_phase = np.mean(current_curve[laser_on_phases[phase_key][0] : laser_on_phases[phase_key][1]])
+            laser_on_phase_current.append(current_each_phase)
+            # plt.figure()
+            # plt.plot(current_each_phase)
+            # plt.show()
             
-            print("Mean value of each phase: {}".format(np.mean(current_each_phase)))
+            # print("Mean value of each phase: {} pA".format(np.mean(current_each_phase)))
+        laser_off_phase_current = []
+        for phase_key in laser_off_phases:
+            
+            current_each_phase = np.mean(current_curve[laser_off_phases[phase_key][0] : laser_off_phases[phase_key][1]])
+            laser_off_phase_current.append(current_each_phase)            
+        
+        laser_on_phase_current = sum(laser_on_phase_current) / len(laser_on_phase_current)
+        laser_off_phase_current = sum(laser_off_phase_current) / len(laser_off_phase_current)
+        print("laser_on_phase_current: {}".format(laser_on_phase_current))
+        print("laser_off_phase_current: {}".format(laser_off_phase_current))
+        
+        photo_current = round(laser_on_phase_current - laser_off_phase_current, 3)
+        
+        electrical_signals_figure, ax1 = plt.subplots(1, 1)
 
+        ax1.plot(
+            patchcurrentlabel, current_curve, label="Current", color="b"
+        )
+        ax1.set_title("Electrode recording. Photocurrent {} pA".format(photo_current))
+        ax1.set_xlabel("time(s)")
+        ax1.set_ylabel("Current (pA)")
+        plt.show()
+        
+        if True:
+            electrical_signals_figure.savefig(
+                (
+                    os.path.join(
+                        main_directory,
+                        "Photo-current  {} pA.png".format(photo_current),
+                    )
+                ),
+                dpi=1000,
+            )        
+        
+    #%%
+    """
+    # =============================================================================
+    #     PMT contour scan processing
+    # =============================================================================
+    """
+    def PMT_contour_scan_processing(
+        path,
+        DAQ_sampling_rate = 50000,
+        points_per_contour = 100
+    ):
+        """
+        For PMT contour scan, average over all contour points as one time point and 
+        plot the trace along time.
+
+        Parameters
+        ----------
+        path : string
+            Path to PMT recording.
+        DAQ_sampling_rate : int, optional
+            Sampling rate of waveform. The default is 50000.
+        points_per_contour : int, optional
+            Number of points in one contour scan. The default is 100.
+
+        Returns
+        -------
+        fluorescence_trace_normalized : np.array
+            Normalized trace.
+
+        """
+        raw_PMT_trace = np.load(path)
+        
+        # Calculate the mean of 100 contour points as one point.
+        avg_cell_trace = np.mean(raw_PMT_trace.reshape(len(raw_PMT_trace)//points_per_contour, points_per_contour), axis = 1)
+        
+        plt.figure()
+        plt.title('Average trace')
+        plt.plot(avg_cell_trace)
+        plt.show()  
+        
+        # Correct for photo-bleaching
+        fluorescence_trace_normalized = ProcessImage.Biexponential_fit(avg_cell_trace, sampling_rate = DAQ_sampling_rate//points_per_contour)
+        
+        SNR = ProcessImage.signal_to_noise(fluorescence_trace_normalized[200:1000])
+        plt.figure()
+        plt.title('Normalized trace, SNR = {}'.format(SNR))
+        plt.plot(fluorescence_trace_normalized[200:1000])
+        plt.show()
+        
+        return fluorescence_trace_normalized
+    
+    def CurveFit_PMT(
+        path,
+        DAQ_sampling_rate = 50000,
+        points_per_contour = 100,
+        step_voltage_frequency = 5
+    ):
+        
+        fluorescence_trace_normalized = ProcessImage.PMT_contour_scan_processing(path, DAQ_sampling_rate, points_per_contour)
+        
+        mean_trace_sampling_rate = DAQ_sampling_rate//points_per_contour
+        time_axis = np.arange(len(fluorescence_trace_normalized))/mean_trace_sampling_rate
+        
+        fig, ax = plt.subplots(figsize=(7.0, 4.8))
+        plt.title('Normalized trace')
+        ax.set_ylabel("Fluorescence (a.u.)", fontsize=11)
+        ax.set_xlabel("Time (s)", fontsize=11)
+        ax.plot(time_axis, fluorescence_trace_normalized)
+        plt.show()
+        
+    #%%
+    """
+    # =============================================================================
+    #     For making graphs
+    # =============================================================================
+    """
+    def Screening_boxplot(
+        path,
+        title = "Boxplot",
+        dark_style = False
+    ):  
+        """
+        Making box plot of for example bringhtness screening comparison data.
+
+        Parameters
+        ----------
+        path : string
+            Path to data collection file.
+        title : TYPE, optional
+            Title of the graph. The default is "Boxplot".
+        dark_style : TYPE, optional
+            Style. The default is False.
+
+        Returns
+        -------
+        None.
+
+        """
+        # Read in file
+        xls = pd.ExcelFile(path)
+        excel_data_ = pd.read_excel(xls)
+        
+        # Put each column to list
+        data_to_list = []
+        for column in excel_data_:
+            data_to_list.append(excel_data_[column].dropna().tolist())
+            
+        # plt.style.use('dark_background')
+        
+        fig, ax = plt.subplots()
+        # Boxplot settings
+        boxprops = dict(linestyle='--', \
+                        linewidth=2, \
+                        facecolor='cornflowerblue',\
+                        color = 'lavender')
+        flierprops = dict(marker='o', markerfacecolor='gray', markersize=4,
+                          linestyle='none')
+        meanlineprops = dict(linestyle='-', linewidth=3, color='lavender')
+        
+        column_names = list(excel_data_.columns)
+        
+        xticks_pos_list = list(range(1,len(column_names)+1))
+        
+        ax.boxplot(data_to_list, positions = xticks_pos_list, \
+                   notch=True, patch_artist=True, boxprops=boxprops, \
+                       flierprops=flierprops, medianprops=meanlineprops)
+        
+        # Hide the right and top spines
+        ax.spines['right'].set_visible(False)
+        ax.spines['top'].set_visible(False)
+        
+        # Only show ticks on the left and bottom spines
+        ax.yaxis.set_ticks_position('left')
+        ax.xaxis.set_ticks_position('bottom')
+        
+        ax.set_ylabel(title)
+        plt.xticks(xticks_pos_list, column_names)
+        
+        ax.set_title(" ")
+
+    def Compare_df_bargraph(
+        path,
+        sheet_list, 
+        each_sheet_selection_list,
+        key_field = 'df/f',
+        title = "",
+        dark_style = False
+    ):  
+        """
+        Generating bar graph of comparision between mutants' df/f from sheets in excel.
+    
+        Parameters
+        ----------
+        path : str
+            Path to the excel file.
+        sheet_list : list
+            List of valid sheet names.
+        each_sheet_selection_list : list
+            Which part of the sheet is valid.
+        key_field : str, optional
+            Which column to draw data in the sheet. The default is 'df/f'.
+        title : str, optional
+            Title of the graph. The default is "Boxplot".
+        dark_style : bol, optional
+            If to use dark style. The default is False.
+    
+        Returns
+        -------
+        None.
+    
+        """
+        # Read in file
+        xls = pd.ExcelFile(path)
+    
+        data_list = []
+        for each_sheet in range(len(sheet_list)):
+            if each_sheet_selection_list[each_sheet] == None:
+                # If all rows in the sheet are valid data
+                data_list.append(pd.read_excel(xls, sheet_list[each_sheet])\
+                                 [key_field].values)
+            else:
+                data_list.append(pd.read_excel(xls, sheet_list[each_sheet])\
+                                 [key_field][each_sheet_selection_list[each_sheet][0] : each_sheet_selection_list[each_sheet][1]].values)
+        
+        CTEs = []
+        error = []
+        number_of_cells = []
+        
+        for data in data_list:
+            # Calculate the average
+            mean = np.mean(data)
+            CTEs.append(mean)
+            
+            # Calculate the standard deviation
+            std = np.std(data)
+            error.append(std)
+            
+            number_of_cells.append(len(data))
+        
+        listed_facts = []
+        for each_varient in range(len(sheet_list)):
+            
+            listed_facts.append(sheet_list[each_varient]+'\n'+'n = '+str(number_of_cells[each_varient]))
+        
+        # Define labels, positions, bar heights and error bar heights
+        x_pos = np.arange(len(sheet_list))
+        
+        # Build the plot
+        fig, ax = plt.subplots(figsize=(10.0, 8))
+        ax.bar(x_pos, CTEs,
+               yerr=error,
+               align='center',
+               alpha=0.5,
+               ecolor='black',
+               error_kw=dict(lw=3, capsize=7, capthick=3),
+               capsize=10)
+        
+        # Add the scatters
+        for i in range(len(sheet_list)):
+            for each_point in range(len(data_list[i])):
+                ax.scatter(x_pos[i], data_list[i][each_point], color='grey')
+        
+        if key_field == "df/f":
+            ax.set_ylabel('ΔF/F(%) to 100mv', fontsize=14)
+        else:
+            ax.set_ylabel('{}'.format(key_field), fontsize=14)
+        ax.set_xticks(x_pos)
+        ax.set_xticklabels(listed_facts)
+        plt.xticks(rotation=45)
+        plt.yticks(fontsize=14)
+        ax.set_title(title)
+        # plt.yticks(np.arange(0, max(x)+1, 1.0))
+        ax.yaxis.grid(False)
+        
+        # Hide the right and top spines
+        ax.spines['right'].set_visible(False)
+        ax.spines['top'].set_visible(False)
+        
+        # Only show ticks on the left and bottom spines
+        ax.yaxis.set_ticks_position('left')
+        ax.spines['left'].set_linewidth(2)
+        ax.xaxis.set_ticks_position('bottom')
+        ax.spines['bottom'].set_linewidth(2)
+        
+        # Save the figure and show
+        plt.tight_layout()
+        # plt.savefig('bar_plot_with_error_bars.png')
+        plt.show()
+        
     #%%
     # =============================================================================
     #     Curve fitting, adapted from Mels' code.
     # =============================================================================
-
 
 class CurveFit:
     def __init__(
@@ -5092,13 +5427,13 @@ class CurveFit:
             + "Upswing"
             + "\n"
             + "t_fast up                = "
-            + str(self.upswing_fast_constant)[:8]
-            + " s, "
+            + str(self.upswing_fast_constant * 1000)[:5]
+            + " ms, "
             + str(self.upswing_fast_component_percentage * 100)[:5]
             + "%\n"
             + "t_slow up                = "
-            + str(self.upswing_slow_constant)[:8]
-            + " s"
+            + str(self.upswing_slow_constant * 1000)[:5]
+            + " ms"
             + "\n"
             + "Amplitude up             = "
             + self.amplitude_upswing
@@ -5107,13 +5442,13 @@ class CurveFit:
             + "Downswing"
             + "\n"
             + "t_fast down              = "
-            + str(self.downswing_fast_constant)[:8]
-            + " s, "
+            + str(self.downswing_fast_constant * 1000)[:5]
+            + " ms, "
             + str(self.downswing_fast_component_percentage * 100)[:5]
             + "%\n"
             + "t_slow down              = "
-            + str(self.downswing_slow_constant)[:8]
-            + " s, "
+            + str(self.downswing_slow_constant * 1000)[:5]
+            + " ms, "
             + "\n"
             + "Amplitude down           = "
             + self.amplitude_downswing
@@ -5253,7 +5588,8 @@ if __name__ == "__main__":
     merge_dataFrames = False
     cam_screening_analysis = False
     photo_current = False
-
+    CurveFit_PMT = False
+    
     if stitch_img == True:
         Nest_data_directory = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2020-12-19_2020-12-19_18-41-18_Lib9_Q1_1TO16_NOPURO"
         Stitched_image_dict = ProcessImage.image_stitching(
@@ -5273,7 +5609,8 @@ if __name__ == "__main__":
 
     elif find_focus == True:
         ProcessImage.find_infocus_from_stack(
-            r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Xin\2021-07-02 camera AF test",
+            r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Xin\2021-08-12 camera focus\fov3",
+            method = "variance_of_laplacian",
             save_image = False
         )
 
@@ -5325,4 +5662,7 @@ if __name__ == "__main__":
         )
         
     elif photo_current == True:
-        ProcessImage.PhotoCurrent(r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Patch clamp\2021-03-30 GR D121E\cell3\photocurrent")
+        ProcessImage.PhotoCurrent(r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Patch clamp\2021-08-07 GR mutants\E166Q\CELL5\Photocurrent")
+    
+    elif CurveFit_PMT == True:
+        ProcessImage.CurveFit_PMT(r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Patch clamp\2021-08-04 2p Patch\QuasAr1\CELL3\ND1\PMT_array_2021-08-04_14-39-35.npy")

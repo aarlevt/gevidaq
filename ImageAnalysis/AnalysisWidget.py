@@ -96,7 +96,7 @@ class AnalysisWidgetUI(QWidget):
         self.readimageLayout.addWidget(self.Construct_name, 1, 0)
 
         self.switch_Vp_or_camtrace = QComboBox()
-        self.switch_Vp_or_camtrace.addItems(["Correlate to Vp", "Correlate to video"])
+        self.switch_Vp_or_camtrace.addItems(["Correlate to Vp", "Correlate to video", "Photocurrent"])
         self.readimageLayout.addWidget(self.switch_Vp_or_camtrace, 1, 1)
 
         # self.readimageLayout.addWidget(QLabel('Video of interest:'), 1, 0)
@@ -256,14 +256,20 @@ class AnalysisWidgetUI(QWidget):
             )
         )
         self.textbox_directory_name.setText(self.main_directory)
-
-        for file in os.listdir(self.main_directory):
-            # For Labview generated data.
-            if file.endswith(".tif") or file.endswith(".TIF"):
-                self.fileName = self.main_directory + "/" + file
-                print(self.fileName)
-
-        self.start_analysis()
+        
+        if self.switch_Vp_or_camtrace.currentIndex() == 0:
+            
+            for file in os.listdir(self.main_directory):
+                # For Labview generated data.
+                if file.endswith(".tif") or file.endswith(".TIF"):
+                    self.fileName = self.main_directory + "/" + file
+                    print(self.fileName)
+    
+            self.start_analysis()
+            
+        elif self.switch_Vp_or_camtrace.currentIndex() == 2:
+            # For photocurrent analysis
+            ProcessImage.PhotoCurrent(self.main_directory)
 
     def start_analysis(self):
         """

@@ -127,44 +127,44 @@ class FocusFinder:
             degree_of_focus_list.append(degree_of_focus)
         print(degree_of_focus_list)
 
-        try:
-            interpolated_fitted_curve = ProcessImage.gaussian_fit(degree_of_focus_list)
+        # try:
+        #     interpolated_fitted_curve = ProcessImage.gaussian_fit(degree_of_focus_list)
 
-            # Generate the inpterpolated new focus position axis.
-            x_axis_new = np.linspace(
-                lower_position, upper_position, len(interpolated_fitted_curve)
-            )
+        #     # Generate the inpterpolated new focus position axis.
+        #     x_axis_new = np.linspace(
+        #         lower_position, upper_position, len(interpolated_fitted_curve)
+        #     )
 
-            # Generate a dictionary and find the position where has the highest focus degree.
-            max_focus_pos = dict(zip(interpolated_fitted_curve, x_axis_new))[
-                np.amax(interpolated_fitted_curve)
-            ]
+        #     # Generate a dictionary and find the position where has the highest focus degree.
+        #     max_focus_pos = dict(zip(interpolated_fitted_curve, x_axis_new))[
+        #         np.amax(interpolated_fitted_curve)
+        #     ]
 
-            if True:  # Plot the fitting.
-                plt.plot(
-                    sample_positions,
-                    np.asarray(degree_of_focus_list),
-                    "b+:",
-                    label="data",
-                )
-                plt.plot(x_axis_new, interpolated_fitted_curve, "ro:", label="fit")
-                plt.legend()
-                plt.title("Fig. Fit for focus degree")
-                plt.xlabel("Position")
-                plt.ylabel("Focus degree")
-                plt.show()
+        #     if True:  # Plot the fitting.
+        #         plt.plot(
+        #             sample_positions,
+        #             np.asarray(degree_of_focus_list),
+        #             "b+:",
+        #             label="data",
+        #         )
+        #         plt.plot(x_axis_new, interpolated_fitted_curve, "ro:", label="fit")
+        #         plt.legend()
+        #         plt.title("Fig. Fit for focus degree")
+        #         plt.xlabel("Position")
+        #         plt.ylabel("Focus degree")
+        #         plt.show()
 
-            max_focus_pos = round(max_focus_pos, 6)
-            print(max_focus_pos)
-            self.pi_device_instance.move(max_focus_pos)
-            # max_focus_pos_focus_degree = self.evaluate_focus(round(max_focus_pos, 6))
-        except:
-            print("Fitting failed. Find max in the list.")
+        #     max_focus_pos = round(max_focus_pos, 6)
+        #     print(max_focus_pos)
+        #     self.pi_device_instance.move(max_focus_pos)
+        #     # max_focus_pos_focus_degree = self.evaluate_focus(round(max_focus_pos, 6))
+        # except:
+        print("Fitting failed. Find max in the list.")
 
-            max_focus_pos = sample_positions[
-                degree_of_focus_list.index(max(degree_of_focus_list))
-            ]
-            print(max_focus_pos)
+        max_focus_pos = sample_positions[
+            degree_of_focus_list.index(max(degree_of_focus_list))
+        ]
+        print(max_focus_pos)
 
         if move_to_focus == True:
             self.pi_device_instance.move(max_focus_pos)
