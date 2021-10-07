@@ -44,6 +44,7 @@ from scipy import fftpack
 from scipy.optimize import curve_fit
 import scipy
 import pylab
+from mpl_toolkits.mplot3d import Axes3D
 import os
 import pandas as pd
 import cv2
@@ -1489,16 +1490,17 @@ class ProcessImage:
         """
 
         mask = np.zeros(mask_resolution)
-
-        for roi in list_of_rois:
-            if fill_contour:
+        
+        if fill_contour:
+            for roi in list_of_rois:    
                 mask += polygon2mask(mask_resolution, roi)
-            else:
+        else:
+            for roi in list_of_rois:
                 mask[polygon_perimeter(roi[:, 0], roi[:, 1], mask_resolution)] = 1
-
-                for _ in range(contour_thickness):
-                    mask += binary_dilation(binary_dilation(mask))
-
+    
+            for _ in range(contour_thickness):
+                mask += binary_dilation(binary_dilation(mask))        
+        
         # Make sure the mask is binary
         mask = (mask > 0).astype(int)
 
@@ -3789,7 +3791,7 @@ class ProcessImage:
         Nest_data_directory : string
             Directory in which all images are stored.
         row_data_folder : bool, optional
-            For MaskRCNN stitching, this is False. The default is True.
+            For MaskRCNN mask stitching, this is False. The default is True.
 
         Returns
         -------
@@ -4282,6 +4284,41 @@ class ProcessImage:
         plt.xticks(xticks_pos_list, column_names)
         
         ax.set_title(" ")
+    
+    def Screening_scatters_3D(
+        path,
+        dark_style = False
+    ):  
+        xls = pd.ExcelFile(path)
+        
+        excel_data_ = pd.read_excel(xls)
+        
+        if dark_style == True:
+            plt.style.use('dark_background')
+        
+        fig = plt.figure()
+        ax = Axes3D(fig)
+        
+        sequence_containing_x_vals = excel_data_["Lib_Tag_contour_ratio"]
+        sequence_containing_y_vals = excel_data_["Contour_soma_ratio_Lib"]
+        sequence_containing_z_vals = excel_data_["Mean_intensity_in_contour_Lib"]
+        
+        ax.scatter(sequence_containing_x_vals, \
+                   sequence_containing_y_vals, \
+                   sequence_containing_z_vals, \
+                   c=excel_data_["Lib_Tag_contour_ratio"]+\
+                   excel_data_["Contour_soma_ratio_Lib"]+\
+                   excel_data_["Mean_intensity_in_contour_Lib"],cmap='jet')
+        
+        plt.xlim(0, 5)
+        plt.ylim(1, 5)
+        
+        ax.set_xlabel('Arch/eGFP ratio')
+        ax.set_ylabel('Contour/soma ratio')
+        ax.set_title("Mutants performance space")
+        ax.set_zlabel('Absolute intensity')
+        
+        plt.show()
 
     def Compare_df_bargraph(
         path,
@@ -4506,7 +4543,7 @@ class CurveFit:
         # Vizualization after photobleach normalization
         fig2, ax = plt.subplots(figsize=(8.0, 5.8))
         (p03,) = ax.plot(self.time, self.fluorescence_trace_for_sensitivity)
-        ax.set_title("Bleach normalized fluorescence trace", size=14)
+        ax.set_title("Bleach normalized fluorescence trace (for sensitivity)", size=14)
         ax.set_ylabel("Fluorescence (a.u.)", fontsize=11)
         ax.set_xlabel("Time (s)", fontsize=11)
         ax.spines["right"].set_visible(False)
@@ -4998,7 +5035,14 @@ class CurveFit:
             color=(0.9, 0, 0),
             label="Bi-exponential fit",
         )
-
+        if True:
+            np.save(os.path.join(
+                            self.main_directory,
+                            "Analysis results//avg_fluorescence_upswing_fit.npy"), func(self.avg_time_upswing, *popt))
+            np.save(os.path.join(
+                            self.main_directory,
+                            "Analysis results//avg_fluorescence_upswing.npy"), self.avg_fluorescence_upswing)
+            
         # Axis and labels for fig
         ax.set_title("Bi-exponential fitting of averaged up-swings", size=14)
         ax.set_ylabel("Fluorescence (a.u.)", fontsize=11)
@@ -5086,7 +5130,14 @@ class CurveFit:
             color=(0.9, 0, 0),
             label="Bi-exponential fit",
         )
-
+        if True:
+            np.save(os.path.join(
+                            self.main_directory,
+                            "Analysis results//avg_fluorescence_downswing_fit.npy"), func(self.avg_time_downswing, *popt))
+            np.save(os.path.join(
+                            self.main_directory,
+                            "Analysis results//avg_fluorescence_downswing.npy"), self.avg_fluorescence_downswing)
+            
         # Axis and labels for fig
         ax2.set_title("Bi-exponential fitting of averaged down-swings", size=14)
         ax2.set_ylabel("Fluorescence (a.u.)", fontsize=11)
@@ -5245,7 +5296,13 @@ class CurveFit:
 
         self.upper_step_values = []
         self.lower_step_values = []
-
+        
+        # To get the raw averagd trace of one period
+        self.upper_step_trace = []
+        self.lower_step_trace = []      
+        upper_single_trace_number = 0
+        lower_single_trace_number = 0
+        
         # In individual period, which part percentage wise is seen as steady state.
         self.steady_state_region = [0.4, 0.9]
 
@@ -5268,6 +5325,11 @@ class CurveFit:
                 ]
                 if ii > self.skip:
                     self.upper_step_values.append(np.mean(steady_region_segment))
+                    
+                    self.upper_step_trace.append(self.periods_fluorescence_sensitivity[ii])
+                    upper_single_trace_length = len(self.periods_fluorescence_sensitivity[ii])
+                    upper_single_trace_number += 1
+                    
             # Down-swing period.
             else:
                 steady_region_segment = self.periods_fluorescence_sensitivity[ii][
@@ -5277,7 +5339,11 @@ class CurveFit:
                 ]
                 if ii > self.skip:
                     self.lower_step_values.append(np.mean(steady_region_segment))
-
+                    
+                    self.lower_step_trace.append(self.periods_fluorescence_sensitivity[ii])
+                    lower_single_trace_length = len(self.periods_fluorescence_sensitivity[ii])
+                    lower_single_trace_number += 1
+            
             # Plot every isolated signal and its corresponding fit. Be aware of that when we apply CurveAveraging(), then
             # we have the same for every upswing and the same for every downswing. Neglect periods that we skip
             (p07,) = ax.plot(
@@ -5300,7 +5366,7 @@ class CurveFit:
                     color=(0.9, 0, 0),
                     label="Region of calculation",
                 )
-
+            
         # Calculate the Δ F/F
         self.intensity_ratio = np.true_divide(
             np.array(self.upper_step_values) - np.array(self.lower_step_values),
@@ -5338,6 +5404,49 @@ class CurveFit:
                 dpi=1200,
             )
 
+
+        # Save the raw mean trace
+        self.upper_step_trace = np.array(self.upper_step_trace)
+        
+        # Average over 
+        self.upper_step_averaged_trace = np.mean(\
+            self.upper_step_trace.reshape((upper_single_trace_number, upper_single_trace_length)), axis = 0)
+        
+        self.lower_step_trace = np.array(self.lower_step_trace)
+        self.lower_step_averaged_trace = np.mean(\
+            self.lower_step_trace.reshape((lower_single_trace_number, lower_single_trace_length)), axis = 0)            
+        
+        self.averaged_period = np.append(self.upper_step_averaged_trace, self.lower_step_averaged_trace)
+
+        # Vizualization 
+        fig_averaged_period, ax = plt.subplots(figsize=(8.0, 5.8))
+        time_axis = np.arange(len(self.averaged_period)) / self.camera_fps * 1000
+        (p01,) = ax.plot(time_axis, self.averaged_period)
+
+        ax.set_title("Averaged period", size=14)
+        ax.set_ylabel("Fluorescence (a.u.)", fontsize=11)
+        ax.set_xlabel("Time (ms)", fontsize=11)
+        ax.spines["right"].set_visible(False)
+        ax.spines["top"].set_visible(False)
+        ax.xaxis.set_ticks_position("bottom")
+        ax.yaxis.set_ticks_position("left")
+        plt.show()
+        if self.main_directory != None:
+            fig_averaged_period.savefig(
+                (
+                    os.path.join(
+                        self.main_directory,
+                        "Analysis results//Averaged period for sensitivity.png",
+                    )
+                ),
+                dpi=1200,
+            )
+            
+        np.save(os.path.join(
+                    self.main_directory,
+                    "Analysis results//Averaged period for sensitivity.npy",
+                    ), self.averaged_period)
+        
     def Statistics(self):
 
         # Data transformation to put it in a nice Numpy format
@@ -5581,9 +5690,9 @@ if __name__ == "__main__":
     #         for i in range(len(tagprotein_cell_properties_dict[eachpos])):
     #             tagprotein_cell_properties_dict_meanIntensity_list.append(tagprotein_cell_properties_dict[eachpos]['Mean intensity'][i])
     # =============================================================================
-    stitch_img = False
+    stitch_img = True
     retrievefocus_map = False
-    find_focus = True
+    find_focus = False
     registration = False
     merge_dataFrames = False
     cam_screening_analysis = False
@@ -5591,7 +5700,7 @@ if __name__ == "__main__":
     CurveFit_PMT = False
     
     if stitch_img == True:
-        Nest_data_directory = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2020-12-19_2020-12-19_18-41-18_Lib9_Q1_1TO16_NOPURO"
+        Nest_data_directory = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2021-07-16 Lib12 ND2ND0p5 avg2 250kSR"
         Stitched_image_dict = ProcessImage.image_stitching(
             Nest_data_directory, row_data_folder=True
         )

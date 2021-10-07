@@ -574,7 +574,8 @@ class CoordinatesWidgetUI(QWidget):
 
     def init_ML(self):
         # Initialize the detector instance and load the model.
-        self.ProcessML = ProcessImageML()
+        self.ProcessML = ProcessImageML(
+            WeigthPath=r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Martijn\SpikingHek.h5")
         self.MessageBack.emit("Mask-RCNN environment configured.")
 
     def run_ML_onImg_and_display(self):
@@ -595,8 +596,7 @@ class CoordinatesWidgetUI(QWidget):
         self.MLresults = self.ProcessML.DetectionOnImage(
             self.MLtargetedImg,
             axis=self.Matdisplay_Figure_axis,
-            show_mask=False,
-            show_bbox=False,
+            show_result=True
         )
         self.Mask = self.MLresults["masks"]
         self.Label = self.MLresults["class_ids"]

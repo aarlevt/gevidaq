@@ -372,7 +372,7 @@ class DMDWidget(QWidget):
             )
             fig, axs = plt.subplots(1, 1)
             axs.imshow(mask_single_frame)
-
+            print("each_mask_key {}".format(each_mask_key))
             # Here the self.mask is always a 3-dimentional np array with the 3rd axis being number of images.
             if each_mask_key == "mask_1":
                 self.mask = mask_single_frame[:, :, np.newaxis]
