@@ -83,7 +83,7 @@ class LudlStage:
             else:
                 return False, False
 
-    # @Try_until_Success
+    @Try_until_Success
     def moveAbs(self, x, y):
         """
         Moves the motor to an absolute position defined by X and Y.

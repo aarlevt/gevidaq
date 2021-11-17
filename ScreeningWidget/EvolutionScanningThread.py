@@ -270,16 +270,40 @@ class ScanningExecutionThread(QThread):
                         # for _ in range(2): # Repeat twice
                         #     self.ludlStage.moveAbs(RowIndex,ColumnIndex) # Row/Column indexs of np.array are opposite of stage row-col indexs.
                         #     time.sleep(1)
-                        self.ludlStage.moveAbs(
-                            RowIndex, ColumnIndex
-                        )  # Row/Column indexs of np.array are opposite of stage row-col indexs.
+                        
+                        move_executed = False
+                        trial_number = 0
+                        
+                        while move_executed == False:
+                            
+                            # Row/Column indexs of np.array are opposite of stage row-col indexs.
+                            self.ludlStage.moveAbs(
+                                RowIndex, ColumnIndex
+                            )  
+                            time.sleep(1.5)
+                            
+                            # Check the position again
+                            row_Position, col_Position = self.ludlStage.getPos()
+                            print("=== Get pos: {},{} ===".format(row_Position, col_Position))
+                            
+                            if row_Position == RowIndex and col_Position == ColumnIndex:
+                                move_executed = True
+                                
+                            trial_number += 1
+                            
+                            if trial_number >= 2:
+                                print("Move failed")
+                                self.error_massage = "Fail_MoveStage"
+                                self.errornum += 1
+                                break
+                            
                         print(
                             "==================Stage move to {}==================".format(
                                 [RowIndex, ColumnIndex]
                             )
                         )
                         # Typically it needs 1~ second to move across 15000 stage index.
-                        time.sleep(1.8)
+                        time.sleep(0.3)
                     except:
                         self.error_massage = "Fail_MoveStage"
                         self.errornum += 1
@@ -508,7 +532,8 @@ class ScanningExecutionThread(QThread):
             print("Objective motor disconnected.")
         except:
             pass
-
+        
+        print("Error number: {}".format(self.errornum))
     #%%
     def laser_init(self, EachRound):
         """
@@ -1080,6 +1105,7 @@ class ScanningExecutionThread(QThread):
         ]["GalvoInfor_{}".format(EachWaveform + 1)]
 
         self.readinchan = WaveformPackageToBeExecute[3]
+        self.daq_sampling_rate=WaveformPackageToBeExecute[0]
         self.RoundWaveformIndex = [
             EachRound + 1,
             EachWaveform + 1,
@@ -1237,9 +1263,20 @@ class ScanningExecutionThread(QThread):
                     Dataholder_average, (Value_yPixels, self.ScanArrayXnum)
                 )
 
-                self.PMT_image_reconstructed = self.PMT_image_reconstructed[
-                    :, 50:550
-                ]  # Crop size based on: M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Xin\2019-12-30 2p beads area test 4um
+                # self.PMT_image_reconstructed = self.PMT_image_reconstructed[
+                #     :, 50:550]
+                # Cut off the flying back part.
+                if self.daq_sampling_rate == 500000:
+                    if Value_yPixels == 500:
+                        self.PMT_image_reconstructed = self.PMT_image_reconstructed[:, 50:550]
+                    elif Value_yPixels == 256:
+                        self.PMT_image_reconstructed = self.PMT_image_reconstructed[:, 70:326]
+                elif self.daq_sampling_rate == 250000:
+                    if Value_yPixels == 500:
+                        self.PMT_image_reconstructed = self.PMT_image_reconstructed[:, 25:525]
+                    elif Value_yPixels == 256:
+                        self.PMT_image_reconstructed = self.PMT_image_reconstructed[:, 25:525]
+                  # Crop size based on: M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Xin\2019-12-30 2p beads area test 4um
                 # self.PMT_image_reconstructed = self.PMT_image_reconstructed[:, 70:326] # for 256*256 images
 
                 #=== Evaluate the focus degree of re-constructed image. =======

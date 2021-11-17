@@ -251,9 +251,7 @@ class AnalysisWidgetUI(QWidget):
     # **************************************************************************************************************************************
     def getfile(self):
         self.main_directory = str(
-            QtWidgets.QFileDialog.getExistingDirectory(
-                directory="M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data"
-            )
+            QtWidgets.QFileDialog.getExistingDirectory()
         )
         self.textbox_directory_name.setText(self.main_directory)
         

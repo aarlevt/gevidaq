@@ -39,7 +39,7 @@ import skimage.external.tifffile as skimtiff
 from PIL import Image
 from PIL.TiffTags import TAGS
 import scipy.interpolate as interpolate
-from scipy.ndimage.filters import gaussian_filter1d
+from scipy.ndimage import filters
 from scipy import fftpack
 from scipy.optimize import curve_fit
 import scipy
@@ -1276,10 +1276,10 @@ class ProcessImage:
         # filtering and show filtered contour
         #        X_routine = medfilt(Unfiltered_contour_routine_X, kernel_size=filtering_kernel)
         #        Y_routine = medfilt(Unfiltered_contour_routine_Y, kernel_size=filtering_kernel)
-        X_routine = gaussian_filter1d(
+        X_routine = filters.gaussian_filter1d(
             Unfiltered_contour_routine_X, sigma=filtering_kernel
         )
-        Y_routine = gaussian_filter1d(
+        Y_routine = filters.gaussian_filter1d(
             Unfiltered_contour_routine_Y, sigma=filtering_kernel
         )
 
@@ -3561,7 +3561,29 @@ class ProcessImage:
             output = np.max(image_stack, axis=0)
 
         return output
+    
+    def average_filtering(image, filter_side_length):
+        """
+        Convolution with a mean filter.
 
+        Parameters
+        ----------
+        image : np.array
+            Input image.
+        filter_side_length : int
+            Size of the filter.
+
+        Returns
+        -------
+        image_mean_filtered : np.array
+            image_mean_filtered.
+
+        """
+        image_mean_filtered = filters.convolve(
+            image, 
+            np.full((filter_side_length, filter_side_length), 1/filter_side_length**2))
+        
+        return image_mean_filtered
     #%%
     """
     # =============================================================================
@@ -3866,7 +3888,7 @@ class ProcessImage:
                 - imageinfo_DataFrame.iloc[0]["Stage column index"]
             )
 
-        scanning_coord_step = 1585
+        scanning_coord_step = 1568
         print("scanning_coord_step set to {}!".format(scanning_coord_step))
 
         # Assume that col and row coordinates numbers are the same.
@@ -4534,7 +4556,12 @@ class CurveFit:
         self.fluorescence_trace_for_sensitivity = np.true_divide(
             self.fluorescence, bleachfunc(self.time, *popt)
         )
-
+        
+        if True:
+            np.save(os.path.join(
+                            self.main_directory,
+                            "Analysis results//fluorescence_trace_for_sensitivity.npy"), self.fluorescence_trace_for_sensitivity)
+            
         # Here substract the fitted base line in order to calculate time constants.
         self.fluorescence_for_kinetics = self.fluorescence - bleachfunc(
             self.time, *popt
@@ -5700,7 +5727,7 @@ if __name__ == "__main__":
     CurveFit_PMT = False
     
     if stitch_img == True:
-        Nest_data_directory = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2021-07-16 Lib12 ND2ND0p5 avg2 250kSR"
+        Nest_data_directory = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2021-11-02 QuasAr1 WT ND2ND0p5"
         Stitched_image_dict = ProcessImage.image_stitching(
             Nest_data_directory, row_data_folder=True
         )

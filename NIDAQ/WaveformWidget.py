@@ -241,7 +241,7 @@ class WaveformGenerator(QWidget):
         self.SamplingRateTextbox = QSpinBox(self)
         self.SamplingRateTextbox.setMinimum(0)
         self.SamplingRateTextbox.setMaximum(1000000)
-        self.SamplingRateTextbox.setValue(500000)
+        self.SamplingRateTextbox.setValue(250000)
         self.SamplingRateTextbox.setSingleStep(100000)
         self.ReadLayout.addWidget(self.SamplingRateTextbox, 0, 5)
         self.ReadLayout.addWidget(QLabel("Sampling rate:"), 0, 4)
@@ -866,17 +866,13 @@ class WaveformGenerator(QWidget):
             for i in range(len(temp_loaded_container)):
     
                 channel_keyword = temp_loaded_container[i]["Sepcification"]
-    
-                if (
-                    channel_keyword != "galvos_X_contour"
-                    and channel_keyword != "galvos_Y_contour"
-                ):
-                    self.waveform_data_dict[channel_keyword] = temp_loaded_container[i][
-                        "Waveform"
-                    ]
-                    self.generate_graphy(
-                        channel_keyword, self.waveform_data_dict[channel_keyword]
-                    )
+                    
+                self.waveform_data_dict[channel_keyword] = temp_loaded_container[i][
+                    "Waveform"
+                ]
+                self.generate_graphy(
+                    channel_keyword, self.waveform_data_dict[channel_keyword]
+                )
         except:
             print("File not valid.")
 
@@ -1003,9 +999,19 @@ class WaveformGenerator(QWidget):
 
     #%%
     def generate_contour_for_waveform(self):
-        self.contour_time = int(self.GalvoContourLastTextbox.value())
+        """
+        Variables related to contour scanning are set from main GUI, which comes
+        from PMT widget.
 
-        repeatnum_contour = int(self.contour_time / self.time_per_contour)
+        Returns
+        -------
+        TYPE
+            DESCRIPTION.
+
+        """
+        self.total_contour_scanning_time = int(self.GalvoContourLastTextbox.value())
+
+        repeatnum_contour = int(self.total_contour_scanning_time / self.time_per_contour)
         self.repeated_contoursamples_1 = np.tile(
             self.handle_viewbox_coordinate_position_array_expanded_x, repeatnum_contour
         )
@@ -1016,7 +1022,7 @@ class WaveformGenerator(QWidget):
         self.handle_viewbox_coordinate_position_array_expanded_forDaq_waveform = (
             np.vstack((self.repeated_contoursamples_1, self.repeated_contoursamples_2))
         )
-
+        
         return self.handle_viewbox_coordinate_position_array_expanded_forDaq_waveform
 
     def generate_galvos(self):
@@ -1325,7 +1331,7 @@ class WaveformGenerator(QWidget):
         if not self.DigOffsetTextbox.text():
             self.uiwaveoffset_digital_waveform = 0
         else:
-            self.uiwaveoffset_digital_waveform = int(self.DigOffsetTextbox.text())
+            self.uiwaveoffset_digital_waveform = float(self.DigOffsetTextbox.text())
         self.uiwaveperiod_digital_waveform = int(self.DigDurationTextbox.text())
         self.uiwaveDC_digital_waveform = int(self.DigDCTextbox.currentText())
         if not self.DigRepeatTextbox.text():
@@ -1502,7 +1508,11 @@ class WaveformGenerator(QWidget):
         ].text()
 
         try:
-            reference_wave = self.waveform_data_dict[ReferenceWaveform_menu_text]
+            if "galvos_X_contour" in self.waveform_data_dict.keys():
+                # In case of loading contour waveforms when keys are not "galvos_contour"
+                reference_wave = self.waveform_data_dict['galvos_X_contour']
+            else:
+                reference_wave = self.waveform_data_dict[ReferenceWaveform_menu_text]
         except KeyError:
             QMessageBox.warning(
                 self,
@@ -1511,11 +1521,16 @@ class WaveformGenerator(QWidget):
                 QMessageBox.Ok,
             )
 
-        if (
-            ReferenceWaveform_menu_text == "galvos"
-            or ReferenceWaveform_menu_text == "galvos_contour"
-        ):  # in case of using galvos as reference wave
+        if ReferenceWaveform_menu_text == "galvos":  
+            # in case of using galvos as reference wave
             self.reference_length = len(reference_wave[0, :])
+            
+        elif ReferenceWaveform_menu_text == "galvos_contour":
+            if "galvos_X_contour" in self.waveform_data_dict.keys():
+                # In case of loading contour waveforms when keys are not "galvos_contour"
+                self.reference_length = len(reference_wave)
+            else:
+                self.reference_length = len(reference_wave[0, :])
         else:
             self.reference_length = len(reference_wave)
         print("reference_length: " + str(self.reference_length))
@@ -1551,7 +1566,7 @@ class WaveformGenerator(QWidget):
                 # Reset the PlotDataItem
                 if self.waveform_data_dict[waveform_key].dtype == "float64":
                     # In case of galvos re-drawing
-                    if "galvos_" in waveform_key:
+                    if "galvos_contour" in waveform_key:
                         self.PlotDataItem_dict["galvos_contour"].setData(
                             x_label,
                             self.waveform_data_dict[waveform_key],

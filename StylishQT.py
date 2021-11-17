@@ -218,6 +218,28 @@ class MySwitch(QtWidgets.QPushButton):
         painter.drawText(sw_rect, Qt.AlignCenter, label)
 
 
+class GeneralFancyButton(QtWidgets.QPushButton):
+    """
+    Button style
+    """
+
+    def __init__(self, label="", parent=None):
+        super().__init__(parent)
+        # self.setIcon(QIcon("./Icons/Run_1.png"))
+        StyleSheet = (
+            "QPushButton {color:#FFFFFF;font: bold;background-color: qlineargradient( x1:0 y1:0, x2:1 y2:0, stop:0 #39C0F0, stop:1 #6666FF);border-radius: 8px;}"
+            "QPushButton:hover:!pressed {color:white;background-color: #9999FF;border-radius: 8px;}"
+            "QPushButton:disabled {color:white;background-color: grey;border-radius: 8px;}"
+        )
+        self.setStyleSheet(StyleSheet)
+        self.setText(label)
+        self.setFixedHeight(32)
+        self.setIconSize(QSize(30, 30))
+        self.setGraphicsEffect(
+            QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
+        )
+        # self.setToolTip("Execute")
+        
 class runButton(QtWidgets.QPushButton):
     """
     Button style for 'Run'

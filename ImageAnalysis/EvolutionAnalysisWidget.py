@@ -262,6 +262,9 @@ class MainGUI(QWidget):
         self.FilepathSwitchBox = QComboBox()
         self.FilepathSwitchBox.addItems(["Tag", "Lib", "Cam Z-max"])
         LoadSettingLayout.addWidget(self.FilepathSwitchBox, 1, 0)
+        self.FilepathSwitchBox.setToolTip(
+            "For camera screening and generating z-max, choose cam z-max.\nFor normal analysis in folder, configure the path is enough."
+        )        
 
         self.AnalysisRoundBox = QSpinBox(self)
         self.AnalysisRoundBox.setMaximum(2000)
@@ -317,7 +320,7 @@ class MainGUI(QWidget):
         self.WeightBoxSelectionFactor_1.setDecimals(2)
         self.WeightBoxSelectionFactor_1.setMinimum(0)
         self.WeightBoxSelectionFactor_1.setMaximum(1)
-        self.WeightBoxSelectionFactor_1.setValue(1)
+        self.WeightBoxSelectionFactor_1.setValue(0.6)
         self.WeightBoxSelectionFactor_1.setSingleStep(0.1)
         LoadSettingLayout.addWidget(self.WeightBoxSelectionFactor_1, 2, 5)
         LoadSettingLayout.addWidget(QLabel("Weight:"), 2, 4)
@@ -362,7 +365,7 @@ class MainGUI(QWidget):
         self.WeightBoxSelectionFactor_3.setMinimum(0)
         self.WeightBoxSelectionFactor_3.setMaximum(1)
         self.WeightBoxSelectionFactor_3.setValue(0.0)
-        self.WeightBoxSelectionFactor_3.setSingleStep(0.1)
+        self.WeightBoxSelectionFactor_3.setSingleStep(0.5)
         LoadSettingLayout.addWidget(self.WeightBoxSelectionFactor_3, 4, 5)
         LoadSettingLayout.addWidget(QLabel("Weight:"), 4, 4)
 
@@ -519,9 +522,16 @@ class MainGUI(QWidget):
         # =============================================================================
         if len(self.Tag_round_infor) == 0 and len(self.Lib_round_infor) == 1:
 
-            # Directly analyze images
-            cell_data = self.ProcessML.analyze_images_in_folder(
-                self.Analysis_saving_directory)
+            if self.FilepathSwitchBox.currentText() == "Cam Z-max":
+                # If need to do z-max projection first and then analyse on them
+                cell_data = self.ProcessML.analyze_images_in_folder(
+                    self.Analysis_saving_directory, generate_zmax=True
+                )
+            else:
+                # Directly analyze images
+                cell_data = self.ProcessML.analyze_images_in_folder(
+                    self.Analysis_saving_directory
+                )
                     
         # =============================================================================
         #         # ===== One GFP round, one Arch round. =====

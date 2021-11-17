@@ -51,6 +51,7 @@ from GeneralUsage.ThreadingFunc import run_in_thread
 from NIDAQ.constants import HardwareConstants
 from GalvoWidget.pmt_thread import pmtimagingTest, pmtimagingTest_contour
 from GalvoWidget.GalvoScan_backend import PMT_zscan
+from NIDAQ.DAQoperator import DAQmission
 import StylishQT
 
 
@@ -74,7 +75,9 @@ class PMTWidgetUI(QWidget):
 
         self.savedirectory = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\pmt_image_default_dump"
         self.prefixtextboxtext = "_fromGalvoWidget"
-
+        
+        self.contour_ROI_signals_dict = {}
+        self.contour_ROI_handles_dict = {}
         # **************************************************************************************************************************************
         # --------------------------------------------------------------------------------------------------------------------------------------
         # -----------------------------------------------------------GUI for PMT tab------------------------------------------------------------
@@ -82,7 +85,7 @@ class PMTWidgetUI(QWidget):
         # **************************************************************************************************************************************
         pmtimageContainer = StylishQT.roundQGroupBox(title="PMT image")
         self.pmtimageLayout = QGridLayout()
-
+        
         self.pmtvideoWidget = pg.ImageView()
         self.pmtvideoWidget.ui.roiBtn.hide()
         self.pmtvideoWidget.ui.menuBtn.hide()
@@ -95,6 +98,8 @@ class PMTWidgetUI(QWidget):
         self.pmt_roiwidget = pg.GraphicsLayoutWidget()
         self.pmt_roiwidget.resize(150, 150)
         self.pmt_roiwidget.addLabel("ROI", row=0, col=0)
+        
+        
         # --------------------------- create ROI ------------------------------
         self.vb_2 = self.pmt_roiwidget.addViewBox(
             row=1, col=0, lockAspect=True, colspan=1
@@ -107,12 +112,12 @@ class PMTWidgetUI(QWidget):
         # r1 = QRectF(0, 0, 895, 500)
         ROIpen = QPen()  # creates a default pen
         ROIpen.setStyle(Qt.DashDotLine)
-        ROIpen.setWidth(0.5)
+        ROIpen.setWidth(1)
         ROIpen.setBrush(QColor(0, 161, 255))
         self.roi = pg.PolyLineROI(
             [[0, 0], [80, 0], [80, 80], [0, 80]], closed=True, pen=ROIpen
         )  # , maxBounds=r1
-        # self.roi.addScaleHandle([1,0], [1, 0])
+        # self.roi.addRotateHandle([40,0], [0.5, 0.5])
         self.roi.sigHoverEvent.connect(
             lambda: self.show_handle_num()
         )  # update handle numbers
@@ -120,11 +125,21 @@ class PMTWidgetUI(QWidget):
         self.pmtvb = self.pmtvideoWidget.getView()
         self.pmtimageitem = self.pmtvideoWidget.getImageItem()
         self.pmtvb.addItem(self.roi)  # add ROIs to main image
-
+        
+        # ROIpen = QPen()  # creates a default pen
+        # ROIpen.setStyle(Qt.DashDotLine)
+        # ROIpen.setWidth(1)
+        # ROIpen.setBrush(QColor(255, 0, 0))
+        # self.contour_start_line_roi = pg.LineSegmentROI(
+        #     positions = ([40, 10], [10, 40]), 
+        #     pen=ROIpen
+        # ) 
+        # self.pmtvb.addItem(self.contour_start_line_roi)
+                
         self.pmtimageroiLayout.addWidget(self.pmt_roiwidget, 0, 0)
 
         pmtimageContainer.setMinimumWidth(850)
-        pmtroiContainer.setFixedHeight(480)
+        pmtroiContainer.setFixedHeight(350)
         #        pmtroiContainer.setMaximumWidth(300)
 
         pmtimageContainer.setLayout(self.pmtimageLayout)
@@ -132,7 +147,7 @@ class PMTWidgetUI(QWidget):
 
         # ----------------------------Contour-----------------------------------
         pmtContourContainer = StylishQT.roundQGroupBox(title="Contour selection")
-        pmtContourContainer.setFixedWidth(280)
+        # pmtContourContainer.setFixedWidth(280)
         self.pmtContourLayout = QGridLayout()
         # contour_Description = QLabel("Handle number updates when parking mouse cursor upon ROI. Points in contour are divided evenly between handles.")
         # contour_Description.setStyleSheet('color: blue')
@@ -142,7 +157,8 @@ class PMTWidgetUI(QWidget):
         self.pmtContourLayout.addWidget(self.pmt_handlenum_Label, 1, 0)
 
         self.contour_strategy = QComboBox()
-        self.contour_strategy.addItems(["Non-uniform", "Uniform"])
+        self.contour_strategy.addItems(["Evenly between", "Uniform"])
+        self.contour_strategy.setToolTip("Even in-between: points evenly distribute inbetween handles; Uniform: evenly distribute regardless of handles")
         self.pmtContourLayout.addWidget(self.contour_strategy, 1, 1)
 
         self.pointsinContour = QSpinBox(self)
@@ -150,24 +166,74 @@ class PMTWidgetUI(QWidget):
         self.pointsinContour.setMaximum(1000)
         self.pointsinContour.setValue(100)
         self.pointsinContour.setSingleStep(100)
-        self.pmtContourLayout.addWidget(self.pointsinContour, 2, 1)
-        self.pmtContourLayout.addWidget(QLabel("Points in contour:"), 2, 0)
+        self.pmtContourLayout.addWidget(self.pointsinContour, 1, 3)
+        self.pmtContourLayout.addWidget(QLabel("Points in contour:"), 1, 2)
 
         self.contour_samprate = QSpinBox(self)
         self.contour_samprate.setMinimum(0)
         self.contour_samprate.setMaximum(1000000)
         self.contour_samprate.setValue(50000)
         self.contour_samprate.setSingleStep(50000)
-        self.pmtContourLayout.addWidget(self.contour_samprate, 3, 1)
-        self.pmtContourLayout.addWidget(QLabel("Sampling rate:"), 3, 0)
-
+        self.pmtContourLayout.addWidget(self.contour_samprate, 2, 1)
+        self.pmtContourLayout.addWidget(QLabel("Sampling rate:"), 2, 0)
+        
+        self.pmtContourLayout.addWidget(QLabel("Contour index:"), 3, 0)
+        self.roi_index_spinbox = QSpinBox(self)
+        self.roi_index_spinbox.setMinimum(1)
+        self.roi_index_spinbox.setMaximum(20)
+        self.roi_index_spinbox.setValue(1)
+        self.roi_index_spinbox.setSingleStep(1)
+        self.pmtContourLayout.addWidget(self.roi_index_spinbox, 3, 1)
+        
+        self.go_to_first_handle_button = StylishQT.GeneralFancyButton(label = "Go 1st point")
+        self.go_to_first_handle_button.setFixedHeight(32)
+        self.pmtContourLayout.addWidget(self.go_to_first_handle_button, 2, 2)
+        self.go_to_first_handle_button.clicked.connect(self.go_to_first_point)
+        self.go_to_first_handle_button.setToolTip("Set gavlo initial positions in advance")
+            
+        ROI_interaction_tips = QLabel("Hover here to see ROI interaction tips")
+        ROI_interaction_tips.setToolTip("Left drag moves the ROI\n\
+Left drag + Ctrl moves the ROI with position snapping\n\
+Left drag + Alt rotates the ROI\n\
+Left drag + Alt + Ctrl rotates the ROI with angle snapping\n\
+Left drag + Shift scales the ROI\n\
+Left drag + Shift + Ctrl scales the ROI with size snapping")
+        self.pmtContourLayout.addWidget(ROI_interaction_tips, 4, 0, 1, 2)
+        
+        self.regenerate_roi_handle_button = StylishQT.GeneralFancyButton(label = "Regain ROI")
+        self.regenerate_roi_handle_button.setFixedHeight(32)
+        self.pmtContourLayout.addWidget(self.regenerate_roi_handle_button, 3, 2)
+        self.regenerate_roi_handle_button.clicked.connect(self.regenerate_roi_handles)
+        
+        self.reset_roi_handle_button = StylishQT.GeneralFancyButton(label = "Reset handles")
+        self.reset_roi_handle_button.setFixedHeight(32)
+        self.pmtContourLayout.addWidget(self.reset_roi_handle_button, 3, 3)
+        self.reset_roi_handle_button.clicked.connect(self.reset_roi_handles)
+        
+        # Button to add roi to stack
+        self.add_roi_to_stack_button = StylishQT.addButton()
+        self.add_roi_to_stack_button.setFixedHeight(32)
+        self.pmtContourLayout.addWidget(self.add_roi_to_stack_button, 4, 2)
+        self.add_roi_to_stack_button.clicked.connect(self.add_coordinates_to_list)
+        
+        self.del_roi_in_stack_button = StylishQT.stop_deleteButton()
+        self.del_roi_in_stack_button.setFixedHeight(32)
+        self.del_roi_in_stack_button.clicked.connect(self.del_coordinates_from_list)
+        self.pmtContourLayout.addWidget(self.del_roi_in_stack_button, 4, 3)
+    
+        self.reset_roi_stack_button = StylishQT.cleanButton("Clear")
+        self.reset_roi_stack_button.setFixedHeight(32)
+        self.reset_roi_stack_button.setToolTip("Clear ROI info")
+        self.pmtContourLayout.addWidget(self.reset_roi_stack_button, 5, 0)
+        self.reset_roi_stack_button.clicked.connect(self.reset_coordinates_dict)
+        
         self.generate_contour_sacn = StylishQT.generateButton()
-        self.pmtContourLayout.addWidget(self.generate_contour_sacn, 4, 1)
-        self.generate_contour_sacn.clicked.connect(lambda: self.generate_contour())
+        self.pmtContourLayout.addWidget(self.generate_contour_sacn, 5, 1)
+        self.generate_contour_sacn.clicked.connect(lambda: self.generate_final_contour_signals())
 
         self.do_contour_sacn = StylishQT.runButton("Contour")
         self.do_contour_sacn.setFixedHeight(32)
-        self.pmtContourLayout.addWidget(self.do_contour_sacn, 5, 0)
+        self.pmtContourLayout.addWidget(self.do_contour_sacn, 5, 2)
         self.do_contour_sacn.clicked.connect(
             lambda: self.buttonenabled("contourscan", "start")
         )
@@ -182,7 +248,7 @@ class PMTWidgetUI(QWidget):
             lambda: self.stopMeasurement_pmt_contour()
         )
         self.stopButton_contour.setEnabled(False)
-        self.pmtContourLayout.addWidget(self.stopButton_contour, 5, 1)
+        self.pmtContourLayout.addWidget(self.stopButton_contour, 5, 3)
 
         pmtContourContainer.setLayout(self.pmtContourLayout)
 
@@ -191,7 +257,8 @@ class PMTWidgetUI(QWidget):
         # controlContainer.setFixedWidth(280)
         self.scanning_tabs = QTabWidget()
         self.scanning_tabs.setFixedWidth(280)
-
+        self.scanning_tabs.setFixedHeight(320)
+        
         # ---------------------------- Continuous scanning -----------------------------------
         Continuous_widget = QWidget()
         controlLayout = QGridLayout()
@@ -387,50 +454,64 @@ class PMTWidgetUI(QWidget):
                 self.stopButton_stack_scanning.setEnabled(False)
 
     def measure_pmt(self):
-        self.Daq_sample_rate_pmt = int(self.continuous_scanning_sr_spinbox.value())
+        """
+        Do raster scan and update the graph.
 
-        # Voltage settings, by default it's equal range square.
-        self.Value_voltXMax = self.continuous_scanning_Vrange_spinbox.value()
-        self.Value_voltXMin = self.Value_voltXMax * -1
-        Value_voltYMin = self.Value_voltXMin
-        Value_voltYMax = self.Value_voltXMax
+        Returns
+        -------
+        None.
 
-        self.Value_xPixels = int(self.Scanning_pixel_num_combobox.value())
-        Value_yPixels = self.Value_xPixels
-        self.averagenum = int(self.continuous_scanning_average_spinbox.value())
-
-        Totalscansamples = self.pmtTest.setWave(
-            self.Daq_sample_rate_pmt,
-            self.Value_voltXMin,
-            self.Value_voltXMax,
-            Value_voltYMin,
-            Value_voltYMax,
-            self.Value_xPixels,
-            Value_yPixels,
-            self.averagenum,
-        )
-        time_per_frame_pmt = Totalscansamples / self.Daq_sample_rate_pmt
-
-        ScanArrayXnum = int((Totalscansamples / self.averagenum) / Value_yPixels)
-
-        # r1 = QRectF(500, 500, ScanArrayXnum, int(Value_yPixels))
-        # self.pmtimageitem.setRect(r1)
-
-        self.pmtTest.pmtimagingThread.measurement.connect(
-            self.update_pmt_Graphs
-        )  # Connecting to the measurement signal
-        self.pmt_fps_Label.setText("Per frame:  %.4f s" % time_per_frame_pmt)
-        self.pmtTest.start()
+        """
+        try:
+            self.Daq_sample_rate_pmt = int(self.continuous_scanning_sr_spinbox.value())
+    
+            # Voltage settings, by default it's equal range square.
+            self.Value_voltXMax = self.continuous_scanning_Vrange_spinbox.value()
+            self.Value_voltXMin = self.Value_voltXMax * -1
+            Value_voltYMin = self.Value_voltXMin
+            Value_voltYMax = self.Value_voltXMax
+    
+            self.Value_xPixels = int(self.Scanning_pixel_num_combobox.value())
+            Value_yPixels = self.Value_xPixels
+            self.averagenum = int(self.continuous_scanning_average_spinbox.value())
+    
+            Totalscansamples = self.pmtTest.setWave(
+                self.Daq_sample_rate_pmt,
+                self.Value_voltXMin,
+                self.Value_voltXMax,
+                Value_voltYMin,
+                Value_voltYMax,
+                self.Value_xPixels,
+                Value_yPixels,
+                self.averagenum,
+            )
+            time_per_frame_pmt = Totalscansamples / self.Daq_sample_rate_pmt
+    
+            ScanArrayXnum = int((Totalscansamples / self.averagenum) / Value_yPixels)
+    
+            # r1 = QRectF(500, 500, ScanArrayXnum, int(Value_yPixels))
+            # self.pmtimageitem.setRect(r1)
+    
+            self.pmtTest.pmtimagingThread.measurement.connect(
+                self.update_pmt_Graphs
+            )  # Connecting to the measurement signal
+            self.pmt_fps_Label.setText("Per frame:  %.4f s" % time_per_frame_pmt)
+            self.pmtTest.start()
+            
+        except:
+            print("NI-Daq not connected.")
+            self.update_pmt_Graphs(data = np.zeros((Value_yPixels, Value_yPixels)))
 
     def measure_pmt_contourscan(self):
+        
         self.Daq_sample_rate_pmt = int(self.contour_samprate.value())
-
+        
         self.pmtTest_contour.setWave_contourscan(
             self.Daq_sample_rate_pmt,
-            self.handle_viewbox_coordinate_position_array_expanded_forDaq,
-            self.contour_point_number,
+            self.final_stacked_voltage_signals,
+            self.points_per_round,
         )
-        contour_freq = self.Daq_sample_rate_pmt / self.contour_point_number
+        contour_freq = self.Daq_sample_rate_pmt / self.points_per_round
 
         # r1 = QRectF(500, 500, ScanArrayXnum, int(Value_yPixels))
         # self.pmtimageitem.setRect(r1)
@@ -467,20 +548,191 @@ class PMTWidgetUI(QWidget):
         # self.pmtvideoWidget.update_pmt_Window(self.data_pmtcontineous)
 
     def show_handle_num(self):
+        """
+        Show the number of handles.
+
+        Returns
+        -------
+        None.
+
+        """
         self.ROIhandles = self.roi.getHandles()
         self.ROIhandles_nubmer = len(self.ROIhandles)
         self.pmt_handlenum_Label.setText("Handle number: %.d" % self.ROIhandles_nubmer)
-
-    def generate_contour(self):
+        
+    def regenerate_roi_handles(self):
         """
+        Regenerate the handles from desired roi in sequence.
+
+        Returns
+        -------
+        None.
+
+        """
+        current_roi_handles_list = self.contour_ROI_handles_dict[
+            "handles_{}".format(self.roi_index_spinbox.value())
+        ]
+        
+        self.pmtvb.removeItem(self.roi)
+        
+        ROIpen = QPen()  # creates a default pen
+        ROIpen.setStyle(Qt.DashDotLine)
+        ROIpen.setWidth(1)
+        ROIpen.setBrush(QColor(0, 161, 255))
+        self.roi = pg.PolyLineROI(
+            current_roi_handles_list, closed=True, pen=ROIpen
+        )  # , maxBounds=r1
+        # self.roi.addRotateHandle([40,0], [0.5, 0.5])
+        self.roi.sigHoverEvent.connect(
+            lambda: self.show_handle_num()
+        )  # update handle numbers
+
+        self.pmtvb.addItem(self.roi)  # add ROIs to main image
+        
+
+    def add_coordinates_to_list(self):
+        """
+        Add one coordinate signals to the loop.
+
+        Returns
+        -------
+        None.
+
+        """
+        # Generate the voltage signals
+        self.current_stacked_voltage_signals = self.generate_contour_coordinates()
+
+        # Place the signals to the corresponding dictionary position
+        self.contour_ROI_signals_dict[
+            "roi_{}".format(self.roi_index_spinbox.value())
+        ] = self.current_stacked_voltage_signals
+        
+        # Record roi handle positions
+        roi_handles_scene_list = []
+        
+        # From QPoint to list
+        for each_item in self.handle_local_coordinate_position_raw_list:
+            roi_handles_scene_list.append([each_item[1].x(), each_item[1].y()])
+
+        self.contour_ROI_handles_dict[
+            "handles_{}".format(self.roi_index_spinbox.value())
+        ] = roi_handles_scene_list
+
+        
+    def del_coordinates_from_list(self):
+        """
+        Remove the last mask from the list.
+        """
+        del self.contour_ROI_signals_dict[
+            "roi_{}".format(self.roi_index_spinbox.value())
+        ]       
+        
+        del self.contour_ROI_handles_dict[
+            "handles_{}".format(self.roi_index_spinbox.value())
+        ]  
+
+    def generate_final_contour_signals(self):
+        """
+        Add together all the signals and emit it to other widgets.
+
+        Returns
+        -------
+        None.
+
+        """
+        
+        if len(self.contour_ROI_signals_dict) == 1:
+            # With only one roi in list
+            self.final_stacked_voltage_signals = self.contour_ROI_signals_dict["roi_1"]
+        else:
+            # With multiple roi added
+            temp_list = []
+            for each_roi_coordinate in self.contour_ROI_signals_dict:
+                temp_list.append(self.contour_ROI_signals_dict[each_roi_coordinate])
+            
+            self.final_stacked_voltage_signals = np.concatenate(temp_list, axis = 1)
+            
+        # Number of points in single round of contour scan
+        self.points_per_round = len(self.final_stacked_voltage_signals[0])
+        
+        print(self.final_stacked_voltage_signals)
+        
+        # To the main widget Fiumicino
+        self.emit_contour_signal()
+        
+    def go_to_first_point(self):
+        """
+        Before executing contour scanning, preset galvo positions to first point.
+
+        Returns
+        -------
+        None.
+
+        """
+        first_point_x = self.final_stacked_voltage_signals[:,0][0]
+        first_point_y = self.final_stacked_voltage_signals[:,0][1]
+    
+        print("galvo move to: {}, {}".format(first_point_x, first_point_y))
+    
+        daq = DAQmission()
+        daq.sendSingleAnalog("galvosx", first_point_x)
+        daq.sendSingleAnalog("galvosy", first_point_y)
+        
+    
+    def reset_roi_handles(self):
+        """
+        Reset_roi_handles positions.
+
+        Returns
+        -------
+        None.
+
+        """
+        self.pmtvb.removeItem(self.roi)
+        
+        ROIpen = QPen()  # creates a default pen
+        ROIpen.setStyle(Qt.DashDotLine)
+        ROIpen.setWidth(1)
+        ROIpen.setBrush(QColor(0, 161, 255))
+        self.roi = pg.PolyLineROI(
+            [[0, 0], [80, 0], [80, 80], [0, 80]], closed=True, pen=ROIpen
+        )  # , maxBounds=r1
+        # self.roi.addRotateHandle([40,0], [0.5, 0.5])
+        self.roi.sigHoverEvent.connect(
+            lambda: self.show_handle_num()
+        )  # update handle numbers
+
+        self.pmtvb.addItem(self.roi)  # add ROIs to main image
+        
+    def reset_coordinates_dict(self):
+    
+        self.final_stacked_voltage_signals = None
+        self.contour_ROI_signals_dict = {}
+        # self.contour_ROI_handles_dict = {}
+        
+        self.reset_roi_handles()
+        
+    def generate_contour_coordinates(self):
+        """
+        Geneate the voltage signals according to current ROI's handle positions.
+
+        Returns
+        -------
+        TYPE
+            DESCRIPTION.
+
         getSceneHandlePositions IS THE FUNCTION TO GRAP COORDINATES FROM IMAGEITEM REGARDLESS OF IMAGEITEM ZOOMING OR PANNING!!!
         """
         self.ROIhandles = self.roi.getHandles()
         self.ROIhandles_nubmer = len(self.ROIhandles)
-        self.contour_point_number = int(self.pointsinContour.value())
+        contour_point_number = int(self.pointsinContour.value())
+        
+        # Get the handle positions in the imageitem coordinates
         self.handle_scene_coordinate_position_raw_list = (
             self.roi.getSceneHandlePositions()
         )
+        # print(self.handle_scene_coordinate_position_raw_list)
+        
         self.handle_local_coordinate_position_raw_list = (
             self.roi.getLocalHandlePositions()
         )
@@ -500,15 +752,17 @@ class PMTWidgetUI(QWidget):
                 ]
             )
 
-        if self.contour_strategy.currentText() == "Non-uniform":
+        if self.contour_strategy.currentText() == "Evenly between":
             # Interpolation
             self.point_num_per_line = int(
-                self.contour_point_number / self.ROIhandles_nubmer
+                contour_point_number / self.ROIhandles_nubmer
             )
             self.Interpolation_number = self.point_num_per_line - 1
 
             # try to initialize an array then afterwards we can append on it
-            # self.handle_scene_coordinate_position_array_expanded = np.array([[self.handle_scene_coordinate_position_array[0][0], self.handle_scene_coordinate_position_array[0][1]], [self.handle_scene_coordinate_position_array[1][0], self.handle_scene_coordinate_position_array[1][1]]])
+            # self.handle_scene_coordinate_position_array_expanded = np.array\
+            # ([[self.handle_scene_coordinate_position_array[0][0], self.handle_scene_coordinate_position_array[0][1]], \
+            # [self.handle_scene_coordinate_position_array[1][0], self.handle_scene_coordinate_position_array[1][1]]])
 
             # -------------------------------------------------------------------------Interpolation from first to last----------------------------------------------------------------------------
             for i in range(self.ROIhandles_nubmer - 1):
@@ -617,13 +871,13 @@ class PMTWidgetUI(QWidget):
                 axis=0,
             )
             # self.handle_scene_coordinate_position_array_expanded=np.delete(self.handle_scene_coordinate_position_array_expanded, 0, 0)
-            # -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+            # -----------------------------------------------------------------------------------------------------------------------------------------------------------------
 
             self.handle_viewbox_coordinate_position_array_expanded = np.zeros(
-                (self.contour_point_number, 2)
+                (contour_point_number, 2)
             )  # n rows, 2 columns
             # Maps from scene coordinates to the coordinate system displayed inside the ViewBox
-            for i in range(self.contour_point_number):
+            for i in range(contour_point_number):
                 qpoint_Scene = QPoint(
                     self.handle_scene_coordinate_position_array_expanded[i][0],
                     self.handle_scene_coordinate_position_array_expanded[i][1],
@@ -660,7 +914,7 @@ class PMTWidgetUI(QWidget):
                             self.handle_viewbox_coordinate_position_array_expanded[
                                 :, 0
                             ],
-                            (self.contour_point_number,),
+                            (contour_point_number,),
                         )
                     )
                     self.handle_viewbox_coordinate_position_array_expanded_y = (
@@ -668,19 +922,24 @@ class PMTWidgetUI(QWidget):
                             self.handle_viewbox_coordinate_position_array_expanded[
                                 :, 1
                             ],
-                            (self.contour_point_number,),
+                            (contour_point_number,),
                         )
                     )
-                    self.handle_viewbox_coordinate_position_array_expanded_forDaq = np.vstack(
+                    
+                    # ================= The signals to NIDAQ ==================
+                    current_stacked_voltage_signals = np.vstack(
                         (
                             self.handle_viewbox_coordinate_position_array_expanded_x,
                             self.handle_viewbox_coordinate_position_array_expanded_y,
                         )
                     )
-            print(self.handle_viewbox_coordinate_position_array_expanded)
+                    
+                    
+            # print(self.handle_viewbox_coordinate_position_array_expanded)
             """Speed and acceleration check"""
             # for i in range(self.contour_point_number):
-            #   speed_between_points = ((self.handle_viewbox_coordinate_position_array_expanded_x[i+1]-self.handle_viewbox_coordinate_position_array_expanded_x[i])**2+(self.handle_viewbox_coordinate_position_array_expanded_y[i+1]-self.handle_viewbox_coordinate_position_array_expanded_y[i])**2)**(0.5)
+            #   speed_between_points = ((self.handle_viewbox_coordinate_position_array_expanded_x[i+1]-self.handle_viewbox_coordinate_position_array_expanded_x[i])**2+\
+            # (self.handle_viewbox_coordinate_position_array_expanded_y[i+1]-self.handle_viewbox_coordinate_position_array_expanded_y[i])**2)**(0.5)
             self.Daq_sample_rate_pmt = int(self.contour_samprate.value())
             time_gap = 1 / self.Daq_sample_rate_pmt
             contour_x_speed = (
@@ -698,10 +957,10 @@ class PMTWidgetUI(QWidget):
             constants = HardwareConstants()
             speedGalvo = constants.maxGalvoSpeed  # Volt/s
             aGalvo = constants.maxGalvoAccel  # Acceleration galvo in volt/s^2
-            print(np.amax(abs(contour_x_speed)))
-            print(np.amax(abs(contour_y_speed)))
-            print(np.amax(abs(contour_x_acceleration)))
-            print(np.amax(abs(contour_y_acceleration)))
+            # print(np.amax(abs(contour_x_speed)))
+            # print(np.amax(abs(contour_y_speed)))
+            # print(np.amax(abs(contour_x_acceleration)))
+            # print(np.amax(abs(contour_y_acceleration)))
 
             print(
                 str(np.mean(abs(contour_x_speed)))
@@ -730,7 +989,9 @@ class PMTWidgetUI(QWidget):
                 QMessageBox.warning(
                     self, "OverLoad", "Acceleration too high!", QMessageBox.Ok
                 )
-
+            
+        #============================ Uniform =================================
+        
         if self.contour_strategy.currentText() == "Uniform":
             # Calculate the total distance
             self.total_distance = 0
@@ -762,7 +1023,7 @@ class PMTWidgetUI(QWidget):
                     ) ** (0.5)
                     self.total_distance = self.total_distance + distance_vector
 
-            self.averaged_uniform_step = self.total_distance / self.contour_point_number
+            self.averaged_uniform_step = self.total_distance / contour_point_number
 
             print(self.averaged_uniform_step)
             print(self.handle_scene_coordinate_position_array)
@@ -1026,10 +1287,10 @@ class PMTWidgetUI(QWidget):
             # -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 
             self.handle_viewbox_coordinate_position_array_expanded = np.zeros(
-                (self.contour_point_number, 2)
+                (contour_point_number, 2)
             )  # n rows, 2 columns
             # Maps from scene coordinates to the coordinate system displayed inside the ViewBox
-            for i in range(self.contour_point_number):
+            for i in range(contour_point_number):
                 qpoint_Scene = QPoint(
                     self.handle_scene_coordinate_position_array_expanded_uniform[i][0],
                     self.handle_scene_coordinate_position_array_expanded_uniform[i][1],
@@ -1067,7 +1328,7 @@ class PMTWidgetUI(QWidget):
                             self.handle_viewbox_coordinate_position_array_expanded[
                                 :, 0
                             ],
-                            (self.contour_point_number,),
+                            (contour_point_number,),
                         )
                     )
                     self.handle_viewbox_coordinate_position_array_expanded_y = (
@@ -1075,16 +1336,20 @@ class PMTWidgetUI(QWidget):
                             self.handle_viewbox_coordinate_position_array_expanded[
                                 :, 1
                             ],
-                            (self.contour_point_number,),
+                            (contour_point_number,),
                         )
                     )
-                    self.handle_viewbox_coordinate_position_array_expanded_forDaq = np.vstack(
+                    
+                    # ================= The signals to NIDAQ ==================
+                    current_stacked_voltage_signals = np.vstack(
                         (
                             self.handle_viewbox_coordinate_position_array_expanded_x,
                             self.handle_viewbox_coordinate_position_array_expanded_y,
                         )
                     )
-            print(self.handle_viewbox_coordinate_position_array_expanded)
+                    
+                    
+            # print(self.handle_viewbox_coordinate_position_array_expanded)
             """Speed and acceleration check"""
             # for i in range(self.contour_point_number):
             #   speed_between_points = ((self.handle_viewbox_coordinate_position_array_expanded_x[i+1]-self.handle_viewbox_coordinate_position_array_expanded_x[i])**2+(self.handle_viewbox_coordinate_position_array_expanded_y[i+1]-self.handle_viewbox_coordinate_position_array_expanded_y[i])**2)**(0.5)
@@ -1105,10 +1370,10 @@ class PMTWidgetUI(QWidget):
             constants = HardwareConstants()
             speedGalvo = constants.maxGalvoSpeed  # Volt/s
             aGalvo = constants.maxGalvoAccel  # Acceleration galvo in volt/s^2
-            print(np.amax(abs(contour_x_speed)))
-            print(np.amax(abs(contour_y_speed)))
-            print(np.amax(abs(contour_x_acceleration)))
-            print(np.amax(abs(contour_y_acceleration)))
+            # print(np.amax(abs(contour_x_speed)))
+            # print(np.amax(abs(contour_y_speed)))
+            # print(np.amax(abs(contour_x_acceleration)))
+            # print(np.amax(abs(contour_y_acceleration)))
 
             print(
                 str(np.mean(abs(contour_x_speed)))
@@ -1131,59 +1396,97 @@ class PMTWidgetUI(QWidget):
             ):
                 print("Contour acceleration is OK")
                 self.MessageToMainGUI("Contour acceleration is OK" + "\n")
+        
+        # print(current_stacked_voltage_signals)
+        
+        stacked_voltage_signals_length_hori = len(current_stacked_voltage_signals[1])
+        
+        # Setting the starting point
+        max_y_index = np.argmax(current_stacked_voltage_signals[1,:])
+        
+        # Set two parts
+        moving_forward_part = current_stacked_voltage_signals[:,\
+                                                              max_y_index:stacked_voltage_signals_length_hori]
+        moving_backward_part = current_stacked_voltage_signals[:,\
+                                                              0:max_y_index]
+        # Create container
+        resequenced_stacked_voltage_signals = np.zeros((current_stacked_voltage_signals.shape[0],\
+                                                        current_stacked_voltage_signals.shape[1]))
+        # Fill in container with first part and 2nd part
+        resequenced_stacked_voltage_signals[:,\
+                                            0:len(moving_forward_part[1])] \
+            = moving_forward_part
+        
+        resequenced_stacked_voltage_signals[:,\
+                                            len(moving_forward_part[1]):stacked_voltage_signals_length_hori] \
+            = moving_backward_part 
+            
+        # print(resequenced_stacked_voltage_signals)
 
+        return resequenced_stacked_voltage_signals
+
+    def emit_contour_signal(self):
+        """
+        Emit generated contour signals to the main widget, then pass to waveform widget.
+
+        Returns
+        -------
+        None.
+
+        """
         self.SignalForContourScanning.emit(
-            self.contour_point_number,
+            int(self.points_per_round),
             self.Daq_sample_rate_pmt,
-            (1 / int(self.contour_samprate.value()) * 1000) * self.contour_point_number,
-            self.handle_viewbox_coordinate_position_array_expanded_x,
-            self.handle_viewbox_coordinate_position_array_expanded_y,
+            (1 / int(self.contour_samprate.value()) * 1000) * self.points_per_round, # time per contour scan
+            self.final_stacked_voltage_signals[0],
+            self.final_stacked_voltage_signals[1],
         )
+    
+    # def generate_contour_for_waveform(self):
+    #     self.contour_time = int(self.textbox1L.value())
+    #     self.time_per_contour = (
+    #         1 / int(self.contour_samprate.value()) * 1000
+    #     ) * self.contour_point_number
+    #     repeatnum_contour = int(self.contour_time / self.time_per_contour)
+    #     self.repeated_contoursamples_1 = np.tile(
+    #         self.handle_viewbox_coordinate_position_array_expanded_x, repeatnum_contour
+    #     )
+    #     self.repeated_contoursamples_2 = np.tile(
+    #         self.handle_viewbox_coordinate_position_array_expanded_y, repeatnum_contour
+    #     )
 
-    def generate_contour_for_waveform(self):
-        self.contour_time = int(self.textbox1L.value())
-        self.time_per_contour = (
-            1 / int(self.contour_samprate.value()) * 1000
-        ) * self.contour_point_number
-        repeatnum_contour = int(self.contour_time / self.time_per_contour)
-        self.repeated_contoursamples_1 = np.tile(
-            self.handle_viewbox_coordinate_position_array_expanded_x, repeatnum_contour
-        )
-        self.repeated_contoursamples_2 = np.tile(
-            self.handle_viewbox_coordinate_position_array_expanded_y, repeatnum_contour
-        )
+    #     self.handle_viewbox_coordinate_position_array_expanded_forDaq_waveform = (
+    #         np.vstack((self.repeated_contoursamples_1, self.repeated_contoursamples_2))
+    #     )
 
-        self.handle_viewbox_coordinate_position_array_expanded_forDaq_waveform = (
-            np.vstack((self.repeated_contoursamples_1, self.repeated_contoursamples_2))
-        )
+    #     return self.handle_viewbox_coordinate_position_array_expanded_forDaq_waveform
 
-        return self.handle_viewbox_coordinate_position_array_expanded_forDaq_waveform
+    # def generate_galvos_contour_graphy(self):
 
-    def generate_galvos_contour_graphy(self):
+    #     self.xlabelhere_galvos = (
+    #         np.arange(
+    #             len(
+    #                 self.handle_viewbox_coordinate_position_array_expanded_forDaq_waveform[
+    #                     1, :
+    #                 ]
+    #             )
+    #         )
+    #         / self.Daq_sample_rate_pmt
+    #     )
+    #     self.PlotDataItem_galvos = PlotDataItem(
+    #         self.xlabelhere_galvos,
+    #         self.handle_viewbox_coordinate_position_array_expanded_forDaq_waveform[
+    #             1, :
+    #         ],
+    #     )
+    #     self.PlotDataItem_galvos.setDownsampling(auto=True, method="mean")
+    #     self.PlotDataItem_galvos.setPen("w")
 
-        self.xlabelhere_galvos = (
-            np.arange(
-                len(
-                    self.handle_viewbox_coordinate_position_array_expanded_forDaq_waveform[
-                        1, :
-                    ]
-                )
-            )
-            / self.Daq_sample_rate_pmt
-        )
-        self.PlotDataItem_galvos = PlotDataItem(
-            self.xlabelhere_galvos,
-            self.handle_viewbox_coordinate_position_array_expanded_forDaq_waveform[
-                1, :
-            ],
-        )
-        self.PlotDataItem_galvos.setDownsampling(auto=True, method="mean")
-        self.PlotDataItem_galvos.setPen("w")
+    #     self.pw.addItem(self.PlotDataItem_galvos)
+    #     self.textitem_galvos = pg.TextItem(text="Contour", color=("w"), anchor=(1, 1))
+    #     self.textitem_galvos.setPos(0, 5)
+    #     self.pw.addItem(self.textitem_galvos)
 
-        self.pw.addItem(self.PlotDataItem_galvos)
-        self.textitem_galvos = pg.TextItem(text="Contour", color=("w"), anchor=(1, 1))
-        self.textitem_galvos.setPos(0, 5)
-        self.pw.addItem(self.textitem_galvos)
 
     def start_Zstack_scanning(self):
         """

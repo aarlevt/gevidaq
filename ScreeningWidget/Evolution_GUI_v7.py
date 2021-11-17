@@ -161,32 +161,22 @@ class Mainbody(QWidget):
         ButtonSavePipeline.clicked.connect(self.Savepipeline)
 
         self.ImportPipelineButton = StylishQT.loadButton()
-        self.GeneralSettingContainerLayout.addWidget(self.ImportPipelineButton, 0, 4)
+        self.GeneralSettingContainerLayout.addWidget(self.ImportPipelineButton, 0, 5)
         self.ImportPipelineButton.clicked.connect(self.GetPipelineNPFile)
 
-        self.GeneralSettingContainerLayout.addWidget(ButtonConfigurePipeline, 0, 5)
-        self.GeneralSettingContainerLayout.addWidget(ButtonExePipeline, 0, 7)
-        self.GeneralSettingContainerLayout.addWidget(ButtonSavePipeline, 0, 6)
+        self.GeneralSettingContainerLayout.addWidget(ButtonConfigurePipeline, 0, 6)
+        self.GeneralSettingContainerLayout.addWidget(ButtonExePipeline, 0, 8)
+        self.GeneralSettingContainerLayout.addWidget(ButtonSavePipeline, 0, 7)
 
         # ----------------------------------------------------------------------
-        self.GeneralSettingContainerLayout.addWidget(
-            QLabel("Configure analysis: "), 1, 0
+        self.Analyse_roundCheckbox = QCheckBox("Analyse")
+        self.Analyse_roundCheckbox.setStyleSheet('color:navy;font:bold "Times New Roman"')
+        self.Analyse_roundCheckbox.setChecked(True)
+        self.Analyse_roundCheckbox.setToolTip(
+            "Start analysis as configured in screening analysis GUI right after screening."
         )
-
-        self.FilepathSwitchBox = QComboBox()
-        self.FilepathSwitchBox.addItems(["Tag", "Lib"])
-        self.GeneralSettingContainerLayout.addWidget(self.FilepathSwitchBox, 1, 2)
-
-        self.AnalysisRoundBox = QSpinBox(self)
-        self.AnalysisRoundBox.setMaximum(2000)
-        self.AnalysisRoundBox.setValue(1)
-        self.AnalysisRoundBox.setSingleStep(1)
-        self.GeneralSettingContainerLayout.addWidget(self.AnalysisRoundBox, 1, 1)
-
-        self.AddAnalysisRoundButton = QtWidgets.QPushButton("Add to analysis")
-        self.AddAnalysisRoundButton.clicked.connect(self.SetAnalysisRound)
-        self.GeneralSettingContainerLayout.addWidget(self.AddAnalysisRoundButton, 1, 3)
-
+        self.GeneralSettingContainerLayout.addWidget(self.Analyse_roundCheckbox, 0, 4)
+        
         self.GeneralSettingContainer.setLayout(self.GeneralSettingContainerLayout)
 
         # **************************************************************************************************************************************
@@ -283,7 +273,7 @@ class Mainbody(QWidget):
 
         self.ScanstepTextbox = QSpinBox(self)
         self.ScanstepTextbox.setMaximum(20000)
-        self.ScanstepTextbox.setValue(1550)
+        self.ScanstepTextbox.setValue(1568)
         self.ScanstepTextbox.setSingleStep(500)
         ScanSettingLayout.addWidget(self.ScanstepTextbox, 1, 1)
         ScanSettingLayout.addWidget(QLabel("Stage scanning step size:"), 1, 0)
@@ -294,15 +284,22 @@ class Mainbody(QWidget):
         self.AutoFocusGapTextbox.setValue(0)
         self.AutoFocusGapTextbox.setSingleStep(2)
         self.AutoFocusGapTextbox.setToolTip(
-            "For example if =2 then there's 1 coordinate between AF. If =0, all AF settings are omitted. In pure-AF mode, put the same as the first AF round."
+        "For example if =2 then there's 1 coordinate between AF. \nIf =0, all AF settings are omitted. \nIn pure-AF mode, put the same as the first AF round."
         )
         # if value = 0, then no auto-focus.
         ScanSettingLayout.addWidget(self.AutoFocusGapTextbox, 0, 5)
-        ScanSettingLayout.addWidget(QLabel("Auto focus grid steps:"), 0, 4)
+        Auto_focus_grid_label = QLabel("Auto focus grid steps:")
+        Auto_focus_grid_label.setToolTip(
+        "For example if =2 then there's 1 coordinate between AF. \nIf =0, all AF settings are omitted. \nIn pure-AF mode, put the same as the first AF round."
+        )        
+        ScanSettingLayout.addWidget(Auto_focus_grid_label, 0, 4)
 
         self.AF_roundCheckbox = QCheckBox("Auto-focus round")
         self.AF_roundCheckbox.setStyleSheet('color:navy;font:bold "Times New Roman"')
         self.AF_roundCheckbox.setChecked(False)
+        self.AF_roundCheckbox.setToolTip(
+            "No waveform configuration needed for AF round."
+        )
         ScanSettingLayout.addWidget(self.AF_roundCheckbox, 0, 6)
 
         self.FocusStackNumTextbox = QSpinBox(self)
@@ -448,7 +445,7 @@ class Mainbody(QWidget):
         self.Cam_AF_init_step_sizeBox.setDecimals(3)
         self.Cam_AF_init_step_sizeBox.setMinimum(0)
         self.Cam_AF_init_step_sizeBox.setMaximum(10)
-        self.Cam_AF_init_step_sizeBox.setValue(0.016)
+        self.Cam_AF_init_step_sizeBox.setValue(0.020)
         self.Cam_AF_init_step_sizeBox.setSingleStep(0.001)
         Cam_autofocus_setting_group_layout.addWidget(
             self.Cam_AF_init_step_sizeBox, 0, 1
@@ -460,7 +457,7 @@ class Mainbody(QWidget):
         self.Cam_AF_step_numBox = QSpinBox(self)
         self.Cam_AF_step_numBox.setMinimum(1)
         self.Cam_AF_step_numBox.setMaximum(1000)
-        self.Cam_AF_step_numBox.setValue(7)
+        self.Cam_AF_step_numBox.setValue(8)
         self.Cam_AF_step_numBox.setSingleStep(1)
         Cam_autofocus_setting_group_layout.addWidget(self.Cam_AF_step_numBox, 0, 3)
         Cam_autofocus_setting_group_layout.addWidget(QLabel("Searching increment number:"), 0, 2)
@@ -674,7 +671,13 @@ class Mainbody(QWidget):
         self.setLayout(self.layout)
 
         self.showPipelineConfigWidget()
+        
+        from ImageAnalysis import EvolutionAnalysisWidget
+        print("Importing EvolutionAnalysisWidget")
 
+        self.ScreenAnalysisMLWindow = EvolutionAnalysisWidget.MainGUI()
+        self.ScreenAnalysisMLWindow.show()
+                
     def showPipelineConfigWidget(self):
         self.layout.addWidget(self.ImageDisplayContainer, 1, 2, 1, 2)
         self.layout.addWidget(self.settingStackedWidget, 2, 0, 1, 4)
@@ -1283,31 +1286,39 @@ class Mainbody(QWidget):
         )
 
     def start_analysis(self):
-        try:
-            if len(self.Tag_round_infor) != 0 or len(self.Lib_round_infor) != 0:
-                # If analysis information configured, start analysis afterwards.
+        """
+        Start the screening analysis by calling the EvolutionAnalysisWidget.
 
-                from ImageAnalysis import EvolutionAnalysisWidget
+        Returns
+        -------
+        None.
 
-                time.sleep(4)
+        """
+        # try:
+        # if len(self.Tag_round_infor) != 0 or len(self.Lib_round_infor) != 0:
+            # If analysis information configured, start analysis afterwards.
+    
+            # from ImageAnalysis import EvolutionAnalysisWidget
+            # print("Importing EvolutionAnalysisWidget")
+    
+            # self.ScreenAnalysisMLWindow = EvolutionAnalysisWidget.MainGUI()
+            # self.ScreenAnalysisMLWindow.show()
+    
+            # time.sleep(4)
+        if self.Analyse_roundCheckbox.isChecked():
+            # # By default all data is stored in the same folder.
+            self.ScreenAnalysisMLWindow.Tag_folder = self.savedirectory
+            self.ScreenAnalysisMLWindow.Lib_folder = self.savedirectory
+    
+            # self.ScreenAnalysisMLWindow.Tag_round_infor = self.Tag_round_infor
+            # self.ScreenAnalysisMLWindow.Lib_round_infor = self.Lib_round_infor
+    
+            self.ScreenAnalysisMLWindow.ScreeningAnalysis()
 
-                self.ScreenAnalysisMLWindow = EvolutionAnalysisWidget.MainGUI()
-                self.ScreenAnalysisMLWindow.show()
-
-                time.sleep(4)
-                # By default all data is stored in the same folder.
-                self.ScreenAnalysisMLWindow.Tag_folder = self.savedirectory
-                self.ScreenAnalysisMLWindow.Lib_folder = self.savedirectory
-
-                self.ScreenAnalysisMLWindow.Tag_round_infor = self.Tag_round_infor
-                self.ScreenAnalysisMLWindow.Lib_round_infor = self.Lib_round_infor
-
-                self.ScreenAnalysisMLWindow.ScreeningAnalysis()
-
-            else:
-                pass
-        except:
-            print("Analysis failed to start.")
+        #     else:
+        #         pass
+        # except:
+        #     print("Analysis failed to start.")
 
     def run_in_thread(self, fn, *args, **kwargs):
         """

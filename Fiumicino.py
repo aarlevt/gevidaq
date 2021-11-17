@@ -397,7 +397,8 @@ class Mainbody(QWidget):
         handle_viewbox_coordinate_x,
         handle_viewbox_coordinate_y,
     ):
-
+        
+        # Number of points in single round of contour scan
         self.Waveformer_WidgetInstance.galvo_contour_label_1.setText(
             "Points in contour: %.d" % contour_point_number
         )
@@ -411,6 +412,8 @@ class Mainbody(QWidget):
         self.Waveformer_WidgetInstance.handle_viewbox_coordinate_position_array_expanded_y = (
             handle_viewbox_coordinate_y
         )
+        
+        # Time needed for single round of contour scanning
         self.Waveformer_WidgetInstance.time_per_contour = time_per_contour
 
     #    def PassVariable_AnalysisWidget_to_DMDWidget(self, output_mask_from_Cellselection):
