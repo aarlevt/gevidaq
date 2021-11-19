@@ -941,10 +941,26 @@ class WaveformGenerator(QWidget):
     def del_waveform_analog(self):
 
         channel_keyword = self.current_Analog_channel.currentText()
-
-        self.pw_PlotItem.removeItem(self.PlotDataItem_dict[channel_keyword])
-
-        del self.PlotDataItem_dict[channel_keyword]
+        
+        if channel_keyword == "galvos_contour":
+            try:
+                # In case of just generated contour scanning signals
+                self.pw_PlotItem.removeItem(self.PlotDataItem_dict[channel_keyword])
+    
+                del self.PlotDataItem_dict[channel_keyword]
+                
+            except:
+                # In case of delete loaded contour scanning signals
+                self.pw_PlotItem.removeItem(self.PlotDataItem_dict["galvos_X_contour"])
+                self.pw_PlotItem.removeItem(self.PlotDataItem_dict["galvos_Y_contour"])
+                
+                del self.PlotDataItem_dict["galvos_X_contour"]                
+                del self.PlotDataItem_dict["galvos_Y_contour"]    
+        else:
+            
+            self.pw_PlotItem.removeItem(self.PlotDataItem_dict[channel_keyword])
+    
+            del self.PlotDataItem_dict[channel_keyword]
 
         if "galvos" in channel_keyword:
             # As galvos key is changed, need to delete with adapted key name.

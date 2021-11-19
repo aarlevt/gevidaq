@@ -78,6 +78,9 @@ class PMTWidgetUI(QWidget):
         
         self.contour_ROI_signals_dict = {}
         self.contour_ROI_handles_dict = {}
+        
+        self.clicked_points_list = []
+        self.flag_is_drawing = False
         # **************************************************************************************************************************************
         # --------------------------------------------------------------------------------------------------------------------------------------
         # -----------------------------------------------------------GUI for PMT tab------------------------------------------------------------
@@ -110,36 +113,28 @@ class PMTWidgetUI(QWidget):
         self.vb_2.addItem(self.pmtimgroi)
         # self.roi = pg.RectROI([20, 20], [20, 20], pen=(0,9))
         # r1 = QRectF(0, 0, 895, 500)
-        ROIpen = QPen()  # creates a default pen
-        ROIpen.setStyle(Qt.DashDotLine)
-        ROIpen.setWidth(1)
-        ROIpen.setBrush(QColor(0, 161, 255))
+        self.ROIpen = QPen()  # creates a default pen
+        self.ROIpen.setStyle(Qt.DashDotLine)
+        self.ROIpen.setWidth(1)
+        self.ROIpen.setBrush(QColor(0, 161, 255))
+        
         self.roi = pg.PolyLineROI(
-            [[0, 0], [80, 0], [80, 80], [0, 80]], closed=True, pen=ROIpen
+            [[0, 0], [80, 0], [80, 80], [0, 80]], closed=True, pen=self.ROIpen
         )  # , maxBounds=r1
         # self.roi.addRotateHandle([40,0], [0.5, 0.5])
         self.roi.sigHoverEvent.connect(
-            lambda: self.show_handle_num()
+            lambda: self.show_handle_num(self.roi)
         )  # update handle numbers
-
-        self.pmtvb = self.pmtvideoWidget.getView()
-        self.pmtimageitem = self.pmtvideoWidget.getImageItem()
-        self.pmtvb.addItem(self.roi)  # add ROIs to main image
         
-        # ROIpen = QPen()  # creates a default pen
-        # ROIpen.setStyle(Qt.DashDotLine)
-        # ROIpen.setWidth(1)
-        # ROIpen.setBrush(QColor(255, 0, 0))
-        # self.contour_start_line_roi = pg.LineSegmentROI(
-        #     positions = ([40, 10], [10, 40]), 
-        #     pen=ROIpen
-        # ) 
-        # self.pmtvb.addItem(self.contour_start_line_roi)
-                
-        self.pmtimageroiLayout.addWidget(self.pmt_roiwidget, 0, 0)
+        self.pmtvb = self.pmtvideoWidget.getView()
+        
+        self.pmtimageitem = self.pmtvideoWidget.getImageItem()
+        # self.pmtvb.addItem(self.roi)  # add ROIs to main image
+            
+        self.pmtvb.scene().sigMouseClicked.connect(self.generate_poly_roi)
 
         pmtimageContainer.setMinimumWidth(850)
-        pmtroiContainer.setFixedHeight(350)
+        pmtroiContainer.setFixedHeight(320)
         #        pmtroiContainer.setMaximumWidth(300)
 
         pmtimageContainer.setLayout(self.pmtimageLayout)
@@ -187,11 +182,11 @@ class PMTWidgetUI(QWidget):
         
         self.go_to_first_handle_button = StylishQT.GeneralFancyButton(label = "Go 1st point")
         self.go_to_first_handle_button.setFixedHeight(32)
-        self.pmtContourLayout.addWidget(self.go_to_first_handle_button, 2, 2)
+        # self.pmtContourLayout.addWidget(self.go_to_first_handle_button, 4, 1)
         self.go_to_first_handle_button.clicked.connect(self.go_to_first_point)
         self.go_to_first_handle_button.setToolTip("Set gavlo initial positions in advance")
-            
-        ROI_interaction_tips = QLabel("Hover here to see ROI interaction tips")
+        
+        ROI_interaction_tips = QLabel("Hover for tips. Key F:en/disable drawing ROI")
         ROI_interaction_tips.setToolTip("Left drag moves the ROI\n\
 Left drag + Ctrl moves the ROI with position snapping\n\
 Left drag + Alt rotates the ROI\n\
@@ -425,6 +420,85 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
     # ------------------------------------------------------Functions for TAB 'PMT'---------------------------------------------------------
     # --------------------------------------------------------------------------------------------------------------------------------------
     # **************************************************************************************************************************************
+    def generate_poly_roi(self, event):
+        """
+        For each click event, add a handle to the poly roi
+
+        Parameters
+        ----------
+        event : TYPE
+            DESCRIPTION.
+
+        Returns
+        -------
+        None.
+
+        """
+        if not self.flag_is_drawing:
+            return
+        
+        x = int(event.pos().x())
+        y = int(event.pos().y())
+
+        qpoint_viewbox = self.pmtvb.mapSceneToView(QPoint(x, y))
+        # Get the position of the curser
+        point = [qpoint_viewbox.x(), qpoint_viewbox.y()]
+        
+        self.clicked_points_list.append(point)
+        
+        # if len(self.clicked_points_list) == 1:
+        #     self.click_poly_roi = pg.ROI(point)
+        #     self.pmtvb.addItem(self.click_poly_roi)
+        # else:
+        #     self.click_poly_roi.addFreeHandle(point)
+            
+        if len(self.clicked_points_list) == 1:
+            # In case of first click
+            self.starting_point = self.clicked_points_list[0]
+            self.starting_point_handle_position = [x, y]
+            
+        elif len(self.clicked_points_list) == 2:
+            
+            self.click_poly_roi = pg.PolyLineROI(
+                positions=[self.starting_point, point]
+            )
+            
+            self.click_poly_roi.sigHoverEvent.connect(
+                lambda: self.show_handle_num(self.click_poly_roi)
+            )  # update handle numbers
+            
+            # self.click_poly_roi.setPen(self.pen)
+            self.pmtvb.addItem(self.click_poly_roi)
+            self.new_roi = False        
+            
+            
+        else:
+            self.click_poly_roi.addFreeHandle(point)
+
+            # Remove closing segment of previous mouse movement
+            if len(self.click_poly_roi.segments) > 1:
+                self.click_poly_roi.removeSegment(self.click_poly_roi.segments[-1])
+
+            self.click_poly_roi.addSegment(
+                self.click_poly_roi.handles[-1]["item"],
+                self.click_poly_roi.handles[-2]["item"],
+            )
+
+            # Add new closing segment
+            self.click_poly_roi.addSegment(
+                self.click_poly_roi.handles[0]["item"],
+                self.click_poly_roi.handles[-1]["item"],
+            )
+            
+    def keyPressEvent(self, event):
+        # print(event.key())
+        if event.key() == 70: # If the 'f' key is pressed
+            if self.flag_is_drawing:
+                self.flag_is_drawing = False
+            else:
+                self.flag_is_drawing = True
+                self.new_roi = True
+            
     def buttonenabled(self, button, switch):
 
         if button == "rasterscan":
@@ -540,14 +614,14 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
 
         self.data_pmtcontineous = data
         self.pmtvideoWidget.setImage(data)
-        self.pmtimgroi.setImage(
-            self.roi.getArrayRegion(data, self.pmtimageitem), levels=(0, data.max())
-        )
+        # self.pmtimgroi.setImage(
+        #     self.roi.getArrayRegion(data, self.pmtimageitem), levels=(0, data.max())
+        # )
         #
 
         # self.pmtvideoWidget.update_pmt_Window(self.data_pmtcontineous)
 
-    def show_handle_num(self):
+    def show_handle_num(self, roi_item):
         """
         Show the number of handles.
 
@@ -556,7 +630,7 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
         None.
 
         """
-        self.ROIhandles = self.roi.getHandles()
+        self.ROIhandles = roi_item.getHandles()
         self.ROIhandles_nubmer = len(self.ROIhandles)
         self.pmt_handlenum_Label.setText("Handle number: %.d" % self.ROIhandles_nubmer)
         
@@ -573,22 +647,17 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
             "handles_{}".format(self.roi_index_spinbox.value())
         ]
         
-        self.pmtvb.removeItem(self.roi)
+        self.pmtvb.removeItem(self.click_poly_roi)
         
-        ROIpen = QPen()  # creates a default pen
-        ROIpen.setStyle(Qt.DashDotLine)
-        ROIpen.setWidth(1)
-        ROIpen.setBrush(QColor(0, 161, 255))
-        self.roi = pg.PolyLineROI(
-            current_roi_handles_list, closed=True, pen=ROIpen
+        self.click_poly_roi = pg.PolyLineROI(
+            current_roi_handles_list, pen=self.ROIpen, closed = True
         )  # , maxBounds=r1
         # self.roi.addRotateHandle([40,0], [0.5, 0.5])
-        self.roi.sigHoverEvent.connect(
-            lambda: self.show_handle_num()
+        self.click_poly_roi.sigHoverEvent.connect(
+            lambda: self.show_handle_num(self.click_poly_roi)
         )  # update handle numbers
 
-        self.pmtvb.addItem(self.roi)  # add ROIs to main image
-        
+        self.pmtvb.addItem(self.click_poly_roi)  # add ROIs to main image
 
     def add_coordinates_to_list(self):
         """
@@ -600,7 +669,7 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
 
         """
         # Generate the voltage signals
-        self.current_stacked_voltage_signals = self.generate_contour_coordinates()
+        self.current_stacked_voltage_signals = self.generate_contour_coordinates(self.click_poly_roi)
 
         # Place the signals to the corresponding dictionary position
         self.contour_ROI_signals_dict[
@@ -688,21 +757,29 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
         None.
 
         """
-        self.pmtvb.removeItem(self.roi)
+        # self.pmtvb.removeItem(self.roi)
         
-        ROIpen = QPen()  # creates a default pen
-        ROIpen.setStyle(Qt.DashDotLine)
-        ROIpen.setWidth(1)
-        ROIpen.setBrush(QColor(0, 161, 255))
-        self.roi = pg.PolyLineROI(
-            [[0, 0], [80, 0], [80, 80], [0, 80]], closed=True, pen=ROIpen
-        )  # , maxBounds=r1
-        # self.roi.addRotateHandle([40,0], [0.5, 0.5])
-        self.roi.sigHoverEvent.connect(
-            lambda: self.show_handle_num()
-        )  # update handle numbers
+        # self.ROIpen = QPen()  # creates a default pen
+        # self.ROIpen.setStyle(Qt.DashDotLine)
+        # self.ROIpen.setWidth(1)
+        # self.ROIpen.setBrush(QColor(0, 161, 255))
+        # self.roi = pg.PolyLineROI(
+        #     [[0, 0], [80, 0], [80, 80], [0, 80]], closed=True, pen=self.ROIpen
+        # )  # , maxBounds=r1
+        # # self.roi.addRotateHandle([40,0], [0.5, 0.5])
+        # self.roi.sigHoverEvent.connect(
+        #     lambda: self.show_handle_num()
+        # )  # update handle numbers
 
-        self.pmtvb.addItem(self.roi)  # add ROIs to main image
+        # self.pmtvb.addItem(self.roi)  # add ROIs to main image
+        
+        #=====================================================================
+        try:
+            self.pmtvb.removeItem(self.click_poly_roi)
+        except:
+            pass
+        
+        self.clicked_points_list = []
         
     def reset_coordinates_dict(self):
     
@@ -712,34 +789,37 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
         
         self.reset_roi_handles()
         
-    def generate_contour_coordinates(self):
+    def generate_contour_coordinates(self, roi_item):
         """
         Geneate the voltage signals according to current ROI's handle positions.
 
         Returns
         -------
         TYPE
-            DESCRIPTION.
+            np.array. (2,n), two rows stack together.
 
         getSceneHandlePositions IS THE FUNCTION TO GRAP COORDINATES FROM IMAGEITEM REGARDLESS OF IMAGEITEM ZOOMING OR PANNING!!!
         """
-        self.ROIhandles = self.roi.getHandles()
+        self.ROIhandles = roi_item.getHandles()
         self.ROIhandles_nubmer = len(self.ROIhandles)
         contour_point_number = int(self.pointsinContour.value())
         
         # Get the handle positions in the imageitem coordinates
         self.handle_scene_coordinate_position_raw_list = (
-            self.roi.getSceneHandlePositions()
+            roi_item.getSceneHandlePositions()
         )
         # print(self.handle_scene_coordinate_position_raw_list)
-        
-        self.handle_local_coordinate_position_raw_list = (
-            self.roi.getLocalHandlePositions()
-        )
-        self.Daq_sample_rate_pmt = int(self.contour_samprate.value())
-        #        self.galvo_contour_label_1.setText("Points in contour: %.d" % self.contour_point_number)
-        #        self.galvo_contour_label_2.setText("Sampling rate: %.d" % self.Daq_sample_rate_pmt)
+        # # ===== The first placed handle is at the end, put back to front.=====
+        # first_placed_handle = self.handle_scene_coordinate_position_raw_list[-1]
 
+        # self.handle_scene_coordinate_position_raw_list.insert(0,first_placed_handle)
+        # self.handle_scene_coordinate_position_raw_list.pop(-1)
+        
+
+        self.handle_local_coordinate_position_raw_list = (
+            roi_item.getLocalHandlePositions()
+        )
+        
         # put scene positions into numpy array
         self.handle_scene_coordinate_position_array = np.zeros(
             (self.ROIhandles_nubmer, 2)
@@ -751,245 +831,58 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
                     self.handle_scene_coordinate_position_raw_list[i][1].y(),
                 ]
             )
-
+        print(self.handle_scene_coordinate_position_array)
         if self.contour_strategy.currentText() == "Evenly between":
             # Interpolation
             self.point_num_per_line = int(
                 contour_point_number / self.ROIhandles_nubmer
             )
             self.Interpolation_number = self.point_num_per_line - 1
-
-            # try to initialize an array then afterwards we can append on it
-            # self.handle_scene_coordinate_position_array_expanded = np.array\
-            # ([[self.handle_scene_coordinate_position_array[0][0], self.handle_scene_coordinate_position_array[0][1]], \
-            # [self.handle_scene_coordinate_position_array[1][0], self.handle_scene_coordinate_position_array[1][1]]])
-
-            # -------------------------------------------------------------------------Interpolation from first to last----------------------------------------------------------------------------
-            for i in range(self.ROIhandles_nubmer - 1):
-                self.Interpolation_x_diff = (
-                    self.handle_scene_coordinate_position_array[i + 1][0]
-                    - self.handle_scene_coordinate_position_array[i][0]
-                )
-                self.Interpolation_y_diff = (
-                    self.handle_scene_coordinate_position_array[i + 1][1]
-                    - self.handle_scene_coordinate_position_array[i][1]
-                )
-
-                self.Interpolation_x_step = (
-                    self.Interpolation_x_diff / self.point_num_per_line
-                )
-                self.Interpolation_y_step = (
-                    self.Interpolation_y_diff / self.point_num_per_line
-                )
-
-                Interpolation_temp = np.array(
-                    [
-                        [
-                            self.handle_scene_coordinate_position_array[i][0],
-                            self.handle_scene_coordinate_position_array[i][1],
-                        ],
-                        [
-                            self.handle_scene_coordinate_position_array[i + 1][0],
-                            self.handle_scene_coordinate_position_array[i + 1][1],
-                        ],
-                    ]
-                )
-
-                for j in range(self.Interpolation_number):
-                    Interpolation_temp = np.insert(
-                        Interpolation_temp,
-                        1,
-                        [
-                            self.handle_scene_coordinate_position_array[i + 1][0]
-                            - (j + 1) * self.Interpolation_x_step,
-                            self.handle_scene_coordinate_position_array[i + 1][1]
-                            - (j + 1) * self.Interpolation_y_step,
-                        ],
-                        axis=0,
-                    )
-                Interpolation_temp = np.delete(Interpolation_temp, 0, 0)
-                if i == 0:
-                    self.handle_scene_coordinate_position_array_expanded = (
-                        Interpolation_temp
-                    )
-                else:
-                    self.handle_scene_coordinate_position_array_expanded = np.append(
-                        self.handle_scene_coordinate_position_array_expanded,
-                        Interpolation_temp,
-                        axis=0,
-                    )
-                    # self.handle_scene_coordinate_position_array_expanded=np.delete(self.handle_scene_coordinate_position_array_expanded, 0, 0)
-
-            # Interpolation between last and first
-            self.Interpolation_x_diff = (
-                self.handle_scene_coordinate_position_array[0][0]
-                - self.handle_scene_coordinate_position_array[-1][0]
-            )
-            self.Interpolation_y_diff = (
-                self.handle_scene_coordinate_position_array[0][1]
-                - self.handle_scene_coordinate_position_array[-1][1]
-            )
-
-            self.Interpolation_x_step = (
-                self.Interpolation_x_diff / self.point_num_per_line
-            )
-            self.Interpolation_y_step = (
-                self.Interpolation_y_diff / self.point_num_per_line
-            )
-
-            Interpolation_temp = np.array(
-                [
-                    [
-                        self.handle_scene_coordinate_position_array[-1][0],
-                        self.handle_scene_coordinate_position_array[-1][1],
-                    ],
-                    [
-                        self.handle_scene_coordinate_position_array[0][0],
-                        self.handle_scene_coordinate_position_array[0][1],
-                    ],
-                ]
-            )
-
-            for j in range(self.Interpolation_number):
-                Interpolation_temp = np.insert(
-                    Interpolation_temp,
-                    1,
-                    [
-                        self.handle_scene_coordinate_position_array[0][0]
-                        - (j + 1) * self.Interpolation_x_step,
-                        self.handle_scene_coordinate_position_array[0][1]
-                        - (j + 1) * self.Interpolation_y_step,
-                    ],
-                    axis=0,
-                )
-            Interpolation_temp = np.delete(Interpolation_temp, 0, 0)
-            # Interpolation_temp = np.flip(Interpolation_temp, 0)
-
-            self.handle_scene_coordinate_position_array_expanded = np.append(
-                self.handle_scene_coordinate_position_array_expanded,
-                Interpolation_temp,
-                axis=0,
-            )
-            # self.handle_scene_coordinate_position_array_expanded=np.delete(self.handle_scene_coordinate_position_array_expanded, 0, 0)
-            # -----------------------------------------------------------------------------------------------------------------------------------------------------------------
-
+            
+            # ====== Doing the uniform interpolation in between handles =======
+            self.handle_scene_coordinate_position_array_expanded = \
+                self.interpolate_evenly_between_nodes(node_number = self.ROIhandles_nubmer,
+                                                  point_num_per_line = self.point_num_per_line,
+                                                  node_position_array = self.handle_scene_coordinate_position_array)
+            #=================================================================
+            
             self.handle_viewbox_coordinate_position_array_expanded = np.zeros(
                 (contour_point_number, 2)
             )  # n rows, 2 columns
             # Maps from scene coordinates to the coordinate system displayed inside the ViewBox
             for i in range(contour_point_number):
                 qpoint_Scene = QPoint(
-                    self.handle_scene_coordinate_position_array_expanded[i][0],
-                    self.handle_scene_coordinate_position_array_expanded[i][1],
+                    int(self.handle_scene_coordinate_position_array_expanded[i][0]),
+                    int(self.handle_scene_coordinate_position_array_expanded[i][1]),
                 )
                 qpoint_viewbox = self.pmtvb.mapSceneToView(qpoint_Scene)
                 self.handle_viewbox_coordinate_position_array_expanded[i] = np.array(
                     [qpoint_viewbox.x(), qpoint_viewbox.y()]
                 )
 
-            # print(self.handle_scene_coordinate_position_array)
-            # print(self.handle_scene_coordinate_position_array_expanded)
-            # print(self.handle_viewbox_coordinate_position_array_expanded)
-            constants = HardwareConstants()
             """Transform into Voltages to galvos"""
             """coordinates in the view box(handle_viewbox_coordinate_position_array_expanded_x) are equivalent to voltages sending out"""
-            if self.Value_xPixels == 500:
-                if self.Value_voltXMax == 3:
-                    # for 500 x axis, the real ramp region sits around 52~552 out of 0~758
-                    self.handle_viewbox_coordinate_position_array_expanded[:, 0] = (
-                        (self.handle_viewbox_coordinate_position_array_expanded[:, 0])
-                        / 500
-                    ) * 6 - 3  # (self.handle_viewbox_coordinate_position_array_expanded[:,0]-constants.pmt_3v_indentation_pixels)
-                    self.handle_viewbox_coordinate_position_array_expanded[:, 1] = (
-                        (self.handle_viewbox_coordinate_position_array_expanded[:, 1])
-                        / 500
-                    ) * 6 - 3
-                    self.handle_viewbox_coordinate_position_array_expanded = np.around(
-                        self.handle_viewbox_coordinate_position_array_expanded,
-                        decimals=3,
-                    )
-                    # shape into (n,) and stack
-                    self.handle_viewbox_coordinate_position_array_expanded_x = (
-                        np.resize(
-                            self.handle_viewbox_coordinate_position_array_expanded[
-                                :, 0
-                            ],
-                            (contour_point_number,),
-                        )
-                    )
-                    self.handle_viewbox_coordinate_position_array_expanded_y = (
-                        np.resize(
-                            self.handle_viewbox_coordinate_position_array_expanded[
-                                :, 1
-                            ],
-                            (contour_point_number,),
-                        )
-                    )
-                    
-                    # ================= The signals to NIDAQ ==================
-                    current_stacked_voltage_signals = np.vstack(
-                        (
-                            self.handle_viewbox_coordinate_position_array_expanded_x,
-                            self.handle_viewbox_coordinate_position_array_expanded_y,
-                        )
-                    )
-                    
-                    
-            # print(self.handle_viewbox_coordinate_position_array_expanded)
-            """Speed and acceleration check"""
-            # for i in range(self.contour_point_number):
-            #   speed_between_points = ((self.handle_viewbox_coordinate_position_array_expanded_x[i+1]-self.handle_viewbox_coordinate_position_array_expanded_x[i])**2+\
-            # (self.handle_viewbox_coordinate_position_array_expanded_y[i+1]-self.handle_viewbox_coordinate_position_array_expanded_y[i])**2)**(0.5)
-            self.Daq_sample_rate_pmt = int(self.contour_samprate.value())
-            time_gap = 1 / self.Daq_sample_rate_pmt
-            contour_x_speed = (
-                np.diff(self.handle_viewbox_coordinate_position_array_expanded_x)
-                / time_gap
-            )
-            contour_y_speed = (
-                np.diff(self.handle_viewbox_coordinate_position_array_expanded_y)
-                / time_gap
-            )
-
-            contour_x_acceleration = np.diff(contour_x_speed) / time_gap
-            contour_y_acceleration = np.diff(contour_y_speed) / time_gap
-
-            constants = HardwareConstants()
-            speedGalvo = constants.maxGalvoSpeed  # Volt/s
-            aGalvo = constants.maxGalvoAccel  # Acceleration galvo in volt/s^2
-            # print(np.amax(abs(contour_x_speed)))
-            # print(np.amax(abs(contour_y_speed)))
-            # print(np.amax(abs(contour_x_acceleration)))
-            # print(np.amax(abs(contour_y_acceleration)))
-
-            print(
-                str(np.mean(abs(contour_x_speed)))
-                + " and mean y speed:"
-                + str(np.mean(abs(contour_y_speed)))
-            )
-            print(
-                str(np.mean(abs(contour_x_acceleration)))
-                + " and mean y acceleration:"
-                + str(np.mean(abs(contour_y_acceleration)))
-            )
-
-            if speedGalvo > np.amax(abs(contour_x_speed)) and speedGalvo > np.amax(
-                abs(contour_y_speed)
-            ):
-                print("Contour speed is OK")
-                self.MessageToMainGUI("Contour speed is OK" + "\n")
-            else:
-                QMessageBox.warning(self, "OverLoad", "Speed too high!", QMessageBox.Ok)
-            if aGalvo > np.amax(abs(contour_x_acceleration)) and aGalvo > np.amax(
-                abs(contour_y_acceleration)
-            ):
-                print("Contour acceleration is OK")
-                self.MessageToMainGUI("Contour acceleration is OK" + "\n")
-            else:
-                QMessageBox.warning(
-                    self, "OverLoad", "Acceleration too high!", QMessageBox.Ok
-                )
             
+            self.handle_viewbox_coordinate_position_array_expanded_x, \
+            self.handle_viewbox_coordinate_position_array_expanded_y = \
+            self.convert_coordinates_to_voltage(Value_xPixels = self.Value_xPixels, Value_voltXMax = self.Value_voltXMax,
+                                                contour_point_number = contour_point_number, 
+                                                handle_viewbox_coordinates = self.handle_viewbox_coordinate_position_array_expanded)
+                    
+            # ================= The signals to NIDAQ ==================
+            current_stacked_voltage_signals = np.vstack(
+                (
+                    self.handle_viewbox_coordinate_position_array_expanded_x,
+                    self.handle_viewbox_coordinate_position_array_expanded_y,
+                )
+            )
+                    
+            #================= Speed and acceleration check ===================
+            self.speed_acceleration_check(self.Daq_sample_rate_pmt,
+                                          self.handle_viewbox_coordinate_position_array_expanded_x,
+                                          self.handle_viewbox_coordinate_position_array_expanded_y)
+            
+
         #============================ Uniform =================================
         
         if self.contour_strategy.currentText() == "Uniform":
@@ -1300,131 +1193,324 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
                     [qpoint_viewbox.x(), qpoint_viewbox.y()]
                 )
 
-            # print(self.handle_scene_coordinate_position_array)
-            # print(self.handle_scene_coordinate_position_array_expanded)
-            # print(self.handle_viewbox_coordinate_position_array_expanded)
 
             """Transform into Voltages to galvos"""
 
-            constants = HardwareConstants()
-            if self.Value_xPixels == 500:
-                if self.Value_voltXMax == 3:
-                    # for 500 x axis, the real ramp region sits around 52~552 out of 0~758
-                    self.handle_viewbox_coordinate_position_array_expanded[:, 0] = (
-                        (self.handle_viewbox_coordinate_position_array_expanded[:, 0])
-                        / 500
-                    ) * 6 - 3  # self.handle_viewbox_coordinate_position_array_expanded[:,0]-constants.pmt_3v_indentation_pixels
-                    self.handle_viewbox_coordinate_position_array_expanded[:, 1] = (
-                        (self.handle_viewbox_coordinate_position_array_expanded[:, 1])
-                        / 500
-                    ) * 6 - 3
-                    self.handle_viewbox_coordinate_position_array_expanded = np.around(
-                        self.handle_viewbox_coordinate_position_array_expanded,
-                        decimals=3,
-                    )
-                    # shape into (n,) and stack
-                    self.handle_viewbox_coordinate_position_array_expanded_x = (
-                        np.resize(
-                            self.handle_viewbox_coordinate_position_array_expanded[
-                                :, 0
-                            ],
-                            (contour_point_number,),
-                        )
-                    )
-                    self.handle_viewbox_coordinate_position_array_expanded_y = (
-                        np.resize(
-                            self.handle_viewbox_coordinate_position_array_expanded[
-                                :, 1
-                            ],
-                            (contour_point_number,),
-                        )
-                    )
+            self.handle_viewbox_coordinate_position_array_expanded_x,
+            self.handle_viewbox_coordinate_position_array_expanded_y = \
+            self.convert_coordinates_to_voltage(Value_xPixels = self.Value_xPixels, Value_voltXMax = self.Value_voltXMax,
+                                                contour_point_number = contour_point_number, 
+                                                handle_viewbox_coordinates = self.handle_viewbox_coordinate_position_array_expanded)
                     
-                    # ================= The signals to NIDAQ ==================
-                    current_stacked_voltage_signals = np.vstack(
-                        (
-                            self.handle_viewbox_coordinate_position_array_expanded_x,
-                            self.handle_viewbox_coordinate_position_array_expanded_y,
-                        )
-                    )
+            # ================= The signals to NIDAQ ==================
+            current_stacked_voltage_signals = np.vstack(
+                (
+                    self.handle_viewbox_coordinate_position_array_expanded_x,
+                    self.handle_viewbox_coordinate_position_array_expanded_y,
+                )
+            )
                     
                     
-            # print(self.handle_viewbox_coordinate_position_array_expanded)
-            """Speed and acceleration check"""
-            # for i in range(self.contour_point_number):
-            #   speed_between_points = ((self.handle_viewbox_coordinate_position_array_expanded_x[i+1]-self.handle_viewbox_coordinate_position_array_expanded_x[i])**2+(self.handle_viewbox_coordinate_position_array_expanded_y[i+1]-self.handle_viewbox_coordinate_position_array_expanded_y[i])**2)**(0.5)
-            self.Daq_sample_rate_pmt = int(self.contour_samprate.value())
-            time_gap = 1 / self.Daq_sample_rate_pmt
-            contour_x_speed = (
-                np.diff(self.handle_viewbox_coordinate_position_array_expanded_x)
-                / time_gap
-            )
-            contour_y_speed = (
-                np.diff(self.handle_viewbox_coordinate_position_array_expanded_y)
-                / time_gap
-            )
-
-            contour_x_acceleration = np.diff(contour_x_speed) / time_gap
-            contour_y_acceleration = np.diff(contour_y_speed) / time_gap
-
-            constants = HardwareConstants()
-            speedGalvo = constants.maxGalvoSpeed  # Volt/s
-            aGalvo = constants.maxGalvoAccel  # Acceleration galvo in volt/s^2
-            # print(np.amax(abs(contour_x_speed)))
-            # print(np.amax(abs(contour_y_speed)))
-            # print(np.amax(abs(contour_x_acceleration)))
-            # print(np.amax(abs(contour_y_acceleration)))
-
-            print(
-                str(np.mean(abs(contour_x_speed)))
-                + " and mean y speed:"
-                + str(np.mean(abs(contour_y_speed)))
-            )
-            print(
-                str(np.mean(abs(contour_x_acceleration)))
-                + " and mean y acceleration:"
-                + str(np.mean(abs(contour_y_acceleration)))
-            )
-
-            if speedGalvo > np.amax(abs(contour_x_speed)) and speedGalvo > np.amax(
-                abs(contour_y_speed)
-            ):
-                print("Contour speed is OK")
-                self.MessageToMainGUI("Contour speed is OK" + "\n")
-            if aGalvo > np.amax(abs(contour_x_acceleration)) and aGalvo > np.amax(
-                abs(contour_y_acceleration)
-            ):
-                print("Contour acceleration is OK")
-                self.MessageToMainGUI("Contour acceleration is OK" + "\n")
+            #================= Speed and acceleration check ===================
+            self.speed_acceleration_check(self.Daq_sample_rate_pmt,
+                                          self.handle_viewbox_coordinate_position_array_expanded_x,
+                                          self.handle_viewbox_coordinate_position_array_expanded_y)
         
         # print(current_stacked_voltage_signals)
         
-        stacked_voltage_signals_length_hori = len(current_stacked_voltage_signals[1])
+        # stacked_voltage_signals_length_hori = len(current_stacked_voltage_signals[1])
         
-        # Setting the starting point
-        max_y_index = np.argmax(current_stacked_voltage_signals[1,:])
-        
-        # Set two parts
-        moving_forward_part = current_stacked_voltage_signals[:,\
-                                                              max_y_index:stacked_voltage_signals_length_hori]
-        moving_backward_part = current_stacked_voltage_signals[:,\
-                                                              0:max_y_index]
-        # Create container
-        resequenced_stacked_voltage_signals = np.zeros((current_stacked_voltage_signals.shape[0],\
-                                                        current_stacked_voltage_signals.shape[1]))
-        # Fill in container with first part and 2nd part
-        resequenced_stacked_voltage_signals[:,\
-                                            0:len(moving_forward_part[1])] \
-            = moving_forward_part
-        
-        resequenced_stacked_voltage_signals[:,\
-                                            len(moving_forward_part[1]):stacked_voltage_signals_length_hori] \
-            = moving_backward_part 
+        # try:
+        #     # Setting the starting point
+        #     # starting_point_index = np.argmax(current_stacked_voltage_signals[1,:]) # Set lowest point in view as start 
+
+        #     starting_point_index = np.where(np.all(current_stacked_voltage_signals == np.array(self.starting_point), axis = 0))[0][0]
             
-        # print(resequenced_stacked_voltage_signals)
+        #     # Set two parts
+        #     moving_forward_part = current_stacked_voltage_signals[:,\
+        #                                                           starting_point_index:stacked_voltage_signals_length_hori]
+        #     moving_backward_part = current_stacked_voltage_signals[:,\
+        #                                                           0:starting_point_index]
+        #     # Create container
+        #     resequenced_stacked_voltage_signals = np.zeros((current_stacked_voltage_signals.shape[0],\
+        #                                                     current_stacked_voltage_signals.shape[1]))
+        #     # Fill in container with first part and 2nd part
+        #     resequenced_stacked_voltage_signals[:,\
+        #                                         0:len(moving_forward_part[1])] \
+        #         = moving_forward_part
+            
+        #     resequenced_stacked_voltage_signals[:,\
+        #                                         len(moving_forward_part[1]):stacked_voltage_signals_length_hori] \
+        #         = moving_backward_part 
+        # except:
+        #     print("Fail to find starting point.")
+        #     resequenced_stacked_voltage_signals = current_stacked_voltage_signals
+        
+        resequenced_stacked_voltage_signals = current_stacked_voltage_signals
+        print(resequenced_stacked_voltage_signals)
 
         return resequenced_stacked_voltage_signals
+    
+    def interpolate_evenly_between_nodes(self, node_number, point_num_per_line, node_position_array):
+        """
+        Interpolate evenly in between roi handles
 
+        Parameters
+        ----------
+        node_number : int
+            Number of handles in roi.
+        point_num_per_line : int
+            Number of points per line desired.
+        node_position_array : np.array
+            DESCRIPTION.
+
+        Returns
+        -------
+        interpolated_array. (n,2), 2 columns
+
+        """
+        # --------------------------------------Interpolation from first to last---------------------------------------------
+        for i in range(node_number - 1):
+            Interpolation_x_diff = (
+                node_position_array[i + 1][0]
+                - node_position_array[i][0]
+            )
+            Interpolation_y_diff = (
+                node_position_array[i + 1][1]
+                - node_position_array[i][1]
+            )
+
+            Interpolation_x_step = (
+                Interpolation_x_diff / point_num_per_line
+            )
+            Interpolation_y_step = (
+                Interpolation_y_diff / point_num_per_line
+            )
+
+            Interpolation_temp = np.array(
+                [
+                    [
+                        node_position_array[i][0],
+                        node_position_array[i][1],
+                    ],
+                    [
+                        node_position_array[i + 1][0],
+                        node_position_array[i + 1][1],
+                    ],
+                ]
+            )
+
+            for j in range(point_num_per_line - 1):
+                Interpolation_temp = np.insert(
+                    Interpolation_temp,
+                    1,
+                    [
+                        node_position_array[i + 1][0]
+                        - (j + 1) * Interpolation_x_step,
+                        node_position_array[i + 1][1]
+                        - (j + 1) * Interpolation_y_step,
+                    ],
+                    axis=0,
+                )
+            Interpolation_temp = np.delete(Interpolation_temp, 0, 0)
+            if i == 0:
+                interpolated_array = (
+                    Interpolation_temp
+                )
+            else:
+                interpolated_array = np.append(
+                    interpolated_array,
+                    Interpolation_temp,
+                    axis=0,
+                )
+                # self.handle_scene_coordinate_position_array_expanded=np.delete(self.handle_scene_coordinate_position_array_expanded, 0, 0)
+
+        # Interpolation between last and first
+        Interpolation_x_diff = (
+            node_position_array[0][0]
+            - node_position_array[-1][0]
+        )
+        Interpolation_y_diff = (
+            node_position_array[0][1]
+            - node_position_array[-1][1]
+        )
+
+        Interpolation_x_step = (
+            Interpolation_x_diff / point_num_per_line
+        )
+        Interpolation_y_step = (
+            Interpolation_y_diff / point_num_per_line
+        )
+
+        Interpolation_temp = np.array(
+            [
+                [
+                    node_position_array[-1][0],
+                    node_position_array[-1][1],
+                ],
+                [
+                    node_position_array[0][0],
+                    node_position_array[0][1],
+                ],
+            ]
+        )
+
+        for j in range(point_num_per_line - 1):
+            Interpolation_temp = np.insert(
+                Interpolation_temp,
+                1,
+                [
+                    node_position_array[0][0]
+                    - (j + 1) * Interpolation_x_step,
+                    node_position_array[0][1]
+                    - (j + 1) * Interpolation_y_step,
+                ],
+                axis=0,
+            )
+        Interpolation_temp = np.delete(Interpolation_temp, 0, 0)
+        # Interpolation_temp = np.flip(Interpolation_temp, 0)
+
+        interpolated_array = np.append(
+            interpolated_array,
+            Interpolation_temp,
+            axis=0,
+        )
+        
+        # ===== The first placed handle is at the end, put back to front.=====
+
+        interpolated_array_modified = np.zeros([interpolated_array.shape[0], interpolated_array.shape[1]])
+        interpolated_array_modified[0,:] = interpolated_array[-1,:]
+        interpolated_array_modified[1:interpolated_array.shape[0],:] = interpolated_array[0:interpolated_array.shape[0] -1, :]
+
+        return interpolated_array_modified
+    
+    def convert_coordinates_to_voltage(self, Value_xPixels, Value_voltXMax, 
+                                       contour_point_number, 
+                                       handle_viewbox_coordinates):
+        """
+        Transform the viewbox coordinates to galvo scanning voltage signals
+
+        Parameters
+        ----------
+        Value_xPixels : int
+            pixel number in the image.
+        Value_voltXMax : int
+            Galvo scanning voltage.
+        contour_point_number : int
+            Number of points in one contour scan signal.
+        handle_viewbox_coordinates : np.array, (n,2)
+            DESCRIPTION.
+
+        Returns
+        -------
+        transformed_x : TYPE
+            DESCRIPTION.
+        transformed_y : TYPE
+            DESCRIPTION.
+
+        """
+        if Value_xPixels == 500:
+            if Value_voltXMax == 3:
+                # for 500 x axis, the real ramp region sits around 52~552 out of 0~758
+                handle_viewbox_coordinates[:, 0] = (
+                    (handle_viewbox_coordinates[:, 0])
+                    / 500
+                ) * 6 - 3  # (handle_viewbox_coordinates[:,0]-constants.pmt_3v_indentation_pixels)
+                handle_viewbox_coordinates[:, 1] = (
+                    (handle_viewbox_coordinates[:, 1])
+                    / 500
+                ) * 6 - 3
+                handle_viewbox_coordinates = np.around(
+                    handle_viewbox_coordinates,
+                    decimals=3,
+                )
+                # shape into (n,) and stack
+                transformed_x = (
+                    np.resize(
+                        handle_viewbox_coordinates[
+                            :, 0
+                        ],
+                        (contour_point_number,),
+                    )
+                )
+                transformed_y = (
+                    np.resize(
+                        handle_viewbox_coordinates[
+                            :, 1
+                        ],
+                        (contour_point_number,),
+                    )
+                )
+                    
+        return transformed_x, transformed_y
+    
+    def speed_acceleration_check(self, sampling_rate, trace_x, trace_y):
+        """
+        Check the speed and acceleration of galvos
+
+        Parameters
+        ----------
+        sampling_rate : int
+            DESCRIPTION.
+        trace_x : np.array
+            DESCRIPTION.
+        trace_y : np.array
+            DESCRIPTION.
+
+        Returns
+        -------
+        None.
+
+        """
+        time_gap = 1 / sampling_rate
+        contour_x_speed = (
+            np.diff(trace_x)
+            / time_gap
+        )
+        contour_y_speed = (
+            np.diff(trace_y)
+            / time_gap
+        )
+
+        contour_x_acceleration = np.diff(contour_x_speed) / time_gap
+        contour_y_acceleration = np.diff(contour_y_speed) / time_gap
+
+        constants = HardwareConstants()
+        speedGalvo = constants.maxGalvoSpeed  # Volt/s
+        aGalvo = constants.maxGalvoAccel  # Acceleration galvo in volt/s^2
+        # print(np.amax(abs(contour_x_speed)))
+        # print(np.amax(abs(contour_y_speed)))
+        # print(np.amax(abs(contour_x_acceleration)))
+        # print(np.amax(abs(contour_y_acceleration)))
+
+        print(
+            str(np.mean(abs(contour_x_speed)))
+            + " and mean y speed:"
+            + str(np.mean(abs(contour_y_speed)))
+        )
+        print(
+            str(np.mean(abs(contour_x_acceleration)))
+            + " and mean y acceleration:"
+            + str(np.mean(abs(contour_y_acceleration)))
+        )
+
+        if speedGalvo > np.amax(abs(contour_x_speed)) and speedGalvo > np.amax(
+            abs(contour_y_speed)
+        ):
+            print("Contour speed is OK")
+            self.MessageToMainGUI("Contour speed is OK" + "\n")
+        else:
+            QMessageBox.warning(self, "OverLoad", "Speed too high!", QMessageBox.Ok)
+        if aGalvo > np.amax(abs(contour_x_acceleration)) and aGalvo > np.amax(
+            abs(contour_y_acceleration)
+        ):
+            print("Contour acceleration is OK")
+            self.MessageToMainGUI("Contour acceleration is OK" + "\n")
+        else:
+            QMessageBox.warning(
+                self, "OverLoad", "Acceleration too high!", QMessageBox.Ok
+            )
+    
     def emit_contour_signal(self):
         """
         Emit generated contour signals to the main widget, then pass to waveform widget.

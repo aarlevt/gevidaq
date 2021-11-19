@@ -130,7 +130,7 @@ class PatchclampSealTestUI(QWidget):
         # ----------------------------------------------------------------------
         # ----------------------------------GUI---------------------------------
         # ----------------------------------------------------------------------
-        self.setFixedHeight(800)
+        self.setFixedHeight(770)
         self.setWindowTitle("Patchclamp Seal Test")
 
         self.ICON_RED_LED = "./Icons/off.png"
