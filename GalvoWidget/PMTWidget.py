@@ -724,7 +724,7 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
         # Number of points in single round of contour scan
         self.points_per_round = len(self.final_stacked_voltage_signals[0])
         
-        print(self.final_stacked_voltage_signals)
+        # print(self.final_stacked_voltage_signals)
         
         # To the main widget Fiumicino
         self.emit_contour_signal()
@@ -800,6 +800,9 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
 
         getSceneHandlePositions IS THE FUNCTION TO GRAP COORDINATES FROM IMAGEITEM REGARDLESS OF IMAGEITEM ZOOMING OR PANNING!!!
         """
+        
+        self.Daq_sample_rate_pmt = int(self.contour_samprate.value())
+        
         self.ROIhandles = roi_item.getHandles()
         self.ROIhandles_nubmer = len(self.ROIhandles)
         contour_point_number = int(self.pointsinContour.value())
@@ -1520,6 +1523,7 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
         None.
 
         """
+        
         self.SignalForContourScanning.emit(
             int(self.points_per_round),
             self.Daq_sample_rate_pmt,

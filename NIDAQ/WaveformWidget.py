@@ -83,7 +83,11 @@ class WaveformGenerator(QWidget):
         # Setting tabs
         self.tabs = StylishQT.roundQGroupBox("Waveforms")
         self.savedirectory = None  # r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Patch clamp\2020-2-19 patch-perfusion-Archon1\cell1'
-
+        
+        # To solve camera losing first trigger issue, add one extra trigger
+        # in the beginning.
+        self.Adding_extra_camera_trigger_flag = True
+        
         # These contour scanning signals will be set from main panel.
         self.handle_viewbox_coordinate_position_array_expanded_forDaq_waveform = None
         self.time_per_contour = None
@@ -722,10 +726,17 @@ class WaveformGenerator(QWidget):
         self.button_del_digital = StylishQT.stop_deleteButton()
         self.button_del_digital.setFixedHeight(32)
         self.DigitalLayout.addWidget(self.button_del_digital, 0, 2)
-
-        #        self.button_execute_digital.clicked.connect(self.execute_digital)
-        # self.button_execute_digital.clicked.connect(self.startProgressBar)
         self.button_del_digital.clicked.connect(self.del_waveform_digital)
+        
+        self.switchExtraTrigger = StylishQT.MySwitch(
+            "Extra camTrigger", "indian red", "Extra camTrigger", "spring green", width=92
+        )
+        self.switchExtraTrigger.clicked.connect(
+            lambda: self.setExtraTriggerFlag()
+        )
+        self.switchExtraTrigger.setToolTip("Add one extra camera trigger at the start or not--Camera lossing first frame")
+        self.DigitalLayout.addWidget(self.switchExtraTrigger, 0, 3)
+        
         # ------------------------------------------------------Wave settings------------------------------------------
         self.digitalwavetablayout = QGridLayout()
 
@@ -892,10 +903,26 @@ class WaveformGenerator(QWidget):
 
         # ----------------------Square waves-----------------------------------
         if self.wavetabs.currentIndex() == 0:
-
-            self.waveform_data_dict[channel_keyword] = self.generate_analog(
-                channel_keyword
-            )
+            
+            if channel_keyword == "patchAO":
+                wave_original = self.generate_analog(
+                    channel_keyword
+                )
+                
+                # Instead of padding 0 by default, padding same last value
+                wave_original[-1] = wave_original[-2]
+                
+                # If patch duty cycle is 100, means holding, first padding
+                # put back from baseline to the same holding value.
+                patchAO_duty_cycle = int(self.AnalogDCTextbox.currentText())
+                if patchAO_duty_cycle == 100:
+                    wave_original[0] = wave_original[1]
+                
+                self.waveform_data_dict[channel_keyword] = wave_original
+            else:
+                self.waveform_data_dict[channel_keyword] = self.generate_analog(
+                    channel_keyword
+                )
             self.generate_graphy(
                 channel_keyword, self.waveform_data_dict[channel_keyword]
             )
@@ -1012,6 +1039,15 @@ class WaveformGenerator(QWidget):
 
         del self.PlotDataItem_dict[channel_keyword]
         del self.waveform_data_dict[channel_keyword]
+        
+    def setExtraTriggerFlag(self):
+        # Add extra 4 samples of one camera trigger or not
+        if self.switchExtraTrigger.isChecked():
+            self.Adding_extra_camera_trigger_flag = False
+            print("Don't add one extra camera trigger.")
+        else:
+            self.Adding_extra_camera_trigger_flag = True
+            print("Add one extra camera trigger.")
 
     #%%
     def generate_contour_for_waveform(self):
@@ -1028,18 +1064,30 @@ class WaveformGenerator(QWidget):
         self.total_contour_scanning_time = int(self.GalvoContourLastTextbox.value())
 
         repeatnum_contour = int(self.total_contour_scanning_time / self.time_per_contour)
-        self.repeated_contoursamples_1 = np.tile(
+        repeated_contoursamples_1 = np.tile(
             self.handle_viewbox_coordinate_position_array_expanded_x, repeatnum_contour
         )
-        self.repeated_contoursamples_2 = np.tile(
+        repeated_contoursamples_2 = np.tile(
             self.handle_viewbox_coordinate_position_array_expanded_y, repeatnum_contour
         )
-
-        self.handle_viewbox_coordinate_position_array_expanded_forDaq_waveform = (
-            np.vstack((self.repeated_contoursamples_1, self.repeated_contoursamples_2))
-        )
         
-        return self.handle_viewbox_coordinate_position_array_expanded_forDaq_waveform
+        # Append one extra values in the beginning like all others
+        repeated_contoursamples_1 = np.insert(repeated_contoursamples_1, 0,
+                                                   repeated_contoursamples_1[0], axis = 0)
+        repeated_contoursamples_2 = np.insert(repeated_contoursamples_2, 0,
+                                                   repeated_contoursamples_2[0], axis = 0)
+        
+        # Adding 0 to the end
+        repeated_contoursamples_1 = np.append(repeated_contoursamples_1,
+                                              0)
+        repeated_contoursamples_2 = np.append(repeated_contoursamples_2,
+                                              0)
+        
+        handle_viewbox_coordinate_position_array_expanded_forDaq_waveform = (
+            np.vstack((repeated_contoursamples_1, repeated_contoursamples_2))
+        )
+
+        return handle_viewbox_coordinate_position_array_expanded_forDaq_waveform
 
     def generate_galvos(self):
 
@@ -1277,6 +1325,8 @@ class WaveformGenerator(QWidget):
         final_galvotrigger = np.append(
             self.offset_galvotrigger, self.repeated_gap_samples_galvotrigger
         )
+        
+        # Adding a False in the end
         final_galvotrigger = np.append(final_galvotrigger, False)
 
         return final_galvotrigger
@@ -1549,7 +1599,7 @@ class WaveformGenerator(QWidget):
                 self.reference_length = len(reference_wave[0, :])
         else:
             self.reference_length = len(reference_wave)
-        print("reference_length: " + str(self.reference_length))
+        
 
         # ---------------Get all waveforms the same length.---------------------
         x_label = np.arange(self.reference_length) / self.uiDaq_sample_rate
@@ -1678,6 +1728,10 @@ class WaveformGenerator(QWidget):
 
         # Structured array to contain
         # https://stackoverflow.com/questions/39622533/numpy-array-as-datatype-in-a-structured-array
+        if self.Adding_extra_camera_trigger_flag == True: 
+            # In case of adding extra camera trigger, 4 values are added to all channels
+            self.reference_length += 4
+        print("reference_length: " + str(self.reference_length))
         dataType_analog = np.dtype(
             [("Waveform", float, (self.reference_length,)), ("Sepcification", "U20")]
         )
@@ -1685,6 +1739,30 @@ class WaveformGenerator(QWidget):
             [("Waveform", bool, (self.reference_length,)), ("Sepcification", "U20")]
         )
 
+    
+        # Adding 4 values at the front, same for all waveforms except the
+        # Camera trigger, which adds one extra trigger to solve the missing
+        # trigger in the beginning issue.
+        if self.Adding_extra_camera_trigger_flag == True: 
+            for waveform_key in self.waveform_data_dict:
+                
+                if waveform_key != 'cameratrigger':
+                    if waveform_key in self.AnalogChannelList:
+                        # For analog channels, add 4 same float values
+                        insert_array = np.ones([4]) * \
+                                       self.waveform_data_dict[waveform_key][0]
+                        
+                    else:
+                        # For digital boolen signals
+                        insert_array = np.ones([4], dtype = bool) * \
+                                       self.waveform_data_dict[waveform_key][0]                        
+                else:
+                    # In case of cameratrigger, add a trigger composed of 4 values
+                    insert_array = np.array([False, True, True, False])
+                
+                self.waveform_data_dict[waveform_key] = np.insert(self.waveform_data_dict[waveform_key], 0, insert_array)
+                    
+        # Making containers
         digital_line_num = 0
         for waveform_key in self.waveform_data_dict:
             if waveform_key in self.DigitalChannelList:
@@ -1714,6 +1792,7 @@ class WaveformGenerator(QWidget):
                 )
                 digital_line_num += 1
         print("Writing channels: {}".format(self.waveform_data_dict.keys()))
+        
         # -----------------Saving configed waveforms---------------------------
         if self.checkbox_saveWaveforms.isChecked():
 
@@ -1801,6 +1880,14 @@ class WaveformGenerator(QWidget):
         )
 
     def execute_tread(self):
+        """
+        Tread to move filter in advance.
+
+        Returns
+        -------
+        None.
+
+        """
         if self.FilterButtongroup.checkedId() == -1:
             # No emission filter configured.
             pass
@@ -1829,6 +1916,7 @@ class WaveformGenerator(QWidget):
         run_DAQ_Waveforms_thread.start()
 
     def filter_move_towards(self, COMport, pos):
+        # Filter move command.
         ELL9Filter_ins = ELL9Filter(COMport)
         ELL9Filter_ins.moveToPosition(pos)
 

@@ -278,9 +278,11 @@ class generate_AO_for640:
         self.wavecycles_2 = value11
 
     def generate(self):
+        # Offset samples
+        # By default one 0 is added so that we have a rising edge at the beginning.
         self.offsetsamples_number_2 = int(
             1 + (self.waveoffset_2 / 1000) * self.Daq_sample_rate
-        )  # By default one 0 is added so that we have a rising edge at the beginning.
+        )  
         self.offsetsamples_2 = self.wavebaseline_2 * np.ones(
             self.offsetsamples_number_2
         )  # Be default offsetsamples_number is an integer.
@@ -326,265 +328,268 @@ class generate_AO_for640:
 
         self.waverepeated = np.tile(self.waveallcyclewithgap_2, self.waverepeat_2)
 
-        self.finalwave_640 = np.append(self.offsetsamples_2, self.waverepeated)
-        self.finalwave_640 = np.append(self.finalwave_640, 0)
-        return self.finalwave_640
+        AO_output = np.append(self.offsetsamples_2, self.waverepeated)
+        
+        # Appending at the end of the waveforms
+        AO_output = np.append(AO_output, 0)
+        
+        return AO_output
 
 
-class generate_AO_for488:
-    def __init__(
-        self,
-        value1,
-        value2,
-        value3,
-        value4,
-        value5,
-        value6,
-        value7,
-        value8,
-        value9,
-        value10,
-        value11,
-    ):
-        self.Daq_sample_rate = value1
-        self.wavefrequency_488 = value2
-        self.waveoffset_488 = value3
-        self.waveperiod_488 = value4
-        self.waveDC_488 = value5
-        self.waverepeat_488 = value6
-        self.wavegap_488 = value7
-        self.wavestartamplitude_488 = value8
-        self.wavebaseline_488 = value9
-        self.wavestep_488 = value10
-        self.wavecycles_488 = value11
+# class generate_AO_for488:
+#     def __init__(
+#         self,
+#         value1,
+#         value2,
+#         value3,
+#         value4,
+#         value5,
+#         value6,
+#         value7,
+#         value8,
+#         value9,
+#         value10,
+#         value11,
+#     ):
+#         self.Daq_sample_rate = value1
+#         self.wavefrequency_488 = value2
+#         self.waveoffset_488 = value3
+#         self.waveperiod_488 = value4
+#         self.waveDC_488 = value5
+#         self.waverepeat_488 = value6
+#         self.wavegap_488 = value7
+#         self.wavestartamplitude_488 = value8
+#         self.wavebaseline_488 = value9
+#         self.wavestep_488 = value10
+#         self.wavecycles_488 = value11
 
-    def generate(self):
-        self.offsetsamples_number_488 = int(
-            1 + (self.waveoffset_488 / 1000) * self.Daq_sample_rate
-        )  # By default one 0 is added so that we have a rising edge at the beginning.
-        self.offsetsamples_488 = self.wavebaseline_488 * np.ones(
-            self.offsetsamples_number_488
-        )  # Be default offsetsamples_number is an integer.
+#     def generate(self):
+#         self.offsetsamples_number_488 = int(
+#             1 + (self.waveoffset_488 / 1000) * self.Daq_sample_rate
+#         )  # By default one 0 is added so that we have a rising edge at the beginning.
+#         self.offsetsamples_488 = self.wavebaseline_488 * np.ones(
+#             self.offsetsamples_number_488
+#         )  # Be default offsetsamples_number is an integer.
 
-        self.sample_num_singleperiod_488 = round(
-            self.Daq_sample_rate / self.wavefrequency_488
-        )
-        self.true_sample_num_singleperiod_488 = round(
-            (self.waveDC_488 / 100) * self.sample_num_singleperiod_488
-        )
-        self.false_sample_num_singleperiod_488 = (
-            self.sample_num_singleperiod_488 - self.true_sample_num_singleperiod_488
-        )
+#         self.sample_num_singleperiod_488 = round(
+#             self.Daq_sample_rate / self.wavefrequency_488
+#         )
+#         self.true_sample_num_singleperiod_488 = round(
+#             (self.waveDC_488 / 100) * self.sample_num_singleperiod_488
+#         )
+#         self.false_sample_num_singleperiod_488 = (
+#             self.sample_num_singleperiod_488 - self.true_sample_num_singleperiod_488
+#         )
 
-        self.sample_singleperiod_488 = np.append(
-            self.wavestartamplitude_488
-            * np.ones(self.true_sample_num_singleperiod_488),
-            self.wavebaseline_488 * np.ones(self.false_sample_num_singleperiod_488),
-        )
-        self.repeatnumberintotal_488 = int(
-            self.wavefrequency_488 * (self.waveperiod_488 / 1000)
-        )
-        # In default, pulses * sample_singleperiod_2 = period
-        self.sample_singlecycle_488 = np.tile(
-            self.sample_singleperiod_488, int(self.repeatnumberintotal_488)
-        )  # At least 1 rise and fall during one cycle
+#         self.sample_singleperiod_488 = np.append(
+#             self.wavestartamplitude_488
+#             * np.ones(self.true_sample_num_singleperiod_488),
+#             self.wavebaseline_488 * np.ones(self.false_sample_num_singleperiod_488),
+#         )
+#         self.repeatnumberintotal_488 = int(
+#             self.wavefrequency_488 * (self.waveperiod_488 / 1000)
+#         )
+#         # In default, pulses * sample_singleperiod_2 = period
+#         self.sample_singlecycle_488 = np.tile(
+#             self.sample_singleperiod_488, int(self.repeatnumberintotal_488)
+#         )  # At least 1 rise and fall during one cycle
 
-        self.waveallcycle_488 = []
-        # Adding steps to cycles
-        for i in range(self.wavecycles_488):
-            cycle_roof_value = self.wavestep_488 * i
-            self.cycleappend = np.where(
-                self.sample_singlecycle_488 < self.wavestartamplitude_488,
-                self.wavebaseline_488,
-                self.wavestartamplitude_488 + cycle_roof_value,
-            )
-            self.waveallcycle_488 = np.append(self.waveallcycle_488, self.cycleappend)
+#         self.waveallcycle_488 = []
+#         # Adding steps to cycles
+#         for i in range(self.wavecycles_488):
+#             cycle_roof_value = self.wavestep_488 * i
+#             self.cycleappend = np.where(
+#                 self.sample_singlecycle_488 < self.wavestartamplitude_488,
+#                 self.wavebaseline_488,
+#                 self.wavestartamplitude_488 + cycle_roof_value,
+#             )
+#             self.waveallcycle_488 = np.append(self.waveallcycle_488, self.cycleappend)
 
-        if self.wavegap_488 != 0:
-            self.gapsample = self.wavebaseline_488 * np.ones(self.wavegap_488)
-            self.waveallcyclewithgap_488 = np.append(
-                self.waveallcycle_488, self.gapsample
-            )
-        else:
-            self.waveallcyclewithgap_488 = self.waveallcycle_488
+#         if self.wavegap_488 != 0:
+#             self.gapsample = self.wavebaseline_488 * np.ones(self.wavegap_488)
+#             self.waveallcyclewithgap_488 = np.append(
+#                 self.waveallcycle_488, self.gapsample
+#             )
+#         else:
+#             self.waveallcyclewithgap_488 = self.waveallcycle_488
 
-        self.waverepeated = np.tile(self.waveallcyclewithgap_488, self.waverepeat_488)
+#         self.waverepeated = np.tile(self.waveallcyclewithgap_488, self.waverepeat_488)
 
-        self.finalwave_488 = np.append(self.offsetsamples_488, self.waverepeated)
-        self.finalwave_488 = np.append(self.finalwave_488, 0)
-        return self.finalwave_488
-
-
-class generate_AO_for532:
-    def __init__(
-        self,
-        value1,
-        value2,
-        value3,
-        value4,
-        value5,
-        value6,
-        value7,
-        value8,
-        value9,
-        value10,
-        value11,
-    ):
-        self.Daq_sample_rate = value1
-        self.wavefrequency_532 = value2
-        self.waveoffset_532 = value3
-        self.waveperiod_532 = value4
-        self.waveDC_532 = value5
-        self.waverepeat_532 = value6
-        self.wavegap_532 = value7
-        self.wavestartamplitude_532 = value8
-        self.wavebaseline_532 = value9
-        self.wavestep_532 = value10
-        self.wavecycles_532 = value11
-
-    def generate(self):
-        self.offsetsamples_number_532 = int(
-            1 + (self.waveoffset_532 / 1000) * self.Daq_sample_rate
-        )  # By default one 0 is added so that we have a rising edge at the beginning.
-        self.offsetsamples_532 = self.wavebaseline_532 * np.ones(
-            self.offsetsamples_number_532
-        )  # Be default offsetsamples_number is an integer.
-
-        self.sample_num_singleperiod_532 = round(
-            self.Daq_sample_rate / self.wavefrequency_532
-        )
-        self.true_sample_num_singleperiod_532 = round(
-            (self.waveDC_532 / 100) * self.sample_num_singleperiod_532
-        )
-        self.false_sample_num_singleperiod_532 = (
-            self.sample_num_singleperiod_532 - self.true_sample_num_singleperiod_532
-        )
-
-        self.sample_singleperiod_532 = np.append(
-            self.wavestartamplitude_532
-            * np.ones(self.true_sample_num_singleperiod_532),
-            self.wavebaseline_532 * np.ones(self.false_sample_num_singleperiod_532),
-        )
-        self.repeatnumberintotal_532 = int(
-            self.wavefrequency_532 * (self.waveperiod_532 / 1000)
-        )
-        # In default, pulses * sample_singleperiod_2 = period
-        self.sample_singlecycle_532 = np.tile(
-            self.sample_singleperiod_532, int(self.repeatnumberintotal_532)
-        )  # At least 1 rise and fall during one cycle
-
-        self.waveallcycle_532 = []
-        # Adding steps to cycles
-        for i in range(self.wavecycles_532):
-            cycle_roof_value = self.wavestep_532 * i
-            self.cycleappend = np.where(
-                self.sample_singlecycle_532 < self.wavestartamplitude_532,
-                self.wavebaseline_532,
-                self.wavestartamplitude_532 + cycle_roof_value,
-            )
-            self.waveallcycle_532 = np.append(self.waveallcycle_532, self.cycleappend)
-
-        if self.wavegap_532 != 0:
-            self.gapsample = self.wavebaseline_532 * np.ones(self.wavegap_532)
-            self.waveallcyclewithgap_532 = np.append(
-                self.waveallcycle_532, self.gapsample
-            )
-        else:
-            self.waveallcyclewithgap_532 = self.waveallcycle_532
-
-        self.waverepeated = np.tile(self.waveallcyclewithgap_532, self.waverepeat_532)
-
-        self.finalwave_532 = np.append(self.offsetsamples_532, self.waverepeated)
-        self.finalwave_532 = np.append(self.finalwave_532, 0)
-        return self.finalwave_532
+#         self.finalwave_488 = np.append(self.offsetsamples_488, self.waverepeated)
+#         self.finalwave_488 = np.append(self.finalwave_488, 0)
+#         return self.finalwave_488
 
 
-class generate_AO_forpatch:
-    def __init__(
-        self,
-        value1,
-        value2,
-        value3,
-        value4,
-        value5,
-        value6,
-        value7,
-        value8,
-        value9,
-        value10,
-        value11,
-    ):
-        self.Daq_sample_rate = value1
-        self.wavefrequency_patch = value2
-        self.waveoffset_patch = value3
-        self.waveperiod_patch = value4
-        self.waveDC_patch = value5
-        self.waverepeat_patch = value6
-        self.wavegap_patch = value7
-        self.wavestartamplitude_patch = value8
-        self.wavebaseline_patch = value9
-        self.wavestep_patch = value10
-        self.wavecycles_patch = value11
+# class generate_AO_for532:
+#     def __init__(
+#         self,
+#         value1,
+#         value2,
+#         value3,
+#         value4,
+#         value5,
+#         value6,
+#         value7,
+#         value8,
+#         value9,
+#         value10,
+#         value11,
+#     ):
+#         self.Daq_sample_rate = value1
+#         self.wavefrequency_532 = value2
+#         self.waveoffset_532 = value3
+#         self.waveperiod_532 = value4
+#         self.waveDC_532 = value5
+#         self.waverepeat_532 = value6
+#         self.wavegap_532 = value7
+#         self.wavestartamplitude_532 = value8
+#         self.wavebaseline_532 = value9
+#         self.wavestep_532 = value10
+#         self.wavecycles_532 = value11
 
-    def generate(self):
-        self.offsetsamples_number_patch = int(
-            1 + (self.waveoffset_patch / 1000) * self.Daq_sample_rate
-        )  # By default one 0 is added so that we have a rising edge at the beginning.
-        self.offsetsamples_patch = self.wavebaseline_patch * np.ones(
-            self.offsetsamples_number_patch
-        )  # Be default offsetsamples_number is an integer.
+#     def generate(self):
+#         self.offsetsamples_number_532 = int(
+#             1 + (self.waveoffset_532 / 1000) * self.Daq_sample_rate
+#         )  # By default one 0 is added so that we have a rising edge at the beginning.
+#         self.offsetsamples_532 = self.wavebaseline_532 * np.ones(
+#             self.offsetsamples_number_532
+#         )  # Be default offsetsamples_number is an integer.
 
-        self.sample_num_singleperiod_patch = round(
-            self.Daq_sample_rate / self.wavefrequency_patch
-        )
-        self.true_sample_num_singleperiod_patch = round(
-            (self.waveDC_patch / 100) * self.sample_num_singleperiod_patch
-        )
-        self.false_sample_num_singleperiod_patch = (
-            self.sample_num_singleperiod_patch - self.true_sample_num_singleperiod_patch
-        )
+#         self.sample_num_singleperiod_532 = round(
+#             self.Daq_sample_rate / self.wavefrequency_532
+#         )
+#         self.true_sample_num_singleperiod_532 = round(
+#             (self.waveDC_532 / 100) * self.sample_num_singleperiod_532
+#         )
+#         self.false_sample_num_singleperiod_532 = (
+#             self.sample_num_singleperiod_532 - self.true_sample_num_singleperiod_532
+#         )
 
-        self.sample_singleperiod_patch = np.append(
-            self.wavestartamplitude_patch
-            * np.ones(self.true_sample_num_singleperiod_patch),
-            self.wavebaseline_patch * np.ones(self.false_sample_num_singleperiod_patch),
-        )
-        self.repeatnumberintotal_patch = int(
-            self.wavefrequency_patch * (self.waveperiod_patch / 1000)
-        )
-        # In default, pulses * sample_singleperiod_2 = period
-        self.sample_singlecycle_patch = np.tile(
-            self.sample_singleperiod_patch, int(self.repeatnumberintotal_patch)
-        )  # At least 1 rise and fall during one cycle
+#         self.sample_singleperiod_532 = np.append(
+#             self.wavestartamplitude_532
+#             * np.ones(self.true_sample_num_singleperiod_532),
+#             self.wavebaseline_532 * np.ones(self.false_sample_num_singleperiod_532),
+#         )
+#         self.repeatnumberintotal_532 = int(
+#             self.wavefrequency_532 * (self.waveperiod_532 / 1000)
+#         )
+#         # In default, pulses * sample_singleperiod_2 = period
+#         self.sample_singlecycle_532 = np.tile(
+#             self.sample_singleperiod_532, int(self.repeatnumberintotal_532)
+#         )  # At least 1 rise and fall during one cycle
 
-        self.waveallcycle_patch = []
-        # Adding steps to cycles
-        for i in range(self.wavecycles_patch):
-            cycle_roof_value = self.wavestep_patch * i
-            self.cycleappend = np.where(
-                self.sample_singlecycle_patch < self.wavestartamplitude_patch,
-                self.wavebaseline_patch,
-                self.wavestartamplitude_patch + cycle_roof_value,
-            )
-            self.waveallcycle_patch = np.append(
-                self.waveallcycle_patch, self.cycleappend
-            )
+#         self.waveallcycle_532 = []
+#         # Adding steps to cycles
+#         for i in range(self.wavecycles_532):
+#             cycle_roof_value = self.wavestep_532 * i
+#             self.cycleappend = np.where(
+#                 self.sample_singlecycle_532 < self.wavestartamplitude_532,
+#                 self.wavebaseline_532,
+#                 self.wavestartamplitude_532 + cycle_roof_value,
+#             )
+#             self.waveallcycle_532 = np.append(self.waveallcycle_532, self.cycleappend)
 
-        if self.wavegap_patch != 0:
-            self.gapsample = self.wavebaseline_patch * np.ones(self.wavegap_patch)
-            self.waveallcyclewithgap_patch = np.append(
-                self.waveallcycle_patch, self.gapsample
-            )
-        else:
-            self.waveallcyclewithgap_patch = self.waveallcycle_patch
+#         if self.wavegap_532 != 0:
+#             self.gapsample = self.wavebaseline_532 * np.ones(self.wavegap_532)
+#             self.waveallcyclewithgap_532 = np.append(
+#                 self.waveallcycle_532, self.gapsample
+#             )
+#         else:
+#             self.waveallcyclewithgap_532 = self.waveallcycle_532
 
-        self.waverepeated = np.tile(
-            self.waveallcyclewithgap_patch, self.waverepeat_patch
-        )
+#         self.waverepeated = np.tile(self.waveallcyclewithgap_532, self.waverepeat_532)
 
-        self.finalwave_patch = np.append(self.offsetsamples_patch, self.waverepeated)
-        self.finalwave_patch = np.append(self.finalwave_patch, 0)
-        return self.finalwave_patch
+#         self.finalwave_532 = np.append(self.offsetsamples_532, self.waverepeated)
+#         self.finalwave_532 = np.append(self.finalwave_532, 0)
+#         return self.finalwave_532
+
+
+# class generate_AO_forpatch:
+#     def __init__(
+#         self,
+#         value1,
+#         value2,
+#         value3,
+#         value4,
+#         value5,
+#         value6,
+#         value7,
+#         value8,
+#         value9,
+#         value10,
+#         value11,
+#     ):
+#         self.Daq_sample_rate = value1
+#         self.wavefrequency_patch = value2
+#         self.waveoffset_patch = value3
+#         self.waveperiod_patch = value4
+#         self.waveDC_patch = value5
+#         self.waverepeat_patch = value6
+#         self.wavegap_patch = value7
+#         self.wavestartamplitude_patch = value8
+#         self.wavebaseline_patch = value9
+#         self.wavestep_patch = value10
+#         self.wavecycles_patch = value11
+
+#     def generate(self):
+#         self.offsetsamples_number_patch = int(
+#             1 + (self.waveoffset_patch / 1000) * self.Daq_sample_rate
+#         )  # By default one 0 is added so that we have a rising edge at the beginning.
+#         self.offsetsamples_patch = self.wavebaseline_patch * np.ones(
+#             self.offsetsamples_number_patch
+#         )  # Be default offsetsamples_number is an integer.
+
+#         self.sample_num_singleperiod_patch = round(
+#             self.Daq_sample_rate / self.wavefrequency_patch
+#         )
+#         self.true_sample_num_singleperiod_patch = round(
+#             (self.waveDC_patch / 100) * self.sample_num_singleperiod_patch
+#         )
+#         self.false_sample_num_singleperiod_patch = (
+#             self.sample_num_singleperiod_patch - self.true_sample_num_singleperiod_patch
+#         )
+
+#         self.sample_singleperiod_patch = np.append(
+#             self.wavestartamplitude_patch
+#             * np.ones(self.true_sample_num_singleperiod_patch),
+#             self.wavebaseline_patch * np.ones(self.false_sample_num_singleperiod_patch),
+#         )
+#         self.repeatnumberintotal_patch = int(
+#             self.wavefrequency_patch * (self.waveperiod_patch / 1000)
+#         )
+#         # In default, pulses * sample_singleperiod_2 = period
+#         self.sample_singlecycle_patch = np.tile(
+#             self.sample_singleperiod_patch, int(self.repeatnumberintotal_patch)
+#         )  # At least 1 rise and fall during one cycle
+
+#         self.waveallcycle_patch = []
+#         # Adding steps to cycles
+#         for i in range(self.wavecycles_patch):
+#             cycle_roof_value = self.wavestep_patch * i
+#             self.cycleappend = np.where(
+#                 self.sample_singlecycle_patch < self.wavestartamplitude_patch,
+#                 self.wavebaseline_patch,
+#                 self.wavestartamplitude_patch + cycle_roof_value,
+#             )
+#             self.waveallcycle_patch = np.append(
+#                 self.waveallcycle_patch, self.cycleappend
+#             )
+
+#         if self.wavegap_patch != 0:
+#             self.gapsample = self.wavebaseline_patch * np.ones(self.wavegap_patch)
+#             self.waveallcyclewithgap_patch = np.append(
+#                 self.waveallcycle_patch, self.gapsample
+#             )
+#         else:
+#             self.waveallcyclewithgap_patch = self.waveallcycle_patch
+
+#         self.waverepeated = np.tile(
+#             self.waveallcyclewithgap_patch, self.waverepeat_patch
+#         )
+
+#         self.finalwave_patch = np.append(self.offsetsamples_patch, self.waverepeated)
+#         self.finalwave_patch = np.append(self.finalwave_patch, 0)
+#         return self.finalwave_patch
 
 
 class generate_digital_waveform:
@@ -633,79 +638,80 @@ class generate_digital_waveform:
             self.waveallcyclewithgap = self.sample_singlecycle
 
         self.waverepeated = np.tile(self.waveallcyclewithgap, self.waverepeat)
-
+        
+        # Append a False in the end
         self.finalwave = np.append(self.offsetsamples, self.waverepeated)
         self.finalwave = np.append(self.finalwave, False)
 
         return self.finalwave
 
 
-class generate_DO_forPerfusion:
-    def __init__(self, value1, value2, value3, value4, value5, value6, value7):
-        self.Daq_sample_rate = value1
-        self.wavefrequency_Perfusion = value2
-        self.waveoffset_Perfusion = value3
-        self.waveperiod_Perfusion = value4
-        self.waveDC_Perfusion = value5
-        self.waverepeat_Perfusion_number = value6
-        self.wavegap_Perfusion = value7
+# class generate_DO_forPerfusion:
+#     def __init__(self, value1, value2, value3, value4, value5, value6, value7):
+#         self.Daq_sample_rate = value1
+#         self.wavefrequency_Perfusion = value2
+#         self.waveoffset_Perfusion = value3
+#         self.waveperiod_Perfusion = value4
+#         self.waveDC_Perfusion = value5
+#         self.waverepeat_Perfusion_number = value6
+#         self.wavegap_Perfusion = value7
 
-    def generate(self):
+#     def generate(self):
 
-        self.offsetsamples_number_Perfusion = int(
-            1 + (self.waveoffset_Perfusion / 1000) * self.Daq_sample_rate
-        )  # By default one 0 is added so that we have a rising edge at the beginning.
-        self.offsetsamples_Perfusion = np.zeros(
-            self.offsetsamples_number_Perfusion, dtype=bool
-        )  # Be default offsetsamples_number is an integer.
+#         self.offsetsamples_number_Perfusion = int(
+#             1 + (self.waveoffset_Perfusion / 1000) * self.Daq_sample_rate
+#         )  # By default one 0 is added so that we have a rising edge at the beginning.
+#         self.offsetsamples_Perfusion = np.zeros(
+#             self.offsetsamples_number_Perfusion, dtype=bool
+#         )  # Be default offsetsamples_number is an integer.
 
-        self.sample_num_singleperiod_Perfusion = round(
-            self.Daq_sample_rate / self.wavefrequency_Perfusion
-        )
-        self.true_sample_num_singleperiod_Perfusion = round(
-            (self.waveDC_Perfusion / 100) * self.sample_num_singleperiod_Perfusion
-        )
-        self.false_sample_num_singleperiod_Perfusion = (
-            self.sample_num_singleperiod_Perfusion
-            - self.true_sample_num_singleperiod_Perfusion
-        )
+#         self.sample_num_singleperiod_Perfusion = round(
+#             self.Daq_sample_rate / self.wavefrequency_Perfusion
+#         )
+#         self.true_sample_num_singleperiod_Perfusion = round(
+#             (self.waveDC_Perfusion / 100) * self.sample_num_singleperiod_Perfusion
+#         )
+#         self.false_sample_num_singleperiod_Perfusion = (
+#             self.sample_num_singleperiod_Perfusion
+#             - self.true_sample_num_singleperiod_Perfusion
+#         )
 
-        self.sample_singleperiod_Perfusion = np.append(
-            np.ones(self.true_sample_num_singleperiod_Perfusion, dtype=bool),
-            np.zeros(self.false_sample_num_singleperiod_Perfusion, dtype=bool),
-        )
-        self.repeatnumberintotal_Perfusion = int(
-            self.wavefrequency_Perfusion * (self.waveperiod_Perfusion / 1000)
-        )
-        # In default, pulses * sample_singleperiod_2 = period
-        self.sample_singlecycle_Perfusion = np.tile(
-            self.sample_singleperiod_Perfusion, int(self.repeatnumberintotal_Perfusion)
-        )  # At least 1 rise and fall during one cycle
+#         self.sample_singleperiod_Perfusion = np.append(
+#             np.ones(self.true_sample_num_singleperiod_Perfusion, dtype=bool),
+#             np.zeros(self.false_sample_num_singleperiod_Perfusion, dtype=bool),
+#         )
+#         self.repeatnumberintotal_Perfusion = int(
+#             self.wavefrequency_Perfusion * (self.waveperiod_Perfusion / 1000)
+#         )
+#         # In default, pulses * sample_singleperiod_2 = period
+#         self.sample_singlecycle_Perfusion = np.tile(
+#             self.sample_singleperiod_Perfusion, int(self.repeatnumberintotal_Perfusion)
+#         )  # At least 1 rise and fall during one cycle
 
-        if self.wavegap_Perfusion != 0:
-            self.gapsample_Perfusion = np.zeros(self.wavegap_Perfusion, dtype=bool)
-            self.waveallcyclewithgap_Perfusion = np.append(
-                self.sample_singlecycle_Perfusion, self.gapsample_Perfusion
-            )
-        else:
-            self.waveallcyclewithgap_Perfusion = self.sample_singlecycle_Perfusion
+#         if self.wavegap_Perfusion != 0:
+#             self.gapsample_Perfusion = np.zeros(self.wavegap_Perfusion, dtype=bool)
+#             self.waveallcyclewithgap_Perfusion = np.append(
+#                 self.sample_singlecycle_Perfusion, self.gapsample_Perfusion
+#             )
+#         else:
+#             self.waveallcyclewithgap_Perfusion = self.sample_singlecycle_Perfusion
 
-        self.waverepeated_Perfusion = np.tile(
-            self.waveallcyclewithgap_Perfusion, self.waverepeat_Perfusion_number
-        )
+#         self.waverepeated_Perfusion = np.tile(
+#             self.waveallcyclewithgap_Perfusion, self.waverepeat_Perfusion_number
+#         )
 
-        self.finalwave_Perfusion = np.append(
-            self.offsetsamples_Perfusion, self.waverepeated_Perfusion
-        )
+#         self.finalwave_Perfusion = np.append(
+#             self.offsetsamples_Perfusion, self.waverepeated_Perfusion
+#         )
 
-        if self.finalwave_Perfusion[-1] == True:
-            self.finalwave_Perfusion = np.append(
-                self.finalwave_Perfusion, True
-            )  # Adding a True or False to reset the channel.
-        else:
-            self.finalwave_Perfusion = np.append(self.finalwave_Perfusion, False)
+#         if self.finalwave_Perfusion[-1] == True:
+#             self.finalwave_Perfusion = np.append(
+#                 self.finalwave_Perfusion, True
+#             )  # Adding a True or False to reset the channel.
+#         else:
+#             self.finalwave_Perfusion = np.append(self.finalwave_Perfusion, False)
 
-        return self.finalwave_Perfusion
+#         return self.finalwave_Perfusion
 
 
 class generate_ramp:
