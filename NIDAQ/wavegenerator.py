@@ -281,7 +281,7 @@ class generate_AO_for640:
         # Offset samples
         # By default one 0 is added so that we have a rising edge at the beginning.
         self.offsetsamples_number_2 = int(
-            1 + (self.waveoffset_2 / 1000) * self.Daq_sample_rate
+            (self.waveoffset_2 / 1000) * self.Daq_sample_rate
         )  
         self.offsetsamples_2 = self.wavebaseline_2 * np.ones(
             self.offsetsamples_number_2
@@ -331,7 +331,7 @@ class generate_AO_for640:
         AO_output = np.append(self.offsetsamples_2, self.waverepeated)
         
         # Appending at the end of the waveforms
-        AO_output = np.append(AO_output, 0)
+        # AO_output = np.append(AO_output, 0)
         
         return AO_output
 
@@ -605,7 +605,7 @@ class generate_digital_waveform:
     def generate(self):
 
         self.offsetsamples_number = int(
-            1 + (self.waveoffset / 1000) * self.Daq_sample_rate
+            (self.waveoffset / 1000) * self.Daq_sample_rate
         )  # By default one 0 is added so that we have a rising edge at the beginning.
         self.offsetsamples = np.zeros(
             self.offsetsamples_number, dtype=bool
@@ -641,7 +641,7 @@ class generate_digital_waveform:
         
         # Append a False in the end
         self.finalwave = np.append(self.offsetsamples, self.waverepeated)
-        self.finalwave = np.append(self.finalwave, False)
+        # self.finalwave = np.append(self.finalwave, False)
 
         return self.finalwave
 
