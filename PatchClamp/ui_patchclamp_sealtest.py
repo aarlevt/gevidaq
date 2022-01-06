@@ -181,7 +181,7 @@ class PatchclampSealTestUI(QWidget):
         self.LowerVoltagebox = QSpinBox(self)
         self.LowerVoltagebox.setMaximum(2000)
         self.LowerVoltagebox.setMinimum(-2000)
-        self.LowerVoltagebox.setValue(-30)
+        self.LowerVoltagebox.setValue(-10)
         self.LowerVoltagebox.setSingleStep(10)
         WavesettingsContainerLayout.addWidget(self.LowerVoltagebox, 0, 3)
 

@@ -45,7 +45,8 @@ class NiDaqChannels:
             "488blanking": "Dev1/port0/line3",
             "DMD_trigger": "Dev1/port0/line0",
             "PMT": "Dev1/ai0",
-            "Vp": "Dev1/ai22",  # patchVoltOutChannel
+            "Vp": "Dev1/ai20",# patchVoltOutChannel Vp and Ip are from the same channel(22.12.2021)
+            "VpPatch": "Dev1/ai22", #For sealtest only
             "Ip": "Dev1/ai20",  # patchCurOutChannel
             "Perfusion_8": "Dev1/port0/line21",  # line21 is perfusion_8, set to 19-LED for test
             "LED": "Dev1/port0/line19",  # Need to assign new port.

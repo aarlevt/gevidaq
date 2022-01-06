@@ -3208,7 +3208,7 @@ class ProcessImage:
             )
             pylab.subplot(212)
             pylab.plot(freqs, 20 * scipy.log10(FFT), "x")
-            pylab.xlim(1, 500)
+            pylab.xlim(1, 1000)
             pylab.show()
 
         return freqs
@@ -4470,7 +4470,7 @@ class CurveFit:
 
         #### Input for initialization of the class ####
         # fluorescence   = Weighted trace of fluorescence signal
-        # waveform       = waveform generated with Native Instruments DAQ
+        # waveform       = waveform generated with Native Instruments DAQ, here is Vp
         # rhodopsin      = label for the data (e.g., 'Helios4')
         # Total_time     = Total recording time of camera
         # camera_fps     = Frames per second of the recording camera
@@ -4485,9 +4485,13 @@ class CurveFit:
             (np.arange(len(self.fluorescence)) + 1) * 1 / self.camera_fps
         )  # Time axis for camera fluorescence signal
         self.rhodopsin = rhodopsin
-        self.waveform = waveform[
-            7:
-        ]  # First 5 elements are meta data. Last or first 2 can be neglected
+        
+        # In the recorded Vp trace, the 0 data is sampling rate,
+        # 1 to 4 are NiDaq scaling coffecients, 
+        # 5 to 8 are extra samples for extra camera trigger,
+        # The last one is padding 0 to reset NIDaq channels.
+        self.waveform = waveform
+            
         self.total_time = round(len(self.waveform) / DAQ_sampling_rate)
         self.waveformcopy = self.waveform.copy()
         self.timewaveform = (
@@ -5010,6 +5014,8 @@ class CurveFit:
         # Here we have 5hz step, so first half will be 50 ms in time.
         # =============================================================================
         array_length = len(self.avg_time_upswing)
+        print("array_length{}".format(array_length))
+        print(round(array_length / 2))
         self.avg_fluorescence_upswing = self.avg_fluorescence_upswing[
             : round(array_length / 2)
         ]

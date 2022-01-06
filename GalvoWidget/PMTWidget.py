@@ -102,7 +102,7 @@ class PMTWidgetUI(QWidget):
         self.pmt_roiwidget.resize(150, 150)
         self.pmt_roiwidget.addLabel("ROI", row=0, col=0)
         
-        
+        self.pmtimageroiLayout.addWidget(self.pmt_roiwidget,0,0)
         # --------------------------- create ROI ------------------------------
         self.vb_2 = self.pmt_roiwidget.addViewBox(
             row=1, col=0, lockAspect=True, colspan=1
@@ -144,7 +144,8 @@ class PMTWidgetUI(QWidget):
         pmtContourContainer = StylishQT.roundQGroupBox(title="Contour selection")
         # pmtContourContainer.setFixedWidth(280)
         self.pmtContourLayout = QGridLayout()
-        # contour_Description = QLabel("Handle number updates when parking mouse cursor upon ROI. Points in contour are divided evenly between handles.")
+        # contour_Description = QLabel(
+        #"Handle number updates when parking mouse cursor upon ROI. Points in contour are divided evenly between handles.")
         # contour_Description.setStyleSheet('color: blue')
         # self.pmtContourLayout.addWidget(contour_Description,0,0)
 
@@ -153,7 +154,9 @@ class PMTWidgetUI(QWidget):
 
         self.contour_strategy = QComboBox()
         self.contour_strategy.addItems(["Evenly between", "Uniform"])
-        self.contour_strategy.setToolTip("Even in-between: points evenly distribute inbetween handles; Uniform: evenly distribute regardless of handles")
+        self.contour_strategy.setToolTip(
+            "Even in-between: points evenly distribute inbetween handles; Uniform: evenly distribute regardless of handles"
+            )
         self.pmtContourLayout.addWidget(self.contour_strategy, 1, 1)
 
         self.pointsinContour = QSpinBox(self)
@@ -415,11 +418,10 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
 
     #        self.layout.setLayout(pmtmaster)
 
-    # &&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
     # --------------------------------------------------------------------------------------------------------------------------------------
     # ------------------------------------------------------Functions for TAB 'PMT'---------------------------------------------------------
     # --------------------------------------------------------------------------------------------------------------------------------------
-    # **************************************************************************************************************************************
+
     def generate_poly_roi(self, event):
         """
         For each click event, add a handle to the poly roi
@@ -491,7 +493,7 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
             )
             
     def keyPressEvent(self, event):
-        # print(event.key())
+        # Toggle between drawing and not drawing roi states.
         if event.key() == 70: # If the 'f' key is pressed
             if self.flag_is_drawing:
                 self.flag_is_drawing = False
@@ -1112,7 +1114,8 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
                         distance_vector - self.Interpolation_remaining_fornextround
                     ) // self.averaged_uniform_step
 
-                    # self.Interpolation_remaining_fornextround = self.averaged_uniform_step*(1-((distance_vector-self.Interpolation_remaining_fornextround)/self.averaged_uniform_step-num_of_Interpolation))
+                    # self.Interpolation_remaining_fornextround = self.averaged_uniform_step*\
+                    # (1-((distance_vector-self.Interpolation_remaining_fornextround)/self.averaged_uniform_step-num_of_Interpolation))
                     self.Interpolation_remaining_fornextround_x = (
                         self.Interpolation_remaining_fornextround / distance_vector
                     ) * Interpolation_x_diff
@@ -1180,7 +1183,7 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
 
             print(self.handle_scene_coordinate_position_array_expanded_uniform)
             print(self.handle_scene_coordinate_position_array_expanded_uniform.shape)
-            # -----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+            #%%
 
             self.handle_viewbox_coordinate_position_array_expanded = np.zeros(
                 (contour_point_number, 2)

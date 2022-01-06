@@ -972,6 +972,25 @@ class DAQmission(
                             ),
                             self.binaryfile_Ip_data,
                         )
+            
+            if "Ip" in self.readin_channels:
+                
+                self.binaryfile_Ip_data = np.concatenate(
+                    (
+                        np.array([self.sampling_rate]),
+                        np.array(self.ai_dev_scaling_coeff_ip),
+                        self.Dataholder[0, :],
+                    )
+                )
+                np.save(
+                    os.path.join(
+                        directory,
+                        "Ip" + datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
+                    ),
+                    self.binaryfile_Ip_data,
+                )                
+                
+                
             if "PMT" in self.readin_channels:
                 self.data_PMT = self.Dataholder[0, :] * -1
                 np.save(

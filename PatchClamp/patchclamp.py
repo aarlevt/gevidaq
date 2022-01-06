@@ -88,7 +88,7 @@ class ContinuousPatchThread(QThread):
         Starts writing a waveform continuously to the patchclamp. While reading
         the buffer periodically
         """
-        self.patchVoltOutChan = self.configs["Vp"]
+        self.patchVoltOutChan = self.configs["VpPatch"]
         self.patchCurOutChan = self.configs["Ip"]
         self.patchVoltInChan = self.configs["patchAO"]
 
@@ -232,7 +232,7 @@ class ContinuousPatchThread_hold(QThread):
         Starts writing a waveform continuously to the patchclamp. While reading
         the buffer periodically
         """
-        self.patchVoltOutChan = self.configs["Vp"]
+        self.patchVoltOutChan = self.configs["VpPatch"]
         self.patchCurOutChan = self.configs["Ip"]
         self.patchVoltInChan = self.configs["patchAO"]
 
@@ -377,7 +377,7 @@ class ContinuousPatchThread_currentclamp(QThread):
         Starts writing a waveform continuously to the patchclamp. While reading
         the buffer periodically
         """
-        self.patchVoltOutChan = self.configs["Vp"]
+        self.patchVoltOutChan = self.configs["VpPatch"]
         self.patchCurOutChan = self.configs["Ip"]
         self.patchCurInChan = self.configs["patchAO"]
 
@@ -518,7 +518,7 @@ class ContinuousPatchThread_zap(QThread):
         Starts writing a waveform continuously to the patchclamp. While reading
         the buffer periodically
         """
-        self.patchVoltOutChan = self.configs["Vp"]
+        self.patchVoltOutChan = self.configs["VpPatch"]
         self.patchCurOutChan = self.configs["Ip"]
         self.patchVoltInChan = self.configs["patchAO"]
 

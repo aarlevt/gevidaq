@@ -365,6 +365,10 @@ class AnalysisWidgetUI(QWidget):
     def loadcurve(self):
         """
         Load the 1D array files, like voltage, current recordings or waveform information.
+        
+        By default the waveforms configured contain 4 extra samples at the front
+        and 1 in the end, while the recored waveforms contain 8 extra samples at
+        the front and 1 in the end.
 
         Returns
         -------
@@ -397,26 +401,41 @@ class AnalysisWidgetUI(QWidget):
             elif file.startswith("Vp"):
                 self.Vpfilename_npy = self.main_directory + "/" + file
                 curvereadingobjective_V = np.load(self.Vpfilename_npy)
-                print(curvereadingobjective_V[10])
-                self.Vp = curvereadingobjective_V[5 : len(curvereadingobjective_V)]
+                
+                # In the recorded Vp trace, the 0 data is sampling rate,
+                # 1 to 4 are NiDaq scaling coffecients, 
+                # 5 to 8 are extra samples for extra camera trigger,
+                # The last one is padding 0 to reset NIDaq channels.
+                self.Vp = curvereadingobjective_V[9:]
                 self.samplingrate_curve = curvereadingobjective_V[0]
-                self.Vp = self.Vp[0:-2]
+                self.Vp = self.Vp[0:-1]
+                
+                # This is from Fixed output from the patch amplifier, unfiltered, x10 already.
+                # Ditched x10 voltage channel in amplifier from 22.12.2021
+                # self.Vp = self.Vp/10
 
             elif file.startswith("Ip"):
                 self.Ipfilename_npy = self.main_directory + "/" + file
                 curvereadingobjective_I = np.load(self.Ipfilename_npy)
-                print("I raw: {}".format(curvereadingobjective_I[1000]))
-                self.Ip = curvereadingobjective_I[5 : len(curvereadingobjective_I)]
-                self.Ip = self.Ip[0:-2]
+                # print("I raw: {}".format(curvereadingobjective_I[1000]))
+                                
+                # In the recorded Vp trace, the 0 data is sampling rate,
+                # 1 to 4 are NiDaq scaling coffecients, 
+                # 5 to 8 are extra samples for extra camera trigger,
+                # The last one is padding 0 to reset NIDaq channels.
+                self.Ip = curvereadingobjective_I[9:]
+                self.Ip = self.Ip[0:-1]
                 self.samplingrate_curve = curvereadingobjective_I[0]
 
             elif "Wavefroms_sr_" in file and "npy" in file:
                 self.Waveform_filename_npy = self.main_directory + "/" + file
                 # Read in configured waveforms
                 configwave_wavenpfileName = self.Waveform_filename_npy
-                self.waveform_display_temp_loaded_container = np.load(
+                self.configured_waveforms_container = np.load(
                     configwave_wavenpfileName, allow_pickle=True
                 )
+                
+                # Get the sampling rate
                 self.samplingrate_display_curve = int(
                     float(
                         configwave_wavenpfileName[
@@ -429,6 +448,15 @@ class AnalysisWidgetUI(QWidget):
                         self.samplingrate_display_curve
                     )
                 )
+                
+                # Load the configured patch voltage waveform
+                for each_waveform in self.configured_waveforms_container:
+                    if each_waveform['Sepcification'] == "patchAO":
+                        self.configured_Vp = each_waveform['Waveform']
+                        
+                        # First 4 numbers and the last one in the recording 
+                        # are padding values outside the real camera recording.
+                        self.configured_Vp = self.configured_Vp[4:][0:-1]/10
 
     def getfile_background(self):
         self.fileName_background, _ = QtWidgets.QFileDialog.getOpenFileName(
@@ -501,7 +529,8 @@ class AnalysisWidgetUI(QWidget):
         plt.show()
 
         # # Use rolling average to smooth the background trace
-        # self.background_trace = uniform_filter1d(uniform_filter1d(self.background_trace, size=self.background_rolling_average_number), size=self.background_rolling_average_number*2)
+        # self.background_trace = uniform_filter1d(uniform_filter1d
+        # (self.background_trace, size=self.background_rolling_average_number), size=self.background_rolling_average_number*2)
 
         # Bi-exponential curve to fit the background
         def bg_func(t, a, t1, b, t2):
@@ -551,8 +580,14 @@ class AnalysisWidgetUI(QWidget):
             dpi=1000,
         )
         plt.show()
+        
+        # mean_camera_counts = []
+        # for i in range(self.videostack.shape[0]):
+        #     mean_camera_counts.append(np.mean(self.videostack[i]))
 
         # For each frame in video, substract the background
+        container = np.empty((self.videostack.shape[0],self.videostack.shape[1],self.videostack.shape[2]))
+
         for i in range(self.videostack.shape[0]):
 
             raw_frame = self.videostack[i]
@@ -562,21 +597,24 @@ class AnalysisWidgetUI(QWidget):
             background_mean_2d = background_mean * np.ones(
                 (self.videostack.shape[1], self.videostack.shape[2])
             )
+            
+            temp_diff = raw_frame - background_mean_2d
+            temp_diff[temp_diff<0] = 0
 
-            self.videostack[i] = np.abs(raw_frame - background_mean_2d)
-
-        print("ROI background correction done.")
-
+            container[i] = temp_diff
+            self.videostack[i,:,:] = temp_diff
+        
+        print("ROI background correction done.")        
+        
+        self.videostack = container
         # Show the background corrected trace.
-        self.mean_camera_counts_backgroubd_substracted = []
+        mean_camera_counts_backgroubd_substracted = []
         for i in range(self.videostack.shape[0]):
-            self.mean_camera_counts_backgroubd_substracted.append(
-                np.mean(self.videostack[i])
-            )
+            mean_camera_counts_backgroubd_substracted.append(np.mean(self.videostack[i]))
 
         fig2, ax2 = plt.subplots(figsize=(8.0, 5.8))
         fig2.suptitle("Mean camera intensity after backgroubd substracted")
-        plt.plot(self.cam_time_label, self.mean_camera_counts_backgroubd_substracted)
+        plt.plot(self.cam_time_label, mean_camera_counts_backgroubd_substracted)
         ax2.set_xlabel("time(s)")
         ax2.set_ylabel("Pixel values")
         fig2.savefig(
@@ -614,7 +652,7 @@ class AnalysisWidgetUI(QWidget):
 
             self.patchcurrentlabel = np.arange(len(self.Ip)) / self.samplingrate_curve
 
-            self.patchvoltagelabel = np.arange(len(self.Vp)) / self.samplingrate_curve
+            self.patchvoltagelabel = np.arange(len(self.configured_Vp)) / self.samplingrate_curve
 
             self.electrical_signals_figure, (ax1, ax2) = plt.subplots(2, 1)
             # plt.title('Electrode recording')
@@ -632,11 +670,11 @@ class AnalysisWidgetUI(QWidget):
             # ax2 = self.electrical_signals_figure.add_subplot(212)
             # *1000: convert to mV; /10 is to correct for the *10 add on at patch amplifier.
             ax2.plot(
-                self.patchvoltagelabel, self.Vp * 1000 / 10, label="Voltage", color="b"
+                self.patchvoltagelabel, self.configured_Vp * 1000, label="Set voltage", color="b"
             )
             # ax2.set_title('Voltage')
             ax2.set_xlabel("time(s)")
-            ax2.set_ylabel("Volt (mV)")
+            ax2.set_ylabel("Set voltage(mV)")
             # ax2.legend()
 
             plt.show()
@@ -738,18 +776,18 @@ class AnalysisWidgetUI(QWidget):
             print("Sampling rate DAQ: {}".format(self.samplingrate_curve))
 
             try:
-                self.Vp_downsample = self.Vp.reshape(-1, self.downsample_ratio).mean(
+                self.Vp_downsample = self.configured_Vp.reshape(-1, self.downsample_ratio).mean(
                     axis=1
                 )
-
-                self.Vp_downsample = self.Vp_downsample[0 : len(self.videostack)]
+                
+                # self.Vp_downsample = self.Vp_downsample[0 : len(self.videostack)]
             except:
                 print("Vp downsampling ratio is not an integer.")
                 small_ratio = int(
                     np.floor(self.samplingrate_curve / self.samplingrate_cam)
                 )
                 resample_length = int(len(self.videostack) * small_ratio)
-                self.Vp_downsample = signal.resample(self.Vp, resample_length)
+                self.Vp_downsample = signal.resample(self.configured_Vp, resample_length)
                 plt.figure()
                 plt.plot(self.Vp_downsample)
                 plt.show()
@@ -757,19 +795,24 @@ class AnalysisWidgetUI(QWidget):
                 self.Vp_downsample = self.Vp_downsample.reshape(-1, small_ratio).mean(
                     axis=1
                 )
-                self.Vp_downsample = self.Vp_downsample[0 : len(self.videostack)]
+            
+            # If there's a missing frame in camera video(probably in the beginning), 
+            # cut the Vp from the beginning
+            self.Vp_downsample = self.Vp_downsample\
+                [len(self.Vp_downsample) - len(self.videostack):]
 
             print(self.videostack.shape, self.Vp_downsample.shape)
+            
             self.corrimage, self.weightimage, self.sigmaimage = ProcessImage.extractV(
-                self.videostack, self.Vp_downsample * 1000 / 10
+                self.videostack, self.Vp_downsample * 1000 
             )
-            # *1000: convert to mV; /10 is to correct for the *10 add on at patch amplifier.
+            # *1000: convert to mV; /10 is to correct for the *10 add on at patch amplifier(not anymore).
 
             self.pw_weightimage.setImage(self.weightimage)
 
         elif self.switch_Vp_or_camtrace.currentIndex() == 1:
             self.corrimage, self.weightimage, self.sigmaimage = ProcessImage.extractV(
-                self.videostack, self.camsignalsum * 1000 / 10
+                self.videostack, self.camsignalsum * 1000 
             )
 
             self.pw_weightimage.setImage(self.weightimage)
@@ -849,7 +892,7 @@ class AnalysisWidgetUI(QWidget):
         """
         fit = CurveFit(
             self.weight_trace_data,
-            self.Vp * 1000 / 10,
+            self.configured_Vp * 1000,
             camera_fps=self.samplingrate_cam,
             DAQ_sampling_rate=self.samplingrate_display_curve,
             main_directory=self.main_directory,
@@ -890,6 +933,14 @@ class AnalysisWidgetUI(QWidget):
         self.Cellselection_DMD_mask_contour.emit(contour_from_cellselection)
 
     def get_single_waveform(self):
+        """
+        Display a single trace.
+
+        Returns
+        -------
+        None.
+
+        """
         self.single_waveform_fileName, _ = QtWidgets.QFileDialog.getOpenFileName(
             self,
             "Single File"
@@ -903,7 +954,7 @@ class AnalysisWidgetUI(QWidget):
         try:
             if 'Ip' in self.single_waveform_fileName:
             # If plotting the patch current
-                self.Ip = self.single_waveform[5:]
+                self.Ip = self.single_waveform[9:-1]
                 
                 fig, ax = plt.subplots()
                 plt.plot(self.Ip * 10000)
@@ -912,13 +963,17 @@ class AnalysisWidgetUI(QWidget):
                 ax.set_xlabel("Samples")
             elif 'Vp' in self.single_waveform_fileName:
                 # If plotting the patch voltage
-                self.Vp = self.single_waveform[5:]
+                self.Vp = self.single_waveform[9:-1]
                 
                 fig, ax = plt.subplots()
-                plt.plot(self.Vp * 1000 / 10)
+                plt.plot(self.Vp * 1000)
                 ax.set_title("Patch voltage")
                 ax.set_ylabel("Volt (mV)")
                 ax.set_xlabel("Samples")
+                
+                print(
+                "For Vp recored earlier than 22.12.2021, pls devided by 10 as the amplifier channel multipliesby 10 by default."
+                )
             else:
                 plt.figure()
                 plt.plot(self.single_waveform_fileName)
@@ -987,10 +1042,7 @@ class PlotAnalysisGUI(QWidget):
         self.pmtimageLayout.addWidget(self.toolButtonOpenDialog, 1, 1)
 
         self.toolButtonLoad = QtWidgets.QPushButton("Graph")
-        self.toolButtonLoad.setStyleSheet(
-            "QPushButton {color:white;background-color: green; border-style: outset;border-radius: 10px;border-width: 2px;font: bold 14px;padding: 6px}"
-            "QPushButton:pressed {color:yellow;background-color: pink; border-style: outset;border-radius: 10px;border-width: 2px;font: bold 14px;padding: 6px}"
-        )
+
         self.toolButtonLoad.clicked.connect(self.show_graphy)
         self.pmtimageLayout.addWidget(self.toolButtonLoad, 1, 2)
 
@@ -1046,7 +1098,7 @@ class PlotAnalysisGUI(QWidget):
         # Read in configured waveforms
         configwave_wavenpfileName = (
             self.wave_fileName
-        )  # r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Patch clamp\2019-11-29 patch-perfusion-Archon1\trial-1\perfusion2\2019-11-29_15-51-16__Wavefroms_sr_100.npy'
+        )  
         temp_loaded_container = np.load(configwave_wavenpfileName, allow_pickle=True)
 
         Daq_sample_rate = int(
@@ -1117,14 +1169,14 @@ class PlotAnalysisGUI(QWidget):
                 # Read in recorded waves
                 Readin_fileName = (
                     self.recorded_wave_fileName
-                )  # r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Patch clamp\2019-11-29 patch-perfusion-Archon1\trial-2\Vp2019-11-29_17-31-18.npy'
+                )  
 
                 if (
                     "Vp" in os.path.split(Readin_fileName)[1]
                 ):  # See which channel is recorded
                     Vm = np.load(Readin_fileName, allow_pickle=True)
-                    Vm = Vm[4:-1]  # first 5 are sampling rate, Daq coffs
-                    Vm[0] = Vm[1]
+                    Vm = Vm[9:-1]  # first 5 are sampling rate, Daq coffs
+                    # Vm[0] = Vm[1]
 
                 ax2.set_xlabel("time(s)")
                 ax2.set_title("Recording")
@@ -1232,14 +1284,14 @@ class PlotAnalysisGUI(QWidget):
                     # Read in recorded waves
                     Readin_fileName = (
                         self.recorded_wave_fileName
-                    )  # r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Patch clamp\2019-11-29 patch-perfusion-Archon1\trial-2\Vp2019-11-29_17-31-18.npy'
+                    )  
 
                     if (
                         "Vp" in os.path.split(Readin_fileName)[1]
                     ):  # See which channel is recorded
                         Vm = np.load(Readin_fileName, allow_pickle=True)
-                        Vm = Vm[4:-1]  # first 5 are sampling rate, Daq coffs
-                        Vm[0] = Vm[1]
+                        Vm = Vm[9:-1]  # first 5 are sampling rate, Daq coffs
+                        # Vm[0] = Vm[1]
 
                     ax2.set_xlabel("time(s)")
                     ax2.set_title("Recording")
