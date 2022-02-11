@@ -174,21 +174,21 @@ class ProcessImage:
                 if "_PMT" in eachfilename:
                     CoordinatesList.append(
                         eachfilename[
-                            eachfilename.index("_R") + 1 : eachfilename.index("_PMT")
+                            eachfilename.index("Coord") : eachfilename.index("_PMT")
                         ]
                     )
                     CoordinatesList = list(dict.fromkeys(CoordinatesList))
                 elif "Cam" in eachfilename:
                     CoordinatesList.append(
                         eachfilename[
-                            eachfilename.index("_R") + 1 : eachfilename.index("_Cam")
+                            eachfilename.index("Coord") : eachfilename.index("_Cam")
                         ]
                     )
                     CoordinatesList = list(dict.fromkeys(CoordinatesList))
             else:
                 # Get the coordinates, R_C_
                 CoordinatesList.append(
-                    eachfilename[eachfilename.index("_R") + 1 : len(eachfilename)]
+                    eachfilename[eachfilename.index("Coord") : len(eachfilename)]
                 )
                 CoordinatesList = list(dict.fromkeys(CoordinatesList))
 
@@ -3556,9 +3556,10 @@ class ProcessImage:
                 )
 
         if operation == "mean":
-            output = np.mean(image_stack, axis=0)
+            output = np.mean(image_stack, axis=0).astype(np.uint16)
+            print(output.dtype)
         elif operation == "max projection":
-            output = np.max(image_stack, axis=0)
+            output = np.max(image_stack, axis=0).astype(np.uint16)
 
         return output
     
@@ -3734,7 +3735,24 @@ class ProcessImage:
         
         return focus_degree_list, index_highest_focus_degree
 
-    def cam_screening_post_processing(directory, save_max_projection=True):
+    def cam_screening_post_processing(directory, seperate_folder = True, save_max_projection = True):
+        """
+        Generate the max projection for camera images stack.
+
+        Parameters
+        ----------
+        directory : TYPE
+            DESCRIPTION.
+        save_max_projection : TYPE, optional
+            DESCRIPTION. The default is True.
+        seperate_folder : TYPE, optional
+            DESCRIPTION. The default is True.
+
+        Returns
+        -------
+        None.
+
+        """
 
         (
             RoundNumberList,
@@ -3751,7 +3769,10 @@ class ProcessImage:
                 for each_file_name in fileNameList:
                     if each_coordinate in each_file_name:
                         img_zstack_list.append(each_file_name)
-
+                    
+                coordinate_infor = each_coordinate
+                #each_file_name[each_file_name.index("Coord") : each_file_name.index("_Cam")]
+                
                 # ---------------------------------------------Calculate the z max projection-----------------------------------------------------------------------
                 ZStackOrder = 0
                 for each_z_img_filename in img_zstack_list:
@@ -3772,29 +3793,48 @@ class ProcessImage:
                 if ZStackOrder == len(img_zstack_list):
                     Cam_image_maxprojection = np.max(
                         Cam_image_maxprojection_stack, axis=0
-                    )
+                    ).astype(np.uint16)
 
-                    if not os.path.exists(os.path.join(directory, "maxProjection")):
-                        # If the folder is not there, create the folder
-                        os.mkdir(os.path.join(directory, "maxProjection"))
-                    if save_max_projection == True:
-                        # Save the zmax file.
-                        with skimtiff.TiffWriter(
-                            os.path.join(
-                                directory,
-                                "maxProjection\\"
-                                + each_round
-                                + "_"
-                                + each_coordinate
-                                + "_Cam_"
-                                + "Zmax"
-                                + ".tif",
-                            ),
-                            imagej=True,
-                        ) as tif:
-                            tif.save(
-                                Cam_image_maxprojection.astype("int16"), compress=0
-                            )
+                    if seperate_folder == True:
+                        if not os.path.exists(os.path.join(directory, "maxProjection")):
+                            # If the folder is not there, create the folder
+                            os.mkdir(os.path.join(directory, "maxProjection"))
+                        if save_max_projection == True:
+                            # Save the zmax file.
+                            with skimtiff.TiffWriter(
+                                os.path.join(
+                                    directory,
+                                    "maxProjection\\"
+                                    + each_round
+                                    + "_"
+                                    + coordinate_infor
+                                    + "_Cam_"
+                                    + "Zmax"
+                                    + ".tif",
+                                ),
+                                imagej=True,
+                            ) as tif:
+                                tif.save(
+                                    Cam_image_maxprojection.astype(np.uint16), compress=0
+                                )
+                    else:
+                        if save_max_projection == True:
+                           # Save the zmax file.
+                           with skimtiff.TiffWriter(
+                               os.path.join(
+                                   directory,
+                                   each_round
+                                   + "_"
+                                   + coordinate_infor
+                                   + "_Cam_"
+                                   + "Zmax"
+                                   + ".tif",
+                               ),
+                               imagej=True,
+                           ) as tif:
+                               tif.save(
+                                   Cam_image_maxprojection.astype(np.uint16), compress=0
+                               )                       
 
         # return img_zstack_list
 
@@ -3888,7 +3928,7 @@ class ProcessImage:
                 - imageinfo_DataFrame.iloc[0]["Stage column index"]
             )
 
-        scanning_coord_step = 1568
+        scanning_coord_step = 1585
         print("scanning_coord_step set to {}!".format(scanning_coord_step))
 
         # Assume that col and row coordinates numbers are the same.
@@ -4344,9 +4384,8 @@ class ProcessImage:
 
     def Compare_df_bargraph(
         path,
-        sheet_list, 
-        each_sheet_selection_list,
-        key_field = 'df/f',
+        sheet_dictionary,
+        key_field = ['df/f'],
         title = "",
         dark_style = False
     ):  
@@ -4357,11 +4396,9 @@ class ProcessImage:
         ----------
         path : str
             Path to the excel file.
-        sheet_list : list
-            List of valid sheet names.
-        each_sheet_selection_list : list
-            Which part of the sheet is valid.
-        key_field : str, optional
+        sheet_dictionary : dict
+            Dict with keys being valid sheet names, content being what part of the sheet is valid.
+        key_field : list, optional
             Which column to draw data in the sheet. The default is 'df/f'.
         title : str, optional
             Title of the graph. The default is "Boxplot".
@@ -4375,81 +4412,146 @@ class ProcessImage:
         """
         # Read in file
         xls = pd.ExcelFile(path)
+        
+        # For time constant, if fast component percentage is lower than this threshold,
+        # instead of showing fast time constant only, generate a overall constant that
+        # is the percentage sum of fast and slow constant. 
+        fast_constant_percentage_threshold = 40
+        
+        for plotting_property in key_field:
     
-        data_list = []
-        for each_sheet in range(len(sheet_list)):
-            if each_sheet_selection_list[each_sheet] == None:
-                # If all rows in the sheet are valid data
-                data_list.append(pd.read_excel(xls, sheet_list[each_sheet])\
-                                 [key_field].values)
+            data_list = []
+            for each_sheet in sheet_dictionary:
+                
+                data_frame_each_sheet = pd.read_excel(xls, each_sheet)
+                
+                if sheet_dictionary[each_sheet] == None:
+                    # If all rows in the sheet are valid data
+                    column_values = data_frame_each_sheet\
+                                     [plotting_property].values
+                                     
+                    if plotting_property == "upswing fast tau(s)":
+                        Tfast_percentage_values = data_frame_each_sheet\
+                                         ["fast constant percentage(%)"].values
+                        Tslow_values = data_frame_each_sheet\
+                                         ["upswing slow tau(s)"].values                      
+                                         
+                else:
+                    # If sheet_dictionary says the range of valid data
+                    column_values = data_frame_each_sheet.iloc\
+                                    [sheet_dictionary[each_sheet][0]:sheet_dictionary[each_sheet][1]]\
+                                    [plotting_property].values
+                                    
+                    if plotting_property == "upswing fast tau(s)":
+                        Tfast_percentage_values = data_frame_each_sheet\
+                                    [sheet_dictionary[each_sheet][0]:sheet_dictionary[each_sheet][1]]\
+                                    ["fast constant percentage(%)"].values
+                        Tslow_values = data_frame_each_sheet\
+                                    [sheet_dictionary[each_sheet][0]:sheet_dictionary[each_sheet][1]]\
+                                    ["upswing slow tau(s)"].values
+                                         
+                # Data type check
+                delete_index = []
+                for each_content_index in range(len(column_values)):
+        
+                    # if not a float number, delete it.
+                    if type(column_values[each_content_index]) != np.float64 and type(column_values[each_content_index]) != float:
+                        delete_index.append(each_content_index)
+                        
+                column_values = np.delete(column_values, delete_index)
+        
+                for each_content_index in range(len(column_values)):           
+                    # In case of plotting time constants, make the selection here
+                    if plotting_property == "upswing fast tau(s)":
+                        
+                        # For the time constant, if fast component percentage is too low
+                        if float(Tfast_percentage_values[each_content_index]) < fast_constant_percentage_threshold:
+                            # delete_index.append(each_content_index)
+                            fast_time_constant = column_values[each_content_index]
+                            fast_time_constant_percentage = Tfast_percentage_values[each_content_index]/100
+                            slow_time_constant = Tslow_values[each_content_index]
+        
+                            overall_time_constant = fast_time_constant * fast_time_constant_percentage\
+                                                    + slow_time_constant * (1 - fast_time_constant_percentage)
+                                                    
+                            column_values[each_content_index] = overall_time_constant
+                            
+                
+                # Get rid of the nan
+                column_values = [x for x in column_values if str(x) != 'nan']
+                
+                if plotting_property == "upswing fast tau(s)":
+                    # convert to ms
+                    column_values  = [element * 1000 for element in column_values]
+                 
+                data_list.append(column_values)
+            
+            CTEs = []
+            error = []
+            number_of_cells = []
+        
+            for data in data_list:
+                # Calculate the average
+                mean = np.mean(data)
+                CTEs.append(mean)
+                
+                # Calculate the standard deviation
+                std = np.std(data)
+                error.append(std)
+                
+                number_of_cells.append(len(data))
+            
+            listed_facts = []
+            for each_varient in sheet_dictionary:
+                listed_facts.append(each_varient)
+                # listed_facts.append(sheet_dictionary[each_varient]+'\n'+'n = '+str(number_of_cells[each_varient]))
+            
+            # Define labels, positions, bar heights and error bar heights
+            x_pos = np.arange(len(sheet_dictionary))
+            
+            # Build the plot
+            fig, ax = plt.subplots(figsize=(10.0, 8))
+            ax.bar(x_pos, CTEs,
+                   yerr=error,
+                   align='center',
+                   alpha=0.5,
+                   ecolor='black',
+                   error_kw=dict(lw=2, capsize=7, capthick=2),
+                   capsize=14)
+            
+            # Add the scatters
+            for i in range(len(sheet_dictionary)):
+                for each_point in range(len(data_list[i])):
+                    ax.scatter(x_pos[i], data_list[i][each_point], color='grey')
+            
+            if plotting_property == "df/f":
+                ax.set_ylabel('ΔF/F(%) to 100mv', fontsize=14)
+            elif plotting_property == "upswing fast tau(s)":
+                ax.set_ylabel('Fast tau(ms)', fontsize=14)
             else:
-                data_list.append(pd.read_excel(xls, sheet_list[each_sheet])\
-                                 [key_field][each_sheet_selection_list[each_sheet][0] : each_sheet_selection_list[each_sheet][1]].values)
-        
-        CTEs = []
-        error = []
-        number_of_cells = []
-        
-        for data in data_list:
-            # Calculate the average
-            mean = np.mean(data)
-            CTEs.append(mean)
+                ax.set_ylabel('{}'.format(plotting_property), fontsize=14)
+            ax.set_xticks(x_pos)
+            ax.set_xticklabels(listed_facts)
+            plt.xticks(rotation=45)
+            plt.yticks(fontsize=12)
+            ax.set_title(title)
+            # plt.yticks(np.arange(0, max(x)+1, 1.0))
+            ax.yaxis.grid(False)
             
-            # Calculate the standard deviation
-            std = np.std(data)
-            error.append(std)
+            # Hide the right and top spines
+            ax.spines['right'].set_visible(False)
+            ax.spines['top'].set_visible(False)
             
-            number_of_cells.append(len(data))
-        
-        listed_facts = []
-        for each_varient in range(len(sheet_list)):
+            # Only show ticks on the left and bottom spines
+            ax.yaxis.set_ticks_position('left')
+            ax.spines['left'].set_linewidth(2)
+            ax.xaxis.set_ticks_position('bottom')
+            ax.spines['bottom'].set_linewidth(2)
             
-            listed_facts.append(sheet_list[each_varient]+'\n'+'n = '+str(number_of_cells[each_varient]))
-        
-        # Define labels, positions, bar heights and error bar heights
-        x_pos = np.arange(len(sheet_list))
-        
-        # Build the plot
-        fig, ax = plt.subplots(figsize=(10.0, 8))
-        ax.bar(x_pos, CTEs,
-               yerr=error,
-               align='center',
-               alpha=0.5,
-               ecolor='black',
-               error_kw=dict(lw=3, capsize=7, capthick=3),
-               capsize=10)
-        
-        # Add the scatters
-        for i in range(len(sheet_list)):
-            for each_point in range(len(data_list[i])):
-                ax.scatter(x_pos[i], data_list[i][each_point], color='grey')
-        
-        if key_field == "df/f":
-            ax.set_ylabel('ΔF/F(%) to 100mv', fontsize=14)
-        else:
-            ax.set_ylabel('{}'.format(key_field), fontsize=14)
-        ax.set_xticks(x_pos)
-        ax.set_xticklabels(listed_facts)
-        plt.xticks(rotation=45)
-        plt.yticks(fontsize=14)
-        ax.set_title(title)
-        # plt.yticks(np.arange(0, max(x)+1, 1.0))
-        ax.yaxis.grid(False)
-        
-        # Hide the right and top spines
-        ax.spines['right'].set_visible(False)
-        ax.spines['top'].set_visible(False)
-        
-        # Only show ticks on the left and bottom spines
-        ax.yaxis.set_ticks_position('left')
-        ax.spines['left'].set_linewidth(2)
-        ax.xaxis.set_ticks_position('bottom')
-        ax.spines['bottom'].set_linewidth(2)
-        
-        # Save the figure and show
-        plt.tight_layout()
-        # plt.savefig('bar_plot_with_error_bars.png')
-        plt.show()
+            # Save the figure and show
+            plt.tight_layout()
+            # plt.savefig('bar_plot_with_error_bars.png')
+            plt.show()
         
     #%%
     # =============================================================================
@@ -5733,7 +5835,7 @@ if __name__ == "__main__":
     CurveFit_PMT = False
     
     if stitch_img == True:
-        Nest_data_directory = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2021-11-02 QuasAr1 WT ND2ND0p5"
+        Nest_data_directory = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2022-01-14_11-32-41_QuasAr1 WT 0p001 ND2ND0p5"
         Stitched_image_dict = ProcessImage.image_stitching(
             Nest_data_directory, row_data_folder=True
         )

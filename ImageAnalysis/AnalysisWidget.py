@@ -214,13 +214,20 @@ class AnalysisWidgetUI(QWidget):
         Display_Container_tabs_tab4 = QWidget()
         Display_Container_tabs_tab4_layout = QGridLayout()
 
+        self.waveform_samplingrate_box = QSpinBox(self)
+        self.waveform_samplingrate_box.setMaximum(250000)
+        self.waveform_samplingrate_box.setValue(50000)
+        self.waveform_samplingrate_box.setSingleStep(500)
+        Display_Container_tabs_tab4_layout.addWidget(self.waveform_samplingrate_box, 0, 1)
+        Display_Container_tabs_tab4_layout.addWidget(QLabel("Sampling rate:"), 0, 0)
+        
         self.textbox_single_waveform_filename = QLineEdit(self)
         Display_Container_tabs_tab4_layout.addWidget(
-            self.textbox_single_waveform_filename, 0, 0
+            self.textbox_single_waveform_filename, 0, 2
         )
 
         self.button_browse_tab4 = QPushButton("Browse", self)
-        Display_Container_tabs_tab4_layout.addWidget(self.button_browse_tab4, 0, 1)
+        Display_Container_tabs_tab4_layout.addWidget(self.button_browse_tab4, 0, 3)
 
         self.button_browse_tab4.clicked.connect(self.get_single_waveform)
 
@@ -951,25 +958,29 @@ class AnalysisWidgetUI(QWidget):
             self.single_waveform_fileName, allow_pickle=True
         )
 
+        wave_sampling_rate = self.waveform_samplingrate_box.value()
+        
+        time_axis = np.arange(len(self.single_waveform[9:-1]))/wave_sampling_rate
+        
         try:
             if 'Ip' in self.single_waveform_fileName:
             # If plotting the patch current
                 self.Ip = self.single_waveform[9:-1]
                 
                 fig, ax = plt.subplots()
-                plt.plot(self.Ip * 10000)
+                plt.plot(time_axis, self.Ip * 10000)
                 ax.set_title("Patch current")
                 ax.set_ylabel("Current (pA)")
-                ax.set_xlabel("Samples")
+                ax.set_xlabel("time(s)")
             elif 'Vp' in self.single_waveform_fileName:
                 # If plotting the patch voltage
                 self.Vp = self.single_waveform[9:-1]
                 
                 fig, ax = plt.subplots()
-                plt.plot(self.Vp * 1000)
+                plt.plot(time_axis, self.Vp * 1000)
                 ax.set_title("Patch voltage")
                 ax.set_ylabel("Volt (mV)")
-                ax.set_xlabel("Samples")
+                ax.set_xlabel("time(s)")
                 
                 print(
                 "For Vp recored earlier than 22.12.2021, pls devided by 10 as the amplifier channel multipliesby 10 by default."

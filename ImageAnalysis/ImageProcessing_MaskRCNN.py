@@ -303,25 +303,26 @@ class ProcessImageML:
                 # Get all the background files names
                 background_fileNameList = []
                 for file in os.listdir(background_images_folder):
-                    if "tif" in file and "calculated background" not in file:
-                        background_fileNameList.append(
-                            os.path.join(background_images_folder, file)
-                        )
-    
+                    if "calculated background" not in file:
+                        if "tif" in file or "TIF" in file:
+                            background_fileNameList.append(
+                                os.path.join(background_images_folder, file)
+                            )
+
                 background_image = ProcessImage.image_stack_calculation(
                     background_fileNameList, operation="mean"
                 )
 
-                # Smooth the image
-                background_image = ProcessImage.average_filtering(
-                    background_image, filter_side_length = 25)
+                # # Smooth the background image
+                # background_image = ProcessImage.average_filtering(
+                #     background_image, filter_side_length = 25)
             
                 # Save the individual file.
                 with skimtiff.TiffWriter(
                     os.path.join(background_images_folder, "calculated background.tif"),
                     imagej=True,
                 ) as tif:
-                    tif.save(background_image.astype(np.int16), compress=0)
+                    tif.save(background_image.astype(np.uint16), compress=0)
 
             if EachRound == round_num:
 
@@ -341,9 +342,14 @@ class ProcessImageML:
                             and EachRound in Eachfilename[1]
                         ):
                             if "Zmax" in Eachfilename[1]:
-                                ImgNameInfor = Eachfilename[1][
-                                    0 : len(Eachfilename[1]) - 14
-                                ]  # get rid of '_PMT_0Zmax.tif' in the name.
+                                try:
+                                    ImgNameInfor = Eachfilename[1][
+                                        0 : Eachfilename[1].index("_PMT")
+                                    ]  # get rid of '_PMT_0Zmax.tif' in the name.
+                                except:
+                                    ImgNameInfor = Eachfilename[1][
+                                        0 : Eachfilename[1].index("_Cam")
+                                    ]  # get rid of '_Cam_Zmax.tif' in the name.                                    
                             elif "Zfocus" in Eachfilename[1]:
                                 ImgNameInfor = Eachfilename[1][
                                     0 : len(Eachfilename[1]) - 16
@@ -367,10 +373,10 @@ class ProcessImageML:
                         
                         camera_dark_level = 100
                         
-                        # Normalize to the illumination intensity
-                        Rawimage = np.uint16(Rawimage \
-                                / ((background_image - camera_dark_level)\
-                                   /(np.amin(background_image) - camera_dark_level)))
+                        # # Normalize to the illumination intensity
+                        # Rawimage = np.uint16(Rawimage \
+                        #         / ((background_image - camera_dark_level)\
+                        #             /(np.amin(background_image) - camera_dark_level)))
 
                     #                    if ClearImgBef == True:
                     #                        # Clear out junk parts to make it esaier for ML detection.
@@ -535,26 +541,27 @@ class ProcessImageML:
             # Get all the background files names
             background_fileNameList = []
             for file in os.listdir(os.path.join(root_folder, "background")):
-                if "tif" in file and "calculated background" not in file:
-                    background_fileNameList.append(
-                        os.path.join(root_folder, "background", file)
-                    )
-            
+                if "calculated background" not in file:
+                    if "tif" in file or "TIF" in file:
+                        background_fileNameList.append(
+                            os.path.join(root_folder, "background", file)
+                        )
+
             # Average over multiple images
             background_image = ProcessImage.image_stack_calculation(
                 background_fileNameList, operation="mean"
             )
             
-            # Smooth the image
-            background_image = ProcessImage.average_filtering(
-                background_image, filter_side_length = 25)
+            # # Smooth the image
+            # background_image = ProcessImage.average_filtering(
+            #     background_image, filter_side_length = 25)
             
             # Save the individual file.
             with skimtiff.TiffWriter(
                 os.path.join(root_folder, "background", "calculated background.tif"),
                 imagej=True,
             ) as tif:
-                tif.save(background_image.astype(np.int16), compress=0)
+                tif.save(background_image.astype(np.uint16), compress=0)
 
         # Get a list of file names
         fileNameList = []
@@ -570,14 +577,14 @@ class ProcessImageML:
             Rawimage = imread(os.path.join(folder, image_file_name))
 
             if background_substraction == True:
-                Rawimage = np.abs(Rawimage - background_image)
+                Rawimage = np.abs(Rawimage - background_image).astype(np.uint16)
                 
                 camera_dark_level = 100
                 
-                # Normalize to the illumination intensity
-                Rawimage = np.uint16(Rawimage \
-                        / ((background_image - camera_dark_level)\
-                           /(np.amin(background_image) - camera_dark_level)))
+                # # Normalize to the illumination intensity
+                # Rawimage = np.uint16(Rawimage \
+                #         / ((background_image - camera_dark_level)\
+                #            /(np.amin(background_image) - camera_dark_level)))
                 
             # Analyze each image
             # Run the detection on input image.
@@ -814,26 +821,27 @@ if __name__ == "__main__":
     lib_round = "Round2"
 
     # ProcessML = ProcessImageML(WeigthPath = r"C:\MaskRCNN\MaskRCNNGit\MaskRCNN\MaskRCNN\Data\Xin_training_200epoch_2021_1_20\cell20210121T2259\mask_rcnn_cell_0200.h5")
-    ProcessML = ProcessImageML(WeigthPath = r"C:\MaskRCNN\MaskRCNNGit\MaskRCNN\MaskRCNN\Data\Xin_training\cell20210107T1533\mask_rcnn_cell_0050.h5")
-    # ProcessML = ProcessImageML(
-    #     WeigthPath=r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Martijn\SpikingHek.h5"
-    # )
+    # ProcessML = ProcessImageML(WeigthPath = r"C:\MaskRCNN\MaskRCNNGit\MaskRCNN\MaskRCNN\Data\Xin_training\cell20210107T1533\mask_rcnn_cell_0050.h5")
+    ProcessML = ProcessImageML(
+        WeigthPath=r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Martijn\SpikingHek.h5"
+    )
     # ProcessML = ProcessImageML()
     # ProcessML.config.WeigthPath = r"C:\MaskRCNN\MaskRCNNGit\MaskRCNN\MaskRCNN\Data\Xin_training\cell20210107T1533\mask_rcnn_cell_0050.h5"
     print(ProcessML.config.WeigthPath)
     # 5.6s for each detection
-    img_name = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2021-07-23_11-08-46_QuasAr1 WT\selected for check\Round2_Grid0_Coords2_R0C1585_PMT_0Zmax.tif"
-    # img = skimage.io.imread(img_name)
+    img_name = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\2022-1-29 Helios last data for paper\screening\S237A\stack2\Round2_Coords1_R0C0_Cam_1_Zpos1.tif"
+    img = skimage.io.imread(img_name)
     # for _ in range(5):
     #     starttime = time.time()
     #     ProcessML.DetectionOnImage(img, show_result = True)
     #     endtime = time.time()
     #     print(endtime-starttime)
 
-    # cell_data = ProcessML.analyze_single_image(img, show_each_cell=True)
+    cell_data = ProcessML.analyze_single_image(img, show_each_cell=True)
     # ProcessML.DetectionOnImage(img, show_result = True)
 
     # cell_data = ProcessML.analyze_images_in_folder\
     #     (folder=r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Delizzia\2021-02-25 Helios WT screening 1000ng 532nm\pos3', generate_zmax = True)
-    file = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\ML images\NewAnnotationDaanPart2\Camera\Spiking HEK\1.png"
-    ProcessML.Generate_connection_map(file)
+    
+    # file = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\ML images\NewAnnotationDaanPart2\Camera\Spiking HEK\1.png"
+    # ProcessML.Generate_connection_map(file)

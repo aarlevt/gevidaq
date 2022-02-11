@@ -241,7 +241,7 @@ class MainGUI(QWidget):
         self.Contour_soma_ratio_thres_box.setMinimum(-10)
         self.Contour_soma_ratio_thres_box.setMaximum(10)
         self.Contour_soma_ratio_thres_box.setValue(0.950)
-        self.Contour_soma_ratio_thres_box.setSingleStep(0.0001)
+        self.Contour_soma_ratio_thres_box.setSingleStep(0.15)
         IPLayout.addWidget(self.Contour_soma_ratio_thres_box, 0, 1)
 
         IPLayout.addWidget(QLabel("Mean intensity in contour threshold:"), 0, 2)
@@ -507,6 +507,8 @@ class MainGUI(QWidget):
         if len(self.Tag_round_infor) == 0 and len(self.Lib_round_infor) == 0:
 
             if self.FilepathSwitchBox.currentText() == "Cam Z-max":
+                # For camera screening analysis, use Spiking HEK weight
+                self.ProcessML.config.WeigthPath = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Martijn\SpikingHek.h5"
                 # If need to do z-max projection first and then analyse on them
                 cell_data = self.ProcessML.analyze_images_in_folder(
                     self.Analysis_saving_directory, generate_zmax=True
@@ -523,6 +525,8 @@ class MainGUI(QWidget):
         if len(self.Tag_round_infor) == 0 and len(self.Lib_round_infor) == 1:
 
             if self.FilepathSwitchBox.currentText() == "Cam Z-max":
+                # For camera screening analysis, use Spiking HEK weight
+                self.ProcessML.config.WeigthPath = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Martijn\SpikingHek.h5"
                 # If need to do z-max projection first and then analyse on them
                 cell_data = self.ProcessML.analyze_images_in_folder(
                     self.Analysis_saving_directory, generate_zmax=True
@@ -538,6 +542,18 @@ class MainGUI(QWidget):
         # =============================================================================
         elif len(self.Tag_round_infor) == 1 and len(self.Lib_round_infor) == 1:
 
+            if self.FilepathSwitchBox.currentText() != "Cam Z-max":
+            # If max projection is already generated
+                pass
+            else:
+                # For camera screening analysis, use Spiking HEK weight
+                self.ProcessML.config.WeigthPath = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Martijn\SpikingHek.h5"
+                
+                # Generate the max projection
+                ProcessImage.cam_screening_post_processing(self.Analysis_saving_directory, 
+                                                           seperate_folder = False, 
+                                                           save_max_projection = True)
+                
             tag_folder = self.Tag_folder
             lib_folder = self.Lib_folder
 
@@ -968,8 +984,9 @@ class MainGUI(QWidget):
         """
         # --------------------Show image with cell in box----------------------
         # -------------- readin image---------------
+        
         if self.ShowLibImgButton.isChecked():
-            # Display the library image
+            # ====== Display the library image ======
             if "ImgNameInfor" in self.CurrentRankCellpProperties.index:
                 # In brightness lib/tag dataframe
                 self.meta_data = self.CurrentRankCellpProperties.loc["ImgNameInfor"]
@@ -992,9 +1009,16 @@ class MainGUI(QWidget):
             if ".tif" in self.meta_data:
                 self.lib_imagefilename = os.path.join(self.Lib_folder, self.meta_data)
             else:
-                self.lib_imagefilename = os.path.join(
-                    self.Lib_folder, self.meta_data + "_PMT_0Zmax.tif"
-                )
+                if self.FilepathSwitchBox.currentText() != "Cam Z-max":
+                    self.lib_imagefilename = os.path.join(
+                        self.Lib_folder, self.meta_data + "_PMT_0Zmax.tif"
+                    )
+                else:
+                    # In case of camera screening
+                    self.lib_imagefilename = os.path.join(
+                        self.Lib_folder, self.meta_data + "_Cam_Zmax.tif"
+                    )    
+                    
             print(
                 self.lib_imagefilename[
                     len(self.lib_imagefilename) - 50 : len(self.lib_imagefilename)
@@ -1003,7 +1027,7 @@ class MainGUI(QWidget):
             self.loaded_image_display = imread(self.lib_imagefilename, as_gray=True)
 
         else:
-            # Display the tag protein image
+            # ====== Display the tag protein image ======
             if "ImgNameInfor" in self.CurrentRankCellpProperties.index:
                 # In brightness lib/tag dataframe
                 self.meta_data = self.CurrentRankCellpProperties.loc["ImgNameInfor"]
@@ -1080,17 +1104,31 @@ class MainGUI(QWidget):
             )
         )
 
-        self.loaded_image_display[minr, minc:maxc] = 4
-        self.loaded_image_display[maxr, minc:maxc] = 4
-        self.loaded_image_display[minr:maxr, minc] = 4
-        self.loaded_image_display[minr:maxr, maxc] = 4
+        if self.FilepathSwitchBox.currentText() != "Cam Z-max":
+            # Show the bounding box
+            self.loaded_image_display[minr, minc:maxc] = 4
+            self.loaded_image_display[maxr, minc:maxc] = 4
+            self.loaded_image_display[minr:maxr, minc] = 4
+            self.loaded_image_display[minr:maxr, maxc] = 4
+        else:
+            # In case of camera
+            self.loaded_image_display[minr, minc:maxc] = 10**4
+            self.loaded_image_display[maxr, minc:maxc] = 10**4
+            self.loaded_image_display[minr:maxr, minc] = 10**4
+            self.loaded_image_display[minr:maxr, maxc] = 10**4           
 
         # -------Show image in imageview-------------
-        self.OriginalImg_item.setImage(
-            np.fliplr(np.rot90(self.loaded_image_display)), autoLevels=True
-        )
-        self.OriginalImg_item.setLevels((0, 3))
-
+        if self.FilepathSwitchBox.currentText() != "Cam Z-max":
+            # ====== In case of PMT image ======
+            self.OriginalImg_item.setImage(
+                np.fliplr(np.rot90(self.loaded_image_display)), autoLevels=True
+            )
+            self.OriginalImg_item.setLevels((0, 3))
+        elif self.FilepathSwitchBox.currentText() == "Cam Z-max":
+            self.OriginalImg_item.setImage(
+                self.loaded_image_display, autoLevels=True
+            )      
+            self.OriginalImg_item.setLevels((50, 190))
         #            self.Matdisplay_Figure.clear()
         #            ax1 = self.Matdisplay_Figure.add_subplot(111)
         #            ax1.imshow(loaded_tag_image_display)#Show the first image
