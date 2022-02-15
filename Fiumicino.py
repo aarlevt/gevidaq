@@ -3,25 +3,23 @@
 Created on Sat Aug 10 20:54:40 2019
 
 @author: xinmeng
-    =============================================================================
+    ============================== ==============================================
     
     For general experiments in Dr. Daan's lab ゴゴゴ ゴ ゴ ゴ  ゴ  ゴ
-    =============================================================================
+    ============================== ==============================================
     == Widget descriptions ==
     
     - HamamatsuCam.HamamatsuUI: Hamamatsu orca flash 4.0 camera user interface.
     - PatchClamp.ui_patchclamp_sealtest: The GUI for patch clamp.
-    - NIDAQ.WaveformWidget: The GUI for configuring and executing waveforms in
-      National Instrument Data Acquisition (DAQ) device.
+    - NIDAQ.WaveformWidget: The GUI for configuring and executing waveforms in National Instrument Data Acquisition (DAQ) device.
     - GalvoWidget.PMTWidget: For PMT scanning imaging.
     - ImageAnalysis.AnalysisWidget: Data Analysis widget.
     - SampleStageControl.StageMoveWidget: The GUI for sample stage movement control.
     - NIDAQ.AOTFWidget: To control AOTF, which is controlled by NI-daq.
     - ThorlabsFilterSlider.FilterSliderWidget: Controller for Thorlabs filter slider.
     - PI_ObjectiveMotor.ObjMotorWidget: Widget for objective motor control.
-    - CoordinatesManager.CoordinatesWidget: Widget to create mask based on 
-      widefield image. Project mask with DMD or galvos
-    =============================================================================
+    - CoordinatesManager.CoordinatesWidget: Widget to create mask based on widefield image. Project mask with DMD or galvos
+    ============================== ==============================================
 """
 from __future__ import division
 import os
@@ -87,6 +85,7 @@ import pyqtgraph.console
 import HamamatsuCam.HamamatsuUI
 import CoordinatesManager.CoordinateWidget2
 import CoordinatesManager.DMDminiWidget
+import PatchClamp.smartpatcher_frontend
 
 # Setting graph settings
 # """
@@ -112,16 +111,16 @@ class Mainbody(QWidget):
         self.setWindowIcon(QIcon("./Icons/Icon.png"))
         self.setFont(QFont("Arial"))
 
-        # =============================================================================
-        #                                   GUI part
-        # =============================================================================
+        # ----------------------------------------------------------------------
+        # ----------------------------------GUI---------------------------------
+        # ----------------------------------------------------------------------
         self.setMinimumSize(1630, 1080)
         self.setMaximumHeight(1080)
         self.setWindowTitle("Fiumicino")
         self.layout = QGridLayout(self)
         """
         # =============================================================================
-        # GUI for right tabs panel-Creating instances of each widget showing on right side tabs.
+        #         GUI for right tabs panel-Creating instances of each widget showing on right side tabs.
         # =============================================================================
         """
         self.tabs = QTabWidget()
@@ -233,8 +232,8 @@ class Mainbody(QWidget):
             QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
         )
 
-        self.layout.addWidget(self.shutter2PButton, 3, 3)
-        self.layout.addWidget(self.LEDButton, 4, 3)
+        self.layout.addWidget(self.shutter2PButton, 5, 0)
+        self.layout.addWidget(self.LEDButton, 5, 1)
 
         # =============================================================================
         #         GUI for weather
@@ -336,6 +335,26 @@ class Mainbody(QWidget):
         self.open_sealtest_button.setGraphicsEffect(
             QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
         )
+        
+        # =============================================================================
+        #         GUI for Auto-patcher
+        # =============================================================================
+        self.open_AutoPatcher_button = StylishQT.FancyPushButton(
+            40, 50, color1=(50, 50, 255), color2=(100, 100, 255)
+        )
+        self.open_AutoPatcher_button.setIcon(QIcon("./Icons/patchclamp.png"))
+        # self.open_sealtest_button.setText("Seal test")
+        self.open_AutoPatcher_button.setToolTip("Open AutoPatcher")
+        self.open_AutoPatcher_button.setIconSize(QSize(45, 45))
+        self.open_AutoPatcher_button.setFixedWidth(65)
+        self.open_AutoPatcher_button.clicked.connect(self.open_AutoPatcher)
+        self.layout.addWidget(self.open_AutoPatcher_button, 3, 3, 2, 1)
+        self.open_sealtest_button.setGraphicsEffect(
+            QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
+        )
+
+        # **************************************************************************************************************************************
+        # self.setLayout(pmtmaster)
 
         self.layout.addWidget(self.tabs, 0, 4, 12, 4)
         self.setLayout(self.layout)
@@ -371,7 +390,10 @@ class Mainbody(QWidget):
         )
 
         # self.Camera_WidgetInstance.default_folder = self.savedirectory
-        
+        """
+        ***************************************************************************************************************************************
+        ************************************************************END of GUI*****************************************************************
+        """
 
         self.Init_Meta_Text()
 
@@ -380,9 +402,10 @@ class Mainbody(QWidget):
         # Restore sys.stdout
         sys.stdout = sys.__stdout__
 
-    # =============================================================================
-    #               Functions to pass variables across widges
-    # =============================================================================
+        """
+        ***************************************************************************************************************************************
+        ************************************************************ Functions to pass variables across widges ********************************
+        """
 
     def PassVariable_GalvoWidget_to_Waveformer(
         self,
@@ -416,9 +439,8 @@ class Mainbody(QWidget):
     #
     #        self.Coordinate_WidgetInstance.mask = output_mask_from_Cellselection
     #        self.Coordinate_WidgetInstance.mask_view.setImage(output_mask_from_Cellselection)
-    
     # =============================================================================
-    #                           Fucs for set directory
+    #     Fucs for set directory
     # =============================================================================
     # Set the savedirectory and prefix of Waveform widget in syn.
     def set_saving_directory(self):
@@ -489,6 +511,9 @@ class Mainbody(QWidget):
     def open_sealtest(self):
         self.PatchClamp_WidgetInstance.show()
 
+    def open_AutoPatcher(self):
+        self.open_AutoPatcher_UIWindow = PatchClamp.smartpatcher_frontend.PatchClampUI()
+        self.open_AutoPatcher_UIWindow.show()
     # =============================================================================
     #     Fucs for console display
     # =============================================================================

@@ -322,7 +322,10 @@ class AnalysisWidgetUI(QWidget):
         self.loadcurve()
 
         # display electrical signals
-        self.display_electrical_signals()
+        try:
+            self.display_electrical_signals()
+        except:
+            print("No electrical recordings.")
 
         time.sleep(0.5)
         # Calculate the mean intensity of video, for background substraction.
@@ -389,7 +392,7 @@ class AnalysisWidgetUI(QWidget):
                 curvereadingobjective_i = ProcessImage.readbinaryfile(self.Ipfilename)
                 (
                     self.Ip,
-                    self.samplingrate_curve,
+                    self.samplingrate_display_curve,
                 ) = curvereadingobjective_i.readbinarycurve()
                 self.Ip = self.Ip[0 : len(self.Ip) - 2]
 
@@ -398,42 +401,13 @@ class AnalysisWidgetUI(QWidget):
                 curvereadingobjective_V = ProcessImage.readbinaryfile(self.Vpfilename)
                 (
                     self.Vp,
-                    self.samplingrate_curve,
+                    self.samplingrate_display_curve,
                 ) = curvereadingobjective_V.readbinarycurve()
                 self.Vp = self.Vp[
                     0 : len(self.Vp) - 2
                 ]  # Here -2 because there are two extra recording points in the recording file.
-
-            # For python generated data
-            elif file.startswith("Vp"):
-                self.Vpfilename_npy = self.main_directory + "/" + file
-                curvereadingobjective_V = np.load(self.Vpfilename_npy)
-                
-                # In the recorded Vp trace, the 0 data is sampling rate,
-                # 1 to 4 are NiDaq scaling coffecients, 
-                # 5 to 8 are extra samples for extra camera trigger,
-                # The last one is padding 0 to reset NIDaq channels.
-                self.Vp = curvereadingobjective_V[9:]
-                self.samplingrate_curve = curvereadingobjective_V[0]
-                self.Vp = self.Vp[0:-1]
-                
-                # This is from Fixed output from the patch amplifier, unfiltered, x10 already.
-                # Ditched x10 voltage channel in amplifier from 22.12.2021
-                # self.Vp = self.Vp/10
-
-            elif file.startswith("Ip"):
-                self.Ipfilename_npy = self.main_directory + "/" + file
-                curvereadingobjective_I = np.load(self.Ipfilename_npy)
-                # print("I raw: {}".format(curvereadingobjective_I[1000]))
-                                
-                # In the recorded Vp trace, the 0 data is sampling rate,
-                # 1 to 4 are NiDaq scaling coffecients, 
-                # 5 to 8 are extra samples for extra camera trigger,
-                # The last one is padding 0 to reset NIDaq channels.
-                self.Ip = curvereadingobjective_I[9:]
-                self.Ip = self.Ip[0:-1]
-                self.samplingrate_curve = curvereadingobjective_I[0]
-
+            
+            # ===================== Load configured waveform =================
             elif "Wavefroms_sr_" in file and "npy" in file:
                 self.Waveform_filename_npy = self.main_directory + "/" + file
                 # Read in configured waveforms
@@ -464,6 +438,36 @@ class AnalysisWidgetUI(QWidget):
                         # First 4 numbers and the last one in the recording 
                         # are padding values outside the real camera recording.
                         self.configured_Vp = self.configured_Vp[4:][0:-1]/10
+                        
+            # For python generated data
+            elif file.startswith("Vp"):
+                self.Vpfilename_npy = self.main_directory + "/" + file
+                curvereadingobjective_V = np.load(self.Vpfilename_npy)
+                
+                # In the recorded Vp trace, the 0 data is sampling rate,
+                # 1 to 4 are NiDaq scaling coffecients, 
+                # 5 to 8 are extra samples for extra camera trigger,
+                # The last one is padding 0 to reset NIDaq channels.
+                self.Vp = curvereadingobjective_V[9:]
+                self.samplingrate_display_curve = curvereadingobjective_V[0]
+                self.Vp = self.Vp[0:-1]
+                
+                # This is from Fixed output from the patch amplifier, unfiltered, x10 already.
+                # Ditched x10 voltage channel in amplifier from 22.12.2021
+                # self.Vp = self.Vp/10
+
+            elif file.startswith("Ip"):
+                self.Ipfilename_npy = self.main_directory + "/" + file
+                curvereadingobjective_I = np.load(self.Ipfilename_npy)
+                # print("I raw: {}".format(curvereadingobjective_I[1000]))
+                                
+                # In the recorded Vp trace, the 0 data is sampling rate,
+                # 1 to 4 are NiDaq scaling coffecients, 
+                # 5 to 8 are extra samples for extra camera trigger,
+                # The last one is padding 0 to reset NIDaq channels.
+                self.Ip = curvereadingobjective_I[9:]
+                self.Ip = self.Ip[0:-1]
+                self.samplingrate_display_curve = curvereadingobjective_I[0]
 
     def getfile_background(self):
         self.fileName_background, _ = QtWidgets.QFileDialog.getOpenFileName(
@@ -657,9 +661,9 @@ class AnalysisWidgetUI(QWidget):
         """
         if self.switch_Vp_or_camtrace.currentIndex() == 0:
 
-            self.patchcurrentlabel = np.arange(len(self.Ip)) / self.samplingrate_curve
+            self.patchcurrentlabel = np.arange(len(self.Ip)) / self.samplingrate_display_curve
 
-            self.patchvoltagelabel = np.arange(len(self.configured_Vp)) / self.samplingrate_curve
+            self.patchvoltagelabel = np.arange(len(self.configured_Vp)) / self.samplingrate_display_curve
 
             self.electrical_signals_figure, (ax1, ax2) = plt.subplots(2, 1)
             # plt.title('Electrode recording')
@@ -776,11 +780,11 @@ class AnalysisWidgetUI(QWidget):
         """
         if self.switch_Vp_or_camtrace.currentIndex() == 0:
             self.samplingrate_cam = self.Spincamsamplingrate.value()
-            self.downsample_ratio = int(self.samplingrate_curve / self.samplingrate_cam)
+            self.downsample_ratio = int(self.samplingrate_display_curve / self.samplingrate_cam)
 
             print("Vp downsampling ratio: {}".format(self.downsample_ratio))
             print("Sampling rate camera: {}".format(self.samplingrate_cam))
-            print("Sampling rate DAQ: {}".format(self.samplingrate_curve))
+            print("Sampling rate DAQ: {}".format(self.samplingrate_display_curve))
 
             try:
                 self.Vp_downsample = self.configured_Vp.reshape(-1, self.downsample_ratio).mean(
@@ -791,7 +795,7 @@ class AnalysisWidgetUI(QWidget):
             except:
                 print("Vp downsampling ratio is not an integer.")
                 small_ratio = int(
-                    np.floor(self.samplingrate_curve / self.samplingrate_cam)
+                    np.floor(self.samplingrate_display_curve / self.samplingrate_cam)
                 )
                 resample_length = int(len(self.videostack) * small_ratio)
                 self.Vp_downsample = signal.resample(self.configured_Vp, resample_length)
