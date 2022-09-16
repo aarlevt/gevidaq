@@ -88,6 +88,7 @@ from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as Navigatio
 from matplotlib.figure import Figure
 import matplotlib.patches as mpatches
 from skimage.color import gray2rgb
+from skimage.io import imread
 from skimage.transform import rotate, resize
 from skimage.measure import find_contours
 
@@ -215,11 +216,11 @@ class CoordinatesWidgetUI(QWidget):
         self.deleteMaskButton.clicked.connect(self.delete_mask)
         self.removeSelectionButton.clicked.connect(self.remove_selection)
         
-        self.addBlankMaskButton = QPushButton("Add blank")
-        # self.addBlankMaskButton.clicked.connect(self.create_mask)
+        self.LoadImageButton = QPushButton("Load image")
+        self.LoadImageButton.clicked.connect(self.read_image_to_draw_roi)
         
         self.maskGeneratorContainerLayout.addWidget(self.addRoiButton, 0, 0)
-        self.maskGeneratorContainerLayout.addWidget(self.addBlankMaskButton, 2, 0)
+        self.maskGeneratorContainerLayout.addWidget(self.LoadImageButton, 2, 0)
         self.maskGeneratorContainerLayout.addWidget(self.createMaskButton, 2, 1)
         self.maskGeneratorContainerLayout.addWidget(self.deleteMaskButton, 2, 2)
         self.maskGeneratorContainerLayout.addWidget(self.removeSelectionButton, 2, 3)
@@ -391,8 +392,31 @@ class CoordinatesWidgetUI(QWidget):
             self.sig_cast_camera_image.emit(image)
 
     def receive_image_from_camera(self, snap_from_camera):
-        """ Receive the emitted snap image singal from camera. """
+        """ 
+        Receive the emitted snap image singal from camera. 
+        Signal-slot configured in mian GUI file.
+        """
         self.selection_view.setImage(snap_from_camera)
+        
+    def read_image_to_draw_roi(self):
+        """
+        Manually load image to draw rois on.
+
+        Returns
+        -------
+        None.
+
+        """
+        loaded_image_name, _ = QtWidgets.QFileDialog.getOpenFileName(
+            self,
+            "Single File",
+            "",
+            "(*.tiff *.tif)",
+        )
+        
+        loaded_image = imread(loaded_image_name)
+        
+        self.selection_view.setImage(loaded_image)
 
     def cast_mask_coordinates(self, receiver):
         """

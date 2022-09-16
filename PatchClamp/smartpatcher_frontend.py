@@ -13,7 +13,7 @@ from skimage import io
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QPen, QColor, QFont, QPalette
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QWidget, QGridLayout, QPushButton, QDoubleSpinBox, QGroupBox, QLabel, QTabWidget, QInputDialog
+from PyQt5.QtWidgets import QWidget, QGridLayout, QPushButton, QDoubleSpinBox, QGroupBox, QLabel, QTabWidget, QInputDialog, QMessageBox
 import pyqtgraph.exporters
 import pyqtgraph as pg
 
@@ -650,8 +650,10 @@ class PatchClampUI(QWidget):
             self.backend.target_coordinates = np.array([x,y,None])
     
     def request_start_autopatch(self):
-        self.displayWidget.setCurrentIndex(0)
-        self.backend.request(name='autopatch')
+        check = QMessageBox.question(self, 'Start autopatch', "Is the pipette tip inside the field-of-view?", QMessageBox.No | QMessageBox.Yes)
+        if check == QMessageBox.Yes:
+            self.displayWidget.setCurrentIndex(0)
+            self.backend.request(name='autopatch')
     
     def request_manual_adjustment(self):
         """

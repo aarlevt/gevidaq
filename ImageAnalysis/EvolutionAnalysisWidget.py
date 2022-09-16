@@ -572,7 +572,15 @@ class MainGUI(QWidget):
                 self.Mean_intensity_in_contour_thres,
                 self.Contour_soma_ratio_thres,
             )
-
+            
+            # if self.FilepathSwitchBox.currentText() == "Cam Z-max":
+            #     DataFrames_filtered.to_excel(
+            #         os.path.join(
+            #             self.Tag_folder,
+            #             datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + "cam_CellsProperties.xlsx",
+            #         )
+            #     )
+        
             self.DataFrame_sorted = ProcessImage.sort_on_axes(
                 DataFrames_filtered,
                 axis_1=self.X_axisBox.currentText(),
@@ -1110,12 +1118,12 @@ class MainGUI(QWidget):
             self.loaded_image_display[maxr, minc:maxc] = 4
             self.loaded_image_display[minr:maxr, minc] = 4
             self.loaded_image_display[minr:maxr, maxc] = 4
-        else:
+        elif self.FilepathSwitchBox.currentText() == "Cam Z-max":
             # In case of camera
-            self.loaded_image_display[minr, minc:maxc] = 10**4
-            self.loaded_image_display[maxr, minc:maxc] = 10**4
-            self.loaded_image_display[minr:maxr, minc] = 10**4
-            self.loaded_image_display[minr:maxr, maxc] = 10**4           
+            self.loaded_image_display[minc:maxc, minr] = 10**4
+            self.loaded_image_display[minc:maxc, maxr] = 10**4
+            self.loaded_image_display[minc, minr:maxr] = 10**4
+            self.loaded_image_display[maxc, minr:maxr] = 10**4           
 
         # -------Show image in imageview-------------
         if self.FilepathSwitchBox.currentText() != "Cam Z-max":
@@ -1411,10 +1419,7 @@ class MainGUI(QWidget):
         """
         Save the data sheet into excel file.
         """
-        os.path.join(
-            self.Tag_folder,
-            datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + "_CellsProperties.xlsx",
-        )
+
         self.DataFrame_sorted.to_excel(
             os.path.join(
                 self.Tag_folder,

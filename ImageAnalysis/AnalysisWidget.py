@@ -58,7 +58,7 @@ if __name__ == "__main__":
     abspath = os.path.abspath(__file__)
     dname = os.path.dirname(abspath)
     os.chdir(dname + "/../")
-from ImageAnalysis.ImageProcessing import ProcessImage, CurveFit
+from ImageAnalysis.ImageProcessing import ProcessImage, PatchAnalysis
 import StylishQT
 
 
@@ -102,7 +102,7 @@ class AnalysisWidgetUI(QWidget):
         # self.readimageLayout.addWidget(QLabel('Video of interest:'), 1, 0)
 
         self.textbox_directory_name = QLineEdit(self)
-        self.readimageLayout.addWidget(self.textbox_directory_name, 1, 4)
+        self.readimageLayout.addWidget(self.textbox_directory_name, 1, 6)
 
         # self.button_browse = QPushButton('Set data folder', self)
         # self.readimageLayout.addWidget(self.button_browse, 1, 5)
@@ -112,7 +112,7 @@ class AnalysisWidgetUI(QWidget):
         self.button_load = StylishQT.loadButton()
         self.button_load.setFixedWidth(100)
         self.button_load.setToolTip("Choose data folder and load")
-        self.readimageLayout.addWidget(self.button_load, 1, 6)
+        self.readimageLayout.addWidget(self.button_load, 1, 7)
         self.button_load.clicked.connect(self.getfile)
 
         self.Spincamsamplingrate = QSpinBox(self)
@@ -121,17 +121,24 @@ class AnalysisWidgetUI(QWidget):
         self.Spincamsamplingrate.setSingleStep(500)
         self.readimageLayout.addWidget(self.Spincamsamplingrate, 1, 3)
         self.readimageLayout.addWidget(QLabel("Camera FPS:"), 1, 2)
+        
+        self.VoltageStepFrequencyQSpinBox = QSpinBox(self)
+        self.VoltageStepFrequencyQSpinBox.setMaximum(20000)
+        self.VoltageStepFrequencyQSpinBox.setValue(5)
+        self.VoltageStepFrequencyQSpinBox.setSingleStep(5)
+        self.readimageLayout.addWidget(self.VoltageStepFrequencyQSpinBox, 1, 5)
+        self.readimageLayout.addWidget(QLabel("Voltage step frequency:"), 1, 4)
 
         self.run_analysis_button = StylishQT.runButton()
         self.run_analysis_button.setFixedWidth(100)
         self.run_analysis_button.setEnabled(False)
-        self.readimageLayout.addWidget(self.run_analysis_button, 1, 7)
+        self.readimageLayout.addWidget(self.run_analysis_button, 1, 8)
 
         self.run_analysis_button.clicked.connect(self.finish_analysis)
 
         self.button_clearpolts = StylishQT.cleanButton()
         self.button_clearpolts.setFixedWidth(100)
-        self.readimageLayout.addWidget(self.button_clearpolts, 1, 8)
+        self.readimageLayout.addWidget(self.button_clearpolts, 1, 9)
 
         self.button_clearpolts.clicked.connect(self.clearplots)
 
@@ -287,9 +294,9 @@ class AnalysisWidgetUI(QWidget):
         """
         get_ipython().run_line_magic("matplotlib", "qt")
 
-        if not os.path.exists(os.path.join(self.main_directory, "Analysis results")):
+        if not os.path.exists(os.path.join(self.main_directory, "Patch analysis")):
             # If the folder is not there, create the folder
-            os.mkdir(os.path.join(self.main_directory, "Analysis results"))
+            os.mkdir(os.path.join(self.main_directory, "Patch analysis"))
 
         print("Loading data...")
         self.MessageToMainGUI("Loading data..." + "\n")
@@ -435,9 +442,25 @@ class AnalysisWidgetUI(QWidget):
                     if each_waveform['Sepcification'] == "patchAO":
                         self.configured_Vp = each_waveform['Waveform']
                         
-                        # First 4 numbers and the last one in the recording 
-                        # are padding values outside the real camera recording.
-                        self.configured_Vp = self.configured_Vp[4:][0:-1]/10
+                        print("Length of configured_Vp: {}".format(len(self.configured_Vp)))
+                        
+                        if len(self.configured_Vp) % 10 == 5:
+                            # First 4 numbers and the last one in the recording 
+                            # are padding values outside the real camera recording.
+                            
+                            # Extra camera triggers: False True True False | Real signals: True
+                            # Extra patch voltage:   -0.7  -0.7 -0.7 -0.7  | Real signals: 0.3
+                            # if 
+                            self.configured_Vp = self.configured_Vp[4:][0:-1]/10
+                            
+                            print("Length of cut Vp: {}".format(len(self.configured_Vp)))
+                            
+                        elif len(self.configured_Vp) % 10 == 2:
+                            # The first number and the last one in the recording 
+                            # are padding values outside the real camera recording.
+                            self.configured_Vp = self.configured_Vp[1:][0:-1]/10
+                            
+                            print("Length of cut Vp: {}".format(len(self.configured_Vp)))                            
                         
             # For python generated data
             elif file.startswith("Vp"):
@@ -533,7 +556,7 @@ class AnalysisWidgetUI(QWidget):
         ax0.set_ylabel("Pixel values")
         fig.savefig(
             os.path.join(
-                self.main_directory, "Analysis results//ROI raw background trace.png"
+                self.main_directory, "Patch analysis//ROI raw background trace.png"
             ),
             dpi=1000,
         )
@@ -586,7 +609,7 @@ class AnalysisWidgetUI(QWidget):
         ax1.set_ylabel("Pixel values")
         fig.savefig(
             os.path.join(
-                self.main_directory, "Analysis results//Smoothed background trace.png"
+                self.main_directory, "Patch analysis//Smoothed background trace.png"
             ),
             dpi=1000,
         )
@@ -631,7 +654,7 @@ class AnalysisWidgetUI(QWidget):
         fig2.savefig(
             os.path.join(
                 self.main_directory,
-                "Analysis results//Mean camera intensity after backgroubd substracted.png",
+                "Patch analysis//Mean camera intensity after backgroubd substracted.png",
             ),
             dpi=1000,
         )
@@ -645,7 +668,7 @@ class AnalysisWidgetUI(QWidget):
         fig3.suptitle("Mean intensity")
         plt.imshow(self.imganalysis_averageimage)
         fig3.savefig(
-            os.path.join(self.main_directory, "Analysis results//Mean intensity.png"),
+            os.path.join(self.main_directory, "Patch analysis//Mean intensity.png"),
             dpi=1000,
         )
         plt.show()
@@ -691,7 +714,7 @@ class AnalysisWidgetUI(QWidget):
             plt.show()
             self.electrical_signals_figure.savefig(
                 os.path.join(
-                    self.main_directory, "Analysis results//Electrode recording.png"
+                    self.main_directory, "Patch analysis//Electrode recording.png"
                 ),
                 dpi=1000,
             )
@@ -709,6 +732,8 @@ class AnalysisWidgetUI(QWidget):
         """
         self.imganalysis_averageimage = np.mean(self.videostack, axis=0)
         self.pw_averageimage.setImage(self.imganalysis_averageimage)
+        # self.pw_averageimage.setLevels((50, 200))
+        
         self.samplingrate_cam = self.Spincamsamplingrate.value()
         self.cam_time_label = (
             np.arange(self.videostack.shape[0]) / self.samplingrate_cam
@@ -719,7 +744,7 @@ class AnalysisWidgetUI(QWidget):
         plt.imshow(self.imganalysis_averageimage)
         fig.savefig(
             os.path.join(
-                self.main_directory, "Analysis results//Mean intensity of raw video.png"
+                self.main_directory, "Patch analysis//Mean intensity of raw video.png"
             ),
             dpi=1000,
         )
@@ -737,7 +762,7 @@ class AnalysisWidgetUI(QWidget):
         fig2.savefig(
             os.path.join(
                 self.main_directory,
-                "Analysis results//Mean intensity trace of raw video.png",
+                "Patch analysis//Mean intensity trace of raw video.png",
             ),
             dpi=1000,
         )
@@ -833,13 +858,13 @@ class AnalysisWidgetUI(QWidget):
         plt.imshow(self.weightimage)
         fig.savefig(
             os.path.join(
-                self.main_directory, "Analysis results//Weighted pixel image.png"
+                self.main_directory, "Patch analysis//Weighted pixel image.png"
             ),
             dpi=1000,
         )
         np.save(
             os.path.join(
-                self.main_directory, "Analysis results//Weighted pixel image.npy"
+                self.main_directory, "Patch analysis//Weighted pixel image.npy"
             ),
             self.weightimage,
         )
@@ -875,7 +900,7 @@ class AnalysisWidgetUI(QWidget):
         )
 
         np.save(
-            os.path.join(self.main_directory, "Analysis results//Weighted_trace.npy"),
+            os.path.join(self.main_directory, "Patch analysis//Weighted_trace.npy"),
             self.weight_trace_data,
         )
 
@@ -886,7 +911,7 @@ class AnalysisWidgetUI(QWidget):
         ax1.set_ylabel("Weighted trace(counts)")
         fig.savefig(
             os.path.join(
-                self.main_directory, "Analysis results//Weighted pixel trace.png"
+                self.main_directory, "Patch analysis//Weighted pixel trace.png"
             ),
             dpi=1000,
         )
@@ -901,21 +926,19 @@ class AnalysisWidgetUI(QWidget):
         None.
 
         """
-        fit = CurveFit(
-            self.weight_trace_data,
-            self.configured_Vp * 1000,
-            camera_fps=self.samplingrate_cam,
-            DAQ_sampling_rate=self.samplingrate_display_curve,
+        fit = PatchAnalysis(
+            weighted_trace = self.weight_trace_data,
+            DAQ_waveform = self.configured_Vp,
+            voltage_step_frequency = self.VoltageStepFrequencyQSpinBox.value(),
+            camera_fps = self.samplingrate_cam,
+            DAQ_sampling_rate = self.samplingrate_display_curve,
             main_directory=self.main_directory,
             rhodopsin=self.Construct_name.text(),
         )
         fit.Photobleach()
-        fit.IsolatePeriods()
-        fit.TransformCurves()
-        fit.CurveAveraging()
-        fit.fit_on_averaged_curve()
-        fit.ExponentialFitting()
-        fit.extract_sensitivity()
+        fit.ExtractPeriod()
+        fit.FitSinglePeriod()
+        fit.ExtractSensitivity()
         fit.Statistics()
 
     def save_analyzed_image(self, catag):
@@ -989,6 +1012,15 @@ class AnalysisWidgetUI(QWidget):
                 print(
                 "For Vp recored earlier than 22.12.2021, pls devided by 10 as the amplifier channel multipliesby 10 by default."
                 )
+            elif "PMT" in self.single_waveform_fileName:
+                self.PMT_recording = self.single_waveform[9:-1]
+                
+                fig, ax = plt.subplots()
+                plt.plot(time_axis, self.PMT_recording)
+                ax.set_title("PMT voltage")
+                ax.set_ylabel("Volt (V)")
+                ax.set_xlabel("time(s)")                
+                
             else:
                 plt.figure()
                 plt.plot(self.single_waveform_fileName)

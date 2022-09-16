@@ -801,6 +801,7 @@ class Worker(QObject):
                 resistance = np.nanmax(self._parent.resistance[-10::])
                 self.graph2.emit(resistancehistory)
                 resistancehistory = np.append(resistancehistory, resistance)
+                time.sleep(0.1)
         else:
             self.progress.emit("Gigaseal failed")
         

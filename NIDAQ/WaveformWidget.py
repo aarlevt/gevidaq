@@ -740,7 +740,7 @@ class WaveformGenerator(QWidget):
         )
         self.switchExtraTrigger.setToolTip("Add one extra camera trigger at the start or not--Camera lossing first frame")
                 
-        self.switchExtraTrigger.setChecked(False)
+        self.switchExtraTrigger.setChecked(True)
         
         self.DigitalLayout.addWidget(self.switchExtraTrigger, 0, 4)
         
@@ -1401,7 +1401,7 @@ class WaveformGenerator(QWidget):
         if not self.AnalogOffsetTextbox.text():
             uiwaveoffset_2 = 0
         else:
-            uiwaveoffset_2 = int(self.AnalogOffsetTextbox.text())  # in ms
+            uiwaveoffset_2 = float(self.AnalogOffsetTextbox.text())  # in ms
         uiwaveperiod_2 = int(self.AnalogDurationTextbox.text())
         uiwaveDC_2 = self.AnalogDCTextbox.value()
         if not self.AnalogRepeatTextbox.text():
@@ -1646,6 +1646,123 @@ class WaveformGenerator(QWidget):
                 QMessageBox.Ok,
             )
 
+        #=====================================================================
+        # Adding 4 values at the front, same for all waveforms except the
+        # Camera trigger, which adds one extra trigger to solve the missing
+        # trigger in the beginning issue.
+        if self.Auto_padding_flag == True:
+            print("Auto-padding to reset channels.")
+            
+            self.padding_number = 115
+            
+            if self.Adding_extra_camera_trigger_flag == True: 
+                for waveform_key in self.waveform_data_dict:
+    
+                    if waveform_key != 'cameratrigger':
+                        if waveform_key in self.AnalogChannelList:
+                            
+                            # ==== Padding at the end ====
+                            if waveform_key != "patchAO":
+                                # For analog channels,
+                                insert_array = np.zeros(self.padding_number)
+    
+                                # Add 0 in the end
+                                self.waveform_data_dict[waveform_key] = np.append\
+                                (self.waveform_data_dict[waveform_key], 0)
+    
+                            else:
+                                if np.amax(self.waveform_data_dict[waveform_key]) ==\
+                                    np.amin(self.waveform_data_dict[waveform_key]):
+                                    # In case of holding potential
+                                    # For patch channels, add 4 same float values
+                                    insert_array = np.ones([self.padding_number]) * \
+                                               self.waveform_data_dict[waveform_key][0]
+                                else:
+                                    # In case of step waves,
+                                    # append baseline values
+                                    insert_array = np.ones([self.padding_number]) * \
+                                               np.amin(self.waveform_data_dict[waveform_key])                              
+                                
+                                # In case of patch clamp, append same last value
+                                self.waveform_data_dict[waveform_key] = np.append\
+                                (self.waveform_data_dict[waveform_key], self.waveform_data_dict[waveform_key][-1])
+    
+                        else:
+                            # For digital boolen signals
+                            insert_array = np.zeros([self.padding_number], dtype = bool)
+                                           
+                            # Add False in the end
+                            self.waveform_data_dict[waveform_key] = np.append\
+                            (self.waveform_data_dict[waveform_key], False)
+                    else:
+                        # In case of cameratrigger, add a trigger composed of 4 values
+                        insert_array = np.array([False, False, False, False, False, \
+                                                 False, False, False, False, False, \
+                                                 False, False, False, False, False, \
+                                                 False, False, False, False, False, \
+                                                 False, False, False, False, False, \
+                                                True, True, True, True, True, \
+                                                True, True, True, True, True, \
+                                                True, True, True, True, True, \
+                                                True, True, True, True, True, \
+                                                True, True, True, True, True, \
+                                                 False, False, False, False, False, \
+                                                 False, False, False, False, False, \
+                                                 False, False, False, False, False, \
+                                                 False, False, False, False, False, \
+                                                 False, False, False, False, False, \
+                                                True, True, True, True, True, \
+                                                True, True, True, True, True, \
+                                                True, True, True, True, True, \
+                                                True, True, True, True, True, \
+                                                True, True, True, True, True, \
+                                                 False, False, False, False, False, \
+                                                 False, False, False, False, False, \
+                                                 False, False, False, False, False])
+                        
+                        # Add False in the end
+                        self.waveform_data_dict[waveform_key] = np.append\
+                        (self.waveform_data_dict[waveform_key], False)
+    
+                    # Insert the appendix
+                    self.waveform_data_dict[waveform_key] = np.insert\
+                    (self.waveform_data_dict[waveform_key], 0, insert_array)
+    
+                    # print(self.waveform_data_dict[waveform_key])
+            else:
+                for waveform_key in self.waveform_data_dict:
+                    
+                    if waveform_key in self.AnalogChannelList:
+                        
+                        # ==== Padding at the end ====
+                        if waveform_key != "patchAO":
+                            # For analog channels,
+                            insert_array = np.zeros(self.padding_number)
+                            # Add 0 in the end
+                            self.waveform_data_dict[waveform_key] = np.append\
+                            (self.waveform_data_dict[waveform_key], 0)
+                        else:
+                            # For patch channels, add 4 same float values
+                            insert_array = np.ones([self.padding_number]) * \
+                                       self.waveform_data_dict[waveform_key][0]
+                            # In case of patch clamp, append same last value
+                            self.waveform_data_dict[waveform_key] = np.append\
+                            (self.waveform_data_dict[waveform_key], self.waveform_data_dict[waveform_key][-1])  
+                    else:
+                        insert_array = np.zeros(self.padding_number, dtype = bool)
+                        # Add False in the end
+                        self.waveform_data_dict[waveform_key] = np.append\
+                        (self.waveform_data_dict[waveform_key], False)
+    
+                    # Insert the appendix
+                    self.waveform_data_dict[waveform_key] = np.insert\
+                    (self.waveform_data_dict[waveform_key], 0, insert_array)
+                    
+                    # print(self.waveform_data_dict[waveform_key])
+        else:
+            print("No Auto-padding to reset channels.")
+        #====================================================================
+
         if ReferenceWaveform_menu_text == "galvos":  
             # in case of using galvos as reference wave
             self.reference_length = len(reference_wave[0, :])
@@ -1658,8 +1775,20 @@ class WaveformGenerator(QWidget):
                 self.reference_length = len(reference_wave[0, :])
         else:
             self.reference_length = len(reference_wave)
-        
 
+        if self.Auto_padding_flag == True:
+            if self.Adding_extra_camera_trigger_flag == True: 
+                # In case of adding extra camera trigger, 4 values are added to all channels at the start
+                self.reference_length += len(insert_array) + 1
+            else:
+                # No extra camera trigger, 1 each extra in the beginning and at the end
+                self.reference_length += 2
+            print("reference_length: " + str(self.reference_length))
+        else:
+            # Without auto padding, reference length is the same as original waveform.
+            print("reference_length: " + str(self.reference_length))
+            
+            
         # ---------------Get all waveforms the same length.---------------------
         
         for waveform_key in self.waveform_data_dict:
@@ -1760,17 +1889,7 @@ class WaveformGenerator(QWidget):
         # Structured array to contain
         # https://stackoverflow.com/questions/39622533/numpy-array-as-datatype-in-a-structured-array
         
-        if self.Auto_padding_flag == True:
-            if self.Adding_extra_camera_trigger_flag == True: 
-                # In case of adding extra camera trigger, 4 values are added to all channels at the start
-                self.reference_length += 5
-            else:
-                # No extra camera trigger, 1 each extra in the beginning and at the end
-                self.reference_length += 2
-            print("reference_length: " + str(self.reference_length))
-        else:
-            # Without auto padding, reference length is the same as original waveform.
-            print("reference_length: " + str(self.reference_length))
+
         
         dataType_analog = np.dtype(
             [("Waveform", float, (self.reference_length,)), ("Sepcification", "U20")]
@@ -1779,98 +1898,7 @@ class WaveformGenerator(QWidget):
             [("Waveform", bool, (self.reference_length,)), ("Sepcification", "U20")]
         )
 
-        #=====================================================================
-        # Adding 4 values at the front, same for all waveforms except the
-        # Camera trigger, which adds one extra trigger to solve the missing
-        # trigger in the beginning issue.
-        if self.Auto_padding_flag == True:
-            print("Auto-padding to reset channels.")
-            
-            if self.Adding_extra_camera_trigger_flag == True: 
-                for waveform_key in self.waveform_data_dict:
-    
-                    if waveform_key != 'cameratrigger':
-                        if waveform_key in self.AnalogChannelList:
-                            
-                            # ==== Padding at the end ====
-                            if waveform_key != "patchAO":
-                                # For analog channels,
-                                insert_array = np.zeros(4)
-    
-                                # Add 0 in the end
-                                self.waveform_data_dict[waveform_key] = np.append\
-                                (self.waveform_data_dict[waveform_key], 0)
-    
-                            else:
-                                if np.amax(self.waveform_data_dict[waveform_key]) ==\
-                                    np.amin(self.waveform_data_dict[waveform_key]):
-                                    # In case of holding potential
-                                    # For patch channels, add 4 same float values
-                                    insert_array = np.ones([4]) * \
-                                               self.waveform_data_dict[waveform_key][0]
-                                else:
-                                    # In case of step waves,
-                                    # append baseline values
-                                    insert_array = np.ones([4]) * \
-                                               np.amin(self.waveform_data_dict[waveform_key])                              
-                                
-                                # In case of patch clamp, append same last value
-                                self.waveform_data_dict[waveform_key] = np.append\
-                                (self.waveform_data_dict[waveform_key], self.waveform_data_dict[waveform_key][-1])
-    
-                        else:
-                            # For digital boolen signals
-                            insert_array = np.zeros([4], dtype = bool)
-                                           
-                            # Add False in the end
-                            self.waveform_data_dict[waveform_key] = np.append\
-                            (self.waveform_data_dict[waveform_key], False)
-                    else:
-                        # In case of cameratrigger, add a trigger composed of 4 values
-                        insert_array = np.array([False, True, True, False])
-                        
-                        # Add False in the end
-                        self.waveform_data_dict[waveform_key] = np.append\
-                        (self.waveform_data_dict[waveform_key], False)
-    
-                    # Insert the appendix
-                    self.waveform_data_dict[waveform_key] = np.insert\
-                    (self.waveform_data_dict[waveform_key], 0, insert_array)
-    
-                    # print(self.waveform_data_dict[waveform_key])
-            else:
-                for waveform_key in self.waveform_data_dict:
-                    
-                    if waveform_key in self.AnalogChannelList:
-                        
-                        # ==== Padding at the end ====
-                        if waveform_key != "patchAO":
-                            # For analog channels,
-                            insert_array = np.zeros(4)
-                            # Add 0 in the end
-                            self.waveform_data_dict[waveform_key] = np.append\
-                            (self.waveform_data_dict[waveform_key], 0)
-                        else:
-                            # For patch channels, add 4 same float values
-                            insert_array = np.ones([4]) * \
-                                       self.waveform_data_dict[waveform_key][0]
-                            # In case of patch clamp, append same last value
-                            self.waveform_data_dict[waveform_key] = np.append\
-                            (self.waveform_data_dict[waveform_key], self.waveform_data_dict[waveform_key][-1])  
-                    else:
-                        insert_array = np.zeros(4, dtype = bool)
-                        # Add False in the end
-                        self.waveform_data_dict[waveform_key] = np.append\
-                        (self.waveform_data_dict[waveform_key], False)
-    
-                    # Insert the appendix
-                    self.waveform_data_dict[waveform_key] = np.insert\
-                    (self.waveform_data_dict[waveform_key], 0, insert_array)
-                    
-                    # print(self.waveform_data_dict[waveform_key])
-        else:
-            print("No Auto-padding to reset channels.")
-        #=====================================================================
+
         
         # ================Reset the PlotDataItem===================
         x_label = np.arange(self.reference_length) / self.uiDaq_sample_rate
@@ -1887,6 +1915,12 @@ class WaveformGenerator(QWidget):
                         )
                     elif "galvosx" in waveform_key or "galvosy" in waveform_key:
                         self.PlotDataItem_dict["galvos"].setData(
+                            x_label,
+                            self.waveform_data_dict[waveform_key],
+                            name=waveform_key,
+                        )
+                    elif "galvos_X" in waveform_key or "galvos_Y" in waveform_key:
+                        self.PlotDataItem_dict["galvos_contour"].setData(
                             x_label,
                             self.waveform_data_dict[waveform_key],
                             name=waveform_key,
@@ -1932,7 +1966,7 @@ class WaveformGenerator(QWidget):
         for waveform_key in self.waveform_data_dict:
 
             if waveform_key in self.AnalogChannelList or "galvos" in waveform_key:
-
+                print(len(self.waveform_data_dict[waveform_key]))
                 self.analog_array[analog_line_num] = np.array(\
                     [(self.waveform_data_dict[waveform_key], waveform_key)],
                     dtype=dataType_analog,
@@ -2089,7 +2123,7 @@ class WaveformGenerator(QWidget):
         )
         self.adcollector.save_as_binary(self.savedirectory)
 
-        self.button_execute.setEnabled(False)
+        # self.button_execute.setEnabled(False)
 
     def load_waveforms(self, WaveformTuple):
         self.WaveformSamplingRate = WaveformTuple[0]

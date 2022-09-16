@@ -445,7 +445,7 @@ class Mainbody(QWidget):
         self.Cam_AF_init_step_sizeBox.setDecimals(3)
         self.Cam_AF_init_step_sizeBox.setMinimum(0)
         self.Cam_AF_init_step_sizeBox.setMaximum(10)
-        self.Cam_AF_init_step_sizeBox.setValue(0.020)
+        self.Cam_AF_init_step_sizeBox.setValue(0.025)
         self.Cam_AF_init_step_sizeBox.setSingleStep(0.001)
         Cam_autofocus_setting_group_layout.addWidget(
             self.Cam_AF_init_step_sizeBox, 0, 1
@@ -457,7 +457,7 @@ class Mainbody(QWidget):
         self.Cam_AF_step_numBox = QSpinBox(self)
         self.Cam_AF_step_numBox.setMinimum(1)
         self.Cam_AF_step_numBox.setMaximum(1000)
-        self.Cam_AF_step_numBox.setValue(8)
+        self.Cam_AF_step_numBox.setValue(10)
         self.Cam_AF_step_numBox.setSingleStep(1)
         Cam_autofocus_setting_group_layout.addWidget(self.Cam_AF_step_numBox, 0, 3)
         Cam_autofocus_setting_group_layout.addWidget(QLabel("Searching increment number:"), 0, 2)

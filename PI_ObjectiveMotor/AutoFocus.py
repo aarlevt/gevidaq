@@ -98,7 +98,7 @@ class FocusFinder:
         self.source_of_image = source_of_image
         if source_of_image == "PMT":
             self.galvo = RasterScan(
-                Daq_sample_rate=500000, edge_volt=self.imaging_conditions["edge_volt"]
+                Daq_sample_rate=250000, edge_volt=self.imaging_conditions["edge_volt"]
             )
         elif source_of_image == "Camera":
             if camera_handle == None:
@@ -271,7 +271,7 @@ class FocusFinder:
             if False:
                 with skimtiff.TiffWriter(
                     os.path.join(
-                        r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Xin\2020-11-17 gaussian fit auto-focus cells\trial_11",
+                        r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\People\Xin Meng\paperwork\Dissertation\Figures\Chapter 4\Bisection\data\trial2",
                         str(obj_position).replace(".", "_") + ".tif",
                     )
                 ) as tif:
@@ -280,7 +280,7 @@ class FocusFinder:
             degree_of_focus = ProcessImage.local_entropy(
                 self.galvo_image.astype("float32")
             )
-
+            
         elif self.source_of_image == "Camera":
             # First configure the AOTF.
             self.AOTF_runner = DAQmission()
@@ -376,11 +376,13 @@ if __name__ == "__main__":
     # ins.gaussian_fit() # will return false if there's no cell in view.
     # ins.pi_device_instance.CloseMotorConnection()
 
-    ins = FocusFinder(
-        source_of_image="Camera",
-        imaging_conditions={"488AO": 3, "exposure_time": 0.005},
-    )
+    # ins = FocusFinder(
+    #     source_of_image="Camera",
+    #     imaging_conditions={"488AO": 3, "exposure_time": 0.005},
+    # )
+    ins = FocusFinder()
     ins.total_step_number = 7
-    ins.init_search_range = 0.013
-    ins.gaussian_fit()  # will return false if there's no cell in view.
+    ins.init_search_range = 0.012
+    ins.imaging_conditions={"edge_volt": 3},
+    ins.bisection()  # will return false if there's no cell in view.
     ins.pi_device_instance.CloseMotorConnection()

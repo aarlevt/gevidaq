@@ -369,7 +369,12 @@ class ProcessImageML:
                     
                     # Background substraction
                     if background_substraction == True:
-                        Rawimage = np.abs(Rawimage - background_image)
+                        # Convert to signed int to perform substraction
+                        Rawimage = Rawimage.astype(np.int16) - background_image.astype(np.int16)
+                        # Set min to 0
+                        Rawimage = Rawimage.clip(min=0)
+                        # Set back to uint
+                        Rawimage = Rawimage.astype(np.uint16)
                         
                         camera_dark_level = 100
                         
@@ -385,7 +390,7 @@ class ProcessImageML:
                     #                        RawimageCleared = Rawimage.copy()
 
                     image = ProcessImage.convert_for_MaskRCNN(Rawimage)
-
+                    
                     # Run the detection on input image.
                     results = self.Detector.detect([image])
 
@@ -489,7 +494,7 @@ class ProcessImageML:
             "Number of cells counted in image: {}".format(total_cells_counted_in_coord)
         )
 
-        return cell_Data
+        return cell_Data, MLresults
 
     def analyze_images_in_folder(
         self,
@@ -770,7 +775,7 @@ class ProcessImageML:
         # np.save('Center_Coor',Center_Coor)
         
     #%%
-    def showPlotlyScatter(self, DataFrame, x_axis, y_axis, saving_directory):
+def showPlotlyScatter(self, DataFrame, x_axis, y_axis, saving_directory):
         """
         Display the scatters through interactive library Plotly.
 
@@ -829,7 +834,7 @@ if __name__ == "__main__":
     # ProcessML.config.WeigthPath = r"C:\MaskRCNN\MaskRCNNGit\MaskRCNN\MaskRCNN\Data\Xin_training\cell20210107T1533\mask_rcnn_cell_0050.h5"
     print(ProcessML.config.WeigthPath)
     # 5.6s for each detection
-    img_name = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\2022-1-29 Helios last data for paper\screening\S237A\stack2\Round2_Coords1_R0C0_Cam_1_Zpos1.tif"
+    img_name = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\People\Xin Meng\paperwork\Dissertation\Figures\Chapter 4\MaskRCNN cell precision\Round2_Grid1_Coords36_R17248C7840_PMT_0Zmax.tif"
     img = skimage.io.imread(img_name)
     # for _ in range(5):
     #     starttime = time.time()
@@ -837,7 +842,10 @@ if __name__ == "__main__":
     #     endtime = time.time()
     #     print(endtime-starttime)
 
-    cell_data = ProcessML.analyze_single_image(img, show_each_cell=True)
+    cell_data, MLresults = ProcessML.analyze_single_image(img, show_each_cell=True)
+    
+    cell_index = 0
+    MLresults['masks'][:,:,cell_index]
     # ProcessML.DetectionOnImage(img, show_result = True)
 
     # cell_data = ProcessML.analyze_images_in_folder\
@@ -845,3 +853,53 @@ if __name__ == "__main__":
     
     # file = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\ML images\NewAnnotationDaanPart2\Camera\Spiking HEK\1.png"
     # ProcessML.Generate_connection_map(file)
+    
+   
+# import json
+# from skimage.draw import polygon
+# import numpy as np
+# import matplotlib.pyplot as plt
+# import cv2
+# from skimage.io import imread
+# f = open ("M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data/ML images/FishZehra/V/Validation/fish1jr.json")
+
+# data = json.load(f)
+# cells = data["shapes"]
+
+# celll = cells[0]
+# celll_x = []
+# celll_y = []
+
+# for coord in celll["points"]:
+#     celll_x.append(coord[0])
+#     celll_y.append(coord[1])
+    
+# yy, xx = polygon(celll_x, celll_y)    
+# image = np.zeros((500,500))
+# image [xx,yy] =1
+# fig, ax = plt.subplots()
+# ax.imshow(image)
+# plt.show()
+
+# results = ProcessML.DetectionOnImage(img, show_result = True) 
+
+# results_json = json.dumps(results['masks'])
+# #with open(r"M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data/ML images/FishZehra/V/Validation/fish1jr.png") as f: 
+# #    f.write(results_json)
+    
+    
+
+
+# results_json = json.dumps(results['masks'])
+# with open(r"M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data/ML images/FishZehra/V/Validation/fish1jr.png") as f: 
+#     f.write(results_json)
+# masks = results['masks'] 
+# for i in range(len(masks)):
+#     mask_image = masks[:,:,i]
+
+#     path = r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\People\Zehra Kaynak'
+#     img_name = 'waka' + str(i) + '.png'
+#     cv2.imwrite(os.path.join(path , img_name), mask_image*255)
+#     cv2.waitKey(0)
+            
+
