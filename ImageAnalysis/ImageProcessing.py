@@ -4107,7 +4107,7 @@ class ProcessImage:
     #     Images stitching
     # =============================================================================
     """
-    def image_stitching(Nest_data_directory, row_data_folder=True):
+    def image_stitching(Nest_data_directory, scanning_coord_step = 1585, row_data_folder=True):
         """
         Stitch all screening images together into one.
 
@@ -4191,7 +4191,6 @@ class ProcessImage:
                 - imageinfo_DataFrame.iloc[0]["Stage column index"]
             )
 
-        scanning_coord_step = 1585
         print("scanning_coord_step set to {}!".format(scanning_coord_step))
 
         # Assume that col and row coordinates numbers are the same.
@@ -4501,7 +4500,7 @@ class ProcessImage:
             Normalized trace.
 
         """
-        raw_PMT_trace = np.load(path)[1:]
+        raw_PMT_trace = np.load(path)[0:]
         
         # Calculate the mean of 100 contour points as one point.
         avg_cell_trace = np.mean(raw_PMT_trace.reshape(len(raw_PMT_trace)//points_per_contour, points_per_contour), axis = 1)
@@ -4695,7 +4694,7 @@ class ProcessImage:
             CTEs=[]
             error=[]
             for each_data_list in data_to_list:
-                CTEs.append(np.mean(np.array(i)))
+                CTEs.append(np.mean(np.array(each_data_list)))
                 # Calculate the standard deviation
                 std = np.std(np.array(each_data_list))
                 sem = std / np.sqrt(len(each_data_list))
@@ -7010,13 +7009,13 @@ if __name__ == "__main__":
     merge_dataFrames = False
     cam_screening_analysis = False
     photo_current = False
-    PMT_contour_scan_processing = False
-    screening_comparison = True
+    PMT_contour_scan_processing = True
+    screening_comparison = False
     
     if stitch_img == True:
-        Nest_data_directory = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2021-08-05_17-51-31_Archon WT ND2ND0p5\MLimages_Round2"
+        Nest_data_directory = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2022-06-10  Evolution screening validation\WT\2022-06-10_16-26-51_WT_pmt"
         Stitched_image_dict = ProcessImage.image_stitching(
-            Nest_data_directory, row_data_folder=False
+            Nest_data_directory, scanning_coord_step = 1568, row_data_folder=True
         )
 
         for key in Stitched_image_dict:
@@ -7088,7 +7087,7 @@ if __name__ == "__main__":
         ProcessImage.PhotoCurrent(r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Patch clamp\2021-08-07 GR mutants\E166Q\CELL5\Photocurrent")
     
     elif PMT_contour_scan_processing == True:
-        fluorescence_trace_normalized_for_average = ProcessImage.CurveFit_PMT(r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Patch clamp\2022-06-10 Quasar1 2P mut\Mut\Cell1\2p patch\PMT_array_2022-06-10_10-54-41.npy"\
+        fluorescence_trace_normalized_for_average = ProcessImage.CurveFit_PMT(r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Patch clamp\2021-08-04 2p Patch\QuasAr1\CELL3\ND1\PMT_array_2021-08-04_14-39-35.npy"\
                                                                                              , number_of_periods = 25)
     elif screening_comparison == True:
         ProcessImage.Screening_boxplot(r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2022-06-14 evolution screening H106R\data collection ratio.xlsx")

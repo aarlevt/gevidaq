@@ -110,7 +110,7 @@ class AOTFWidgetUI(QWidget):
         self.line640.setFixedWidth(46)
         self.slider640.sliderReleased.connect(lambda: self.updatelinevalue(640))
         self.slider640.sliderReleased.connect(
-            lambda: self.execute_tread_single_sample_analog("640AO")
+            lambda: self.setChannelValue("640AO")
         )
         self.line640.returnPressed.connect(lambda: self.updateslider(640))
 
@@ -118,7 +118,7 @@ class AOTFWidgetUI(QWidget):
             "Blanking ON", "spring green", "Blanking OFF", "indian red", width=60
         )
         self.switchbutton_blankingAll.clicked.connect(
-            lambda: self.execute_tread_single_sample_digital("640blanking")
+            lambda: self.setChannelSwitch("640blanking")
         )
         self.AOTFcontrolLayout.addWidget(self.switchbutton_blankingAll, 0, 2, 1, 2)
 
@@ -136,7 +136,7 @@ class AOTFWidgetUI(QWidget):
         self.line532.setFixedWidth(46)
         self.slider532.sliderReleased.connect(lambda: self.updatelinevalue(532))
         self.slider532.sliderReleased.connect(
-            lambda: self.execute_tread_single_sample_analog("532AO")
+            lambda: self.setChannelValue("532AO")
         )
         self.line532.returnPressed.connect(lambda: self.updatesider(532))
 
@@ -144,7 +144,7 @@ class AOTFWidgetUI(QWidget):
             "ON", "green", "OFF", "lime green", width=32
         )
         self.switchbutton_532.clicked.connect(
-            lambda: self.execute_tread_single_sample_digital("532blanking")
+            lambda: self.setChannelSwitch("532blanking")
         )
         # self.AOTFcontrolLayout.addWidget(self.switchbutton_532, 1, 1)
 
@@ -158,7 +158,7 @@ class AOTFWidgetUI(QWidget):
         self.line488.setFixedWidth(46)
         self.slider488.sliderReleased.connect(lambda: self.updatelinevalue(488))
         self.slider488.sliderReleased.connect(
-            lambda: self.execute_tread_single_sample_analog("488AO")
+            lambda: self.setChannelValue("488AO")
         )
         self.line488.returnPressed.connect(lambda: self.updatesider(488))
 
@@ -166,7 +166,7 @@ class AOTFWidgetUI(QWidget):
             "ON", "blue", "OFF", "corn flower blue", width=32
         )
         self.switchbutton_488.clicked.connect(
-            lambda: self.execute_tread_single_sample_digital("488blanking")
+            lambda: self.setChannelSwitch("488blanking")
         )
         # self.AOTFcontrolLayout.addWidget(self.switchbutton_488, 2, 1)
 
@@ -235,7 +235,7 @@ class AOTFWidgetUI(QWidget):
         if wavelength == 488:
             self.slider488.setValue(int(float(self.line488.text()) * 100))
 
-    def execute_tread_single_sample_analog(self, channel):
+    def setChannelValue(self, channel):
         daq = DAQmission()
         if channel == "640AO":
             self.lasers_status["640"][1] = self.slider640.value()
@@ -252,7 +252,7 @@ class AOTFWidgetUI(QWidget):
 
         self.sig_lasers_status_changed.emit(self.lasers_status)
 
-    def execute_tread_single_sample_digital(self, channel):
+    def setChannelSwitch(self, channel):
         daq = DAQmission()
         if channel == "640blanking":
             if self.switchbutton_blankingAll.isChecked():

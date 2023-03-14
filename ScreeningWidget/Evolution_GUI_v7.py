@@ -110,16 +110,19 @@ class Mainbody(QWidget):
         self.QuickStartButton_1 = QPushButton("Config 1", self)
         self.Quick_startContainerLayout.addWidget(self.QuickStartButton_1, 1, 0)
         self.QuickStartButton_1.clicked.connect(lambda: self.quick_start(0))
+        
+        self.QuickStartButton_2 = QPushButton("Config 2", self)
+        self.Quick_startContainerLayout.addWidget(self.QuickStartButton_2, 2, 0)
 
         self.openScreenAnalysisMLWidgetButton = QPushButton("Screen Analysis ML", self)
         self.Quick_startContainerLayout.addWidget(
-            self.openScreenAnalysisMLWidgetButton, 2, 0
+            self.openScreenAnalysisMLWidgetButton, 3, 0
         )
         self.openScreenAnalysisMLWidgetButton.clicked.connect(
             self.openScreenAnalysisMLWidget
         )
 
-        # self.Quick_startContainer.setFixedWidth(400)
+        self.Quick_startContainer.setFixedWidth(380)
         # self.Quick_startContainer.setFixedHeight(300)
         self.Quick_startContainer.setLayout(self.Quick_startContainerLayout)
 

@@ -52,6 +52,7 @@ from skimage.io import imread
 import threading
 import time
 from scipy.optimize import curve_fit
+import skimage.external.tifffile as skimtiff
 
 # Ensure that the Widget can be run either independently or as part of Tupolev.
 if __name__ == "__main__":
@@ -242,12 +243,12 @@ class AnalysisWidgetUI(QWidget):
 
         # Add tabs
         Display_Container_tabs.addTab(
-            Display_Container_tabs_Galvo_WidgetInstance, "Graph display"
+            Display_Container_tabs_Galvo_WidgetInstance, "Patch clamp display"
         )
         # Display_Container_tabs.addTab(Display_Container_tabs_tab2,"Patch display")
         Display_Container_tabs.addTab(Display_Container_tabs_tab3, "Patch perfusion")
         # Display_Container_tabs.addTab(self.Display_Container_tabs_Cellselection,"Cell selection")
-        Display_Container_tabs.addTab(Display_Container_tabs_tab4, "show trace")
+        Display_Container_tabs.addTab(Display_Container_tabs_tab4, "Display NIdaq trace")
 
         Display_Layout.addWidget(Display_Container_tabs, 0, 0)
         Display_Container.setLayout(Display_Layout)
@@ -638,7 +639,14 @@ class AnalysisWidgetUI(QWidget):
             container[i] = temp_diff
             self.videostack[i,:,:] = temp_diff
         
-        print("ROI background correction done.")        
+        print("ROI background correction done.")
+        
+        
+        saveBgSubstractedVideop = False
+        # Save the file.
+        if saveBgSubstractedVideop == True:
+            with skimtiff.TiffWriter(os.path.join(self.main_directory, "Patch analysis//saveBgSubstractedVideo.tif"), append=True) as tif:
+                tif.save(self.videostack, compress=0)
         
         self.videostack = container
         # Show the background corrected trace.
@@ -1006,7 +1014,7 @@ class AnalysisWidgetUI(QWidget):
                 fig, ax = plt.subplots()
                 plt.plot(time_axis, self.Vp * 1000)
                 ax.set_title("Patch voltage")
-                ax.set_ylabel("Volt (mV)")
+                ax.set_ylabel("Membrane potential (mV)")
                 ax.set_xlabel("time(s)")
                 
                 print(

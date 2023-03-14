@@ -834,7 +834,7 @@ if __name__ == "__main__":
     # ProcessML.config.WeigthPath = r"C:\MaskRCNN\MaskRCNNGit\MaskRCNN\MaskRCNN\Data\Xin_training\cell20210107T1533\mask_rcnn_cell_0050.h5"
     print(ProcessML.config.WeigthPath)
     # 5.6s for each detection
-    img_name = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\People\Xin Meng\paperwork\Dissertation\Figures\Chapter 4\MaskRCNN cell precision\Round2_Grid1_Coords36_R17248C7840_PMT_0Zmax.tif"
+    img_name = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\People\Xin Meng\paperwork\Dissertation\Figures\Chapter 3\DMD ML application\FOV3\raw_2021-10-06_12-00-44.tif"
     img = skimage.io.imread(img_name)
     # for _ in range(5):
     #     starttime = time.time()

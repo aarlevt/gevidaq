@@ -228,7 +228,7 @@ class WaveformGenerator(QWidget):
         self.SamplingRateTextbox = QSpinBox(self)
         self.SamplingRateTextbox.setMinimum(0)
         self.SamplingRateTextbox.setMaximum(1000000)
-        self.SamplingRateTextbox.setValue(250000)
+        self.SamplingRateTextbox.setValue(50000)
         self.SamplingRateTextbox.setSingleStep(100000)
         self.ReadLayout.addWidget(self.SamplingRateTextbox, 0, 5)
         self.ReadLayout.addWidget(QLabel("Sampling rate:"), 0, 4)
