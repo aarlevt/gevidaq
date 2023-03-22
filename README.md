@@ -5,6 +5,7 @@ A comprehensive and intelligent software for voltage imaging. Developed in the B
 * [General Info](#general-information)
 * [Features](#features)
 * [Widgets](#widgets)
+* [Supported hardware](#supported hardware)
 * [Screenshots](#screenshots)
 * [Setup](#setup)
 * [Usage](#usage)
@@ -40,10 +41,11 @@ List the ready features here:
 - CoordinatesManager.CoordinatesWidget: Widget to create mask based on widefield image. Project mask with DMD or galvos
 - Autopatcher: To perform automated patch clamp.
 
-## Screenshots
-(./Icons/The main GUI.PNG)
-<!-- If you have screenshots you'd like to share, include them here. -->
+## Supported hardware
 
+
+## Screenshots
+![Screenshots](./Icons/The main GUI.png)
 
 ## Setup
 To set up the environment, 
