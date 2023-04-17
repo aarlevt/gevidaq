@@ -3,9 +3,7 @@
 Created on Thu Jan 23 13:22:00 2020
 
 @author: xinmeng
-"""
 
-"""
 A ctypes based interface to Hamamatsu cameras.
 (tested on a sCMOS Flash 4.0).
 The documentation is a little confusing to me on this subject..
@@ -570,7 +568,7 @@ class HamamatsuCamera(object):
             "dcamprop_getattr",
         )
         if ret == 0:
-            print("property", property_id, "is not supported")
+            print("property", property_id, "is not supported")  #TODO undefined
             return False
         else:
             return p_attr
@@ -895,7 +893,7 @@ class HamamatsuCamera(object):
             self.setPropertyValue("subarray_mode", "ON")
             print("Set subarray_mode ON.")
 
-            params = [
+            params = [  # TODO unused
                 "internal_frame_rate",
                 "timing_readout_time",
                 "exposure_time",
@@ -939,20 +937,20 @@ class HamamatsuCamera(object):
         Set the acquisition mode to either run until aborted or to
         stop after acquiring a set number of frames.
         mode should be either "fixed_length" or "run_till_abort"
-        if mode is "fixed_length", then number_frames indicates the number
+        if mode == "fixed_length", then number_frames indicates the number
         of frames to acquire.
         """
 
         #        self.stopAcquisition()
 
         if (
-            self.acquisition_mode is "fixed_length"
-            or self.acquisition_mode is "run_till_abort"
+            self.acquisition_mode == "fixed_length"
+            or self.acquisition_mode == "run_till_abort"
         ):
             self.acquisition_mode = mode
             self.number_frames = number_frames
         else:
-            raise DCAMException("Unrecognized acqusition mode: " + mode)
+            raise DCAMException("Unrecognized acqusition mode: " + mode)  # TODO undefined
 
     def startAcquisition(self):
         """
@@ -965,9 +963,9 @@ class HamamatsuCamera(object):
         # We allocate enough to buffer 2 seconds of data or the specified
         # number of frames for a fixed length acquisition
         #
-        if self.acquisition_mode is "run_till_abort":
+        if self.acquisition_mode == "run_till_abort":
             n_buffers = int(2.0 * self.getPropertyValue("internal_frame_rate")[0])
-        elif self.acquisition_mode is "fixed_length":
+        elif self.acquisition_mode == "fixed_length":
             n_buffers = self.number_frames
 
         self.number_image_buffers = n_buffers
@@ -984,12 +982,12 @@ class HamamatsuCamera(object):
         )
 
         # Start acquisition.
-        if self.acquisition_mode is "run_till_abort":
+        if self.acquisition_mode == "run_till_abort":
             self.checkStatus(
                 dcam.dcamcap_start(self.camera_handle, DCAMCAP_START_SEQUENCE),
                 "dcamcap_start",
             )
-        if self.acquisition_mode is "fixed_length":
+        if self.acquisition_mode == "fixed_length":
             self.checkStatus(
                 dcam.dcamcap_start(self.camera_handle, DCAMCAP_START_SNAP),
                 "dcamcap_start",
@@ -1095,12 +1093,12 @@ class HamamatsuCameraMR(HamamatsuCamera):
         # be long enough.
         #
         if (self.old_frame_bytes != self.frame_bytes) or (
-            self.acquisition_mode is "fixed_length"
+            self.acquisition_mode == "fixed_length"
         ):
 
             n_buffers = min(int((4.0 * 1024 * 1024 * 1024) / self.frame_bytes), 4000)
             print("Frame size: {} MB.".format(self.frame_bytes / 1024 / 1024))
-            if self.acquisition_mode is "fixed_length":
+            if self.acquisition_mode == "fixed_length":
                 self.number_image_buffers = self.number_frames
             else:
                 self.number_image_buffers = n_buffers
@@ -1150,7 +1148,7 @@ class HamamatsuCameraMR(HamamatsuCamera):
 
         # The dcambuf_attach() function assigns allocated memory as the capturing buffer for the host software.
         # DCAM will transfer the image data directly from the device to these buffers.
-        if self.acquisition_mode is "run_till_abort":
+        if self.acquisition_mode == "run_till_abort":
             self.checkStatus(
                 dcam.dcambuf_attach(self.camera_handle, paramattach),
                 "dcam_attachbuffer",
@@ -1159,7 +1157,7 @@ class HamamatsuCameraMR(HamamatsuCamera):
                 dcam.dcamcap_start(self.camera_handle, DCAMCAP_START_SEQUENCE),
                 "dcamcap_start",
             )
-        if self.acquisition_mode is "fixed_length":
+        if self.acquisition_mode == "fixed_length":
             paramattach.buffercount = self.number_frames
             self.checkStatus(
                 dcam.dcambuf_attach(self.camera_handle, paramattach), "dcambuf_attach"
@@ -1297,16 +1295,16 @@ class HamamatsuCameraRE(HamamatsuCamera):
         # be long enough.
         #
         if (self.old_frame_bytes != self.frame_bytes) or (
-            self.acquisition_mode is "fixed_length"
+            self.acquisition_mode == "fixed_length"
         ):
 
             n_buffers = min(int((2.0 * 1024 * 1024 * 1024) / self.frame_bytes), 2000)
             print("Frame size: {} MB.".format(self.frame_bytes / 1024 / 1024))
-            if self.acquisition_mode is "fixed_length":
+            if self.acquisition_mode == "fixed_length":
                 self.number_image_buffers = self.number_frames
             else:
                 self.number_image_buffers = n_buffers
-        elif self.acquisition_mode is "fixed_length":
+        elif self.acquisition_mode == "fixed_length":
             self.number_image_buffers = int(
                 2.0 * self.getPropertyValue("internal_frame_rate")[0]
             )
@@ -1395,7 +1393,7 @@ class HamamatsuCameraRE(HamamatsuCamera):
 
         # To start recording, the dcamcap_record() function should be called during READY state.
         # =============================================================================
-        #         if self.acquisition_mode is "run_till_abort":
+        #         if self.acquisition_mode == "run_till_abort":
         #             # Attach the buffer.
         #             '''
         #             self.checkStatus(dcam.dcambuf_attach(self.camera_handle,
@@ -1425,7 +1423,7 @@ class HamamatsuCameraRE(HamamatsuCamera):
         #                 print('DCAMCAP_STATUS_BUSY')
         # =============================================================================
 
-        if self.acquisition_mode is "fixed_length":
+        if self.acquisition_mode == "fixed_length":
             """
                         paramattach_frame.buffercount = self.number_frames
                         #--------------Attach frame buffers---------------------
@@ -1481,7 +1479,7 @@ class HamamatsuCameraRE(HamamatsuCamera):
                     #                    self.checkStatus(fn_return = dcam.dcamwait_start(self.wait_handle,
                     #                                    ctypes.byref(paramRecWaitStart)),
                     #                                     "dcamwait_start")
-                    fn_return = dcam.dcamwait_start(
+                    fn_return = dcam.dcamwait_start(  # TODO unused
                         self.wait_handle, ctypes.byref(paramRecWaitStart)
                     )
                     #                    print(fn_return)
@@ -1576,8 +1574,8 @@ class HamamatsuCameraRE(HamamatsuCamera):
             #                                                            ctypes.byref(paramlock_copyframe)),
             #                                         "dcambuf_lockframe")
 
-            elif recordStatus.flags == DCAMCAP_STATUS_BUSY:
-                print("DCAMCAP_STATUS_BUSY")
+            #elif recordStatus.flags == DCAMCAP_STATUS_BUSY:
+            #    print("DCAMCAP_STATUS_BUSY")
 
     #        elif captureStatus.value == DCAMCAP_STATUS_BUSY:
     #            print('Fail to start recording! Camera is busy!')
@@ -1645,7 +1643,6 @@ class HamamatsuCameraRE(HamamatsuCamera):
 #
 if __name__ == "__main__":
 
-    import time
     import random
     import numpy as np
     import skimage.external.tifffile as skimtiff

@@ -352,9 +352,7 @@ class QueryLaserStatusThread(QThread):
 
 
 if __name__ == "__main__":
-    import time
-
-    if False:
+    if False:  # TODO unused
         Laserinstance = InsightX3("COM11")
 
         Laserinstance.QueryLaserID()

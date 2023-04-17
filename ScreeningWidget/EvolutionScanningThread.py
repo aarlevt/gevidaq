@@ -8,14 +8,11 @@ Created on Mon Dec 23 15:10:53 2019
 from PyQt5.QtCore import pyqtSignal, QThread
 import numpy as np
 import time
-from PIL import Image
 from matplotlib import pyplot as plt
 import os
-from datetime import datetime
 import math
 from skimage.io import imread
-import skimage.external.tifffile as skimtiff
-import threading
+import tifffile as skimtiff
 
 from SampleStageControl.stage import LudlStage
 from NIDAQ.DAQoperator import DAQmission
@@ -155,7 +152,6 @@ class ScanningExecutionThread(QThread):
         """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         #                                                                  Execution
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
-        GridSequence = 0
         TotalGridNumber = self.meshgridnumber ** 2
 
         for EachGrid in range(TotalGridNumber):

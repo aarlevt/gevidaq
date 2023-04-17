@@ -4,29 +4,20 @@ Created on Tue Mar 31 10:30:41 2020
 
 @author: Izak de Heer
 """
-import sys
-import json
 import os
 
 import numpy as np
 import time
-import datetime
-from PyQt5.QtCore import QThread, pyqtSignal
+#from PyQt5.QtCore import QThread, pyqtSignal
 import matplotlib.pyplot as plt
-import skimage.external.tifffile as skimtiff
-import scipy.optimize
 import skimage.draw
 from CoordinatesManager.backend import readRegistrationImages
-from CoordinatesManager.backend.polynomialTransformation import polynomialRegression
 from CoordinatesManager import CoordinateTransformations
-from CoordinatesManager import DMDActuator
 from NIDAQ.DAQoperator import DAQmission
 
 from HamamatsuCam.HamamatsuActuator import CamActuator
 
 # from SampleStageControl.Stagemovement_Thread import StagemovementRelativeThread, StagemovementAbsoluteThread
-
-import matplotlib.pyplot as plt
 
 
 class GalvoRegistrator:
@@ -54,7 +45,6 @@ class GalvoRegistrator:
 
         """
         galvothread = DAQmission()
-        readinchan = []
 
         x_coords = np.linspace(-10, 10, grid_points_x + 2)[1:-1]
         y_coords = np.linspace(-10, 10, grid_points_y + 2)[1:-1]
@@ -369,6 +359,3 @@ class DMDRegistator:
 #     def touchingCoordinateFinder_finished(self, sig):
 #         self.camera_coordinates[sig,:] = np.flip(self.touchingCoordinateFinder[sig].coordinates)
 #         self.flag_finished[sig] = 1
-
-if __name__ == "__main__":
-    pass

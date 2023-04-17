@@ -6,9 +6,6 @@ Created on Thu Dec  9 10:18:47 2021
 """
 
 
-import sys
-
-sys.path.append('../')
 from pipython import GCSDevice, pitools
 
 

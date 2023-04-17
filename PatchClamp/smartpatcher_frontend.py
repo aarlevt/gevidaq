@@ -17,7 +17,7 @@ from PyQt5.QtWidgets import QWidget, QGridLayout, QPushButton, QDoubleSpinBox, Q
 import pyqtgraph.exporters
 import pyqtgraph as pg
 
-sys.path.append('../')
+sys.path.append('./')
 from NIDAQ.constants import MeasurementConstants
 from PatchClamp.smartpatcher_backend import SmartPatcher
 from PatchClamp.camerathread import CameraThread

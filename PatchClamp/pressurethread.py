@@ -83,6 +83,7 @@ class PressureThread(QThread):
         P(t) can be any function handle you desire, but note that the pressure-
         controller has its high-, low-, and cooldown limit.
         """
+        # TODO use function
         P = lambda t: high*(np.heaviside(t%(high_T+low_T),1) - np.heaviside(t%(high_T+low_T)-high_T,1)) + \
             low*(np.heaviside(t%(high_T+low_T)-high_T,1) - np.heaviside(t%(high_T+low_T)-high_T-low_T,1))
 

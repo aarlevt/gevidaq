@@ -13,9 +13,7 @@ import skimage.filters
 import skimage.restoration
 import skimage.exposure
 import scipy.optimize
-import scipy.ndimage as ndi
 import scipy.signal
-import time
 import math as m
 import os
 
@@ -82,7 +80,7 @@ def touchingCoordinateFinder(image, method="curvefit"):
     if method == "curvefit":
         coordinate = findTouchingSquaresCenterCoordinate_curvefit(image)
     elif method == "correlation":
-        coordinate = findTouchingSquaresCenterCoordinate_correlationt(image)
+        coordinate = findTouchingSquaresCenterCoordinate_correlationt(image)  # TODO undefined
     elif method == "centroid":
         coordinate = findTouchingSquaresCenterCoordinate_centroid(image)
     else:
@@ -312,8 +310,8 @@ def findTouchingSquaresCenterCoordinate_correlation(image):
 
     """
 
-    self._selectROI()
-    mask_width = self.bbox[1] - self.bbox[0]
+    self._selectROI()  # TODO undefined
+    mask_width = self.bbox[1] - self.bbox[0]  # TODO all undefined, none of this works...
     mask_height = self.bbox[3] - self.bbox[2]
     h_mask_width = m.floor(mask_width / 2)
     h_mask_height = m.floor(mask_height / 2)

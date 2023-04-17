@@ -12,20 +12,13 @@ import time
 import datetime
 from PyQt5.QtCore import QThread, pyqtSignal
 import matplotlib.pyplot as plt
-import skimage.external.tifffile as skimtiff
 import scipy.optimize
 from CoordinatesManager.backend.readRegistrationImages import touchingCoordinateFinder
-from CoordinatesManager.backend.polynomialTransformation import polynomialRegression
 from CoordinatesManager import DMDActuator
 from NIDAQ.DAQoperator import DAQmission
 
 from HamamatsuCam.HamamatsuActuator import CamActuator
-from SampleStageControl.Stagemovement_Thread import (
-    StagemovementRelativeThread,
-    StagemovementAbsoluteThread,
-)
-
-import matplotlib.pyplot as plt
+from SampleStageControl.Stagemovement_Thread import StagemovementAbsoluteThread
 
 
 class GalvoRegistrator:
@@ -50,7 +43,7 @@ class DMDRegistator:
         cnt = 0
         for i in range(points):
             for j in range(y_coords.shape[0]):
-                mask = create_registration_image(i, j)
+                mask = create_registration_image(i, j)  # TODO undefined
                 self.DMD.send_data_to_DMD(mask)
                 self.DMD.start_projection()
 
@@ -64,15 +57,15 @@ class DMDRegistator:
                 self.DMD.free_memory()
 
         self.DMD.disconnect_DMD()
-        transformation = findTransformationCurvefit(
+        transformation = findTransformationCurvefit(  # TODO undefined
             camera_coordinates, dmd_coordinates, kx=3, ky=2
         )
         return transformation
 
     def create_registration_image(x, y, sigma=75):
         array = np.zeros((1024, 768))
-        array[skd.draw.rectangle((x - sigma, y - sigma), (x, y))] = 255
-        array[skd.draw.rectangle((x + sigma, y + sigma), (x, y))] = 255
+        array[skd.draw.rectangle((x - sigma, y - sigma), (x, y))] = 255  # TODO undefined
+        array[skd.draw.rectangle((x + sigma, y + sigma), (x, y))] = 255  # TODO undefined
         return array
 
 
@@ -172,7 +165,7 @@ class RegistrationThread(QThread):
 
             image[:, :, idx] = self.cam.SnapImage(0.04)
 
-        camera_coordinates = find_subimage_location(image, save=True)
+        camera_coordinates = find_subimage_location(image, save=True)  # TODO undefined
 
         self.backend.stopProjection()
         self.backend.freeMemory()
@@ -181,7 +174,7 @@ class RegistrationThread(QThread):
 
     def gather_reference_coordinates_galvos(self):
         galvothread = DAQmission()
-        readinchan = []
+        readinchan = []  # TODO unused
 
         camera_coordinates = np.zeros((3, 2))
         galvo_coordinates = np.array([[0, 3], [3, -3], [-3, -3]])
@@ -228,7 +221,7 @@ class RegistrationThread(QThread):
 
         for i in range(3):
             self.touchingCoordinateFinder.append(
-                touchingCoordinateFinder_Thread(i, method="curvefit")
+                touchingCoordinateFinder_Thread(i, method="curvefit")  # TODO undefined
             )
             self.touchingCoordinateFinder[i].sig_finished_coordinatefinder.connect(
                 self.touchingCoordinateFinder_finished
@@ -313,21 +306,18 @@ def gaussian(x, y, x0, y0, a, sigma):
 
 
 def createRegressionMatrix(q, order):
-    size = 2 + 4 * order
     hsize = 1 + 2 * order  ## Define half size, just for convenience
 
     if len(q.shape) != 1 and order == 0:
         num_input_points = q.shape[0]
         print("Number of input points is " + str(num_input_points))
         print("For zeroth order input one point only")
-        Q = None
         return
     print(q.shape)
     if q.shape[0] != hsize and order != 0:
         num_input_points = q.shape[0]
         print("Number of input points is " + str(num_input_points))
         print("For N'th order input 1+2N points")
-        Q = None
         return
 
     col1 = np.hstack((np.ones(hsize), np.zeros(hsize)))

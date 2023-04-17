@@ -6,10 +6,8 @@ Created on Wed Aug 11 15:15:30 2021
 """
 
 
-from datetime import datetime
 import time
 import numpy as np
-from skimage import io
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 
 from PatchClamp.ImageProcessing_patchclamp import PatchClampImageProcessing as ia
@@ -119,7 +117,7 @@ class Worker(QObject):
         self.status.emit("Calibrating...")
 
         # get all relevant parent attributes
-        save_directory = self._parent.save_directory
+        save_directory = self._parent.save_directory  # TODO unused
         micromanipulator = self._parent.micromanipulator
         camera = self._parent.camerathread
         account4rotation = self._parent.account4rotation
@@ -241,7 +239,7 @@ class Worker(QObject):
         self.status.emit("Pre-checks...")
 
         # get all relevant parent attributes
-        save_directory = self._parent.save_directory
+        save_directory = self._parent.save_directory  # TODO unused
         pressurecontroller = self._parent.pressurethread
 
         # Algorithm variables
@@ -354,7 +352,7 @@ class Worker(QObject):
         self.status.emit("Autofocus pipette...")
 
         # get all relevant parent attributes
-        save_directory = self._parent.save_directory
+        save_directory = self._parent.save_directory  # TODO unused
         micromanipulator = self._parent.micromanipulator
         objective = self._parent.objectivemotor
         camera = self._parent.camerathread
@@ -574,7 +572,7 @@ class Worker(QObject):
         self.status.emit("Detecting tip...")
 
         # get all relevant parent attributes
-        save_directory = self._parent.save_directory
+        save_directory = self._parent.save_directory  # TODO unused
         micromanipulator = self._parent.micromanipulator
         objective = self._parent.objectivemotor
         camera = self._parent.camerathread
@@ -676,7 +674,7 @@ class Worker(QObject):
         self.status.emit("Approaching target...")
 
         # get all relevant parent attributes
-        save_directory = self._parent.save_directory
+        save_directory = self._parent.save_directory  # TODO unused
         micromanipulator = self._parent.micromanipulator
         pressurecontroller = self._parent.pressurethread
         focus_offset = self._parent.focus_offset
@@ -739,7 +737,7 @@ class Worker(QObject):
         if not self.STOP:
             pressurecontroller.set_pressure_stop_waveform(0)
 
-        timestamp = str(datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
+        # timestamp = str(datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))
         # np.save(save_directory+'approach_positionhistory_'+timestamp, positionhistory)      #FLAG: relevant for MSc thesis
         # np.save(save_directory+'approach_resistancehistory_'+timestamp, resistancehistory)  #FLAG: relevant for MSc thesis
 
@@ -758,7 +756,7 @@ class Worker(QObject):
         self.status.emit("Gigasealing...")
 
         # get all relevant parent attributes
-        save_directory = self._parent.save_directory
+        save_directory = self._parent.save_directory  # TODO unused
         pressurecontroller = self._parent.pressurethread
         tipcoords_manip,tipcoords_cam = self._parent.pipette_coordinates_pair
         xtarget,ytarget,_ = self._parent.target_coordinates
@@ -825,7 +823,7 @@ class Worker(QObject):
         self.status.emit("Break-in...")
 
         # get all relevant parent attributes
-        save_directory = self._parent.save_directory
+        save_directory = self._parent.save_directory  # TODO unused
         pressurecontroller = self._parent.pressurethread
         sealtestthread = self._parent.sealtestthread
 

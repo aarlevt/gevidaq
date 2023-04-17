@@ -11,48 +11,35 @@ Created on Tue Feb 25 17:27:04 2020
 
 from __future__ import division
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import Qt, pyqtSignal, QRectF, QPoint, QRect, QObject
-from PyQt5.QtGui import QColor, QPen, QPixmap, QIcon, QTextCursor, QFont
+from PyQt5.QtCore import pyqtSignal, QRectF
+from PyQt5.QtGui import QFont
 
 from PyQt5.QtWidgets import (
     QWidget,
-    QButtonGroup,
     QLabel,
-    QSlider,
     QSpinBox,
-    QDoubleSpinBox,
     QGridLayout,
     QPushButton,
     QGroupBox,
     QLineEdit,
-    QVBoxLayout,
-    QHBoxLayout,
     QComboBox,
-    QMessageBox,
     QTabWidget,
     QCheckBox,
-    QRadioButton,
-    QFileDialog,
-    QProgressBar,
-    QTextEdit,
 )
 import os
 from datetime import datetime
 import pyqtgraph as pg
-from pyqtgraph import PlotDataItem, TextItem
-from IPython import get_ipython
 import sys
 import csv
 import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
 from scipy import signal
-from scipy.ndimage.filters import uniform_filter1d
 from skimage.io import imread
 import threading
 import time
 from scipy.optimize import curve_fit
-import skimage.external.tifffile as skimtiff
+import tifffile as skimtiff
 
 # Ensure that the Widget can be run either independently or as part of Tupolev.
 if __name__ == "__main__":
@@ -293,7 +280,12 @@ class AnalysisWidgetUI(QWidget):
         None.
 
         """
-        get_ipython().run_line_magic("matplotlib", "qt")
+        try:
+            get_ipython = sys.modules["IPython"].get_ipython
+        except KeyError:
+            pass
+        else:
+            get_ipython().run_line_magic("matplotlib", "qt")
 
         if not os.path.exists(os.path.join(self.main_directory, "Patch analysis")):
             # If the folder is not there, create the folder
@@ -305,7 +297,12 @@ class AnalysisWidgetUI(QWidget):
         t1 = threading.Thread(target=self.load_data_thread)
         t1.start()
 
-        get_ipython().run_line_magic("matplotlib", "inline")
+        try:
+            get_ipython = sys.modules["IPython"].get_ipython
+        except KeyError:
+            pass
+        else:
+            get_ipython().run_line_magic("matplotlib", "inline")
 
     def finish_analysis(self):
         t2 = threading.Thread(target=self.finish_analysis_thread)
@@ -1109,7 +1106,12 @@ class PlotAnalysisGUI(QWidget):
         self.savedirectorytextbox.setText(self.Nest_data_directory)
 
     def show_graphy(self):
-        get_ipython().run_line_magic("matplotlib", "qt")
+        try:
+            get_ipython = sys.modules["IPython"].get_ipython
+        except KeyError:
+            pass
+        else:
+            get_ipython().run_line_magic("matplotlib", "qt")
 
         self.cam_trace_fluorescence_dictionary = {}
         self.cam_trace_fluorescence_filename_dictionary = {}
@@ -1246,7 +1248,7 @@ class PlotAnalysisGUI(QWidget):
                 ax2.plot(
                     self.cam_trace_time_label / self.samplingrate_cam,
                     self.cam_trace_fluorescence_dictionary[
-                        "region_{0}".format(region_number + 1)
+                        "region_{0}".format(region_number + 1)  # TODO undefined
                     ],
                     label="Fluorescence",
                 )
@@ -1256,7 +1258,7 @@ class PlotAnalysisGUI(QWidget):
                     + " ("
                     + str(
                         self.cam_trace_fluorescence_filename_dictionary[
-                            "region_{0}".format(region_number + 1)
+                            "region_{0}".format(region_number + 1)  # TODO undefined
                         ]
                     )
                     + ")"
@@ -1268,7 +1270,7 @@ class PlotAnalysisGUI(QWidget):
                 ax3.plot(
                     self.cam_trace_time_label / self.samplingrate_cam,
                     self.cam_trace_fluorescence_dictionary[
-                        "region_{0}".format(region_number + 1)
+                        "region_{0}".format(region_number + 1)  # TODO undefined
                     ],
                     label="Fluorescence",
                 )
@@ -1278,7 +1280,7 @@ class PlotAnalysisGUI(QWidget):
                     + " ("
                     + str(
                         self.cam_trace_fluorescence_filename_dictionary[
-                            "region_{0}".format(region_number + 1)
+                            "region_{0}".format(region_number + 1)  # TODO undefined
                         ]
                     )
                     + ")"
@@ -1406,7 +1408,12 @@ class PlotAnalysisGUI(QWidget):
             # get_ipython().run_line_magic('matplotlib', 'inline')
 
     def closeEvent(self, event):
-        get_ipython().run_line_magic("matplotlib", "inline")
+        try:
+            get_ipython = sys.modules["IPython"].get_ipython
+        except KeyError:
+            pass
+        else:
+            get_ipython().run_line_magic("matplotlib", "inline")
 
 
 if __name__ == "__main__":

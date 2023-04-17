@@ -24,44 +24,10 @@ Created on Sat Aug 10 20:54:40 2019
 from __future__ import division
 import os
 import sys
-from PyQt5 import QtWidgets
-from PyQt5.QtCore import Qt, pyqtSignal, QRectF, QPoint, QRect, QObject, QSize
-from PyQt5.QtGui import (
-    QColor,
-    QPen,
-    QPixmap,
-    QIcon,
-    QTextCursor,
-    QFont,
-    QPalette,
-    QBrush,
-    QImage,
-)
 
-from PyQt5.QtWidgets import (
-    QWidget,
-    QButtonGroup,
-    QLabel,
-    QSlider,
-    QSpinBox,
-    QDoubleSpinBox,
-    QGridLayout,
-    QPushButton,
-    QGroupBox,
-    QLineEdit,
-    QVBoxLayout,
-    QHBoxLayout,
-    QComboBox,
-    QMessageBox,
-    QTabWidget,
-    QCheckBox,
-    QRadioButton,
-    QFileDialog,
-    QProgressBar,
-    QTextEdit,
-    QStyleFactory,
-    QGraphicsDropShadowEffect,
-)
+from PyQt5 import QtWidgets
+from PyQt5.QtCore import QSize
+from PyQt5.QtGui import QIcon, QTextCursor, QFont
 
 import pyqtgraph as pg
 import StylishQT
@@ -96,7 +62,7 @@ import PatchClamp.smartpatcher_frontend
 # """
 
 
-class Mainbody(QWidget):
+class Mainbody(QtWidgets.QWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
@@ -117,13 +83,13 @@ class Mainbody(QWidget):
         self.setMinimumSize(1630, 1080)
         self.setMaximumHeight(1080)
         self.setWindowTitle("Fiumicino")
-        self.layout = QGridLayout(self)
+        self.layout = QtWidgets.QGridLayout(self)
         """
         # =============================================================================
         #         GUI for right tabs panel-Creating instances of each widget showing on right side tabs.
         # =============================================================================
         """
-        self.tabs = QTabWidget()
+        self.tabs = QtWidgets.QTabWidget()
         self.Camera_WidgetInstance = HamamatsuCam.HamamatsuUI.CameraUI()
         self.Galvo_WidgetInstance = GalvoWidget.PMTWidget.PMTWidgetUI()
         self.Waveformer_WidgetInstance = NIDAQ.WaveformWidget.WaveformGenerator()
@@ -160,15 +126,15 @@ class Mainbody(QWidget):
         #         GUI for set directory
         # =============================================================================
         setdirectoryContainer = StylishQT.roundQGroupBox(title="Set directory")
-        self.setdirectorycontrolLayout = QGridLayout()
+        self.setdirectorycontrolLayout = QtWidgets.QGridLayout()
 
         self.saving_prefix = ""
-        self.savedirectorytextbox = QLineEdit(self)
+        self.savedirectorytextbox = QtWidgets.QLineEdit(self)
         self.savedirectorytextbox.setPlaceholderText("Saving directory")
         self.savedirectorytextbox.returnPressed.connect(self.update_saving_directory)
         self.setdirectorycontrolLayout.addWidget(self.savedirectorytextbox, 0, 1, 1, 2)
 
-        self.prefixtextbox = QLineEdit(self)
+        self.prefixtextbox = QtWidgets.QLineEdit(self)
         self.prefixtextbox.setPlaceholderText("Prefix")
         self.prefixtextbox.returnPressed.connect(self.set_prefix)
         self.setdirectorycontrolLayout.addWidget(self.prefixtextbox, 0, 0)
@@ -185,7 +151,7 @@ class Mainbody(QWidget):
         # =============================================================================
         #         Console massage
         # =============================================================================
-        self.console_text_edit = QTextEdit()
+        self.console_text_edit = QtWidgets.QTextEdit()
         # self.console_text_edit.setFontItalic(True)
         self.console_text_edit.setPlaceholderText("Notice board from console.")
         self.console_text_edit.setFixedHeight(150)
@@ -226,10 +192,10 @@ class Mainbody(QWidget):
         self.LEDButton.setToolTip("Turn on/off LED")
 
         self.shutter2PButton.setGraphicsEffect(
-            QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
+            QtWidgets.QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
         )
         self.LEDButton.setGraphicsEffect(
-            QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
+            QtWidgets.QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
         )
 
         self.layout.addWidget(self.shutter2PButton, 5, 0)
@@ -288,7 +254,7 @@ class Mainbody(QWidget):
         # self.open_cam.setIconSize(QSize(60, 60))
         # self.open_cam.clicked.connect(self.open_camera)
         # self.layout.addWidget(self.open_cam, 4, 0, 1, 1)
-        # self.open_cam.setGraphicsEffect(QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2))
+        # self.open_cam.setGraphicsEffect(QtWidgets.QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2))
         # =============================================================================
         #         GUI for Insight X3
         # =============================================================================
@@ -302,7 +268,7 @@ class Mainbody(QWidget):
         self.open_Insight.clicked.connect(self.open_Insight_UI)
         self.layout.addWidget(self.open_Insight, 3, 1, 2, 1)
         self.open_Insight.setGraphicsEffect(
-            QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
+            QtWidgets.QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
         )
         # =============================================================================
         #         GUI for evolution screening
@@ -317,7 +283,7 @@ class Mainbody(QWidget):
         self.open_screening_button.clicked.connect(self.open_screening)
         self.layout.addWidget(self.open_screening_button, 3, 0, 2, 1)
         self.open_screening_button.setGraphicsEffect(
-            QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
+            QtWidgets.QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
         )
         # =============================================================================
         #         GUI for open_sealtest
@@ -333,7 +299,7 @@ class Mainbody(QWidget):
         self.open_sealtest_button.clicked.connect(self.open_sealtest)
         self.layout.addWidget(self.open_sealtest_button, 3, 2, 2, 1)
         self.open_sealtest_button.setGraphicsEffect(
-            QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
+            QtWidgets.QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
         )
 
         # =============================================================================
@@ -350,7 +316,7 @@ class Mainbody(QWidget):
         self.open_AutoPatcher_button.clicked.connect(self.open_AutoPatcher)
         self.layout.addWidget(self.open_AutoPatcher_button, 3, 3, 2, 1)
         self.open_sealtest_button.setGraphicsEffect(
-            QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
+            QtWidgets.QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
         )
 
         # **************************************************************************************************************************************
@@ -550,7 +516,7 @@ if __name__ == "__main__":
 
     def run_app():
         app = QtWidgets.QApplication(sys.argv)
-        QtWidgets.QApplication.setStyle(QStyleFactory.create("Fusion"))
+        QtWidgets.QApplication.setStyle(QtWidgets.QStyleFactory.create("Fusion"))
         pg.setConfigOptions(imageAxisOrder="row-major")
         mainwin = Mainbody()
         mainwin.show()

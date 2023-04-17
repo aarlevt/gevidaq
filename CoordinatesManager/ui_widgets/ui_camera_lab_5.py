@@ -53,7 +53,6 @@ from PyQt5.QtCore import QTimer, QRect, QRectF, pyqtSignal
 from PyQt5.QtGui import QIntValidator, QDoubleValidator
 
 import pyqtgraph as pg
-import numpy as np
 import sys
 
 """
@@ -789,7 +788,7 @@ class CameraUI(QWidget):
     def set_cam(self, cam):
         if cam == "Democam":
             try:
-                self.cam = Camera(["Camera", "DemoCamera", "DCam"])
+                self.cam = Camera(["Camera", "DemoCamera", "DCam"])  # TODO undefined
                 print("{}".format(cam) + " camera loaded.")
                 self.cam_initiated()
             except:
@@ -797,7 +796,7 @@ class CameraUI(QWidget):
                 self.no_cam_initiated()
         elif cam == "Thorcam":
             try:
-                self.cam = Camera(["ThorCam", "ThorlabsUSBCamera", "ThorCam"])
+                self.cam = Camera(["ThorCam", "ThorlabsUSBCamera", "ThorCam"])  # TODO undefined
                 self.cam_initiated()
                 print("{}".format(cam) + " camera loaded.")
 
@@ -806,7 +805,7 @@ class CameraUI(QWidget):
                 self.no_cam_initiated()
         elif cam == "Hamamatsu":
             try:
-                self.cam = Camera(["Camera", "HamamatsuHam", "HamamatsuHam_DCAM"])
+                self.cam = Camera(["Camera", "HamamatsuHam", "HamamatsuHam_DCAM"])  # TODO undefined
                 self.cam_initiated()
                 print("{}".format(cam) + " camera loaded.")
 
@@ -952,7 +951,7 @@ if __name__ == "__main__":
 
     def check_qinput():
         DEVICE = ["Camera", "DemoCamera", "DCam"]
-        cam = Camera(DEVICE)
+        cam = Camera(DEVICE)  # TODO undefined
 
         qinput = QtWidgets.QApplication(sys.argv)
         mainwin = TimedPopup(cam)

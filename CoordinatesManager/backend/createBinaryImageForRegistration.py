@@ -79,7 +79,7 @@ def touchingSquarePatterns(sigma, *args):
 
 def plotPoints(*args):
     c = np.array((args))
-    fig = plt.figure()
+    fig = plt.figure()  # TODO unused
     plt.scatter(c[:, 0], c[:, 1])
     plt.xlim(0, 1024)
     plt.ylim(0, 768)

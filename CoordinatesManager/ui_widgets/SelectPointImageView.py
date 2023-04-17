@@ -6,29 +6,11 @@ Created on Wed May  6 11:26:55 2020
 @author: Izak de Heer
 """
 
-from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtWidgets import (
-    QWidget,
-    QPushButton,
-    QRadioButton,
-    QVBoxLayout,
-    QCheckBox,
-    QGridLayout,
-    QGroupBox,
-    QTabWidget,
-    QGraphicsView,
-    QGraphicsScene,
-    QListWidget,
-    QLabel,
-)
-from PyQt5.QtCore import QThread, pyqtSignal, QSize, Qt
+from PyQt5 import QtCore
+from PyQt5.QtCore import QSize, Qt
 
 import pyqtgraph as pg
 from pyqtgraph import QtGui
-
-import sys
-
-import numpy as np
 
 
 class SelectPointImageView(pg.ImageView):

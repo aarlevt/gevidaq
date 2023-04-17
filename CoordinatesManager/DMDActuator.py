@@ -6,10 +6,9 @@ Created on Mon Jul  6 09:38:26 2020
 @author: Izak de Heer
 """
 
-from CoordinatesManager.backend.ALP4 import *
+from CoordinatesManager.backend import ALP4
 import numpy as np
 import os
-import matplotlib.pyplot as plt
 
 
 class DMDActuator:
@@ -24,15 +23,15 @@ class DMDActuator:
         # Load the Vialux .dll
         try:
             cdir = os.getcwd() + "\\CoordinatesManager"
-            self.DMD = ALP4(
+            self.DMD = ALP4.ALP4(
                 version="4.3", libDir=r"" + cdir
             )  # Use version 4.3 for the alp4395.dll
         except:
             cdir = os.getcwd()
-            self.DMD = ALP4(version="4.3", libDir=r"" + cdir)
+            self.DMD = ALP4.ALP4(version="4.3", libDir=r"" + cdir)
 
         # Initialize the device
-        self.DMD.Initialize(13388)
+        self.DMD.Initialize(13388)  # TODO magic number
         print("DMD Initialized")
 
     def disconnect_DMD(self):
@@ -95,24 +94,24 @@ class DMDActuator:
         print("Projection started")
 
     def inquire_status(self):
-        PICTURE_TIME = self.DMD.SeqInquire(inquireType=ALP_PICTURE_TIME)
-        ILLUMINATE_TIME = self.DMD.SeqInquire(inquireType=ALP_ILLUMINATE_TIME)
-        BITNUM = self.DMD.SeqInquire(inquireType=ALP_BITNUM)
-        BIN_MODE = self.DMD.SeqInquire(inquireType=ALP_BIN_MODE)
-        OFF_TIME = self.DMD.SeqInquire(inquireType=ALP_OFF_TIME)
-        PICNUM = self.DMD.SeqInquire(inquireType=ALP_PICNUM)
-        MIN_PICTURE_TIME = self.DMD.SeqInquire(inquireType=ALP_MIN_PICTURE_TIME)
-        # TRIGGER_TYPE = self.DMD.ProjInquire(inquireType = ALP_PROJ_STEP)
-        # PROJ_STEP = self.DMD.ProjInquire(inquireType = ALP_PROJ_MODE)
+        PICTURE_TIME = self.DMD.SeqInquire(inquireType=ALP4.ALP_PICTURE_TIME)
+        ILLUMINATE_TIME = self.DMD.SeqInquire(inquireType=ALP4.ALP_ILLUMINATE_TIME)
+        BITNUM = self.DMD.SeqInquire(inquireType=ALP4.ALP_BITNUM)
+        BIN_MODE = self.DMD.SeqInquire(inquireType=ALP4.ALP_BIN_MODE)
+        OFF_TIME = self.DMD.SeqInquire(inquireType=ALP4.ALP_OFF_TIME)
+        PICNUM = self.DMD.SeqInquire(inquireType=ALP4.ALP_PICNUM)
+        MIN_PICTURE_TIME = self.DMD.SeqInquire(inquireType=ALP4.ALP_MIN_PICTURE_TIME)
+        # TRIGGER_TYPE = self.DMD.ProjInquire(inquireType = ALP4.ALP_PROJ_STEP)
+        # PROJ_STEP = self.DMD.ProjInquire(inquireType = ALP4.ALP_PROJ_MODE)
         # Exception: Error sending request. One of the parameters is invalid.
 
         print("-------------DMD status-------------")
         print("ALP_PICTURE_TIME: {} μs".format(PICTURE_TIME))
         print("ALP_ILLUMINATE_TIME: {} μs".format(ILLUMINATE_TIME))
         print(f"ALP_BITNUM: {BITNUM}.")
-        if BIN_MODE == 2015:
+        if BIN_MODE == 2015:  # TODO magic number
             print("ALP_BIN_MODE: with dark phase.")
-        elif BIN_MODE == 2016:
+        elif BIN_MODE == 2016:  # TODO magic number
             print("ALP_BIN_MODE: Operation without dark phase.")
         print("ALP_OFF_TIME: {} μs (total inactive projection time)".format(OFF_TIME))
         print("Number of pictures in sequence: {}".format(PICNUM))

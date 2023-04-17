@@ -5,45 +5,20 @@ Created on Thu Jun 25 18:28:40 2020
 
 @author: xinmeng
 """
-
-from __future__ import division
-import sys
-
-sys.path.append("../")
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import Qt, pyqtSignal, QRectF, QPoint, QRect, QObject, QSize
-from PyQt5.QtGui import QImage, QPalette, QBrush, QFont, QPainter, QColor, QPen
+from PyQt5.QtGui import QFont
 
 from PyQt5.QtWidgets import (
     QWidget,
-    QButtonGroup,
     QLabel,
-    QSlider,
-    QSpinBox,
-    QDoubleSpinBox,
     QGridLayout,
-    QPushButton,
     QGroupBox,
-    QLineEdit,
-    QVBoxLayout,
-    QHBoxLayout,
-    QComboBox,
-    QMessageBox,
-    QTabWidget,
-    QCheckBox,
-    QRadioButton,
-    QFileDialog,
-    QProgressBar,
-    QTextEdit,
-    QDial,
     QStyleFactory,
 )
 
-import sys
-
 try:
     from pyowm import OWM
-except:
+except ImportError:
     pass
 
 
@@ -85,7 +60,7 @@ class WeatherUI(QWidget):
         )
 
         try:
-            owm = OWM(
+            owm = OWM(  # TODO
                 "23c7e4896cc56fccab427f4a227097d4"
             )  # You MUST provide a valid API key, this is mine!
 
@@ -97,7 +72,7 @@ class WeatherUI(QWidget):
             self.weather_temperature_label.setText(
                 str(self.weather_obj.temperature("celsius")["temp"]) + "°C"
             )
-        except:
+        except NameError:
             self.weather_status_label.setText("")
             self.weather_temperature_label.setText("")
 
@@ -113,6 +88,7 @@ class WeatherUI(QWidget):
 
 
 if __name__ == "__main__":
+    import sys
 
     def run_app():
         app = QtWidgets.QApplication(sys.argv)

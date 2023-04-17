@@ -19,82 +19,54 @@ if __name__ == "__main__":
 
 # Backend
 
-from CoordinatesManager.backend.readRegistrationImages import touchingCoordinateFinder
-from CoordinatesManager.backend.polynomialTransformation import polynomialRegression
 from CoordinatesManager import (
-    DMDActuator,
     ManualRegistration,
     DMDWidget,
     GalvoWidget,
     StageRegistrationWidget,
 )
 
-from NIDAQ.DAQoperator import DAQmission
-
 # from NIDAQ.generalDaqerThread import execute_analog_readin_optional_digital_thread
-from NIDAQ.wavegenerator import waveRecPic
 
 from ImageAnalysis.ImageProcessing import ProcessImage
-from HamamatsuCam import HamamatsuUI
-from GalvoWidget.pmt_thread import pmtimagingTest_contour
 
 # UI
-from CoordinatesManager.ui_widgets.adaptedQButtonGroupClass import adaptedQButtonGroup
 from CoordinatesManager.ui_widgets.DrawingWidget import DrawingWidget
-from CoordinatesManager.ui_widgets.SelectPointImageView import SelectPointImageView
 
-from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtGui import QColor, QPen, QPixmap, QIcon, QTextCursor, QFont
+from PyQt5 import QtWidgets
+from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import (
     QWidget,
     QPushButton,
-    QRadioButton,
-    QVBoxLayout,
     QCheckBox,
     QGridLayout,
-    QHBoxLayout,
-    QVBoxLayout,
-    QGroupBox,
     QTabWidget,
-    QGraphicsView,
-    QGraphicsScene,
     QListWidget,
-    QSizePolicy,
     QLabel,
-    QComboBox,
-    QLayout,
-    QStackedWidget,
     QSpinBox,
 )
 
-from PyQt5.QtCore import QThread, pyqtSignal, Qt
-from StylishQT import MySwitch, cleanButton, roundQGroupBox, SquareImageView
+from PyQt5.QtCore import pyqtSignal
+from StylishQT import cleanButton, roundQGroupBox, SquareImageView
 
 import pyqtgraph as pg
-from pyqtgraph import QtGui
 
 # General libraries
 import threading
-import sys
 import colorsys
 import random
-import json
 import numpy as np
-import time
-import datetime
 import matplotlib.pyplot as plt
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
 import matplotlib.patches as mpatches
-from skimage.color import gray2rgb
 from skimage.io import imread
-from skimage.transform import rotate, resize
 from skimage.measure import find_contours
 
 try:
     from ImageAnalysis.ImageProcessing_MaskRCNN import ProcessImageML
-except:
+except ImportError:
     print("None MaskRCNN environment.")
 
 

@@ -15,10 +15,8 @@ from __future__ import division
 import sys
 import numpy as np
 from matplotlib import pyplot as plt
-from IPython import get_ipython
 
 from PyQt5 import QtWidgets
-from PyQt5.QtGui import QIcon, QPixmap
 from PyQt5.QtCore import pyqtSignal, QThread
 from PyQt5.QtWidgets import (
     QWidget,
@@ -27,13 +25,10 @@ from PyQt5.QtWidgets import (
     QLabel,
     QGridLayout,
     QPushButton,
-    QVBoxLayout,
     QProgressBar,
-    QHBoxLayout,
     QListWidget,
     QComboBox,
     QMessageBox,
-    QPlainTextEdit,
     QGroupBox,
     QTabWidget,
     QCheckBox,
@@ -42,7 +37,7 @@ from PyQt5.QtWidgets import (
 )
 import pyqtgraph as pg
 import pyqtgraph.exporters
-from pyqtgraph import PlotDataItem, TextItem
+from pyqtgraph import PlotDataItem
 import os
 
 # Ensure that the Widget can be run either independently or as part of Tupolev.
@@ -59,7 +54,6 @@ from NIDAQ.wavegenerator import (
 )
 from NIDAQ.DAQoperator import DAQmission
 from ThorlabsFilterSlider.filterpyserial import ELL9Filter
-from GeneralUsage.ThreadingFunc import run_in_thread
 from PIL import Image
 
 import threading
@@ -75,9 +69,15 @@ class WaveformGenerator(QWidget):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        get_ipython().run_line_magic(
-            "matplotlib", "qt"
-        )  # before start, set spyder back to inline
+
+        try:
+            get_ipython = sys.modules["IPython"].get_ipython
+        except KeyError:
+            pass
+        else:
+            get_ipython().run_line_magic(
+                "matplotlib", "qt"
+            )  # before start, set spyder back to inline
 
         self.layout = QGridLayout(self)
         # Setting tabs
@@ -1696,7 +1696,7 @@ class WaveformGenerator(QWidget):
                             (self.waveform_data_dict[waveform_key], False)
                     else:
                         # In case of cameratrigger, add a trigger composed of 4 values
-                        insert_array = np.array([False, False, False, False, False, \
+                        insert_array = np.array([False, False, False, False, False,  # TODO magic number
                                                  False, False, False, False, False, \
                                                  False, False, False, False, False, \
                                                  False, False, False, False, False, \

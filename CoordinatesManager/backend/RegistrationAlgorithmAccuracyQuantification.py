@@ -10,25 +10,14 @@ automated recognition of registration grid points for cirlces and touching
 squares patterns.
 """
 
-from CoordinatesManager.backend.readRegistrationImages import (
-    touchingCoordinateFinder,
-    circleCoordinateFinder,
-)
-from skimage.measure import block_reduce
-import skimage
-import numpy as np
-import matplotlib.pyplot as plt
 import os
-import time
+
+from .readRegistrationImages import touchingCoordinateFinder
+from skimage.measure import block_reduce
+import matplotlib.pyplot as plt
+import numpy as np
 
 # -*- coding: utf-8 -*-
-import sys
-import numpy as np
-
-import matplotlib.pyplot as plt
-import os
-
-from skimage.measure import block_reduce
 
 
 class Coordinates:

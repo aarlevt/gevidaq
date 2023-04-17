@@ -6,30 +6,18 @@ Created on Tue Jan 21 13:34:56 2020
 """
 from __future__ import division
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import Qt, pyqtSignal, QRectF, QPoint, QRect, QObject
-from PyQt5.QtGui import QColor, QPen, QPixmap, QIcon, QTextCursor, QFont
+from PyQt5.QtCore import Qt, pyqtSignal, QPoint
+from PyQt5.QtGui import QColor, QPen, QFont
 
 from PyQt5.QtWidgets import (
     QWidget,
-    QButtonGroup,
     QLabel,
-    QSlider,
     QSpinBox,
     QDoubleSpinBox,
     QGridLayout,
-    QPushButton,
-    QGroupBox,
-    QLineEdit,
-    QVBoxLayout,
-    QHBoxLayout,
     QComboBox,
     QMessageBox,
     QTabWidget,
-    QCheckBox,
-    QRadioButton,
-    QFileDialog,
-    QProgressBar,
-    QTextEdit,
 )
 
 import pyqtgraph as pg
@@ -37,9 +25,7 @@ import sys
 import numpy as np
 from PIL import Image
 from datetime import datetime
-from pyqtgraph import PlotDataItem
 import os
-import matplotlib.pyplot as plt
 
 # Ensure that the Widget can be run either independently or as part of Tupolev.
 if __name__ == "__main__":
@@ -563,7 +549,7 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
             )
             time_per_frame_pmt = Totalscansamples / self.Daq_sample_rate_pmt
 
-            ScanArrayXnum = int((Totalscansamples / self.averagenum) / Value_yPixels)
+            # ScanArrayXnum = int((Totalscansamples / self.averagenum) / Value_yPixels)
 
             # r1 = QRectF(500, 500, ScanArrayXnum, int(Value_yPixels))
             # self.pmtimageitem.setRect(r1)

@@ -6,33 +6,19 @@ Created on Fri Jul  3 17:03:45 2020
 @author: Izak de Heer
 """
 
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import (
     QWidget,
     QPushButton,
-    QRadioButton,
-    QVBoxLayout,
-    QCheckBox,
     QGridLayout,
-    QHBoxLayout,
-    QVBoxLayout,
-    QGroupBox,
-    QTabWidget,
-    QGraphicsView,
-    QGraphicsScene,
-    QListWidget,
-    QSizePolicy,
     QLabel,
     QComboBox,
-    QLayout,
-    QStackedWidget,
     QSpinBox,
 )
 
-from PyQt5.QtCore import QThread, pyqtSignal, Qt
-from StylishQT import MySwitch, roundQGroupBox, SquareImageView
+from PyQt5.QtCore import pyqtSignal
+from StylishQT import roundQGroupBox
 
-import pyqtgraph as pg
 from pyqtgraph import QtGui
 
 from CoordinatesManager.ui_widgets.SelectPointImageView import SelectPointImageView

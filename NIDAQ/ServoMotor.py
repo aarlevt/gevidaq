@@ -19,9 +19,6 @@ from NIDAQ.DAQoperator import DAQmission
 
 import numpy as np
 import math
-from scipy import signal
-import matplotlib.pyplot as plt
-import time
 
 
 class Servo:

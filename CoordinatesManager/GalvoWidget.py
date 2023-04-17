@@ -6,37 +6,21 @@ Created on Tue Jul  7 14:38:53 2020
 @author: Izak de Heer
 """
 
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import (
     QWidget,
     QPushButton,
-    QRadioButton,
-    QVBoxLayout,
-    QCheckBox,
     QGridLayout,
-    QHBoxLayout,
-    QVBoxLayout,
-    QGroupBox,
-    QTabWidget,
-    QGraphicsView,
-    QGraphicsScene,
-    QListWidget,
-    QSizePolicy,
     QLabel,
-    QComboBox,
-    QLayout,
-    QStackedWidget,
-    QSpinBox,
     QLineEdit,
 )
 from PyQt5 import QtGui
-from PyQt5.QtCore import QThread, pyqtSignal, Qt
-from StylishQT import MySwitch, roundQGroupBox, SquareImageView
+from PyQt5.QtCore import pyqtSignal
+from StylishQT import roundQGroupBox
 
-from CoordinatesManager import DMDActuator, Registrator, CoordinateTransformations
+from CoordinatesManager import Registrator, CoordinateTransformations
 from ImageAnalysis.ImageProcessing import ProcessImage
 from GalvoWidget.pmt_thread import pmtimagingTest_contour
-from NIDAQ.DAQoperator import DAQmission
 
 from skimage.draw import polygon2mask
 
@@ -124,7 +108,7 @@ class GalvoWidget(QWidget):
         ----------
         """
         #!!! need to adapt to multiple frames!
-        for each_roi_index in range(len(sig_from_CoordinateWidget)):
+        for each_roi_index in range(len(sig_from_CoordinateWidget)):  # TODO undefined
 
             list_of_rois = sig_from_CoordinateWidget[each_roi_index][0]
             flag_fill_contour = sig_from_CoordinateWidget[each_roi_index][1]

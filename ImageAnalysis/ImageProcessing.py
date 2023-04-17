@@ -8,34 +8,29 @@ Created on Sat Mar  7 16:46:47 2020
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
-import math
 import time
 from skimage import img_as_ubyte
 from skimage.filters import threshold_otsu, threshold_local
 from skimage.filters.rank import entropy
 from skimage.segmentation import clear_border
-from skimage.measure import label, perimeter, find_contours
+from skimage.measure import label, find_contours
 from skimage.morphology import (
     closing,
     square,
     opening,
     reconstruction,
-    skeletonize,
-    convex_hull_image,
     dilation,
-    thin,
-    binary_erosion,
     disk,
     binary_dilation,
 )
-from skimage.measure import regionprops, moments, moments_central, moments_hu
-from skimage.draw import line, polygon2mask, polygon_perimeter
-from skimage.color import label2rgb, gray2rgb, rgb2gray
+from skimage.measure import regionprops
+from skimage.draw import polygon2mask, polygon_perimeter
+from skimage.color import gray2rgb
 from skimage.restoration import denoise_tv_chambolle
 from skimage.io import imread
-from skimage.transform import rotate, resize
+from skimage.transform import resize
 from scipy.signal import convolve2d
-import skimage.external.tifffile as skimtiff
+import tifffile as skimtiff
 from PIL import Image
 from PIL.TiffTags import TAGS
 import scipy.interpolate as interpolate
@@ -1447,7 +1442,6 @@ class ProcessImage:
 
                 if each_point_index == 17:
                     sample_point_array = individual_points_array
-                    std_sample_point = np.std(np.array(sample_point_array))
 
                     plt.figure()
                     plt.title('Point 17, over 5000 trials(SNR = {})'.format(ProcessImage.signal_to_noise(sample_point_array)))
@@ -1900,7 +1894,7 @@ class ProcessImage:
                 )
 
                 # Trim the contour mask
-                cell_contour_mask_processed = opening(
+                cell_contour_mask_processed = opening(  # TODO unused
                     cell_contour_mask_dilated, square(4)
                 )
 
@@ -2155,7 +2149,6 @@ class ProcessImage:
 
             intersection_area_percentage_list = []
             index_list_same_coordinate = []
-            registered_cell_Series_list = []
 
             # From the image name information, locate rows only from the same coordinate, generate a pd.dataframe
             DataFrame_of_same_coordinate = dataframe_latter[
@@ -2343,7 +2336,7 @@ class ProcessImage:
                     index_2,
                     row_Data_2,
                 ) in DataFrame_of_same_coordinate_Data2.iterrows():
-                    ImgNameInforString_Data2 = row_Data_2["ImgNameInfor_Lib"]
+                    # ImgNameInforString_Data2 = row_Data_2["ImgNameInfor_Lib"]
 
                     bounding_box_str_Data_2 = row_Data_2["BoundingBox_Lib"]
                     # Retrieve boundingbox information
@@ -2762,7 +2755,7 @@ class ProcessImage:
         ]
 
         for index_2, row_Data_2 in DataFrame_of_same_coordinate_Data2.iterrows():
-            ImgNameInforString_Data2 = row_Data_2["ImgNameInfor_Lib"]
+            # ImgNameInforString_Data2 = row_Data_2["ImgNameInfor_Lib"]
 
             bounding_box_str_Data_2 = row_Data_2["BoundingBox_Lib"]
             # Retrieve boundingbox information
@@ -3087,9 +3080,6 @@ class ProcessImage:
         readin_video = video.copy()
         readin_voltage_patch = Vin.copy()
 
-        sizex = readin_video.shape[1]
-        sizey = readin_video.shape[2]
-
         # This is the mean intensity image of the whole video stack.
         video_mean_image = np.mean(readin_video, axis=0)
 
@@ -3247,11 +3237,10 @@ class ProcessImage:
 
         x_axis = np.arange(len(raw_data_list))
 
-        n = len(raw_data_list)  # the number of data
-        mean = sum(x_axis * focus_degree_array) / n  # mean value of data
-        sigma = (
-            sum(focus_degree_array * (x_axis - mean) ** 2) / n
-        )  # note this correction
+        # n = len(raw_data_list)  # the number of data
+        # mean = sum(x_axis * focus_degree_array) / n  # mean value of data
+        # sigma = ( sum(focus_degree_array * (x_axis - mean) ** 2) / n)  # note this correction
+        # NOTE sigma is defined in the gaus function arguments
 
         def gaus(x, a, x0, sigma):
             return a * np.exp(-((x - x0) ** 2) / (2 * sigma ** 2))
@@ -3318,8 +3307,7 @@ class ProcessImage:
         upper_index_dict = {}
         lower_index_dict = {}
 
-        for i in range(2):
-        # Each loop for either upper or lower part
+        for i in range(2):  # Each loop for either upper or lower part
             if i == 0:
                 qualified_index_array = np.where(array >= threshold)[0]
             else:
@@ -3336,27 +3324,22 @@ class ProcessImage:
             phase_index = 0
 
             for index in range(len(discontinue_index_list) + 1):
-                if phase_index == 0:
-                # For the first phase detected
+                if phase_index == 0:  # For the first phase detected
                     start_index = 0
                     start_index_of_next_phase = discontinue_index_list[0] -1
 
-                elif phase_index < len(discontinue_index_list):
-                # For the middle ones
+                elif phase_index < len(discontinue_index_list):  # For the middle ones
                     start_index = discontinue_index_list[index - 1]
                     start_index_of_next_phase = discontinue_index_list[index] -1
 
-                elif phase_index == len(discontinue_index_list):
-                # For the end of the phase
+                elif phase_index == len(discontinue_index_list):  # For the end of the phase
                     start_index = discontinue_index_list[index - 1]
                     start_index_of_next_phase = len(qualified_index_array) -1
 
-                if i == 0:
-                # For the upper part
+                if i == 0:  # For the upper part
                     upper_index_dict["phase {}".format(str(phase_index))] = [qualified_index_array[start_index], qualified_index_array[start_index_of_next_phase] + 1]
 
-                else:
-                # For the lower part
+                else:  # For the lower part
                     lower_index_dict["phase {}".format(str(phase_index))] = [qualified_index_array[start_index], qualified_index_array[start_index_of_next_phase] + 1]
 
                 phase_index += 1
@@ -4572,9 +4555,9 @@ class ProcessImage:
 
         mean_trace_sampling_rate = DAQ_sampling_rate//points_per_contour
 
-        single_period_1st_half = ProcessImage.Protein_biexponential_fit(averaged_single_period[0:int(len(averaged_single_period)/2)], swing = 'upswing', sampling_rate = mean_trace_sampling_rate)
+        single_period_1st_half = ProcessImage.Protein_biexponential_fit(averaged_single_period[0:int(len(averaged_single_period)/2)], swing = 'upswing', sampling_rate = mean_trace_sampling_rate)  # TODO unused
 
-        single_period_2nd_half = ProcessImage.Protein_biexponential_fit(averaged_single_period[int(len(averaged_single_period)/2) : len(averaged_single_period)], swing = 'downswing', sampling_rate = mean_trace_sampling_rate)
+        single_period_2nd_half = ProcessImage.Protein_biexponential_fit(averaged_single_period[int(len(averaged_single_period)/2) : len(averaged_single_period)], swing = 'downswing', sampling_rate = mean_trace_sampling_rate)  # TODO unused
 
 
         # time_axis = np.arange(len(single_period_1st_half))/mean_trace_sampling_rate
@@ -6961,10 +6944,6 @@ class CurveFit:
 
 
 if __name__ == "__main__":
-    from skimage.io import imread
-    import time
-    from IPython import get_ipython
-
     #    speedGalvo = 20000.0 #Volt/s
     #    AccelerationGalvo = 1.54*10**8 #Acceleration galvo in volt/s^2
     #    #--------------------------------------------------------------------------

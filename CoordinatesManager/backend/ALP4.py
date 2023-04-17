@@ -343,7 +343,7 @@ def afficheur(bitPlane):
     display = np.zeros((nSizeY, nSizeX))
     for jj in range(nSizeY):
         for ii in range(nSizeX / 8):
-            line = []
+            line = []  # TODO unused
             Q = bitPlane[jj * nSizeX / 8 + ii]
             R = [0, 0, 0, 0, 0, 0, 0, 0]
             k = 7

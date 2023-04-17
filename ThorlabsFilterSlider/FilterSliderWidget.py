@@ -6,39 +6,11 @@ Created on Wed Mar  4 13:54:35 2020
 """
 
 from __future__ import division
-import sys
 
-sys.path.append("../")
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import Qt, pyqtSignal, QRectF, QPoint, QRect, QObject, QSize
-from PyQt5.QtGui import QImage, QPalette, QBrush, QFont
-
-from PyQt5.QtWidgets import (
-    QWidget,
-    QButtonGroup,
-    QLabel,
-    QSlider,
-    QSpinBox,
-    QDoubleSpinBox,
-    QGridLayout,
-    QPushButton,
-    QGroupBox,
-    QLineEdit,
-    QVBoxLayout,
-    QHBoxLayout,
-    QComboBox,
-    QMessageBox,
-    QTabWidget,
-    QCheckBox,
-    QRadioButton,
-    QFileDialog,
-    QProgressBar,
-    QTextEdit,
-    QDial,
-)
+from PyQt5.QtGui import QFont
 
 import pyqtgraph as pg
-import time
 import threading
 import sys
 import os
@@ -53,7 +25,7 @@ import StylishQT
 from ThorlabsFilterSlider.filterpyserial import ELL9Filter
 
 
-class FilterSliderWidgetUI(QWidget):
+class FilterSliderWidgetUI(QtWidgets.QWidget):
 
     #    waveforms_generated = pyqtSignal(object, object, list, int)
     #    SignalForContourScanning = pyqtSignal(int, int, int, np.ndarray, np.ndarray)
@@ -66,7 +38,7 @@ class FilterSliderWidgetUI(QWidget):
 
         self.resize(265, 130)
         self.setWindowTitle("FilterSliderWidget")
-        self.layout = QGridLayout(self)
+        self.layout = QtWidgets.QGridLayout(self)
 
         # **************************************************************************************************************************************
         # --------------------------------------------------------------------------------------------------------------------------------------
@@ -76,35 +48,35 @@ class FilterSliderWidgetUI(QWidget):
         ControlContainer = StylishQT.roundQGroupBox(
             title="Filter Control", background_color="azure"
         )
-        ControlContainerLayout = QGridLayout()
+        ControlContainerLayout = QtWidgets.QGridLayout()
 
         ND_filtercontrolContainer = StylishQT.roundQGroupBox(
             title="2P ND", background_color="azure"
         )
-        self.filtercontrolLayout = QGridLayout()
+        self.filtercontrolLayout = QtWidgets.QGridLayout()
         self.filtercontrolLayout.setSpacing(2)
 
-        self.FilterButtongroup_1 = QButtonGroup(self)
+        self.FilterButtongroup_1 = QtWidgets.QButtonGroup(self)
 
-        self.filter1_pos0 = QPushButton("0")
+        self.filter1_pos0 = QtWidgets.QPushButton("0")
         self.filter1_pos0.setCheckable(True)
         self.FilterButtongroup_1.addButton(self.filter1_pos0)
         self.filtercontrolLayout.addWidget(self.filter1_pos0, 0, 1)
         #        self.filter1_pos0.clicked.connect(lambda: self.filter_move_towards("COM9", 0))
 
-        self.filter1_pos1 = QPushButton("1")
+        self.filter1_pos1 = QtWidgets.QPushButton("1")
         self.filter1_pos1.setCheckable(True)
         self.FilterButtongroup_1.addButton(self.filter1_pos1)
         self.filtercontrolLayout.addWidget(self.filter1_pos1, 0, 2)
         #        self.filter1_pos1.clicked.connect(lambda: self.filter_move_towards("COM9", 1))
 
-        self.filter1_pos2 = QPushButton("2")
+        self.filter1_pos2 = QtWidgets.QPushButton("2")
         self.filter1_pos2.setCheckable(True)
         self.FilterButtongroup_1.addButton(self.filter1_pos2)
         self.filtercontrolLayout.addWidget(self.filter1_pos2, 0, 3)
         #        self.filter1_pos2.clicked.connect(lambda: self.filter_move_towards("COM9", 2))
 
-        self.filter1_pos3 = QPushButton("3")
+        self.filter1_pos3 = QtWidgets.QPushButton("3")
         self.filter1_pos3.setCheckable(True)
         self.FilterButtongroup_1.addButton(self.filter1_pos3)
         self.filtercontrolLayout.addWidget(self.filter1_pos3, 0, 4)
@@ -112,27 +84,27 @@ class FilterSliderWidgetUI(QWidget):
         self.FilterButtongroup_1.setExclusive(True)
         self.FilterButtongroup_1.buttonClicked[int].connect(self.DecodeFilterMove)
 
-        self.FilterButtongroup_2 = QButtonGroup(self)
+        self.FilterButtongroup_2 = QtWidgets.QButtonGroup(self)
 
-        self.filter2_pos0 = QPushButton("0")
+        self.filter2_pos0 = QtWidgets.QPushButton("0")
         self.filter2_pos0.setCheckable(True)
         self.FilterButtongroup_2.addButton(self.filter2_pos0)
         self.filtercontrolLayout.addWidget(self.filter2_pos0, 1, 1)
         #        self.filter1_pos0.clicked.connect(lambda: self.filter_move_towards("COM9", 0))
 
-        self.filter2_pos1 = QPushButton("0.1")
+        self.filter2_pos1 = QtWidgets.QPushButton("0.1")
         self.filter2_pos1.setCheckable(True)
         self.FilterButtongroup_2.addButton(self.filter2_pos1)
         self.filtercontrolLayout.addWidget(self.filter2_pos1, 1, 2)
         #        self.filter1_pos1.clicked.connect(lambda: self.filter_move_towards("COM9", 1))
 
-        self.filter2_pos2 = QPushButton("0.3")
+        self.filter2_pos2 = QtWidgets.QPushButton("0.3")
         self.filter2_pos2.setCheckable(True)
         self.FilterButtongroup_2.addButton(self.filter2_pos2)
         self.filtercontrolLayout.addWidget(self.filter2_pos2, 1, 3)
         #        self.filter1_pos2.clicked.connect(lambda: self.filter_move_towards("COM9", 2))
 
-        self.filter2_pos3 = QPushButton("0.5")
+        self.filter2_pos3 = QtWidgets.QPushButton("0.5")
         self.filter2_pos3.setCheckable(True)
         self.FilterButtongroup_2.addButton(self.filter2_pos3)
         self.filtercontrolLayout.addWidget(self.filter2_pos3, 1, 4)
@@ -140,51 +112,51 @@ class FilterSliderWidgetUI(QWidget):
         self.FilterButtongroup_2.setExclusive(True)
         self.FilterButtongroup_2.buttonClicked[int].connect(self.DecodeFilterMove)
         #
-        #        self.filtercontrolLayout.addWidget(QLabel('Filter-1 pos: '), 0, 0)
+        #        self.filtercontrolLayout.addWidget(QtWidgets.QLabel('Filter-1 pos: '), 0, 0)
         #
-        #        self.filtercontrolLayout.addWidget(QLabel('Filter-2 pos: '), 1, 0)
-        #        bGBackupFromIntExt_1 = QButtonGroup(self)
+        #        self.filtercontrolLayout.addWidget(QtWidgets.QLabel('Filter-2 pos: '), 1, 0)
+        #        bGBackupFromIntExt_1 = QtWidgets.QButtonGroup(self)
         #
-        #        self.filter2_pos0 = QPushButton('0')
+        #        self.filter2_pos0 = QtWidgets.QPushButton('0')
         #        self.filter2_pos0.setCheckable(True)
         #        bGBackupFromIntExt_1.addButton(self.filter2_pos0)
         #        self.filtercontrolLayout.addWidget(self.filter2_pos0, 1, 1)
         #        self.filter2_pos0.clicked.connect(lambda: self.filter_move_towards("COM7", 0))
         #
-        #        self.filter2_pos1 = QPushButton('0.1')
+        #        self.filter2_pos1 = QtWidgets.QPushButton('0.1')
         #        self.filter2_pos1.setCheckable(True)
         #        bGBackupFromIntExt_1.addButton(self.filter2_pos1)
         #        self.filtercontrolLayout.addWidget(self.filter2_pos1, 1, 2)
         #        self.filter2_pos1.clicked.connect(lambda: self.filter_move_towards("COM7", 1))
         #
-        #        self.filter2_pos2 = QPushButton('0.3')
+        #        self.filter2_pos2 = QtWidgets.QPushButton('0.3')
         #        self.filter2_pos2.setCheckable(True)
         #        bGBackupFromIntExt_1.addButton(self.filter2_pos2)
         #        self.filtercontrolLayout.addWidget(self.filter2_pos2, 1, 3)
         #        self.filter2_pos2.clicked.connect(lambda: self.filter_move_towards("COM7", 2))
         #
-        #        self.filter2_pos3 = QPushButton('0.5')
+        #        self.filter2_pos3 = QtWidgets.QPushButton('0.5')
         #        self.filter2_pos3.setCheckable(True)
         #        bGBackupFromIntExt_1.addButton(self.filter2_pos3)
         #        self.filtercontrolLayout.addWidget(self.filter2_pos3, 1, 4)
         #        self.filter2_pos3.clicked.connect(lambda: self.filter_move_towards("COM7", 3))
 
         # ----------------------------------------------------------------------
-        #        self.filter1_pos0 =  QDial()
+        #        self.filter1_pos0 =  QtWidgets.QDial()
         #        self.filter1_pos0.setMinimum(0)
         #        self.filter1_pos0.setMaximum(3)
         #        self.filter1_pos0.setValue(0)
         #        self.filter1_pos0.setNotchesVisible(True)
         #        self.filter1_pos0.valueChanged.connect(lambda: self.filter_move_towards("COM9", self.filter1_pos0.value()))
 
-        #        self.filter2_pos0 =  QDial()
+        #        self.filter2_pos0 =  QtWidgets.QDial()
         #        self.filter2_pos0.setMinimum(0)
         #        self.filter2_pos0.setMaximum(3)
         #        self.filter2_pos0.setValue(0)
         #        self.filter2_pos0.setNotchesVisible(True)
         #        self.filter2_pos0.valueChanged.connect(lambda: self.filter_move_towards("COM7", self.filter2_pos0.value()))
         #
-        #        self.filter3_pos0 =  QDial()
+        #        self.filter3_pos0 =  QtWidgets.QDial()
         #        self.filter3_pos0.setMinimum(0)
         #        self.filter3_pos0.setMaximum(3)
         #        self.filter3_pos0.setValue(0)
@@ -192,33 +164,33 @@ class FilterSliderWidgetUI(QWidget):
         #        self.filter3_pos0.valueChanged.connect(lambda: self.filter_move_towards("COM15", self.filter3_pos0.value()))
 
         # ----------------------------------------------------------------------
-        #        self.filter1_pos0 = QSlider(Qt.Horizontal)
+        #        self.filter1_pos0 = QtWidgets.QSlider(Qt.Horizontal)
         #        self.filter1_pos0.setMinimum(0)
         #        self.filter1_pos0.setMaximum(3)
-        #        self.filter1_pos0.setTickPosition(QSlider.TicksBothSides)
+        #        self.filter1_pos0.setTickPosition(QtWidgets.QSlider.TicksBothSides)
         #        self.filter1_pos0.setTickInterval(1)
         #        self.filter1_pos0.setSingleStep(1)
         #        self.filter1_pos0.sliderReleased.connect(lambda: self.filter_move_towards("COM9", self.filter1_pos0.value()))
         #
-        #        self.filter2_pos0 = QSlider(Qt.Horizontal)
+        #        self.filter2_pos0 = QtWidgets.QSlider(Qt.Horizontal)
         #        self.filter2_pos0.setMinimum(0)
         #        self.filter2_pos0.setMaximum(3)
-        #        self.filter2_pos0.setTickPosition(QSlider.TicksBothSides)
+        #        self.filter2_pos0.setTickPosition(QtWidgets.QSlider.TicksBothSides)
         #        self.filter2_pos0.setTickInterval(1)
         #        self.filter2_pos0.setSingleStep(1)
         #        self.filter2_pos0.sliderReleased.connect(lambda: self.filter_move_towards("COM7", self.filter2_pos0.value()))
         #
-        #        self.filter3_pos0 = QSlider(Qt.Vertical)
+        #        self.filter3_pos0 = QtWidgets.QSlider(Qt.Vertical)
         #        self.filter3_pos0.setMinimum(0)
         #        self.filter3_pos0.setMaximum(1)
-        #        self.filter3_pos0.setTickPosition(QSlider.TicksBothSides)
+        #        self.filter3_pos0.setTickPosition(QtWidgets.QSlider.TicksBothSides)
         #        self.filter3_pos0.setTickInterval(1)
         #        self.filter3_pos0.setSingleStep(1)
         #        self.filter3_pos0.sliderReleased.connect(lambda: self.filter_move_towards("COM15", self.filter3_pos0.value()))
 
-        #        self.filtercontrolLayout.addWidget(QLabel('ND 0 | 1 | 2 | 3'), 0, 1)
+        #        self.filtercontrolLayout.addWidget(QtWidgets.QLabel('ND 0 | 1 | 2 | 3'), 0, 1)
         #        self.filtercontrolLayout.addWidget(self.filter1_pos0, 1, 1)
-        #        self.filtercontrolLayout.addWidget(QLabel('ND 0 | 0.1 | 0.3 | 0.5'), 0, 2)
+        #        self.filtercontrolLayout.addWidget(QtWidgets.QLabel('ND 0 | 0.1 | 0.3 | 0.5'), 0, 2)
         #        self.filtercontrolLayout.addWidget(self.filter2_pos0, 1, 2)
 
         #        self.filtercontrolLayout.addWidget(self.filter3_pos0, 1, 3)
@@ -231,18 +203,18 @@ class FilterSliderWidgetUI(QWidget):
         EM_filtercontrolContainer = StylishQT.roundQGroupBox(
             title="Emission", background_color="honeydew"
         )
-        self.EM_filtercontrolContainerLayout = QGridLayout()
+        self.EM_filtercontrolContainerLayout = QtWidgets.QGridLayout()
         self.EM_filtercontrolContainerLayout.setSpacing(2)
 
-        self.FilterButtongroup_3 = QButtonGroup(self)
+        self.FilterButtongroup_3 = QtWidgets.QButtonGroup(self)
 
-        self.filter3_pos0 = QPushButton("Arch")
+        self.filter3_pos0 = QtWidgets.QPushButton("Arch")
         self.filter3_pos0.setCheckable(True)
         self.FilterButtongroup_3.addButton(self.filter3_pos0)
         self.EM_filtercontrolContainerLayout.addWidget(self.filter3_pos0, 1, 0)
         #        self.filter1_pos0.clicked.connect(lambda: self.filter_move_towards("COM9", 0))
 
-        self.filter3_pos1 = QPushButton("Citrine")
+        self.filter3_pos1 = QtWidgets.QPushButton("Citrine")
         self.filter3_pos1.setCheckable(True)
         self.FilterButtongroup_3.addButton(self.filter3_pos1)
         self.EM_filtercontrolContainerLayout.addWidget(self.filter3_pos1, 0, 0)

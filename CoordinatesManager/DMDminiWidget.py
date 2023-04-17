@@ -4,30 +4,13 @@ Created on Sat Feb  6 18:34:44 2021
 
 @author: xinmeng
 """
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import (
     QWidget,
     QPushButton,
-    QRadioButton,
-    QVBoxLayout,
-    QCheckBox,
     QGridLayout,
-    QHBoxLayout,
-    QGroupBox,
-    QTabWidget,
-    QGraphicsView,
-    QGraphicsScene,
-    QListWidget,
-    QSizePolicy,
-    QLabel,
-    QComboBox,
-    QLayout,
-    QStackedWidget,
-    QSpinBox,
-    QLineEdit,
 )
 
-from PyQt5.QtCore import QThread, pyqtSignal, Qt
 from PyQt5.QtGui import QFont
 import sys
 import os
@@ -37,13 +20,9 @@ if __name__ == "__main__":
     abspath = os.path.abspath(__file__)
     dname = os.path.dirname(abspath)
     os.chdir(dname + "/../")
-from CoordinatesManager import DMDActuator, Registrator, CoordinateTransformations
-from ImageAnalysis.ImageProcessing import ProcessImage
-from StylishQT import MySwitch, roundQGroupBox, SquareImageView
+from CoordinatesManager import DMDActuator
 from GeneralUsage.ThreadingFunc import run_in_thread
 
-import matplotlib.pyplot as plt
-from skimage.color import rgb2gray
 import numpy as np
 import StylishQT
 
@@ -111,7 +90,7 @@ class DMDminiWidgetUI(QWidget):
             # Set the binary mode of DMD.
             ALP_BIN_MODE = 2104  # 	Binary mode: select from ALP_BIN_NORMAL and ALP_BIN_UNINTERRUPTED (AlpSeqControl)
 
-            ALP_BIN_NORMAL = 2105  # 	Normal operation with progammable dark phase
+            #ALP_BIN_NORMAL = 2105  # 	Normal operation with progammable dark phase
             ALP_BIN_UNINTERRUPTED = 2106  # 	Operation without dark phase
 
             self.DMD_actuator.DMD.SeqControl(

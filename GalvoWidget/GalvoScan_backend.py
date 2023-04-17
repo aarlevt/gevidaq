@@ -6,16 +6,13 @@ Created on Wed Aug 19 11:35:22 2020
 """
 
 import nidaqmx
-from nidaqmx.stream_readers import AnalogMultiChannelReader
-from nidaqmx.stream_writers import AnalogSingleChannelWriter
-from nidaqmx.constants import AcquisitionType, TaskMode
-from nidaqmx.stream_writers import AnalogMultiChannelWriter, DigitalMultiChannelWriter
+from nidaqmx.constants import AcquisitionType
+from nidaqmx.stream_writers import AnalogMultiChannelWriter
 from nidaqmx.stream_readers import AnalogSingleChannelReader
-from PyQt5.QtCore import pyqtSignal, QThread
-import skimage.external.tifffile as skimtiff
+import tifffile as skimtiff
 import time
 import os
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
 # Ensure that the Widget can be run either independently or as part of Tupolev.
 if __name__ == "__main__":
@@ -25,8 +22,6 @@ if __name__ == "__main__":
 
 import numpy as np
 import NIDAQ.wavegenerator
-from NIDAQ.wavegenerator import blockWave
-from NIDAQ.constants import MeasurementConstants
 
 from PI_ObjectiveMotor.focuser import PIMotor
 
@@ -314,7 +309,7 @@ class PMT_zscan:
 
 
 if __name__ == "__main__":
-    import matplotlib.pyplot as plt
+    #import matplotlib.pyplot as plt
 
     # galvo = RasterScan(Daq_sample_rate = 500000, edge_volt = 5)
     # image = galvo.run()

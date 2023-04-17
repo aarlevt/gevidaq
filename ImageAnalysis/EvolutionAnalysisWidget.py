@@ -5,33 +5,22 @@ Created on Wed May 20 18:32:50 2020
 @author: xinmeng
 """
 
-from __future__ import division
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import Qt, pyqtSignal, QRectF, QPoint, QRect, QObject
-from PyQt5.QtGui import QColor, QPen, QPixmap, QIcon, QTextCursor, QFont
+from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtGui import QTextCursor, QFont
 
 from PyQt5.QtWidgets import (
     QWidget,
-    QButtonGroup,
     QLabel,
-    QSlider,
     QSpinBox,
     QDoubleSpinBox,
     QGridLayout,
     QPushButton,
     QGroupBox,
     QLineEdit,
-    QVBoxLayout,
-    QHBoxLayout,
     QComboBox,
-    QMessageBox,
     QTabWidget,
-    QCheckBox,
-    QRadioButton,
-    QFileDialog,
-    QProgressBar,
     QTextEdit,
-    QStyleFactory,
 )
 
 import pyqtgraph as pg
@@ -46,27 +35,18 @@ from datetime import datetime
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
 from matplotlib.figure import Figure
-import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
-from mpl_toolkits import mplot3d
-import plotly.express as px
 import pandas as pd
 
-if __name__ == "__main__":
-    abspath = os.path.abspath(__file__)
-    dname = os.path.dirname(abspath)
-    os.chdir(dname + "/../")
+from ..SampleStageControl.stage import LudlStage
+from .ImageProcessing import ProcessImage
+from ..CoordinatesManager import CoordinateTransformations
 
-from SampleStageControl.stage import LudlStage
-from ImageAnalysis.ImageProcessing import ProcessImage
-from CoordinatesManager import CoordinateTransformations
+from .. import StylishQT
 
 try:
-    from ImageAnalysis.ImageProcessing_MaskRCNN import ProcessImageML
-except:
+    from .ImageProcessing_MaskRCNN import ProcessImageML
+except ImportError:
     print("None-MaskRCNN environment.")
-
-import StylishQT
 
 
 def run_in_thread(fn):
@@ -533,7 +513,7 @@ class MainGUI(QWidget):
                 )
             else:
                 # Directly analyze images
-                cell_data = self.ProcessML.analyze_images_in_folder(
+                cell_data = self.ProcessML.analyze_images_in_folder(  # TODO unused
                     self.Analysis_saving_directory
                 )
 
@@ -543,7 +523,7 @@ class MainGUI(QWidget):
         elif len(self.Tag_round_infor) == 1 and len(self.Lib_round_infor) == 1:
 
             if self.FilepathSwitchBox.currentText() != "Cam Z-max":
-            # If max projection is already generated
+                # If max projection is already generated
                 pass
             else:
                 # For camera screening analysis, use Spiking HEK weight
@@ -606,7 +586,7 @@ class MainGUI(QWidget):
             for round_index in self.Lib_round_infor:
                 lib_round = "Round{}".format(round_index)
 
-                cell_Data = self.ProcessML.FluorescenceAnalysis(lib_folder, lib_round)
+                cell_Data = self.ProcessML.FluorescenceAnalysis(lib_folder, lib_round)  # TODO unused
 
         # =============================================================================
         #         # ===== For KCL assay, two rounds of lib. =====
@@ -1103,8 +1083,8 @@ class MainGUI(QWidget):
         )
 
         self.currentCellCentre_PMTimgCoordinates = [
-            int((minr + maxr) / 2),
-            int((minc + maxc) / 2),
+            (minr + maxr) // 2,
+            (minc + maxc) // 2,
         ]
         print(
             "current CellCentre_PMTimgCoordinates: {}".format(

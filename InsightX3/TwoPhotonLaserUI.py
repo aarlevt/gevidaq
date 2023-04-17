@@ -7,42 +7,26 @@ Created on Thu Mar 26 11:23:13 2020
 Widely Tunable, Ultra-Fast, Solid-State Laser System.
 """
 
-from __future__ import division
 import sys
 
 sys.path.append("../")
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import Qt, pyqtSignal, QRectF, QPoint, QRect, QObject, QSize
-from PyQt5.QtGui import QImage, QPalette, QBrush, QFont, QPainter, QColor, QPen
+from PyQt5.QtGui import QFont
 
 from PyQt5.QtWidgets import (
     QWidget,
-    QButtonGroup,
     QLabel,
-    QSlider,
     QSpinBox,
-    QDoubleSpinBox,
     QGridLayout,
-    QPushButton,
     QGroupBox,
-    QLineEdit,
-    QVBoxLayout,
-    QHBoxLayout,
-    QComboBox,
     QMessageBox,
-    QTabWidget,
-    QCheckBox,
-    QRadioButton,
-    QFileDialog,
-    QProgressBar,
-    QTextEdit,
-    QDial,
     QStyleFactory,
 )
 
 import time
 import sys
-import threading, queue
+import threading
+import queue
 from InsightX3.TwoPhotonLaser_backend import InsightX3
 import StylishQT
 
@@ -169,7 +153,7 @@ class InsightWidgetUI(QWidget):
         self.SWavelengthTextbox.setEnabled(True)
 
         try:
-            querygap = 1.1
+            querygap = 1.1  # TODO unused
             self.Laserinstance.SetWatchdogTimer(0)
             time.sleep(0.3)
             self.Status_queue = queue.Queue()

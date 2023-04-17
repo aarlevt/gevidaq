@@ -10,7 +10,7 @@ import os
 import numpy as np
 
 cdir = os.getcwd()
-from DMDManager.backend.ALP4 import *
+from DMDManager.backend import ALP4
 
 os.chdir(cdir)
 
@@ -27,7 +27,7 @@ class DMD_manager:
         cdir = os.getcwd() + "./DMDManager"
         print(os.getcwd())
 
-        self.DMD = ALP4(
+        self.DMD = ALP4.ALP4(
             version="4.3", libDir=r"" + cdir
         )  # Use version 4.3 for the alp4395.dll
 

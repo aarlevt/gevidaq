@@ -8,27 +8,20 @@ Created on Mon May  4 14:38:04 2020
 
 # Backend
 from DMDManager.backend.dmd_manager import DMD_manager
-import DMDManager.backend.polynomialTransformation
-from DMDManager.backend.readRegistrationImages import touchingCoordinateFinder_Thread
-from DMDManager.backend.polynomialTransformation import polynomialRegression
 from DMDManager.backend.registrator import RegistrationThread
-from HamamatsuCam.HamamatsuActuator import CamActuator
 
 # Image processing
 import matplotlib.pyplot as plt
-from skimage.draw import line, polygon2mask, polygon_perimeter
+from skimage.draw import polygon2mask, polygon_perimeter
 from skimage.morphology import binary_dilation
 from skimage.external import tifffile as skimtiff
 from PIL import Image
 
 # General libraries
-import sys
 import os
 import numpy as np
 import time
 import datetime
-
-from PyQt5.QtCore import pyqtSignal
 
 
 class BACKEND_DMD_Widget:
@@ -335,7 +328,7 @@ class BACKEND_DMD_Widget:
         self.flag_registrating = True
         self.ui_widget.update_buttons()
 
-        self.regthread = RegistrationThread(self, lasers_to_registrate)
+        self.regthread = RegistrationThread(self, lasers_to_registrate)  # TODO undefined
 
         self.regthread.start()
         self.regthread.sig_finished_registration.connect(self.registration_finished)

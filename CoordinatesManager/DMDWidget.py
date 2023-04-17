@@ -18,22 +18,12 @@ from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import (
     QWidget,
     QPushButton,
-    QRadioButton,
-    QVBoxLayout,
     QCheckBox,
     QGridLayout,
-    QHBoxLayout,
-    QGroupBox,
-    QTabWidget,
-    QGraphicsView,
-    QGraphicsScene,
     QListWidget,
-    QSizePolicy,
     QLabel,
     QComboBox,
-    QLayout,
     QStackedWidget,
-    QSpinBox,
     QLineEdit,
 )
 

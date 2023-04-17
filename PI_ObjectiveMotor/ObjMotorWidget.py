@@ -9,37 +9,21 @@ from __future__ import division
 import sys
 
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import Qt, pyqtSignal, QRectF, QPoint, QRect, QObject, QSize
-from PyQt5.QtGui import QColor, QPen, QPixmap, QIcon, QTextCursor, QFont
+from PyQt5.QtCore import Qt, QSize
+from PyQt5.QtGui import QIcon, QFont
 
 from PyQt5.QtWidgets import (
     QWidget,
-    QButtonGroup,
     QLabel,
-    QSlider,
-    QSpinBox,
     QDoubleSpinBox,
     QGridLayout,
     QPushButton,
     QGroupBox,
-    QLineEdit,
-    QVBoxLayout,
-    QHBoxLayout,
-    QComboBox,
     QMessageBox,
-    QTabWidget,
-    QCheckBox,
-    QRadioButton,
-    QFileDialog,
-    QProgressBar,
-    QTextEdit,
     QScrollBar,
-    QGraphicsDropShadowEffect,
 )
 from PyQt5.QtCore import QThread
 import pyqtgraph as pg
-import numpy as np
-import sys
 import threading
 import os
 
@@ -250,15 +234,15 @@ class ObjMotorWidgetUI(QWidget):
 
     def MoveMotor(self, direction):
         if direction == "Target":
-            pos = self.pi_device_instance.move(self.ObjMotor_target.value())
+            pos = self.pi_device_instance.move(self.ObjMotor_target.value())  # TODO unused
         elif direction == "UP":
             self.MotorStep = self.ObjMotor_step.value()
-            pos = self.pi_device_instance.move(self.ObjCurrentPos["1"] + self.MotorStep)
+            pos = self.pi_device_instance.move(self.ObjCurrentPos["1"] + self.MotorStep)  # TODO unused
         elif direction == "DOWN":
             self.MotorStep = self.ObjMotor_step.value()
-            pos = self.pi_device_instance.move(self.ObjCurrentPos["1"] - self.MotorStep)
+            pos = self.pi_device_instance.move(self.ObjCurrentPos["1"] - self.MotorStep)  # TODO unused
         elif direction == "Slider":
-            pos = self.pi_device_instance.move(self.FocusSlider.value() / 1000000)
+            pos = self.pi_device_instance.move(self.FocusSlider.value() / 1000000)  # TODO unused
 
         self.ObjCurrentPos = self.pi_device_instance.pidevice.qPOS(
             self.pi_device_instance.pidevice.axes

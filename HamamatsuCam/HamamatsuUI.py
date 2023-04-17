@@ -7,44 +7,30 @@ Created on Tue Apr 14 18:47:31 2020
 
 from __future__ import division
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import Qt, pyqtSignal, QRectF, QPoint, QRect, QObject, QSize, QTimer
+from PyQt5.QtCore import Qt, pyqtSignal, QRectF, QTimer
 from PyQt5.QtGui import (
-    QImage,
-    QPalette,
-    QBrush,
     QFont,
-    QPainter,
     QColor,
     QPen,
     QIcon,
     QMovie,
-    QIntValidator,
 )
 
 from PyQt5.QtWidgets import (
     QWidget,
     QButtonGroup,
     QLabel,
-    QSlider,
     QSpinBox,
     QDoubleSpinBox,
     QGridLayout,
     QPushButton,
     QGroupBox,
     QLineEdit,
-    QVBoxLayout,
-    QHBoxLayout,
     QComboBox,
-    QMessageBox,
     QTabWidget,
-    QCheckBox,
-    QRadioButton,
-    QFileDialog,
     QProgressBar,
-    QTextEdit,
     QStyleFactory,
     QMainWindow,
-    QMenu,
     QAction,
     QStackedWidget,
 )
@@ -56,17 +42,16 @@ import threading
 import numpy as np
 import ctypes
 import ctypes.util
-from datetime import datetime, date
-import skimage.external.tifffile as skimtiff
+from datetime import datetime
+import tifffile as skimtiff
 from skimage.measure import block_reduce
-from PIL import Image
 
 # Ensure that the Widget can be run either independently or as part of Tupolev.
 if __name__ == "__main__":
     abspath = os.path.abspath(__file__)
     dname = os.path.dirname(abspath)
     os.chdir(dname + "/../")
-from HamamatsuCam.HamamatsuDCAM import *
+from HamamatsuCam.HamamatsuDCAM import *  # TODO star import
 import StylishQT
 
 """
@@ -108,13 +93,13 @@ class CameraUI(QMainWindow):
         menuBar = self.menuBar()
         fileMenu = menuBar.addMenu("&Camera")
 
-        ActConnectCamera = QAction(QIcon(".\Icons\on.png"), "Connect camera", self)
+        ActConnectCamera = QAction(QIcon("./Icons/on.png"), "Connect camera", self)
         ActConnectCamera.setShortcut("Ctrl+c")
         ActConnectCamera.setStatusTip("Connect camera")
         ActConnectCamera.triggered.connect(self.ConnectCamera)
 
         ActDisconnectCamera = QAction(
-            QIcon(".\Icons\off.png"), "Disconnect camera", self
+            QIcon("./Icons/off.png"), "Disconnect camera", self
         )
         ActDisconnectCamera.setShortcut("Ctrl+d")
         ActDisconnectCamera.triggered.connect(self.DisconnectCamera)
@@ -845,7 +830,7 @@ class CameraUI(QMainWindow):
 
         paraminit = DCAMAPI_INIT(0, 0, 0, 0, None, None)
         paraminit.size = ctypes.sizeof(paraminit)
-        error_code = dcam.dcamapi_init(ctypes.byref(paraminit))
+        error_code = dcam.dcamapi_init(ctypes.byref(paraminit))  # TODO unused
         # if (error_code != DCAMERR_NOERROR):
         #    raise DCAMException("DCAM initialization failed with error code " + str(error_code))
 
@@ -900,7 +885,7 @@ class CameraUI(QMainWindow):
 
     def DisconnectCamera(self):
         self.hcam.shutdown()
-        dcam.dcamapi_uninit()
+        dcam.dcamapi_uninit()  # TODO undefined
         self.CamStatusLabel.setText("Camera disconnected.")
 
     def cam_connect_switch(self):
@@ -1615,7 +1600,7 @@ class CameraUI(QMainWindow):
     def closeEvent(self, event):
         try:
             self.hcam.shutdown()
-            dcam.dcamapi_uninit()
+            dcam.dcamapi_uninit()  # TODO undefined
         except:
             pass
         self.close()

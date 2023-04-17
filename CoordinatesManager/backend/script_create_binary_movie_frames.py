@@ -8,7 +8,6 @@ Created on Wed May 20 15:46:40 2020
 
 import skimage.filters
 import skimage.io
-import numpy as np
 import matplotlib.pyplot as plt
 import os
 import cv2

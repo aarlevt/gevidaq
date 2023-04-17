@@ -24,7 +24,7 @@ class FiltermovementThread(QThread):
 
         self.filtercurrent_position.emit(self.filter_current_position)
 
-    def get_pos():
+    def get_pos(self):
         self.filter_current_position = self.filter1.getPosition()
 
         return self.filter_current_position

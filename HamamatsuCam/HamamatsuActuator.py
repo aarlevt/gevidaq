@@ -8,19 +8,18 @@ Created on Wed May 27 17:14:53 2020
 import sys
 import os
 
+import numpy as np
+import tifffile as skimtiff
+import ctypes
+import time
+import threading
+
 try:
-    from HamamatsuDCAM import *
+    from HamamatsuDCAM import *  # TODO star import
 except:
     from HamamatsuCam.HamamatsuDCAM import *
 # Append parent folder to system path
 sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-
-import numpy as np
-from PIL import Image
-import skimage.external.tifffile as skimtiff
-import ctypes
-import time
-import threading
 
 # =============================================================================
 # Script based Hamamatsu camera operations
@@ -70,7 +69,7 @@ class CamActuator:
 
         paraminit = DCAMAPI_INIT(0, 0, 0, 0, None, None)
         paraminit.size = ctypes.sizeof(paraminit)
-        error_code = self.dcam.dcamapi_init(ctypes.byref(paraminit))
+        error_code = self.dcam.dcamapi_init(ctypes.byref(paraminit))  # TODO unused
         # if (error_code != DCAMERR_NOERROR):
         #    raise DCAMException("DCAM initialization failed with error code " + str(error_code))
 
@@ -296,11 +295,6 @@ class CamActuator:
 
 
 if __name__ == "__main__":
-
-    import time
-    import random
-    import numpy as np
-
     #
     # Initialization
     # Load dcamapi.dll version 19.12.641.5901

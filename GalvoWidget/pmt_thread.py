@@ -8,21 +8,16 @@ Notes:
 
 """
 import nidaqmx
-from nidaqmx.stream_readers import AnalogMultiChannelReader
-from nidaqmx.stream_writers import AnalogSingleChannelWriter
-from nidaqmx.constants import AcquisitionType, TaskMode
-from nidaqmx.stream_writers import AnalogMultiChannelWriter, DigitalMultiChannelWriter
+from nidaqmx.stream_writers import AnalogMultiChannelWriter
 from nidaqmx.stream_readers import AnalogSingleChannelReader
 from PyQt5.QtCore import pyqtSignal, QThread
+import numpy as np
 
 import sys
 
 sys.path.append("../")
 
-import numpy as np
 import NIDAQ.wavegenerator
-from NIDAQ.wavegenerator import blockWave
-from NIDAQ.constants import MeasurementConstants
 
 # =============================================================================
 # For continuous raster scanning

@@ -5,9 +5,8 @@ Created on Fri Sep 25 15:14:54 2020
 @author: xinmeng
 """
 
-import os
 import time
-from ctypes import *
+import ctypes
 
 
 class KCube:
@@ -27,16 +26,16 @@ class KCube:
         super().__init__(*args, **kwargs)
 
         # Set up serial number variable
-        self.serialNumber = c_char_p("28251139".encode("utf-8"))
+        self.serialNumber = ctypes.c_char_p("28251139".encode("utf-8"))  # TODO magic number
 
         self.moveTimeout = 60.0
-        self.messageType = c_ushort()
-        self.messageID = c_ushort()
-        self.messageData = c_ulong()
+        self.messageType = ctypes.c_ushort()
+        self.messageID = ctypes.c_ushort()
+        self.messageData = ctypes.c_ulong()
 
     def initialize(self):
         # Load the dll file.
-        self.lib = cdll.LoadLibrary(
+        self.lib = ctypes.cdll.LoadLibrary(
             r"C:\Labsoftware\Thorlabs\Thorlabs.MotionControl.KCube.BrushlessMotor.dll"
         )
 
@@ -45,7 +44,7 @@ class KCube:
 
         # Set up device
         self.lib.BMC_Open(self.serialNumber)
-        self.lib.BMC_StartPolling(self.serialNumber, c_int(200))
+        self.lib.BMC_StartPolling(self.serialNumber, ctypes.c_int(200))
         self.lib.BMC_EnableChannel(self.serialNumber)
 
         time.sleep(3)
@@ -63,9 +62,9 @@ class KCube:
         while homed == False:
             self.lib.BMC_GetNextMessage(
                 self.serialNumber,
-                byref(self.messageType),
-                byref(self.messageID),
-                byref(self.messageData),
+                ctypes.byref(self.messageType),
+                ctypes.byref(self.messageID),
+                ctypes.byref(self.messageData),
             )
             if (self.messageID.value == 0 and self.messageType.value == 2) or (
                 time.time() - homeStartTime
@@ -75,17 +74,17 @@ class KCube:
 
     def Move(self, pos):
         # Move to absolue position, in mm.
-        deviceUnit = c_int()
+        deviceUnit = ctypes.c_int()
 
         # here, we move to position in real units (mm)
-        realUnit = c_double(pos)
+        realUnit = ctypes.c_double(pos)
 
         # Load settings for attached stage
         self.lib.BMC_LoadSettings(self.serialNumber)
 
         # Convert real units to device units
         self.lib.BMC_GetDeviceUnitFromRealValue(
-            self.serialNumber, realUnit, byref(deviceUnit), 0
+            self.serialNumber, realUnit, ctypes.byref(deviceUnit), 0
         )
 
         # Send move command
@@ -99,9 +98,9 @@ class KCube:
         while moved == False:
             self.lib.BMC_GetNextMessage(
                 self.serialNumber,
-                byref(self.messageType),
-                byref(self.messageID),
-                byref(self.messageData),
+                ctypes.byref(self.messageType),
+                ctypes.byref(self.messageID),
+                ctypes.byref(self.messageData),
             )
 
             if (self.messageID.value == 1 and self.messageType.value == 2) or (

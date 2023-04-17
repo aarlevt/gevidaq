@@ -70,7 +70,7 @@ class ContinuousPatchThread(QThread):
             readTask.export_signals.samp_clk_output_term = self.configs["clock2Channel"]
             writeClock = self.configs["clock1Channel"]
         else:
-            assert (True, "No corresponding clocks defined")
+            assert (True, "No corresponding clocks defined")  # TODO use exception
 
         readTask.timing.cfg_samp_clk_timing(
             rate=self.sampleRate,
@@ -214,7 +214,7 @@ class ContinuousPatchThread_hold(QThread):
             readTask.export_signals.samp_clk_output_term = self.configs["clock2Channel"]
             writeClock = self.configs["clock1Channel"]
         else:
-            assert (True, "No corresponding clocks defined")
+            assert (True, "No corresponding clocks defined")  # TODO use exception
 
         readTask.timing.cfg_samp_clk_timing(
             rate=self.sampleRate,
@@ -359,7 +359,7 @@ class ContinuousPatchThread_currentclamp(QThread):
             readTask.export_signals.samp_clk_output_term = self.configs["clock2Channel"]
             writeClock = self.configs["clock1Channel"]
         else:
-            assert (True, "No corresponding clocks defined")
+            assert (True, "No corresponding clocks defined")  # TODO use exception
 
         readTask.timing.cfg_samp_clk_timing(
             rate=self.sampleRate,
@@ -499,7 +499,7 @@ class ContinuousPatchThread_zap(QThread):
             readTask.export_signals.samp_clk_output_term = self.configs["clock2Channel"]
             writeClock = self.configs["clock1Channel"]
         else:
-            assert (True, "No corresponding clocks defined")
+            assert (True, "No corresponding clocks defined")  # TODO use exception
 
         readTask.timing.cfg_samp_clk_timing(
             rate=self.sampleRate,
@@ -530,7 +530,7 @@ class ContinuousPatchThread_zap(QThread):
 
             self.setTiming(writeTask, readTask)
 
-            reader = AnalogMultiChannelReader(readTask.in_stream)
+            reader = AnalogMultiChannelReader(readTask.in_stream)  # TODO unused
             writer = AnalogSingleChannelWriter(writeTask.out_stream)
 
             writer.write_many_sample(self.wave)

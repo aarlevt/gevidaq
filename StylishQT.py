@@ -10,17 +10,13 @@ from PyQt5 import QtWidgets, QtCore, QtGui
 from PyQt5.QtCore import (
     Qt,
     pyqtSignal,
-    QRectF,
     QPoint,
     QRect,
-    QObject,
     QSize,
     QAbstractAnimation,
     QVariantAnimation,
 )
 from PyQt5.QtGui import (
-    QImage,
-    QPalette,
     QBrush,
     QFont,
     QPainter,
@@ -30,40 +26,10 @@ from PyQt5.QtGui import (
     QPixmap,
 )
 
-from PyQt5.QtWidgets import (
-    QWidget,
-    QButtonGroup,
-    QLabel,
-    QSlider,
-    QSpinBox,
-    QDoubleSpinBox,
-    QGridLayout,
-    QPushButton,
-    QGroupBox,
-    QStyle,
-    QLineEdit,
-    QVBoxLayout,
-    QHBoxLayout,
-    QComboBox,
-    QMessageBox,
-    QTabWidget,
-    QCheckBox,
-    QRadioButton,
-    QStyleOptionSlider,
-    QFileDialog,
-    QProgressBar,
-    QTextEdit,
-    QStyleFactory,
-    QMainWindow,
-    QMenu,
-    QAction,
-    QGraphicsDropShadowEffect,
-)
-
 import pyqtgraph as pg
 
 
-class roundQGroupBox(QGroupBox):
+class roundQGroupBox(QtWidgets.QGroupBox):
     def __init__(self, title=None, background_color=None, *args, **kwargs):
         super().__init__(*args, **kwargs)
         """
@@ -129,7 +95,7 @@ class FancyPushButton(QtWidgets.QPushButton):
 
         #        self.setStyleSheet("QPushButton:disabled {color:white;background-color: grey; border-style: outset;border-radius: 8px;border-width: 2px;font: bold 12px;padding: 6px}")
         self.setGraphicsEffect(
-            QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
+            QtWidgets.QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
         )
 
     def _animate(self, value):
@@ -182,7 +148,7 @@ class MySwitch(QtWidgets.QPushButton):
         self.width = width
         self.font_size = font_size
         self.setGraphicsEffect(
-            QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
+            QtWidgets.QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
         )
 
     def paintEvent(self, event):
@@ -236,7 +202,7 @@ class GeneralFancyButton(QtWidgets.QPushButton):
         self.setFixedHeight(32)
         self.setIconSize(QSize(30, 30))
         self.setGraphicsEffect(
-            QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
+            QtWidgets.QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
         )
         # self.setToolTip("Execute")
 
@@ -258,7 +224,7 @@ class runButton(QtWidgets.QPushButton):
         self.setFixedHeight(32)
         self.setIconSize(QSize(30, 30))
         self.setGraphicsEffect(
-            QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
+            QtWidgets.QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
         )
         self.setToolTip("Execute")
 
@@ -279,7 +245,7 @@ class stop_deleteButton(QtWidgets.QPushButton):
         self.setStyleSheet(StyleSheet)
         self.setFixedHeight(32)
         self.setGraphicsEffect(
-            QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
+            QtWidgets.QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
         )
         self.setToolTip("Stop/Delete")
 
@@ -301,7 +267,7 @@ class cleanButton(QtWidgets.QPushButton):
         self.setText(label)
         self.setFixedHeight(32)
         self.setGraphicsEffect(
-            QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
+            QtWidgets.QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
         )
         self.setToolTip("Clear")
 
@@ -326,7 +292,7 @@ class checkableButton(QtWidgets.QPushButton):
         self.setStyleSheet(StyleSheet)
         self.setText(label)
         self.setGraphicsEffect(
-            QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
+            QtWidgets.QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
         )
 
 
@@ -346,7 +312,7 @@ class saveButton(QtWidgets.QPushButton):
         self.setStyleSheet(StyleSheet)
         self.setFixedHeight(32)
         self.setGraphicsEffect(
-            QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
+            QtWidgets.QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
         )
         self.setToolTip("Save")
 
@@ -367,7 +333,7 @@ class addButton(QtWidgets.QPushButton):
         self.setStyleSheet(StyleSheet)
         self.setFixedHeight(32)
         self.setGraphicsEffect(
-            QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
+            QtWidgets.QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
         )
         self.setToolTip("Add")
 
@@ -388,7 +354,7 @@ class generateButton(QtWidgets.QPushButton):
         self.setStyleSheet(StyleSheet)
         self.setFixedHeight(32)
         self.setGraphicsEffect(
-            QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
+            QtWidgets.QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
         )
         self.setToolTip("Generate/Configure")
 
@@ -411,7 +377,7 @@ class connectButton(QtWidgets.QPushButton):
 
         self.setFixedHeight(30)
         self.setGraphicsEffect(
-            QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
+            QtWidgets.QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
         )
 
         icon = QIcon()
@@ -438,7 +404,7 @@ class loadButton(QtWidgets.QPushButton):
         self.setFixedHeight(32)
         self.setIconSize(QSize(30, 30))
         self.setGraphicsEffect(
-            QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
+            QtWidgets.QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
         )
         self.setToolTip("Load from file")
 
@@ -459,7 +425,7 @@ class disconnectButton(QtWidgets.QPushButton):
 
         self.setFixedHeight(30)
         self.setGraphicsEffect(
-            QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
+            QtWidgets.QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
         )
         self.setToolTip("Disconnect")
 
@@ -632,13 +598,13 @@ class LabeledSlider(QtWidgets.QWidget):
 
         style = self.sl.style()
         painter = QPainter(self)
-        st_slider = QStyleOptionSlider()
+        st_slider = QtWidgets.QStyleOptionSlider()
         st_slider.initFrom(self.sl)
         st_slider.orientation = self.sl.orientation()
 
-        length = style.pixelMetric(QStyle.PM_SliderLength, st_slider, self.sl)
+        length = style.pixelMetric(QtWidgets.QStyle.PM_SliderLength, st_slider, self.sl)
         available = style.pixelMetric(
-            QStyle.PM_SliderSpaceAvailable, st_slider, self.sl
+            QtWidgets.QStyle.PM_SliderSpaceAvailable, st_slider, self.sl
         )
 
         for v, v_str in self.levels:
@@ -650,7 +616,7 @@ class LabeledSlider(QtWidgets.QWidget):
                 # I assume the offset is half the length of slider, therefore
                 # + length//2
                 x_loc = (
-                    QStyle.sliderPositionFromValue(
+                    QtWidgets.QStyle.sliderPositionFromValue(
                         self.sl.minimum(), self.sl.maximum(), v, available
                     )
                     + length // 2
@@ -684,7 +650,7 @@ class LabeledSlider(QtWidgets.QWidget):
                     )
 
             else:
-                y_loc = QStyle.sliderPositionFromValue(
+                y_loc = QtWidgets.QStyle.sliderPositionFromValue(
                     self.sl.minimum(), self.sl.maximum(), v, available, upsideDown=True
                 )
 

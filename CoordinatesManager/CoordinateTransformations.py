@@ -11,7 +11,6 @@ Modified based on Izak's code for higher level interface.
 
 from scipy import optimize
 import numpy as np
-import matplotlib.pyplot as plt
 import os
 
 if __name__ == "__main__":

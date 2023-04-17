@@ -7,37 +7,18 @@ Created on Thu May  7 15:50:10 2020
 
 import numpy as np
 import matplotlib.pyplot as plt
-from skimage.morphology import (
-    closing,
-    square,
-    opening,
-    reconstruction,
-    skeletonize,
-    convex_hull_image,
-    dilation,
-    thin,
-    binary_erosion,
-    disk,
-)
 import skimage.external.tifffile as skimtiff
 from datetime import datetime
 from skimage.io import imread
-from scipy import ndimage
 import os
 import plotly.express as px
-
-# Ensure that the Widget can be run either independently or as part of Tupolev.
-if __name__ == "__main__":
-    abspath = os.path.abspath(__file__)
-    dname = os.path.dirname(abspath)
-    os.chdir(dname + "/../")
 
 # ----------------------------------TF-2----------------------------------------
 
 from MaskRCNN.Configurations.ConfigFileInferenceOld import cellConfig
 from MaskRCNN.Engine.MaskRCNN import MaskRCNN as modellib
 import MaskRCNN.Miscellaneous.visualize as visualize
-from ImageAnalysis.ImageProcessing import ProcessImage
+from .ImageProcessing import ProcessImage
 
 # ================================================================ProcessImage===============================================
 class ProcessImageML:
@@ -376,7 +357,7 @@ class ProcessImageML:
                         # Set back to uint
                         Rawimage = Rawimage.astype(np.uint16)
 
-                        camera_dark_level = 100
+                        # camera_dark_level = 100
 
                         # # Normalize to the illumination intensity
                         # Rawimage = np.uint16(Rawimage \
@@ -414,7 +395,7 @@ class ProcessImageML:
                         fig.tight_layout()
                         # Save the detection image
                         fig_name = os.path.join(
-                            folder, "MLimages_{}\{}.tif".format(round_num, ImgNameInfor)
+                            folder, "MLimages_{}/{}.tif".format(round_num, ImgNameInfor)
                         )
                         plt.savefig(
                             fname=fig_name, dpi=200, pad_inches=0.0, bbox_inches="tight"
@@ -584,7 +565,7 @@ class ProcessImageML:
             if background_substraction == True:
                 Rawimage = np.abs(Rawimage - background_image).astype(np.uint16)
 
-                camera_dark_level = 100
+                # camera_dark_level = 100
 
                 # # Normalize to the illumination intensity
                 # Rawimage = np.uint16(Rawimage \
@@ -762,18 +743,6 @@ class ProcessImageML:
             class_names=[None, None, None, None],
             )
 
-        Gap_Weight1 = np.triu(Gap_Weight)
-        Gap_weight = Gap_Weight1 + Gap_Weight1.T - np.diag(np.diag(Gap_Weight1))
-
-        Pre_Network = np.array(Pre_Network)
-        Post_Network = np.array(Post_Network)
-
-        # np.save('Size',Area)
-        # np.save('Gap_Weight',Gap_Weight)
-        # np.save('Pre_Network',Pre_Network)
-        # np.save('Post_Network',Post_Network)
-        # np.save('Center_Coor',Center_Coor)
-
     #%%
 def showPlotlyScatter(self, DataFrame, x_axis, y_axis, saving_directory):
         """
@@ -815,7 +784,6 @@ def showPlotlyScatter(self, DataFrame, x_axis, y_axis, saving_directory):
 
 if __name__ == "__main__":
     import skimage
-    import time
     # from skimage.io import imread
     # =============================================================================
 

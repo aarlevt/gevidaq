@@ -10,7 +10,7 @@ Part of this code was derived from:
 """
 from __future__ import division
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QColor, QPen, QPixmap
 from PyQt5.QtWidgets import (
     QWidget,
@@ -21,9 +21,7 @@ from PyQt5.QtWidgets import (
     QGroupBox,
     QLineEdit,
     QVBoxLayout,
-    QHBoxLayout,
     QComboBox,
-    QMessageBox,
     QSpinBox,
     QTabWidget,
 )
@@ -34,10 +32,10 @@ import time
 import os
 import sys
 
-sys.path.append("../")
 import numpy as np
 import math
-from scipy.optimize import curve_fit
+
+sys.path.append("../")
 
 from PatchClamp.patchclamp import (
     PatchclampSealTest,
@@ -81,7 +79,7 @@ class SlidingWindow(pg.PlotWidget):
 
         self.pen = QPen()
         self.pen.setColor(QColor(145, 255, 244))
-        self.pen.setWidth(0.7)
+        self.pen.setWidthF(0.7)
         self.pen.setStyle(Qt.DashLine)
         self.plotData = self.plot(
             pen=self.pen

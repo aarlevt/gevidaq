@@ -10,44 +10,19 @@ import sys
 
 sys.path.append("../")
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import Qt, pyqtSignal, QRectF, QPoint, QRect, QObject
-from PyQt5.QtGui import (
-    QColor,
-    QPen,
-    QPixmap,
-    QIcon,
-    QTextCursor,
-    QFont,
-    QPainter,
-    QBrush,
-)
+from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtGui import QFont
 
 from PyQt5.QtWidgets import (
     QWidget,
-    QButtonGroup,
     QLabel,
     QSlider,
-    QSpinBox,
-    QDoubleSpinBox,
     QGridLayout,
-    QPushButton,
-    QGroupBox,
     QLineEdit,
-    QVBoxLayout,
-    QHBoxLayout,
-    QComboBox,
-    QMessageBox,
-    QTabWidget,
-    QCheckBox,
-    QRadioButton,
-    QFileDialog,
-    QProgressBar,
-    QTextEdit,
     QStackedLayout,
 )
 
 import pyqtgraph as pg
-import time
 import threading
 import os
 

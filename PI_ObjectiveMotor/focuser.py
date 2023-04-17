@@ -4,7 +4,6 @@ Created on Thu Mar 21 14:41:41 2019
 
 @author: xinmeng
 """
-import sys
 import os
 import time
 
@@ -39,10 +38,10 @@ class PIMotor:
 
         """
         try:
-            CONTROLLERNAME = "C-863.11"
+            CONTROLLERNAME = "C-863.11"  # TODO unused
             # STAGES = None
-            STAGES = "M-110.1DG"
-            REFMODE = "FNL"
+            STAGES = "M-110.1DG"  # TODO unused
+            REFMODE = "FNL"  # TODO unused
 
             # Get the path to dll in the same folder.
             abspath = os.path.abspath(__file__)

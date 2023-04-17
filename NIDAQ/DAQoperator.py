@@ -12,13 +12,8 @@ READIN TASK HAS TO START AHEAD OF READ MANY SAMPLES, OTHERWISE ITS NOT in SYN!!!
 # import time
 import nidaqmx
 import numpy as np
-from nidaqmx.constants import AcquisitionType, TaskMode, LineGrouping, Signal
-from nidaqmx.stream_writers import (
-    AnalogMultiChannelWriter,
-    DigitalMultiChannelWriter,
-    DigitalSingleChannelWriter,
-)
-from nidaqmx.stream_readers import AnalogSingleChannelReader, AnalogMultiChannelReader
+from nidaqmx.constants import AcquisitionType, LineGrouping
+from nidaqmx.stream_readers import AnalogMultiChannelReader
 from datetime import datetime
 import os
 from PyQt5.QtCore import pyqtSignal, QThread
@@ -864,7 +859,7 @@ class DAQmission(
             # some preparations for digital lines
             Waveforms_length = len(digital_signals["Waveform"][0])
 
-            digitalsignalslinenumber = len(digital_signals["Waveform"])
+            digitalsignalslinenumber = len(digital_signals["Waveform"])  # TODO unused
 
             # Assume that dev1 is always employed
             with nidaqmx.Task() as slave_Task_2_digitallines:

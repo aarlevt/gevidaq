@@ -8,36 +8,11 @@ Created on Mon Sep 28 11:42:01 2020
 from __future__ import division
 import sys
 from PyQt5 import QtWidgets
-from PyQt5.QtCore import Qt, pyqtSignal, QRectF, QPoint, QRect, QObject, QSize
-from PyQt5.QtGui import QImage, QPalette, QBrush, QFont
+from PyQt5.QtGui import QFont
 
-from PyQt5.QtWidgets import (
-    QWidget,
-    QButtonGroup,
-    QLabel,
-    QSlider,
-    QSpinBox,
-    QDoubleSpinBox,
-    QGridLayout,
-    QPushButton,
-    QGroupBox,
-    QLineEdit,
-    QVBoxLayout,
-    QHBoxLayout,
-    QComboBox,
-    QMessageBox,
-    QTabWidget,
-    QCheckBox,
-    QRadioButton,
-    QFileDialog,
-    QProgressBar,
-    QTextEdit,
-    QDial,
-)
+from PyQt5.QtWidgets import QWidget, QGridLayout
 
-import time
 import threading
-import sys
 import os
 
 # Ensure that the Widget can be run either independently or as part of Tupolev.

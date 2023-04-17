@@ -21,7 +21,8 @@ class PatchClampImageProcessing:
         x = np.arange(0, size[0], 1, float)
         y = np.arange(0, size[1], 1, float)
 
-        gauss = lambda x,mu,sigma: np.exp((-(x-mu)**2)/(2*sigma**2))
+        def gauss(x,mu,sigma):
+            return np.exp((-(x-mu)**2)/(2*sigma**2))
 
         xs = gauss(x, mu[0], sigma[0])
         ys = gauss(y, mu[1], sigma[1])

@@ -20,64 +20,46 @@ if __name__ == "__main__":
 
 # Backend
 
-from CoordinatesManager.backend.readRegistrationImages import touchingCoordinateFinder
-from CoordinatesManager.backend.polynomialTransformation import polynomialRegression
 from CoordinatesManager.backend.Registrator import RegistrationThread
 from CoordinatesManager import DMDActuator
 from CoordinatesManager import ManualRegistration
 
-from NIDAQ.DAQoperator import DAQmission
-from NIDAQ.generalDaqerThread import execute_analog_readin_optional_digital_thread
-from NIDAQ.wavegenerator import waveRecPic
 
 from ImageAnalysis.ImageProcessing import ProcessImage
 from HamamatsuCam.HamamatsuActuator import CamActuator
 from GalvoWidget.pmt_thread import pmtimagingTest_contour
 
 # UI
-from CoordinatesManager.ui_widgets.adaptedQButtonGroupClass import adaptedQButtonGroup
 from CoordinatesManager.ui_widgets.DrawingWidget import DrawingWidget
-from CoordinatesManager.ui_widgets.SelectPointImageView import SelectPointImageView
 
 from PyQt5 import QtWidgets, QtCore
 from PyQt5.QtWidgets import (
     QWidget,
     QPushButton,
-    QRadioButton,
     QVBoxLayout,
     QCheckBox,
     QGridLayout,
     QHBoxLayout,
-    QVBoxLayout,
     QGroupBox,
-    QTabWidget,
-    QGraphicsView,
-    QGraphicsScene,
-    QListWidget,
-    QSizePolicy,
     QLabel,
     QComboBox,
-    QLayout,
     QStackedWidget,
     QSpinBox,
 )
 
-from PyQt5.QtCore import QThread, pyqtSignal, Qt
+from PyQt5.QtCore import pyqtSignal, Qt
 from StylishQT import MySwitch, roundQGroupBox, SquareImageView
 
 import pyqtgraph as pg
 from pyqtgraph import QtGui
 
 # Image processing
-from skimage.draw import line, polygon2mask, polygon_perimeter
-from skimage.morphology import binary_dilation
+from skimage.draw import polygon2mask
 from PIL import Image
 
 # General libraries
 import threading
-import sys
 import numpy as np
-import time
 import datetime
 import matplotlib.pyplot as plt
 
@@ -754,7 +736,7 @@ class CoordinatesWidgetUI(QWidget):
             view = self.selection_view_532
             roi_list = self.roi_list_532
         else:
-            view = self.selection_view_488
+            view = self.selection_view_488  # TODO unused
             roi_list = self.roi_list_488
 
         roi_list.append(roi)
@@ -1007,7 +989,7 @@ class DMDWidget:
 
         # Load the Vialux .dll
         cdir = os.getcwd() + "\\CoordinateManager"
-        self.DMD = ALP4(
+        self.DMD = ALP4(  # TODO undefined
             version="4.3", libDir=r"" + cdir
         )  # Use version 4.3 for the alp4395.dll
 
@@ -1233,10 +1215,10 @@ class DMDWidget:
         image.save("CoordinateManager/Saved_masks/" + image_id + ".png", "PNG")
 
     def galvos_scan_mask(self):
-        reference_length = 100
-        tp_digital = np.dtype(
-            [("Waveform", bool, (reference_length,)), ("Sepcification", "U20")]
-        )
+        # reference_length = 100
+        # tp_digital = np.dtype(
+        #     [("Waveform", bool, (reference_length,)), ("Sepcification", "U20")]
+        # )
 
         if len(self.ui_widget.roi_list_2p) == 0:
             self.ui_widget.normalOutputWritten(
@@ -1282,8 +1264,8 @@ class DMDWidget:
             repeats=1,
         )
 
-        readinchan = []
-        digitalcontainer_array = np.zeros(0, dtype=tp_digital)  # len(...) = 0
+        # readinchan = []
+        # digitalcontainer_array = np.zeros(0, dtype=tp_digital)  # len(...) = 0
 
         self.galvoThread = pmtimagingTest_contour()
 
@@ -1375,7 +1357,7 @@ class DMDWidget:
 
             laser = self.ui_widget.drawing_laser
             if "camera-dmd-" + laser in self.dict_transformations.keys():
-                mask_transformed = np.zeros((1024, 768))
+                mask_transformed = np.zeros((1024, 768))  # TODO unused
                 vertices_transformed = transform(
                     vertices, self.dict_transformations["camera-dmd-" + laser]
                 )
@@ -1524,7 +1506,7 @@ class DMDWidget:
         )
 
     def dmd_register_func(self, lasers_to_register):
-        thread = Registrator.DMDRegistrator()
+        thread = Registrator.DMDRegistrator()  # TODO undefined
         for laser, idx in enumerate(lasers_to_register):
             transformation = thread.registration(laser)
 
@@ -1638,7 +1620,7 @@ class DMDWidget:
         self.ui_widget.update_buttons()
 
 
-def transform(r, A):
+def transform(r, A):  # TODO unused
     """
     This function takes points as input and returns the
     transformed points.

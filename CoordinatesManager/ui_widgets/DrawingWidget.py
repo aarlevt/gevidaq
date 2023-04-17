@@ -6,29 +6,10 @@ Created on Wed May  6 11:26:55 2020
 @author: Izak de Heer
 """
 
-from PyQt5 import QtWidgets, QtCore
-from PyQt5.QtWidgets import (
-    QWidget,
-    QPushButton,
-    QRadioButton,
-    QVBoxLayout,
-    QCheckBox,
-    QGridLayout,
-    QGroupBox,
-    QTabWidget,
-    QGraphicsView,
-    QGraphicsScene,
-    QListWidget,
-    QLabel,
-)
-from PyQt5.QtCore import QThread, pyqtSignal, QSize, Qt
+from PyQt5 import QtCore
 
 import pyqtgraph as pg
 from pyqtgraph import QtGui
-
-import sys
-
-import numpy as np
 
 
 class DrawingWidget(pg.ImageView):
@@ -127,6 +108,6 @@ class DrawingWidget(pg.ImageView):
     #     """
     #     # Create a square base size of 10x10 and scale it to the new size
     #     # maintaining aspect ratio.
-    #     new_size = QSize(10, 10)
-    #     new_size.scale(event.size(), Qt.KeepAspectRatio)
+    #     new_size = QtCore.QSize(10, 10)
+    #     new_size.scale(event.size(), QtCore.Qt.KeepAspectRatio)
     #     self.resize(new_size)

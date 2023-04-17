@@ -5,34 +5,14 @@ Created on Thu Jul  9 23:23:58 2020
 @author: ideheer
 """
 
-from PyQt5 import QtWidgets, QtCore
+from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import (
     QWidget,
     QPushButton,
-    QRadioButton,
-    QVBoxLayout,
-    QCheckBox,
     QGridLayout,
-    QHBoxLayout,
-    QVBoxLayout,
-    QGroupBox,
-    QTabWidget,
-    QGraphicsView,
-    QGraphicsScene,
-    QListWidget,
-    QSizePolicy,
-    QLabel,
-    QComboBox,
-    QLayout,
-    QStackedWidget,
-    QSpinBox,
-    QLineEdit,
 )
 
-from PyQt5.QtCore import QThread, pyqtSignal, Qt
-from PyQt5 import QtGui
-
-from StylishQT import MySwitch, roundQGroupBox, SquareImageView
+from StylishQT import roundQGroupBox
 
 from SampleStageControl.stage import LudlStage
 from HamamatsuCam.HamamatsuActuator import CamActuator
@@ -42,7 +22,6 @@ import os
 
 import matplotlib.pyplot as plt
 import numpy as np
-import time
 
 """
 The goal of this widget is to snap a lot of images that can be used for stage
