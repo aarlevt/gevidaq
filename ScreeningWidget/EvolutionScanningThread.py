@@ -270,33 +270,33 @@ class ScanningExecutionThread(QThread):
                         # for _ in range(2): # Repeat twice
                         #     self.ludlStage.moveAbs(RowIndex,ColumnIndex) # Row/Column indexs of np.array are opposite of stage row-col indexs.
                         #     time.sleep(1)
-                        
+
                         move_executed = False
                         trial_number = 0
-                        
+
                         while move_executed == False:
-                            
+
                             # Row/Column indexs of np.array are opposite of stage row-col indexs.
                             self.ludlStage.moveAbs(
                                 RowIndex, ColumnIndex
-                            )  
+                            )
                             time.sleep(1.5)
-                            
+
                             # Check the position again
                             row_Position, col_Position = self.ludlStage.getPos()
                             print("=== Get pos: {},{} ===".format(row_Position, col_Position))
-                            
+
                             if row_Position == RowIndex and col_Position == ColumnIndex:
                                 move_executed = True
-                                
+
                             trial_number += 1
-                            
+
                             if trial_number >= 2:
                                 print("Move failed")
                                 self.error_massage = "Fail_MoveStage"
                                 self.errornum += 1
                                 break
-                            
+
                         print(
                             "==================Stage move to {}==================".format(
                                 [RowIndex, ColumnIndex]
@@ -391,7 +391,7 @@ class ScanningExecutionThread(QThread):
                                     print(
                                         "Focus degree decreasing, run the other direction."
                                     )
-                                    
+
                                     self.focus_degree_decreasing = True
                             # -------------------------------------------------
 
@@ -500,11 +500,11 @@ class ScanningExecutionThread(QThread):
 
                         time.sleep(0.6)  # Wait for receiving data to be done.
                     time.sleep(0.5)
-                    
+
                     print(
                         "*************************************************************************************************************************"
                     )
-                    
+
                 # Time out for each round
                 time.sleep(1*0.5)
 
@@ -536,7 +536,7 @@ class ScanningExecutionThread(QThread):
             print("Objective motor disconnected.")
         except:
             pass
-        
+
         print("Error number: {}".format(self.errornum))
     #%%
     def laser_init(self, EachRound):
@@ -1160,7 +1160,7 @@ class ScanningExecutionThread(QThread):
         )
         self.adcollector.save_as_binary(self.scansavedirectory)
         self.recorded_raw_data = self.adcollector.get_raw_data()
-        
+
         # Reconstruct the image from np array and save it.
         self.Process_raw_data()
 
@@ -1347,7 +1347,7 @@ class ScanningExecutionThread(QThread):
                             # is increasing, delete the 1st image from the max-projection
                             # stack as it's the worst, else if focus degree of the 2nd image
                             # is decreasing, delete the 2nd as it's the worst.
-                            
+
                             if self.ditch_worst_focus == True:
                                 if self.ZStackOrder >= 3:
                                     if self.focus_degree_decreasing == False:
@@ -1357,8 +1357,8 @@ class ScanningExecutionThread(QThread):
                                     else:
                                         # Delete the 2nd image.
                                         self.PMT_image_maxprojection_stack = np.delete(
-                                            self.PMT_image_maxprojection_stack, 1,axis = 0)                       
-                            
+                                            self.PMT_image_maxprojection_stack, 1,axis = 0)
+
                             # Stack the newest image onto the max-projection stack.
                             self.PMT_image_maxprojection_stack = np.concatenate(
                                 (

@@ -45,9 +45,9 @@ import numpy as np
 import time
 
 """
-The goal of this widget is to snap a lot of images that can be used for stage 
+The goal of this widget is to snap a lot of images that can be used for stage
 registration. Analysis of the images should be done manually, because it appears
-to be hard to do this in an automated fashion. 
+to be hard to do this in an automated fashion.
 """
 
 

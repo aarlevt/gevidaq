@@ -75,10 +75,10 @@ class PMTWidgetUI(QWidget):
 
         self.savedirectory = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\pmt_image_default_dump"
         self.prefixtextboxtext = "_fromGalvoWidget"
-        
+
         self.contour_ROI_signals_dict = {}
         self.contour_ROI_handles_dict = {}
-        
+
         self.clicked_points_list = []
         self.flag_is_drawing = False
         # **************************************************************************************************************************************
@@ -88,7 +88,7 @@ class PMTWidgetUI(QWidget):
         # **************************************************************************************************************************************
         pmtimageContainer = StylishQT.roundQGroupBox(title="PMT image")
         self.pmtimageLayout = QGridLayout()
-        
+
         self.pmtvideoWidget = pg.ImageView()
         self.pmtvideoWidget.ui.roiBtn.hide()
         self.pmtvideoWidget.ui.menuBtn.hide()
@@ -101,7 +101,7 @@ class PMTWidgetUI(QWidget):
         self.pmt_roiwidget = pg.GraphicsLayoutWidget()
         self.pmt_roiwidget.resize(150, 150)
         self.pmt_roiwidget.addLabel("ROI", row=0, col=0)
-        
+
         self.pmtimageroiLayout.addWidget(self.pmt_roiwidget,0,0)
         # --------------------------- create ROI ------------------------------
         self.vb_2 = self.pmt_roiwidget.addViewBox(
@@ -117,7 +117,7 @@ class PMTWidgetUI(QWidget):
         self.ROIpen.setStyle(Qt.DashDotLine)
         self.ROIpen.setWidth(1)
         self.ROIpen.setBrush(QColor(0, 161, 255))
-        
+
         self.roi = pg.PolyLineROI(
             [[0, 0], [80, 0], [80, 80], [0, 80]], closed=True, pen=self.ROIpen
         )  # , maxBounds=r1
@@ -125,12 +125,12 @@ class PMTWidgetUI(QWidget):
         self.roi.sigHoverEvent.connect(
             lambda: self.show_handle_num(self.roi)
         )  # update handle numbers
-        
+
         self.pmtvb = self.pmtvideoWidget.getView()
-        
+
         self.pmtimageitem = self.pmtvideoWidget.getImageItem()
         # self.pmtvb.addItem(self.roi)  # add ROIs to main image
-            
+
         self.pmtvb.scene().sigMouseClicked.connect(self.generate_poly_roi)
 
         pmtimageContainer.setMinimumWidth(850)
@@ -174,7 +174,7 @@ class PMTWidgetUI(QWidget):
         self.contour_samprate.setSingleStep(50000)
         self.pmtContourLayout.addWidget(self.contour_samprate, 2, 1)
         self.pmtContourLayout.addWidget(QLabel("Sampling rate:"), 2, 0)
-        
+
         self.pmtContourLayout.addWidget(QLabel("Contour index:"), 3, 0)
         self.roi_index_spinbox = QSpinBox(self)
         self.roi_index_spinbox.setMinimum(1)
@@ -182,13 +182,13 @@ class PMTWidgetUI(QWidget):
         self.roi_index_spinbox.setValue(1)
         self.roi_index_spinbox.setSingleStep(1)
         self.pmtContourLayout.addWidget(self.roi_index_spinbox, 3, 1)
-        
+
         self.go_to_first_handle_button = StylishQT.GeneralFancyButton(label = "Go 1st point")
         self.go_to_first_handle_button.setFixedHeight(32)
         # self.pmtContourLayout.addWidget(self.go_to_first_handle_button, 4, 1)
         self.go_to_first_handle_button.clicked.connect(self.go_to_first_point)
         self.go_to_first_handle_button.setToolTip("Set gavlo initial positions in advance")
-        
+
         ROI_interaction_tips = QLabel("Hover for tips. Key F:en/disable drawing ROI")
         ROI_interaction_tips.setToolTip("Left drag moves the ROI\n\
 Left drag + Ctrl moves the ROI with position snapping\n\
@@ -197,34 +197,34 @@ Left drag + Alt + Ctrl rotates the ROI with angle snapping\n\
 Left drag + Shift scales the ROI\n\
 Left drag + Shift + Ctrl scales the ROI with size snapping")
         self.pmtContourLayout.addWidget(ROI_interaction_tips, 4, 0, 1, 2)
-        
+
         self.regenerate_roi_handle_button = StylishQT.GeneralFancyButton(label = "Regain ROI")
         self.regenerate_roi_handle_button.setFixedHeight(32)
         self.pmtContourLayout.addWidget(self.regenerate_roi_handle_button, 3, 2)
         self.regenerate_roi_handle_button.clicked.connect(self.regenerate_roi_handles)
-        
+
         self.reset_roi_handle_button = StylishQT.GeneralFancyButton(label = "Reset handles")
         self.reset_roi_handle_button.setFixedHeight(32)
         self.pmtContourLayout.addWidget(self.reset_roi_handle_button, 3, 3)
         self.reset_roi_handle_button.clicked.connect(self.reset_roi_handles)
-        
+
         # Button to add roi to stack
         self.add_roi_to_stack_button = StylishQT.addButton()
         self.add_roi_to_stack_button.setFixedHeight(32)
         self.pmtContourLayout.addWidget(self.add_roi_to_stack_button, 4, 2)
         self.add_roi_to_stack_button.clicked.connect(self.add_coordinates_to_list)
-        
+
         self.del_roi_in_stack_button = StylishQT.stop_deleteButton()
         self.del_roi_in_stack_button.setFixedHeight(32)
         self.del_roi_in_stack_button.clicked.connect(self.del_coordinates_from_list)
         self.pmtContourLayout.addWidget(self.del_roi_in_stack_button, 4, 3)
-    
+
         self.reset_roi_stack_button = StylishQT.cleanButton("Clear")
         self.reset_roi_stack_button.setFixedHeight(32)
         self.reset_roi_stack_button.setToolTip("Clear ROI info")
         self.pmtContourLayout.addWidget(self.reset_roi_stack_button, 5, 0)
         self.reset_roi_stack_button.clicked.connect(self.reset_coordinates_dict)
-        
+
         self.generate_contour_sacn = StylishQT.generateButton()
         self.pmtContourLayout.addWidget(self.generate_contour_sacn, 5, 1)
         self.generate_contour_sacn.clicked.connect(lambda: self.generate_final_contour_signals())
@@ -256,7 +256,7 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
         self.scanning_tabs = QTabWidget()
         self.scanning_tabs.setFixedWidth(280)
         self.scanning_tabs.setFixedHeight(320)
-        
+
         # ---------------------------- Continuous scanning -----------------------------------
         Continuous_widget = QWidget()
         controlLayout = QGridLayout()
@@ -375,7 +375,7 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
         self.stack_scanning_depth_spinbox.setSingleStep(0.001)
         self.stack_scanning_depth_spinbox.setValue(0.012)
         Zstack_Layout.addWidget(self.stack_scanning_depth_spinbox, 6, 1)
-        
+
         depth_label = QLabel("Depth(mm):")
         Zstack_Layout.addWidget(depth_label, 6, 0)
         depth_label.setToolTip(
@@ -438,42 +438,42 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
         """
         if not self.flag_is_drawing:
             return
-        
+
         x = int(event.pos().x())
         y = int(event.pos().y())
 
         qpoint_viewbox = self.pmtvb.mapSceneToView(QPoint(x, y))
         # Get the position of the curser
         point = [qpoint_viewbox.x(), qpoint_viewbox.y()]
-        
+
         self.clicked_points_list.append(point)
-        
+
         # if len(self.clicked_points_list) == 1:
         #     self.click_poly_roi = pg.ROI(point)
         #     self.pmtvb.addItem(self.click_poly_roi)
         # else:
         #     self.click_poly_roi.addFreeHandle(point)
-            
+
         if len(self.clicked_points_list) == 1:
             # In case of first click
             self.starting_point = self.clicked_points_list[0]
             self.starting_point_handle_position = [x, y]
-            
+
         elif len(self.clicked_points_list) == 2:
-            
+
             self.click_poly_roi = pg.PolyLineROI(
                 positions=[self.starting_point, point]
             )
-            
+
             self.click_poly_roi.sigHoverEvent.connect(
                 lambda: self.show_handle_num(self.click_poly_roi)
             )  # update handle numbers
-            
+
             # self.click_poly_roi.setPen(self.pen)
             self.pmtvb.addItem(self.click_poly_roi)
-            self.new_roi = False        
-            
-            
+            self.new_roi = False
+
+
         else:
             self.click_poly_roi.addFreeHandle(point)
 
@@ -491,7 +491,7 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
                 self.click_poly_roi.handles[0]["item"],
                 self.click_poly_roi.handles[-1]["item"],
             )
-            
+
     def keyPressEvent(self, event):
         # Toggle between drawing and not drawing roi states.
         if event.key() == 70: # If the 'f' key is pressed
@@ -500,7 +500,7 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
             else:
                 self.flag_is_drawing = True
                 self.new_roi = True
-            
+
     def buttonenabled(self, button, switch):
 
         if button == "rasterscan":
@@ -540,17 +540,17 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
         """
         try:
             self.Daq_sample_rate_pmt = int(self.continuous_scanning_sr_spinbox.value())
-    
+
             # Voltage settings, by default it's equal range square.
             self.Value_voltXMax = self.continuous_scanning_Vrange_spinbox.value()
             self.Value_voltXMin = self.Value_voltXMax * -1
             Value_voltYMin = self.Value_voltXMin
             Value_voltYMax = self.Value_voltXMax
-    
+
             self.Value_xPixels = int(self.Scanning_pixel_num_combobox.value())
             Value_yPixels = self.Value_xPixels
             self.averagenum = int(self.continuous_scanning_average_spinbox.value())
-    
+
             Totalscansamples = self.pmtTest.setWave(
                 self.Daq_sample_rate_pmt,
                 self.Value_voltXMin,
@@ -562,26 +562,26 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
                 self.averagenum,
             )
             time_per_frame_pmt = Totalscansamples / self.Daq_sample_rate_pmt
-    
+
             ScanArrayXnum = int((Totalscansamples / self.averagenum) / Value_yPixels)
-    
+
             # r1 = QRectF(500, 500, ScanArrayXnum, int(Value_yPixels))
             # self.pmtimageitem.setRect(r1)
-    
+
             self.pmtTest.pmtimagingThread.measurement.connect(
                 self.update_pmt_Graphs
             )  # Connecting to the measurement signal
             self.pmt_fps_Label.setText("Per frame:  %.4f s" % time_per_frame_pmt)
             self.pmtTest.start()
-            
+
         except:
             print("NI-Daq not connected.")
             self.update_pmt_Graphs(data = np.zeros((Value_yPixels, Value_yPixels)))
 
     def measure_pmt_contourscan(self):
-        
+
         self.Daq_sample_rate_pmt = int(self.contour_samprate.value())
-        
+
         self.pmtTest_contour.setWave_contourscan(
             self.Daq_sample_rate_pmt,
             self.final_stacked_voltage_signals,
@@ -635,7 +635,7 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
         self.ROIhandles = roi_item.getHandles()
         self.ROIhandles_nubmer = len(self.ROIhandles)
         self.pmt_handlenum_Label.setText("Handle number: %.d" % self.ROIhandles_nubmer)
-        
+
     def regenerate_roi_handles(self):
         """
         Regenerate the handles from desired roi in sequence.
@@ -648,9 +648,9 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
         current_roi_handles_list = self.contour_ROI_handles_dict[
             "handles_{}".format(self.roi_index_spinbox.value())
         ]
-        
+
         self.pmtvb.removeItem(self.click_poly_roi)
-        
+
         self.click_poly_roi = pg.PolyLineROI(
             current_roi_handles_list, pen=self.ROIpen, closed = True
         )  # , maxBounds=r1
@@ -677,10 +677,10 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
         self.contour_ROI_signals_dict[
             "roi_{}".format(self.roi_index_spinbox.value())
         ] = self.current_stacked_voltage_signals
-        
+
         # Record roi handle positions
         roi_handles_scene_list = []
-        
+
         # From QPoint to list
         for each_item in self.handle_local_coordinate_position_raw_list:
             roi_handles_scene_list.append([each_item[1].x(), each_item[1].y()])
@@ -689,18 +689,18 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
             "handles_{}".format(self.roi_index_spinbox.value())
         ] = roi_handles_scene_list
 
-        
+
     def del_coordinates_from_list(self):
         """
         Remove the last mask from the list.
         """
         del self.contour_ROI_signals_dict[
             "roi_{}".format(self.roi_index_spinbox.value())
-        ]       
-        
+        ]
+
         del self.contour_ROI_handles_dict[
             "handles_{}".format(self.roi_index_spinbox.value())
-        ]  
+        ]
 
     def generate_final_contour_signals(self):
         """
@@ -711,7 +711,7 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
         None.
 
         """
-        
+
         if len(self.contour_ROI_signals_dict) == 1:
             # With only one roi in list
             self.final_stacked_voltage_signals = self.contour_ROI_signals_dict["roi_1"]
@@ -720,17 +720,17 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
             temp_list = []
             for each_roi_coordinate in self.contour_ROI_signals_dict:
                 temp_list.append(self.contour_ROI_signals_dict[each_roi_coordinate])
-            
+
             self.final_stacked_voltage_signals = np.concatenate(temp_list, axis = 1)
-            
+
         # Number of points in single round of contour scan
         self.points_per_round = len(self.final_stacked_voltage_signals[0])
-        
+
         # print(self.final_stacked_voltage_signals)
-        
+
         # To the main widget Fiumicino
         self.emit_contour_signal()
-        
+
     def go_to_first_point(self):
         """
         Before executing contour scanning, preset galvo positions to first point.
@@ -742,14 +742,14 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
         """
         first_point_x = self.final_stacked_voltage_signals[:,0][0]
         first_point_y = self.final_stacked_voltage_signals[:,0][1]
-    
+
         print("galvo move to: {}, {}".format(first_point_x, first_point_y))
-    
+
         daq = DAQmission()
         daq.sendSingleAnalog("galvosx", first_point_x)
         daq.sendSingleAnalog("galvosy", first_point_y)
-        
-    
+
+
     def reset_roi_handles(self):
         """
         Reset_roi_handles positions.
@@ -760,7 +760,7 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
 
         """
         # self.pmtvb.removeItem(self.roi)
-        
+
         # self.ROIpen = QPen()  # creates a default pen
         # self.ROIpen.setStyle(Qt.DashDotLine)
         # self.ROIpen.setWidth(1)
@@ -774,23 +774,23 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
         # )  # update handle numbers
 
         # self.pmtvb.addItem(self.roi)  # add ROIs to main image
-        
+
         #=====================================================================
         try:
             self.pmtvb.removeItem(self.click_poly_roi)
         except:
             pass
-        
+
         self.clicked_points_list = []
-        
+
     def reset_coordinates_dict(self):
-    
+
         self.final_stacked_voltage_signals = None
         self.contour_ROI_signals_dict = {}
         # self.contour_ROI_handles_dict = {}
-        
+
         self.reset_roi_handles()
-        
+
     def generate_contour_coordinates(self, roi_item):
         """
         Geneate the voltage signals according to current ROI's handle positions.
@@ -802,13 +802,13 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
 
         getSceneHandlePositions IS THE FUNCTION TO GRAP COORDINATES FROM IMAGEITEM REGARDLESS OF IMAGEITEM ZOOMING OR PANNING!!!
         """
-        
+
         self.Daq_sample_rate_pmt = int(self.contour_samprate.value())
-        
+
         self.ROIhandles = roi_item.getHandles()
         self.ROIhandles_nubmer = len(self.ROIhandles)
         contour_point_number = int(self.pointsinContour.value())
-        
+
         # Get the handle positions in the imageitem coordinates
         self.handle_scene_coordinate_position_raw_list = (
             roi_item.getSceneHandlePositions()
@@ -819,12 +819,12 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
 
         # self.handle_scene_coordinate_position_raw_list.insert(0,first_placed_handle)
         # self.handle_scene_coordinate_position_raw_list.pop(-1)
-        
+
 
         self.handle_local_coordinate_position_raw_list = (
             roi_item.getLocalHandlePositions()
         )
-        
+
         # put scene positions into numpy array
         self.handle_scene_coordinate_position_array = np.zeros(
             (self.ROIhandles_nubmer, 2)
@@ -843,14 +843,14 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
                 contour_point_number / self.ROIhandles_nubmer
             )
             self.Interpolation_number = self.point_num_per_line - 1
-            
+
             # ====== Doing the uniform interpolation in between handles =======
             self.handle_scene_coordinate_position_array_expanded = \
                 self.interpolate_evenly_between_nodes(node_number = self.ROIhandles_nubmer,
                                                   point_num_per_line = self.point_num_per_line,
                                                   node_position_array = self.handle_scene_coordinate_position_array)
             #=================================================================
-            
+
             self.handle_viewbox_coordinate_position_array_expanded = np.zeros(
                 (contour_point_number, 2)
             )  # n rows, 2 columns
@@ -867,13 +867,13 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
 
             """Transform into Voltages to galvos"""
             """coordinates in the view box(handle_viewbox_coordinate_position_array_expanded_x) are equivalent to voltages sending out"""
-            
+
             self.handle_viewbox_coordinate_position_array_expanded_x, \
             self.handle_viewbox_coordinate_position_array_expanded_y = \
             self.convert_coordinates_to_voltage(Value_xPixels = self.Value_xPixels, Value_voltXMax = self.Value_voltXMax,
-                                                contour_point_number = contour_point_number, 
+                                                contour_point_number = contour_point_number,
                                                 handle_viewbox_coordinates = self.handle_viewbox_coordinate_position_array_expanded)
-                    
+
             # ================= The signals to NIDAQ ==================
             current_stacked_voltage_signals = np.vstack(
                 (
@@ -881,15 +881,15 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
                     self.handle_viewbox_coordinate_position_array_expanded_y,
                 )
             )
-                    
+
             #================= Speed and acceleration check ===================
             self.speed_acceleration_check(self.Daq_sample_rate_pmt,
                                           self.handle_viewbox_coordinate_position_array_expanded_x,
                                           self.handle_viewbox_coordinate_position_array_expanded_y)
-            
+
 
         #============================ Uniform =================================
-        
+
         if self.contour_strategy.currentText() == "Uniform":
             # Calculate the total distance
             self.total_distance = 0
@@ -1205,9 +1205,9 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
             self.handle_viewbox_coordinate_position_array_expanded_x,
             self.handle_viewbox_coordinate_position_array_expanded_y = \
             self.convert_coordinates_to_voltage(Value_xPixels = self.Value_xPixels, Value_voltXMax = self.Value_voltXMax,
-                                                contour_point_number = contour_point_number, 
+                                                contour_point_number = contour_point_number,
                                                 handle_viewbox_coordinates = self.handle_viewbox_coordinate_position_array_expanded)
-                    
+
             # ================= The signals to NIDAQ ==================
             current_stacked_voltage_signals = np.vstack(
                 (
@@ -1215,23 +1215,23 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
                     self.handle_viewbox_coordinate_position_array_expanded_y,
                 )
             )
-                    
-                    
+
+
             #================= Speed and acceleration check ===================
             self.speed_acceleration_check(self.Daq_sample_rate_pmt,
                                           self.handle_viewbox_coordinate_position_array_expanded_x,
                                           self.handle_viewbox_coordinate_position_array_expanded_y)
-        
+
         # print(current_stacked_voltage_signals)
-        
+
         # stacked_voltage_signals_length_hori = len(current_stacked_voltage_signals[1])
-        
+
         # try:
         #     # Setting the starting point
-        #     # starting_point_index = np.argmax(current_stacked_voltage_signals[1,:]) # Set lowest point in view as start 
+        #     # starting_point_index = np.argmax(current_stacked_voltage_signals[1,:]) # Set lowest point in view as start
 
         #     starting_point_index = np.where(np.all(current_stacked_voltage_signals == np.array(self.starting_point), axis = 0))[0][0]
-            
+
         #     # Set two parts
         #     moving_forward_part = current_stacked_voltage_signals[:,\
         #                                                           starting_point_index:stacked_voltage_signals_length_hori]
@@ -1244,19 +1244,19 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
         #     resequenced_stacked_voltage_signals[:,\
         #                                         0:len(moving_forward_part[1])] \
         #         = moving_forward_part
-            
+
         #     resequenced_stacked_voltage_signals[:,\
         #                                         len(moving_forward_part[1]):stacked_voltage_signals_length_hori] \
-        #         = moving_backward_part 
+        #         = moving_backward_part
         # except:
         #     print("Fail to find starting point.")
         #     resequenced_stacked_voltage_signals = current_stacked_voltage_signals
-        
+
         resequenced_stacked_voltage_signals = current_stacked_voltage_signals
         print(resequenced_stacked_voltage_signals)
 
         return resequenced_stacked_voltage_signals
-    
+
     def interpolate_evenly_between_nodes(self, node_number, point_num_per_line, node_position_array):
         """
         Interpolate evenly in between roi handles
@@ -1381,7 +1381,7 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
             Interpolation_temp,
             axis=0,
         )
-        
+
         # ===== The first placed handle is at the end, put back to front.=====
 
         interpolated_array_modified = np.zeros([interpolated_array.shape[0], interpolated_array.shape[1]])
@@ -1389,9 +1389,9 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
         interpolated_array_modified[1:interpolated_array.shape[0],:] = interpolated_array[0:interpolated_array.shape[0] -1, :]
 
         return interpolated_array_modified
-    
-    def convert_coordinates_to_voltage(self, Value_xPixels, Value_voltXMax, 
-                                       contour_point_number, 
+
+    def convert_coordinates_to_voltage(self, Value_xPixels, Value_voltXMax,
+                                       contour_point_number,
                                        handle_viewbox_coordinates):
         """
         Transform the viewbox coordinates to galvo scanning voltage signals
@@ -1447,9 +1447,9 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
                         (contour_point_number,),
                     )
                 )
-                    
+
         return transformed_x, transformed_y
-    
+
     def speed_acceleration_check(self, sampling_rate, trace_x, trace_y):
         """
         Check the speed and acceleration of galvos
@@ -1516,7 +1516,7 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
             QMessageBox.warning(
                 self, "OverLoad", "Acceleration too high!", QMessageBox.Ok
             )
-    
+
     def emit_contour_signal(self):
         """
         Emit generated contour signals to the main widget, then pass to waveform widget.
@@ -1526,7 +1526,7 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
         None.
 
         """
-        
+
         self.SignalForContourScanning.emit(
             int(self.points_per_round),
             self.Daq_sample_rate_pmt,
@@ -1534,7 +1534,7 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
             self.final_stacked_voltage_signals[0],
             self.final_stacked_voltage_signals[1],
         )
-    
+
     # def generate_contour_for_waveform(self):
     #     self.contour_time = int(self.textbox1L.value())
     #     self.time_per_contour = (
@@ -1624,7 +1624,7 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
     #
     #        QtWidgets.QApplication.quit()
     #        event.accept()
-    '''    
+    '''
     def closeEvent(self, event):
         """On closing the application we have to make sure that the measuremnt
         stops and the device gets freed."""

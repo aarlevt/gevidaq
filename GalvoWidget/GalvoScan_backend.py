@@ -147,7 +147,7 @@ class RasterScan:
 
             writer.write_many_sample(self.Galvo_samples)
 
-            """Reading data from the buffer in a loop. 
+            """Reading data from the buffer in a loop.
             The idea is to let the task read more than could be loaded in the buffer for each iteration.
             This way the task will have to wait slightly longer for incoming samples. And leaves the buffer
             entirely clean. This way we always know the correct numpy size and are always left with an empty
@@ -250,7 +250,7 @@ class PMT_zscan:
         if z_depth != 0:
             self.total_step_number = round((z_depth_end - self.current_pos) / z_step_size)
         else:
-            # If doing repeating imaging at the same position, 
+            # If doing repeating imaging at the same position,
             # z_depth becomes the number of repeats.
             self.total_step_number = int(z_step_size)
 
@@ -277,7 +277,7 @@ class PMT_zscan:
                 )
             else:
                 break
-            
+
         self.pi_device_instance.CloseMotorConnection()
 
     def stop_scan(self):

@@ -5,7 +5,7 @@ Created on Tue Jun 23 09:21:44 2020
 
 @author: Izak de Heer
 
-2021-1 
+2021-1
 Modified based on Izak's code for higher level interface.
 """
 

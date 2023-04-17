@@ -635,17 +635,17 @@ class ALP4:
         Set the timing properties of the sequence to display.
 
         Usage:
-            
+
         SetTiming( SequenceId = None, illuminationTime = None, pictureTime = None, synchDelay = None, \
                   synchPulseWidth = None, triggerInDelay = None)
-            
+
         PARAMETERS
         ----------
-        
+
         SequenceId : c_ulong, optional
                        Identified of the sequence. If not specified, set the last sequence allocated in the DMD board memory
         illuminationTime: c_ulong, optional
-                           Display time of a single image of the sequence in microseconds. 
+                           Display time of a single image of the sequence in microseconds.
                            If not specified, use the highest possible value compatible with pictureTime.
         pictureTime : int, optional
                         Time between the start of two consecutive picture, up to 10^7 microseconds = 10 seconds.
@@ -654,12 +654,12 @@ class ALP4:
                         If illuminationTime is also not specified, set to a frame rate of 30Hz.
         synchDelay : Specifies the time delay between the start of the output sync pulse and the start of the display (master mode).
                        Value between 0 and 130,000 microseconds. Set to 0 if not specified.
-        synchPulseWidth : Duration of the sync output pulse. 
+        synchPulseWidth : Duration of the sync output pulse.
                          By default equals synchDelay + illuminationTime in normal mode.
                          By default equals ALP_ILLUMINATION_TIME in binary uninterrupted mode.
         triggerInDelay : Length of the trigger signal in microseconds, set to 0 by default.
-        
-            
+
+
         SEE ALSO
         --------
         See ALPLib.AlpSeqAlloc in the ALP API description for more information.

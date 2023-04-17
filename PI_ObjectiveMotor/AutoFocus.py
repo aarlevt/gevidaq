@@ -280,7 +280,7 @@ class FocusFinder:
             degree_of_focus = ProcessImage.local_entropy(
                 self.galvo_image.astype("float32")
             )
-            
+
         elif self.source_of_image == "Camera":
             # First configure the AOTF.
             self.AOTF_runner = DAQmission()

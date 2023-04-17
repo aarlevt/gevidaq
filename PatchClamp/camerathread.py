@@ -17,14 +17,14 @@ from HamamatsuCam.HamamatsuActuator import CamActuator
 class CameraThread(QThread):
     snapsignal = pyqtSignal(np.ndarray)
     livesignal = pyqtSignal(np.ndarray)
-    
+
     def __init__(self, camerahandle=None):
         self.exposuretime = 0.07    # seconds
         self.GUIframerate = 25      # frames per second
         self.sleeptime = np.max([1/self.GUIframerate, self.exposuretime])
         self.frame = np.random.rand(2048, 2048)
         self.mutex = QMutex()
-        
+
         # Camera attributes
         if camerahandle == None:
             self.camera = CamActuator()
@@ -32,18 +32,18 @@ class CameraThread(QThread):
         else:
             self.camera = camerahandle
         self.camera.hcam.setPropertyValue("exposure_time", self.exposuretime)
-        
+
         # QThread attributes
         super().__init__()
         self.isrunning = False
         self.moveToThread(self)
         self.started.connect(self.live)
-        
+
     def stop(self):
         self.isrunning = False
         self.quit()
         self.wait()
-        
+
     def snap(self):
         time.sleep(self.sleeptime)
         snap = np.random.rand(2048, 2048)
@@ -52,18 +52,18 @@ class CameraThread(QThread):
         self.mutex.unlock()
         self.snapsignal.emit(snap)
         return snap
-    
+
     @pyqtSlot()
     def live(self):
         print('camera thread started')
-        
+
         self.camera.isLiving = True
         self.camera.hcam.acquisition_mode = "run_till_abort"
-        
+
         # Wait a second for camera acquisition to start
         self.camera.hcam.startAcquisition()
         QThread.msleep(1000)
-        
+
         # Emit and get frames from the camera at a rate of 1/sleeptime
         self.isrunning = True
         while self.isrunning:
@@ -76,36 +76,36 @@ class CameraThread(QThread):
                 self.mutex.unlock()
             except:
                 pass
-        
+
         self.camera.hcam.stopAcquisition()
         self.camera.isLiving = False
         self.camera.Exit()
-        
+
         print('camera thread stopped')
-    
+
 
 # class CameraThread(QThread):
 #     snapsignal = pyqtSignal(np.ndarray)
 #     livesignal = pyqtSignal(np.ndarray)
-    
+
 #     def __init__(self, camerahandle=None):
 #         self.exposuretime = 0.02    # seconds
 #         self.GUIframerate = 25      # frames per second
 #         self.sleeptime = np.max([1/self.GUIframerate, self.exposuretime])
 #         self.frame = np.random.rand(2048, 2048)
 #         self.mutex = QMutex()
-        
+
 #         # QThread attributes
 #         super().__init__()
 #         self.isrunning = False
 #         self.moveToThread(self)
 #         self.started.connect(self.live)
-        
+
 #     def stop(self):
 #         self.isrunning = False
 #         self.quit()
 #         self.wait()
-        
+
 #     def snap(self):
 #         time.sleep(self.sleeptime)
 #         snap = np.ndarray
@@ -114,11 +114,11 @@ class CameraThread(QThread):
 #         self.mutex.unlock()
 #         self.snapsignal.emit(snap)
 #         return snap
-        
+
 #     @pyqtSlot()
 #     def live(self):
 #         print('camera thread started')
-        
+
 #         self.isrunning = True
 #         while self.isrunning:
 #             QThread.msleep(int(self.sleeptime*1000))
@@ -129,5 +129,5 @@ class CameraThread(QThread):
 #                 self.mutex.unlock()
 #             except:
 #                 pass
-            
+
 #         print('camera thread stopped')

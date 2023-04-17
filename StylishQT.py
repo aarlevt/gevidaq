@@ -239,7 +239,7 @@ class GeneralFancyButton(QtWidgets.QPushButton):
             QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
         )
         # self.setToolTip("Execute")
-        
+
 class runButton(QtWidgets.QPushButton):
     """
     Button style for 'Run'

@@ -70,7 +70,7 @@ from HamamatsuCam.HamamatsuDCAM import *
 import StylishQT
 
 """
-Some general settings for pyqtgraph, these only have to do with appearance 
+Some general settings for pyqtgraph, these only have to do with appearance
 except for row-major, which inverts the image and puts mirrors some axes.
 """
 
@@ -287,7 +287,7 @@ class CameraUI(QMainWindow):
         )
         self.center_roiButton.clicked.connect(lambda: self.set_roi_flag())
         """
-        set_roi_flag checks whether the centering button is pushed and 
+        set_roi_flag checks whether the centering button is pushed and
         acts accordingly.
         """
         self.center_roiButton.setCheckable(True)
@@ -295,7 +295,7 @@ class CameraUI(QMainWindow):
         """
         The ROI needs to be centered to maximise the framerate of the hamamatsu
         CMOS. When not centered it will count the outermost vertical pixel and
-        treats it as the size of the ROI. See the camera manual for a more 
+        treats it as the size of the ROI. See the camera manual for a more
         detailed explanation.
         """
 
@@ -795,7 +795,7 @@ class CameraUI(QMainWindow):
         # --------------------------------Live Screen----------------------------------
         #   Initiating an imageview object for the main Livescreen. Hiding the pre
         # existing ROI and menubuttons.
-        # =============================================================================        
+        # =============================================================================
         """
         LiveWidgetContainer = QGroupBox()
         LiveWidgetContainer.setMinimumHeight(920)
@@ -1266,7 +1266,7 @@ class CameraUI(QMainWindow):
             self.ROIitem.sigRegionChanged.connect(lambda: self.center_roi())
             # setting the ROI to the center every move
             """
-            If the ROI centering performs poorly it is also possible to use the 
+            If the ROI centering performs poorly it is also possible to use the
             sigRegionChanged() function. I like this better for now.
             """
 
@@ -1274,8 +1274,8 @@ class CameraUI(QMainWindow):
             self.ROI_vpos_spinbox.setReadOnly(False)
             self.ROIitem.sigRegionChanged.disconnect()
             """
-            I do not know how to disconnect one specific function, so I 
-            disconnect both and then reconnect the update_ROI_spinbox_coordinates 
+            I do not know how to disconnect one specific function, so I
+            disconnect both and then reconnect the update_ROI_spinbox_coordinates
             function.
             """
             self.ROIitem.sigRegionChanged.connect(self.update_ROI_spinbox_coordinates)
@@ -1368,9 +1368,9 @@ class CameraUI(QMainWindow):
         self.ROI_vpos = self.ROI_vpos_spinbox.value()
 
         """
-        The Hamamatsu flash 4 ROI only works with multiples of 4! Here I make 
-        sure that only multiples of 4 are passed on to the camera. Don't know if 
-        this has to do with binning. I also make sure it doesn't pass a ROI of 
+        The Hamamatsu flash 4 ROI only works with multiples of 4! Here I make
+        sure that only multiples of 4 are passed on to the camera. Don't know if
+        this has to do with binning. I also make sure it doesn't pass a ROI of
         0 size since this crashes the program!
         """
         self.ROI_hpos = 4 * int(self.ROI_hpos / 4)

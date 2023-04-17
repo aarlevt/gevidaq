@@ -110,7 +110,7 @@ class Mainbody(QWidget):
         self.QuickStartButton_1 = QPushButton("Config 1", self)
         self.Quick_startContainerLayout.addWidget(self.QuickStartButton_1, 1, 0)
         self.QuickStartButton_1.clicked.connect(lambda: self.quick_start(0))
-        
+
         self.QuickStartButton_2 = QPushButton("Config 2", self)
         self.Quick_startContainerLayout.addWidget(self.QuickStartButton_2, 2, 0)
 
@@ -179,7 +179,7 @@ class Mainbody(QWidget):
             "Start analysis as configured in screening analysis GUI right after screening."
         )
         self.GeneralSettingContainerLayout.addWidget(self.Analyse_roundCheckbox, 0, 4)
-        
+
         self.GeneralSettingContainer.setLayout(self.GeneralSettingContainerLayout)
 
         # **************************************************************************************************************************************
@@ -294,7 +294,7 @@ class Mainbody(QWidget):
         Auto_focus_grid_label = QLabel("Auto focus grid steps:")
         Auto_focus_grid_label.setToolTip(
         "For example if =2 then there's 1 coordinate between AF. \nIf =0, all AF settings are omitted. \nIn pure-AF mode, put the same as the first AF round."
-        )        
+        )
         ScanSettingLayout.addWidget(Auto_focus_grid_label, 0, 4)
 
         self.AF_roundCheckbox = QCheckBox("Auto-focus round")
@@ -337,7 +337,7 @@ class Mainbody(QWidget):
         TwoPLaserSettingLayout.addWidget(self.TwoPLaserFilterCheckbox, 0, 0)
 
         TwoPLaserSettingLayout.addWidget(QLabel("2-P wavelength:"), 0, 1)
-        
+
         self.TwoPLaserWavelengthbox = QSpinBox(self)
         self.TwoPLaserWavelengthbox.setMinimum(680)
         self.TwoPLaserWavelengthbox.setMaximum(1300)
@@ -355,7 +355,7 @@ class Mainbody(QWidget):
             'color:blue;font:bold "Times New Roman"'
         )
         TwoPLaserSettingLayout.addWidget(self.FilterCheckbox, 1, 0)
-        
+
         NDfilterlabel = QLabel("ND filter:")
         TwoPLaserSettingLayout.addWidget(NDfilterlabel, 1, 1)
         # NDfilterlabel.setAlignment(Qt.AlignRight)
@@ -674,13 +674,13 @@ class Mainbody(QWidget):
         self.setLayout(self.layout)
 
         self.showPipelineConfigWidget()
-        
+
         from ImageAnalysis import EvolutionAnalysisWidget
         print("Importing EvolutionAnalysisWidget")
 
         self.ScreenAnalysisMLWindow = EvolutionAnalysisWidget.MainGUI()
         self.ScreenAnalysisMLWindow.show()
-                
+
     def showPipelineConfigWidget(self):
         self.layout.addWidget(self.ImageDisplayContainer, 1, 2, 1, 2)
         self.layout.addWidget(self.settingStackedWidget, 2, 0, 1, 4)
@@ -690,51 +690,51 @@ class Mainbody(QWidget):
     #%%
     """
     #     FUNCTIONS FOR EXECUTION
-    
+
     ----------------Screening routine configuration Structure -----------------
-    
+
     ====RoundQueueDict====                              Dictionary=============
-    
+
       -- key: RoundPackage_{}                           List of operations at each coordinate. {} stands for round sequence number.
             |__ WaveformQueueDict                       Dictionary
                 key: WaveformPackage_{}                 Waveforms tuple signal from Waveformer. At each coordinate.
-                
+
             |__ CamOperationDict                        Dictionary
                 key: CameraPackage_{}                   Camera operations at each coordinate. {} stands for waveform/camera sequence number.
-                
+
             |__ PhotocycleDict                          Dictionary
                 key: PhotocyclePackage_{}               Photocycle experiment information. {} stands for waveform/camera sequence number.
-            
-      -- key: GalvoInforPackage_{}                   
+
+      -- key: GalvoInforPackage_{}
             |__ WaveformQueueDict_GalvoInfor            Dictionary
                 key: GalvoInfor_{}                      Galvo scanning configuration signal from Waveformer. At each coordinate.
-                
+
       -- key: FilterEvents
             |__ List of filter operation strings, in the round.
-            
+
       -- key: InsightEvents
             |__ List of insight laser operation strings, in the round.
-        
+
     ====RoundCoordsDict====                             Dictionary=============
-    
+
       -- key: CoordsPackage_{}
             |__ np.array of scanning coordinates.
-            
+
     ====GeneralSettingDict====                          Dictionary=============
-    
+
       -- key: 'savedirectory'                           screening data saving directory.
-      
+
       -- key: 'FocusCorrectionMatrixDict'               Dictionary
                   |__ key: RoundPackage_{}
                       or RoundPackage_{}_Grid_{}        np.array of pre-calibrated focus positions.
-                  
+
       -- key: 'FocusStackInfoDict'                      Dictionary
                   |__ key: RoundPackage_{}              String specifies 'NumberOfFocus{}WithIncrementBeing{}'.
-                  
+
       -- key: 'Meshgrid'                                int if scanning grid number. meshrepeat
-      
+
       -- key: 'Scanning step'                           Scanning stage step. self.step
-      
+
       -- key: 'StartUpEvents'                           List of strings, like Shutter_Open
     """
     # ==========================================================================================================================================================
@@ -1131,7 +1131,7 @@ class Mainbody(QWidget):
     #%%
     """
     # =============================================================================
-    #     Configure general settings, get ready for execution      
+    #     Configure general settings, get ready for execution
     # =============================================================================
     """
 
@@ -1300,22 +1300,22 @@ class Mainbody(QWidget):
         # try:
         # if len(self.Tag_round_infor) != 0 or len(self.Lib_round_infor) != 0:
             # If analysis information configured, start analysis afterwards.
-    
+
             # from ImageAnalysis import EvolutionAnalysisWidget
             # print("Importing EvolutionAnalysisWidget")
-    
+
             # self.ScreenAnalysisMLWindow = EvolutionAnalysisWidget.MainGUI()
             # self.ScreenAnalysisMLWindow.show()
-    
+
             # time.sleep(4)
         if self.Analyse_roundCheckbox.isChecked():
             # # By default all data is stored in the same folder.
             self.ScreenAnalysisMLWindow.Tag_folder = self.savedirectory
             self.ScreenAnalysisMLWindow.Lib_folder = self.savedirectory
-    
+
             # self.ScreenAnalysisMLWindow.Tag_round_infor = self.Tag_round_infor
             # self.ScreenAnalysisMLWindow.Lib_round_infor = self.Lib_round_infor
-    
+
             self.ScreenAnalysisMLWindow.ScreeningAnalysis()
 
         #     else:
@@ -1347,7 +1347,7 @@ class Mainbody(QWidget):
     #%%
     """
     # =============================================================================
-    #     For save and load file.    
+    #     For save and load file.
     # =============================================================================
     """
 

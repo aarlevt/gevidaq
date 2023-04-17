@@ -6,7 +6,7 @@ Created on Mon Mar 18 15:17:17 2019
 
 Part of this code was derived from:
     https://github.com/sidneycadot/pyqt-and-graphing/blob/master/PyQtGraphing.py
-    
+
 """
 from __future__ import division
 from PyQt5 import QtWidgets
@@ -163,7 +163,7 @@ class PatchclampSealTestUI(QWidget):
         gainLayout.addWidget(self.probeGainList, 1, 3)
 
         gainContainer.setLayout(gainLayout)
-        
+
         # ------------------------------Wavesettings-----------------------------------
         WavesettingsContainer = StylishQT.roundQGroupBox(title="Wave settings")
         # WavesettingsContainer.setFixedWidth(320)
@@ -186,7 +186,7 @@ class PatchclampSealTestUI(QWidget):
         WavesettingsContainerLayout.addWidget(self.LowerVoltagebox, 0, 3)
 
         WavesettingsContainer.setLayout(WavesettingsContainerLayout)
-        
+
         # ------------------------------Membrane potential-----------------------------------
         Vm_measureContainer = StylishQT.roundQGroupBox(title="Vm measurement")
         # Vm_measureContainer.setFixedWidth(320)
@@ -213,7 +213,7 @@ class PatchclampSealTestUI(QWidget):
         Vm_measureContainerLayout.addWidget(self.VmstopButton, 0, 4)
 
         Vm_measureContainer.setLayout(Vm_measureContainerLayout)
-        
+
         # ------------------------------zap-----------------------------------
         zapContainer = StylishQT.roundQGroupBox(title="ZAP")
         # zapContainer.setFixedWidth(320)
@@ -251,11 +251,11 @@ class PatchclampSealTestUI(QWidget):
         zapContainerLayout.addWidget(self.zaptimebox, 0, 5)
 
         zapContainer.setLayout(zapContainerLayout)
-        
+
         # ------------------------------Hold Vm-----------------------------------
         HoldContainer = StylishQT.roundQGroupBox(title="Set Vm")
         HoldContainerLayout = QGridLayout()
-        
+
         HoldContainerLayout.addWidget(QLabel("Holding voltage(mV):"), 1, 0)
         self.HoldingList = QSpinBox(self)
         self.HoldingList.setMaximum(200000000)
@@ -282,19 +282,19 @@ class PatchclampSealTestUI(QWidget):
         # self.stopandholdbutton.clicked.connect(lambda: self.measure_hold())
         # self.stopandholdbutton.clicked.connect(self.setGreenlight)
         # HoldContainerLayout.addWidget(self.stopandholdbutton, 0, 2)
-        
+
         HoldContainer.setLayout(HoldContainerLayout)
-        
+
         # ----------------------------Control-----------------------------------
         controlContainer = StylishQT.roundQGroupBox(title="Control")
         controlContainer.setFixedWidth(350)
         controlLayout = QGridLayout()
-        
+
         """
         self.stopholdingbutton = QPushButton("Stop holding")
         self.stopholdingbutton.clicked.connect(lambda: self.stophold())
-        self.stopholdingbutton.clicked.connect(self.setRedlight)        
-        controlLayout.addWidget(self.stopholdingbutton, 2, 2)        
+        self.stopholdingbutton.clicked.connect(self.setRedlight)
+        controlLayout.addWidget(self.stopholdingbutton, 2, 2)
         """
         controlLayout.addWidget(gainContainer, 0, 0, 1, 2)
         controlLayout.addWidget(WavesettingsContainer, 1, 0, 1, 2)
@@ -622,7 +622,7 @@ class PatchclampSealTestUI(QWidget):
         # self.executer = execute_constant_vpatch(constant/1000*10)
         # print("Holding vm at "+str(constant)+' mV')
 
-    '''        
+    '''
     def closeEvent(self, event):
         """On closing the application we have to make sure that the measuremnt
         stops and the device gets freed."""

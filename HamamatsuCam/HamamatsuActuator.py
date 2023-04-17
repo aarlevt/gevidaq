@@ -200,7 +200,7 @@ class CamActuator:
         self.hcam.stopAcquisition()
 
         return ImageSnapped
-    
+
     def LIVE(self):
         # =====================================================================
         #         Start the continuous stream
@@ -220,11 +220,11 @@ class CamActuator:
 
             self.subarray_vsize = dims[1]
             self.subarray_hsize = dims[0]
-    
+
     def StopLIVE(self):
         self.isLiving = False
         # Stop the acquisition
-        self.hcam.stopAcquisition()        
+        self.hcam.stopAcquisition()
 
     def StartStreaming(self, BufferNumber, **kwargs):
         # =====================================================================

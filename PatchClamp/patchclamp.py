@@ -5,7 +5,7 @@ Created on Mon Mar 18 12:21:01 2019
 @author: lhuismans
 
 Notes:
-    
+
 """
 import nidaqmx
 from nidaqmx.stream_readers import AnalogMultiChannelReader
@@ -105,7 +105,7 @@ class ContinuousPatchThread(QThread):
 
             writer.write_many_sample(self.wave)
 
-            """Reading data from the buffer in a loop. 
+            """Reading data from the buffer in a loop.
             The idea is to let the task read more than could be loaded in the buffer for each iteration.
             This way the task will have to wait slightly longer for incoming samples. And leaves the buffer
             entirely clean. This way we always know the correct numpy size and are always left with an empty
@@ -249,7 +249,7 @@ class ContinuousPatchThread_hold(QThread):
 
             writer.write_many_sample(self.wave)
 
-            """Reading data from the buffer in a loop. 
+            """Reading data from the buffer in a loop.
             The idea is to let the task read more than could be loaded in the buffer for each iteration.
             This way the task will have to wait slightly longer for incoming samples. And leaves the buffer
             entirely clean. This way we always know the correct numpy size and are always left with an empty
@@ -394,7 +394,7 @@ class ContinuousPatchThread_currentclamp(QThread):
 
             writer.write_many_sample(self.wave)
 
-            """Reading data from the buffer in a loop. 
+            """Reading data from the buffer in a loop.
             The idea is to let the task read more than could be loaded in the buffer for each iteration.
             This way the task will have to wait slightly longer for incoming samples. And leaves the buffer
             entirely clean. This way we always know the correct numpy size and are always left with an empty
@@ -535,7 +535,7 @@ class ContinuousPatchThread_zap(QThread):
 
             writer.write_many_sample(self.wave)
 
-            """Reading data from the buffer in a loop. 
+            """Reading data from the buffer in a loop.
             The idea is to let the task read more than could be loaded in the buffer for each iteration.
             This way the task will have to wait slightly longer for incoming samples. And leaves the buffer
             entirely clean. This way we always know the correct numpy size and are always left with an empty

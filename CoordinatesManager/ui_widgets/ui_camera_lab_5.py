@@ -3,31 +3,31 @@
 Created on Wed Sep  4 10:26:16 2019
 
 Camera ROI and UI class. The idea was to program this completely seperately
-from every data acquisition function but in the end this did not completely 
+from every data acquisition function but in the end this did not completely
 work out.
 
 TO DO:
     - ROI can still be set outside of the maxbounds with the spinboxes. Should
     be an easy fix but since it's already functioning quite slow I don't know
     how to keep this optimised
-    
-    
+
+
     -When in external triggering mode, the program functions very slow/crashes
-    when the camera stops receiving triggers (ergo does not gather any more 
+    when the camera stops receiving triggers (ergo does not gather any more
     images). This is an important point to fix. Might has to do with the UI,
     not the backend..
-    
+
     -When in external triggering mode, while the roi gets opened it tries to get
     a picture. With no triggers incoming, it will keep waiting and crash.
-    
-    -update the circ buffer widget in the main ui when updating the circular 
-    buffer size within the timed window popup. 
-    
+
+    -update the circ buffer widget in the main ui when updating the circular
+    buffer size within the timed window popup.
+
     -possibly create a popup settings menu that gets all available settings
-    instead of hardcoding some! Take this as inspiration maybe 
+    instead of hardcoding some! Take this as inspiration maybe
     https://github.com/Jhsmit/micromanager-samples/blob/master/mm_print_properties.py
-    
-    
+
+
 
 @author: dvanderheijden
 """
@@ -57,7 +57,7 @@ import numpy as np
 import sys
 
 """
-Some general settings for pyqtgraph, these only have to do with appearance 
+Some general settings for pyqtgraph, these only have to do with appearance
 except for row-major, which inverts the image and puts mirrors some axes.
 """
 
@@ -182,7 +182,7 @@ class CameraROI(QWidget):
 
         current_roi = self.camdev.mmc.getROI()
         """
-        By implementing the current ROI variable I make sure everytime the ROI 
+        By implementing the current ROI variable I make sure everytime the ROI
         window is opened, the current ROI is shown.
         """
         x = int(current_roi[0])
@@ -205,14 +205,14 @@ class CameraROI(QWidget):
         self.center_roiButton.setText("Center ROI")
         self.center_roiButton.clicked.connect(lambda: self.set_roi_flag())
         """
-        set_roi_flag checks whether the centering button is pushed and 
+        set_roi_flag checks whether the centering button is pushed and
         acts accordingly.
         """
         self.center_roiButton.setCheckable(True)
         """
         The ROI needs to be centered to maximise the framerate of the hamamatsu
         CMOS. When not centered it will count the outermost vertical pixel and
-        treats it as the size of the ROI. See the camera manual for a more 
+        treats it as the size of the ROI. See the camera manual for a more
         detailed explanation.
         """
 
@@ -239,8 +239,8 @@ class CameraROI(QWidget):
 
         # ------------------------------Spinboxes-------------------------------
         """
-        On request of Xin some spinboxes for better monitoring and setting the 
-        ROI. Upon changing the values of the spinboxes the ROI gets updated and 
+        On request of Xin some spinboxes for better monitoring and setting the
+        ROI. Upon changing the values of the spinboxes the ROI gets updated and
         vice-versa.
         """
         coordinateBox = QGroupBox("ROI coordinates")
@@ -391,7 +391,7 @@ class CameraROI(QWidget):
             self.roi.sigRegionChanged.connect(lambda: self.center_roi())
             # setting the ROI to the center every move
             """
-            If the ROI centering performs poorly it is also possible to use the 
+            If the ROI centering performs poorly it is also possible to use the
             sigRegionChangeFinished() function. I like this better for now.
             """
 
@@ -399,8 +399,8 @@ class CameraROI(QWidget):
             self.y_position.setReadOnly(False)
             self.roi.sigRegionChanged.disconnect()
             """
-            I do not know how to disconnect one specific function, so I 
-            disconnect both and then reconnect the update_roi_coordinates 
+            I do not know how to disconnect one specific function, so I
+            disconnect both and then reconnect the update_roi_coordinates
             function.
             """
             self.roi.sigRegionChanged.connect(self.update_roi_coordinates)
@@ -459,8 +459,8 @@ class CameraUI(QWidget):
         camerasettingsLayout = QGridLayout()
 
         """
-        Adding comboboxes for all camera settings. Most are specific for 
-        the hamamatsu orca flash 4 and will not work when used with other 
+        Adding comboboxes for all camera settings. Most are specific for
+        the hamamatsu orca flash 4 and will not work when used with other
         cameras (such as the democam). In the future maybe better to
         generate these settings based on available micromanager setting instead
         of hardcoding!
@@ -468,7 +468,7 @@ class CameraUI(QWidget):
 
         self.camBox = QComboBox()
         """
-        For connecting to a camera! 
+        For connecting to a camera!
         """
         self.camBox.setGeometry(QRect(40, 40, 491, 31))
         self.camBox.setObjectName(("Camera"))
@@ -479,7 +479,7 @@ class CameraUI(QWidget):
 
         self.disconnectButton = QPushButton()
         """
-        Disconnect from the camera using the close_cam function in the backend 
+        Disconnect from the camera using the close_cam function in the backend
         """
         self.disconnectButton.setText("Disconnect")
         self.disconnectButton.clicked.connect(lambda: self.disconnect())
@@ -527,8 +527,8 @@ class CameraUI(QWidget):
 
         self.circBufferSize = QLineEdit()
         """
-        Small widget for setting the circular buffer size! Sets size in GB. 
-        Data stream size depends on the ROI size. 
+        Small widget for setting the circular buffer size! Sets size in GB.
+        Data stream size depends on the ROI size.
         """
         self.dblval = QDoubleValidator()
         self.dblval.setRange(0, 80)
@@ -595,15 +595,15 @@ class CameraUI(QWidget):
         self.videoWidget.autoLevels()
 
         """
-        The update timer is build for setting the framerate of the imageviewer 
-        for the main screen! The .start function determines the framerate 
+        The update timer is build for setting the framerate of the imageviewer
+        for the main screen! The .start function determines the framerate
         (30 ms = 33 Hz).
         """
 
         self.update_timer_live = QTimer()
         self.update_timer_live.timeout.connect(lambda: self.update_view())
         """
-        I toggle the live feed on and off by starting/stopping the 
+        I toggle the live feed on and off by starting/stopping the
         update_timer_live!
         """
         # --------------------------setting the camera viewer layout------------
@@ -646,7 +646,7 @@ class CameraUI(QWidget):
 
     # -----------------------Button disabling-----------------------------------
     """
-    Here I disable the buttons and functions that are not to be used simultanuously  
+    Here I disable the buttons and functions that are not to be used simultanuously
     """
 
     def live_enabled(self):
@@ -654,9 +654,9 @@ class CameraUI(QWidget):
             self.singleframeButton.setEnabled(False)
             self.roi_selectionButton.setEnabled(False)
             self.disconnectButton.setEnabled(False)
-            """ 
-            and now for the roi selection buttons. I put in the try so it 
-            doesn't give an error when no ROI window is yet created. 
+            """
+            and now for the roi selection buttons. I put in the try so it
+            doesn't give an error when no ROI window is yet created.
             """
             try:
                 """

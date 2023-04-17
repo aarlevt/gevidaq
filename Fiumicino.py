@@ -4,11 +4,11 @@ Created on Sat Aug 10 20:54:40 2019
 
 @author: xinmeng
     ============================== ==============================================
-    
+
     For general experiments in Dr. Daan's lab ゴゴゴ ゴ ゴ ゴ  ゴ  ゴ
     ============================== ==============================================
     == Widget descriptions ==
-    
+
     - HamamatsuCam.HamamatsuUI: Hamamatsu orca flash 4.0 camera user interface.
     - PatchClamp.ui_patchclamp_sealtest: The GUI for patch clamp.
     - NIDAQ.WaveformWidget: The GUI for configuring and executing waveforms in National Instrument Data Acquisition (DAQ) device.
@@ -154,7 +154,7 @@ class Mainbody(QWidget):
         """
         # =============================================================================
         #         GUI for left panel.
-        # =============================================================================        
+        # =============================================================================
         """
         # =============================================================================
         #         GUI for set directory
@@ -335,7 +335,7 @@ class Mainbody(QWidget):
         self.open_sealtest_button.setGraphicsEffect(
             QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
         )
-        
+
         # =============================================================================
         #         GUI for Auto-patcher
         # =============================================================================
@@ -415,7 +415,7 @@ class Mainbody(QWidget):
         handle_viewbox_coordinate_x,
         handle_viewbox_coordinate_y,
     ):
-        
+
         # Number of points in single round of contour scan
         self.Waveformer_WidgetInstance.galvo_contour_label_1.setText(
             "Points in contour: %.d" % contour_point_number
@@ -430,7 +430,7 @@ class Mainbody(QWidget):
         self.Waveformer_WidgetInstance.handle_viewbox_coordinate_position_array_expanded_y = (
             handle_viewbox_coordinate_y
         )
-        
+
         # Time needed for single round of contour scanning
         self.Waveformer_WidgetInstance.time_per_contour = time_per_contour
 

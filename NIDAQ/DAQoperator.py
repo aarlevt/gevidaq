@@ -43,8 +43,8 @@ class DAQmission(
 
         super().__init__(*args, **kwargs)
         """
-        Specifiy NI-daq channels. channel_LUT in the form of dictionary, with keys being the 
-        purpose of the channel (the same as the fields from the input waveforms' "Sepcification" 
+        Specifiy NI-daq channels. channel_LUT in the form of dictionary, with keys being the
+        purpose of the channel (the same as the fields from the input waveforms' "Sepcification"
         field) and values being the port of the daq. If not specified it will load the dictionary
         from NiDaqChannels class in NIDAQ.constants.
         """
@@ -972,9 +972,9 @@ class DAQmission(
                             ),
                             self.binaryfile_Ip_data,
                         )
-            
+
             if "Ip" in self.readin_channels:
-                
+
                 self.binaryfile_Ip_data = np.concatenate(
                     (
                         np.array([self.sampling_rate]),
@@ -988,9 +988,9 @@ class DAQmission(
                         "Ip" + datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
                     ),
                     self.binaryfile_Ip_data,
-                )                
-                
-                
+                )
+
+
             if "PMT" in self.readin_channels:
                 self.data_PMT = self.Dataholder[0, :] * -1
                 np.save(

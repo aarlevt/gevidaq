@@ -11,7 +11,7 @@ Created on Tue Jul  7 10:44:31 2020
     Normally DMD projecting with dark phase of minimum 44 us in between switching
     of frames in sequence, set ALP_BIN_MODE to ALP_BIN_UNINTERRUPTED to project
     only one still image to avoid noise introduced by dark phase.
-    
+
 Adding 'laser' to CoordinateWidget2 signal list.
 """
 from PyQt5 import QtWidgets
@@ -48,7 +48,7 @@ if __name__ == "__main__":
     abspath = os.path.abspath(__file__)
     dname = os.path.dirname(abspath)
     os.chdir(dname + "/../")
-    
+
 from CoordinatesManager import DMDActuator, Registrator, CoordinateTransformations
 from ImageAnalysis.ImageProcessing import ProcessImage
 from StylishQT import roundQGroupBox
@@ -76,10 +76,10 @@ class DMDWidget(QWidget):
 
     def init_gui(self):
         layout = QGridLayout()
-        
+
         # In microsec, the dark time between frame changes.
         self.ALP_OFF_TIME = 44
-        
+
         self.setFixedSize(320, 450)
 
         self.box = roundQGroupBox()
@@ -205,16 +205,16 @@ class DMDWidget(QWidget):
 
         settings_container_layout.addWidget(Illumination_time_label, 4, 0)
         settings_container_layout.addWidget(self.Illumination_time_textbox, 4, 1)
-        
+
         illumination_time_calculation_button = QPushButton("Fill in illu. time for Hz:")
         settings_container_layout.addWidget(illumination_time_calculation_button, 5, 0)
         illumination_time_calculation_button.clicked.connect(self.calculate_illumination_time_for_frequency)
-        
+
         self.expected_projection_frequency_textbox = QLineEdit()
         self.expected_projection_frequency_textbox.setValidator(QtGui.QIntValidator())
         self.expected_projection_frequency_textbox.setText("2000")
         settings_container_layout.addWidget(self.expected_projection_frequency_textbox, 5, 1)
-        
+
         settings_container_layout.addWidget(QLabel("Repeat sequence:"), 6, 0)
         settings_container_layout.addWidget(self.repeat_imgseq_button, 6, 1)
 
@@ -243,14 +243,14 @@ class DMDWidget(QWidget):
             self.DMD_actuator.disconnect_DMD()
             del self.DMD_actuator
             self.connect_button.setText("Connect")
-            
+
     def calculate_illumination_time_for_frequency(self):
-        
+
         # In theroy resting time between frames can be 0 us.
-        cool_down_time_between_pictures = 3 
-        
+        cool_down_time_between_pictures = 3
+
         expected_frequency = int(self.expected_projection_frequency_textbox.text())
-        
+
         illumination_time = int(1/expected_frequency*1000000) - 1 - \
                             self.ALP_OFF_TIME - \
                             cool_down_time_between_pictures

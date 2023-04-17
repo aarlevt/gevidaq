@@ -5,7 +5,7 @@ Created on Mon Mar 18 12:21:01 2019
 @author: lhuismans
 
 Notes:
-    
+
 """
 import nidaqmx
 from nidaqmx.stream_readers import AnalogMultiChannelReader
@@ -94,7 +94,7 @@ class pmtimaging_continuous_Thread(QThread):
 
             writer.write_many_sample(self.wave)
 
-            """Reading data from the buffer in a loop. 
+            """Reading data from the buffer in a loop.
             The idea is to let the task read more than could be loaded in the buffer for each iteration.
             This way the task will have to wait slightly longer for incoming samples. And leaves the buffer
             entirely clean. This way we always know the correct numpy size and are always left with an empty
@@ -116,7 +116,7 @@ class pmtimaging_continuous_Thread(QThread):
                 self.data_PMT = np.reshape(
                     Dataholder_average, (self.ypixelnumber, self.ScanArrayXnum)
                 )
-                
+
                 if self.sampleRate == 500000:
                     if self.ypixelnumber == 500:
                         self.data_PMT = self.data_PMT[:, 50:550] * -1
@@ -281,7 +281,7 @@ class pmtimaging_continuous_Thread_contour(QThread):
 
             writer.write_many_sample(self.wave)
 
-            """Reading data from the buffer in a loop. 
+            """Reading data from the buffer in a loop.
             The idea is to let the task read more than could be loaded in the buffer for each iteration.
             This way the task will have to wait slightly longer for incoming samples. And leaves the buffer
             entirely clean. This way we always know the correct numpy size and are always left with an empty

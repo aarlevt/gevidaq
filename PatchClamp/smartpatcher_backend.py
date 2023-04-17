@@ -22,7 +22,7 @@ class SmartPatcher(QObject):
         self._micromanipulator = None
         self._objectivemotor = None
         self._XYstage = None
-        
+
         # Default hardware constants
         self._pixel_size = 229.8                    # in nanometers
         self._image_size = [2048, 2048]             # dimension of FOV in pix
@@ -31,7 +31,7 @@ class SmartPatcher(QObject):
         self._rotation_angles = [0,0,0.043767]      # (alp,bet,gam) in radians
         self._focus_offset = 30                     # in micron above coverslip
         self.update_constants_from_JSON()           # overwrite constants from JSON
-        
+
         # Autopatch variables
         self.save_directory = os.getcwd()#+'\\feedback\\'
         self._operation_mode = "Default"
@@ -40,7 +40,7 @@ class SmartPatcher(QObject):
             [None,None,None])
         self._pipette_coordinates_pair = np.array(  # [[Xmm,Ymm,Zmm],[Xcam,Ycam,Zobj]] in ((μm,μm,μm),(pix,pix,μm))
             [[None,None,None], [None,None,None]])
-        
+
         # Data collection
         self.window_size_i = 200
         self.window_size_v = 200
@@ -57,24 +57,24 @@ class SmartPatcher(QObject):
         self._pressure = np.array([[],[]])
         self._resistance = np.array([])
         self._capacitance = np.array([])
-        
+
         # Worker thread
         self.worker = Worker(self)
         self.thread = QThread()
         self.worker.moveToThread(self.thread)
         self.worker.finished.connect(self.thread.quit)
-    
-    
+
+
     def emergency_stop(self, state):
         """
         This emergency stop function asks the worker to activate its stop
         condition. Depending on the algorithm, this might not be instant and
         hardware might still be moving.
-        
+
         Note that you might also want to call self.stop_moving_hardware.
         """
         self.worker.STOP = state
-    
+
     def stop_moving_hardware(self):
         """
         This function tries to override any moving hardware devices by asking
@@ -94,14 +94,14 @@ class SmartPatcher(QObject):
             self.objectivemotor.moveAbs(height)
         except:
             pass
-    
-    
+
+
     def request(self, name, mode='Default'):
         """
         The autopatcher runs on a separate cpu core (thread). This function
         disconnects a method slot from the thread - if it is not running - and
         connects a new method slot to that thread. Then we start the thread.
-        
+
         Note:   It is possible to connect multiple slots or to connect the same
                 slot multiple times. Beware because they will run all at once.
         """
@@ -113,10 +113,10 @@ class SmartPatcher(QObject):
                 self.thread.started.disconnect()
             except TypeError:
                 pass
-                
+
             # workers can use operation modes for extra variable input
             self.operation_mode = mode
-            
+
             # connected the started method to an executable algorithm
             if name == 'target2center':
                 if self.XYstage == None or np.array_equal(self.target_coordinates, [None,None,None]):
@@ -158,11 +158,11 @@ class SmartPatcher(QObject):
                 self.thread.started.connect(self.worker.request_imagexygrid)    #FLAG: relevant for MSc thesis
             elif name == 'request_imagezstack':                                 #FLAG: relevant for MSc thesis
                 self.thread.started.connect(self.worker.request_imagezstack)    #FLAG: relevant for MSc thesis
-            
+
             # start worker
             self.thread.start()
-    
-    
+
+
     def update_constants_from_JSON(self):
         # read json file with autopatcher constants and update them in backend
         try:
@@ -177,7 +177,7 @@ class SmartPatcher(QObject):
                 self.focus_offset = data["focus_offset"]
         except FileNotFoundError:
             self.write_constants_to_JSON()
-    
+
     def write_constants_to_JSON(self):
         data = {
             "pixel_size": self.pixel_size,
@@ -190,14 +190,14 @@ class SmartPatcher(QObject):
         filedirectory = os.path.dirname(os.path.abspath('__file__'))
         with open(filedirectory+"/PatchClamp/autopatch_configuration.txt", "w") as json_outfile:
             json.dump(data, json_outfile)
-    
-    
+
+
     def account4rotation(self, origin, target):
         """
         This function accounts for the misalignment of the micromanipulator
         w.r.t the camera FOV. The origin is the rotation point where the
         rotation matrix R rotates about.
-        
+
         input:
             origin = point of rotation (np.ndarray with shape (3,))
             target = target coordinates (np.ndarray with shape (3,))
@@ -211,10 +211,10 @@ class SmartPatcher(QObject):
                 raise ValueError('origin and target should have shape (3,)')
         else:
             raise ValueError('origin and target should be numpy.ndarray')
-        
+
         return self.R @ np.subtract(target,origin) + origin
-    
-    
+
+
     @property
     def current(self):
         return self._current
@@ -224,7 +224,7 @@ class SmartPatcher(QObject):
     @current.deleter
     def current(self):
         self._current = np.array([])
-    
+
     @property
     def voltage(self):
         return self._voltage
@@ -234,7 +234,7 @@ class SmartPatcher(QObject):
     @voltage.deleter
     def voltage(self):
         self._voltage = np.array([])
-    
+
     @property
     def pressure(self):
         return self._pressure
@@ -244,7 +244,7 @@ class SmartPatcher(QObject):
     @pressure.deleter
     def pressure(self):
         self._pressure = np.array([[],[]])
-    
+
     @property
     def resistance(self):
         return self._resistance
@@ -254,7 +254,7 @@ class SmartPatcher(QObject):
     @resistance.deleter
     def resistance(self):
         self._resistance = np.array([])
-    
+
     @property
     def capacitance(self):
         return self._capacitance
@@ -264,8 +264,8 @@ class SmartPatcher(QObject):
     @capacitance.deleter
     def capacitance(self):
         self._capacitance = np.array([])
-    
-    
+
+
     def _current_append_(self, values):
         """Append new values to a sliding window."""
         length = len(values)
@@ -276,7 +276,7 @@ class SmartPatcher(QObject):
             self.n_i = copySize
         self.current = np.append(self.current, values)
         self.n_i += length
-    
+
     def _voltage_append_(self, values):
         """Append new values to a sliding window."""
         length = len(values)
@@ -287,7 +287,7 @@ class SmartPatcher(QObject):
             self.n_v = copySize
         self.voltage = np.append(self.voltage, values)
         self.n_v += length
-    
+
     def _pressure_append_(self, values, timings):
         """Append new values to a sliding window."""
         length = 1
@@ -298,7 +298,7 @@ class SmartPatcher(QObject):
             self.n_p = copySize
         self.pressure = np.append(self.pressure, np.array([[values],[timings]]), axis=1)
         self.n_p += length
-    
+
     def _resistance_append_(self, Rvalues):
         """Append new values to a sliding window."""
         length = 1
@@ -309,7 +309,7 @@ class SmartPatcher(QObject):
             self.n_r = copySize
         self.resistance = np.append(self.resistance, Rvalues)
         self.n_r += length
-    
+
     def _capacitance_append_(self, Cvalues):
         """Append new values to a sliding window."""
         length = 1
@@ -320,8 +320,8 @@ class SmartPatcher(QObject):
             self.n_c = copySize
         self.capacitance = np.append(self.capacitance, Cvalues)
         self.n_c += length
-    
-    
+
+
     @property
     def camerathread(self):
         return self._camerathread
@@ -333,7 +333,7 @@ class SmartPatcher(QObject):
     def camerathread(self):
         self._camerathread.stop()
         self._camerathread = None
-    
+
     @property
     def objectivemotor(self):
         return self._objectivemotor
@@ -344,7 +344,7 @@ class SmartPatcher(QObject):
     def objectivemotor(self):
         self._objectivemotor.disconnect()
         self._objectivemotor = None
-    
+
     @property
     def micromanipulator(self):
         return self._micromanipulator
@@ -356,7 +356,7 @@ class SmartPatcher(QObject):
     def micromanipulator(self):
         self._micromanipulator.stop()
         self._micromanipulator = None
-    
+
     @property
     def XYstage(self):
         return self._XYstage
@@ -367,7 +367,7 @@ class SmartPatcher(QObject):
     @XYstage.deleter
     def XYstage(self):
         self._XYstage = None
-    
+
     @property
     def sealtestthread(self):
         return self._sealtestthread
@@ -380,7 +380,7 @@ class SmartPatcher(QObject):
     def sealtestthread(self):
         self._sealtestthread.stop()
         self._sealtestthread = None
-    
+
     @property
     def pressurethread(self):
         return self._pressurethread
@@ -393,8 +393,8 @@ class SmartPatcher(QObject):
     def pressurethread(self):
         self._pressurethread.stop()
         self._pressurethread = None
-    
-    
+
+
     @property
     def pixel_size(self):
         return self._pixel_size
@@ -408,7 +408,7 @@ class SmartPatcher(QObject):
     @pixel_size.deleter
     def pixel_size(self):
         self._pixel_size = None
-    
+
     @property
     def image_size(self):
         return self._image_size
@@ -423,7 +423,7 @@ class SmartPatcher(QObject):
     @image_size.deleter
     def image_size(self):
         self._image_size = [None, None]
-    
+
     @property
     def pipette_orientation(self):
         return self._pipette_orientation
@@ -437,7 +437,7 @@ class SmartPatcher(QObject):
     @pipette_orientation.deleter
     def pipette_orientation(self):
         self._pipette_orientation = None
-    
+
     @property
     def pipette_diameter(self):
         return self._pipette_diameter
@@ -451,7 +451,7 @@ class SmartPatcher(QObject):
     @pipette_diameter.deleter
     def pipette_diameter(self):
         self._pipette_diameter = None
-    
+
     @property
     def rotation_angles(self):
         return self._rotation_angles
@@ -471,7 +471,7 @@ class SmartPatcher(QObject):
     def rotation_angles(self):
         self._rotation_angles = [0,0,0]
         del self.R
-    
+
     @property
     def focus_offset(self):
         return self._focus_offset
@@ -482,8 +482,8 @@ class SmartPatcher(QObject):
     @focus_offset.deleter
     def focus_offset(self):
         self._focus_offset = None
-    
-    
+
+
     @property
     def R(self):
         return self._R
@@ -506,8 +506,8 @@ class SmartPatcher(QObject):
     @R.deleter
     def R(self):
         self._R = np.eye(3)
-    
-    
+
+
     @property
     def state_message(self):
         return self._state_message
@@ -520,7 +520,7 @@ class SmartPatcher(QObject):
     @state_message.deleter
     def state_message(self):
         self._state_message = "-"
-    
+
     @property
     def progress_message(self):
         return self._progress_message
@@ -533,7 +533,7 @@ class SmartPatcher(QObject):
     @progress_message.deleter
     def progress_message(self):
         self._progress_message = "-"
-    
+
     @property
     def operation_mode(self):
         return self._operation_mode
@@ -546,8 +546,8 @@ class SmartPatcher(QObject):
     @operation_mode.deleter
     def operation_mode(self):
         self._operation_mode = 'default'
-    
-    
+
+
     @property
     def resistance_reference(self):
         return self._resistance_reference
@@ -557,7 +557,7 @@ class SmartPatcher(QObject):
     @resistance_reference.deleter
     def resistance_reference(self):
         self._resistance_reference = None
-    
+
     @property
     def target_coordinates(self):
         return self._target_coordinates
@@ -573,7 +573,7 @@ class SmartPatcher(QObject):
     @target_coordinates.deleter
     def target_coordinates(self):
         self._pipette_coordinates = np.array([None, None, None])
-    
+
     @property
     def pipette_coordinates_pair(self):
         return self._pipette_coordinates_pair

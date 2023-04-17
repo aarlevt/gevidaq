@@ -5,8 +5,8 @@ Created on Fri Jul 10 11:07:21 2020
 
 @author: Izak de Heer
 
-This script is used to compare the precision and accuracy of both manual and 
-automated recognition of registration grid points for cirlces and touching 
+This script is used to compare the precision and accuracy of both manual and
+automated recognition of registration grid points for cirlces and touching
 squares patterns.
 """
 

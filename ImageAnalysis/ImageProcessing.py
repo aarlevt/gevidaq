@@ -69,7 +69,7 @@ class ProcessImage:
     -- For photo current calculation.
     -- PMT contour scan processing.
     -- For making graphs.
-    
+
     """
     #%%
     """
@@ -198,9 +198,9 @@ class ProcessImage:
         return RoundNumberList, CoordinatesList, fileNameList
 
     #%%
-    """           
+    """
     # =========================================================================
-    #       Individual image processing (traditional)  
+    #       Individual image processing (traditional)
     # =========================================================================
     """
 
@@ -734,9 +734,9 @@ class ProcessImage:
             return False
 
     #%%
-    """           
+    """
     # =========================================================================
-    #     Contour scanning processing       
+    #     Contour scanning processing
     # =========================================================================
     """
 
@@ -1384,7 +1384,7 @@ class ProcessImage:
             return
 
         return ContourArray_forDaq
-    
+
     def SNR_2P_calculation(
         path,
         method = "Average over each contour 100 points"
@@ -1406,62 +1406,62 @@ class ProcessImage:
 
         """
         cell=np.load(path,allow_pickle=True)
-        
+
         method = "Average over each contour 100 points"
         # method = "Average over 5000 trials"
-        
-        
+
+
         if method == "Average over each contour 100 points":
             avg_cell_trace = np.mean(cell.reshape(5000, 100), axis = 1)
-            
+
             plt.figure()
             plt.title('Average trace')
             plt.plot(avg_cell_trace)
-            plt.show()  
-            
+            plt.show()
+
             fluorescence_trace_normalized = ProcessImage.Biexponential_fit(avg_cell_trace, sampling_rate = 500)
-            
+
             SNR = ProcessImage.signal_to_noise(fluorescence_trace_normalized[200:1000])
-            
+
             plt.figure()
             plt.title('Normalized trace, SNR = {}'.format(SNR))
             plt.plot(fluorescence_trace_normalized[200:1000])
             plt.show()
-            
+
         elif method == "Average over 5000 trials":
             # Average over 5000 traces
             avg_cell_trace = np.mean(cell.reshape(5000, 100), axis = 0)
-            
+
             plt.figure()
             plt.title('Average trace')
             plt.plot(avg_cell_trace)
-            plt.show()  
-                    
+            plt.show()
+
             std_list = []
             for each_point_index in range(100):
-                
+
                 # collect each time position over all loops
                 individual_points_array = []
                 for i in range(5000):
                     individual_points_array.append(cell[100 * i + each_point_index])
-                
+
                 if each_point_index == 17:
                     sample_point_array = individual_points_array
                     std_sample_point = np.std(np.array(sample_point_array))
-                    
+
                     plt.figure()
                     plt.title('Point 17, over 5000 trials(SNR = {})'.format(ProcessImage.signal_to_noise(sample_point_array)))
                     plt.hist(sample_point_array, 100)
                     plt.show()
-                            
+
                     # Average over 50 points
-                    avg_std_sample_point = np.mean(np.array(sample_point_array).reshape(50, 100), axis = 0)       
+                    avg_std_sample_point = np.mean(np.array(sample_point_array).reshape(50, 100), axis = 0)
                     plt.figure()
                     plt.title('Point 17, SNR = {}'.format(ProcessImage.signal_to_noise(avg_std_sample_point)))
                     plt.hist(avg_std_sample_point, 30)
                     plt.xlim(0.2, 0.6)
-                    plt.show()        
-                    
+                    plt.show()
+
                 std_each_point = np.std(np.array(individual_points_array))
                 std_list.append(std_each_point)
 
@@ -1492,17 +1492,17 @@ class ProcessImage:
         """
 
         mask = np.zeros(mask_resolution)
-        
+
         if fill_contour:
-            for roi in list_of_rois:    
+            for roi in list_of_rois:
                 mask += polygon2mask(mask_resolution, roi)
         else:
             for roi in list_of_rois:
                 mask[polygon_perimeter(roi[:, 0], roi[:, 1], mask_resolution)] = 1
-    
+
             for _ in range(contour_thickness):
-                mask += binary_dilation(binary_dilation(mask))        
-        
+                mask += binary_dilation(binary_dilation(mask))
+
         # Make sure the mask is binary
         mask = (mask > 0).astype(int)
 
@@ -1898,7 +1898,7 @@ class ProcessImage:
                 cell_contour_mask_dilated = ProcessImage.inward_mask_dilation(
                     cell_contour_mask, CellMask_roi, dilation_parameter=7
                 )
-                
+
                 # Trim the contour mask
                 cell_contour_mask_processed = opening(
                     cell_contour_mask_dilated, square(4)
@@ -1917,7 +1917,7 @@ class ProcessImage:
                     # axs[2].set_title("Cell contour trimed")
                     # axs[2].set_xticks([])
                     plt.show()
-                
+
                 # -------------Calculate intensity based on masks---------------
                 # Mean pixel value of cell membrane.
                 cell_contour_meanIntensity = np.mean(
@@ -1928,26 +1928,26 @@ class ProcessImage:
                 cell_area_meanIntensity = np.mean(
                     RawImg_roi[np.where(CellMask_roi == 1)]
                 )
-                
+
                 # Mean pixel value of soma area.
                 cell_soma_mask = CellMask_roi - cell_contour_mask_dilated
                 cell_soma_meanIntensity = np.mean(
                     RawImg_roi[np.where(cell_soma_mask == 1)]
                 )
-                
+
                 # Calculate the contour/soma intensity ratio.
                 cell_contourSoma_ratio = round(
                     cell_contour_meanIntensity / cell_soma_meanIntensity, 5
-                )  
-                
+                )
+
                 boundingbox_info = "minr{}_maxr{}_minc{}_maxc{}".format(
                     ROIlist[0], ROIlist[2], ROIlist[1], ROIlist[3]
                 )
-                
+
                 #-------------------- Getting pixel numbers ------------------
                 cell_contour_mask_pixel_number = len(np.where(cell_contour_mask_dilated == 1)[0])
                 cell_whole_mask_pixel_number = len(np.where(CellMask_roi == 1)[0])
-                
+
                 if False:
                     # print("Membrane pixel number: {}".format(len(np.where(cell_contour_mask_dilated == 1)[0])))
                     print("Confidence score: {}".format(MLresults['scores'][eachROI]))
@@ -1955,7 +1955,7 @@ class ProcessImage:
                     print("Mean pixel value of contour {}".format(cell_contour_meanIntensity))
                     print("Mean pixel value of whole cell area {}".format(cell_area_meanIntensity))
                     print(" contour/soma intensity ratio {}".format(cell_contourSoma_ratio))
-                
+
                 # If the cell is too big or small, skip it.
                 if len(np.where(CellMask_roi == 1)[0]) < 2500 or len(np.where(CellMask_roi == 1)[0]) > 500:
                     if flat_cell_counted_inImage == 0:
@@ -2000,17 +2000,17 @@ class ProcessImage:
                                 "BoundingBox",
                                 "Mean_intensity",
                                 "Mean_intensity_in_contour",
-                                "Contour_soma_ratio",                                
+                                "Contour_soma_ratio",
                                 "contour_mask_pixel_number",
                                 "whole_cell_mask_pixel_number"
                             ],
                             index=["Cell {}".format(add_up_cell_counted_number)],
                         )
                         Cell_DataFrame = Cell_DataFrame.append(Cell_DataFrame_new)
-    
+
                     add_up_cell_counted_number += 1
                     flat_cell_counted_inImage += 1
-    
+
                     total_cells_identified += 1
 
             elif MLresults["class_ids"][eachROI] == 2:  # Round cells
@@ -3294,7 +3294,7 @@ class ProcessImage:
         interpolated = f(xnew)
 
         return interpolated
-    
+
     def threshold_seperator(array, threshold):
         """
         Given a array and a threshold, devide the array into above and below parts,
@@ -3317,14 +3317,14 @@ class ProcessImage:
         """
         upper_index_dict = {}
         lower_index_dict = {}
-        
+
         for i in range(2):
         # Each loop for either upper or lower part
             if i == 0:
                 qualified_index_array = np.where(array >= threshold)[0]
             else:
                 qualified_index_array = np.where(array < threshold)[0]
-            
+
             # Generate the discontinue index list
             discontinue_index_list = []
             for qualified_index in range(len(qualified_index_array)):
@@ -3332,25 +3332,25 @@ class ProcessImage:
                     # Find the disconnect point
                     if qualified_index_array[qualified_index] - qualified_index_array[qualified_index-1] > 1:
                         discontinue_index_list.append(qualified_index)
-                        
+
             phase_index = 0
-            
+
             for index in range(len(discontinue_index_list) + 1):
                 if phase_index == 0:
                 # For the first phase detected
                     start_index = 0
                     start_index_of_next_phase = discontinue_index_list[0] -1
-                    
+
                 elif phase_index < len(discontinue_index_list):
                 # For the middle ones
                     start_index = discontinue_index_list[index - 1]
                     start_index_of_next_phase = discontinue_index_list[index] -1
-                    
+
                 elif phase_index == len(discontinue_index_list):
                 # For the end of the phase
                     start_index = discontinue_index_list[index - 1]
                     start_index_of_next_phase = len(qualified_index_array) -1
-            
+
                 if i == 0:
                 # For the upper part
                     upper_index_dict["phase {}".format(str(phase_index))] = [qualified_index_array[start_index], qualified_index_array[start_index_of_next_phase] + 1]
@@ -3358,11 +3358,11 @@ class ProcessImage:
                 else:
                 # For the lower part
                     lower_index_dict["phase {}".format(str(phase_index))] = [qualified_index_array[start_index], qualified_index_array[start_index_of_next_phase] + 1]
-                    
-                phase_index += 1                    
-                
+
+                phase_index += 1
+
         return upper_index_dict, lower_index_dict
-    
+
     def Biexponential_fit(data, sampling_rate):
         """
         Give a 1D trace, do bi-exponential fit on it.
@@ -3381,14 +3381,14 @@ class ProcessImage:
 
         """
         time_axis = np.arange(len(data))/sampling_rate
-        
+
         # Bi-exponential curve for the fitting algorithm
         def bleachfunc(t, a, t1, b, t2):
             return a * np.exp(-(t / t1)) + b * np.exp(-(t / t2))
-    
+
         # Parameter bounds for the parameters in the bi-exponential function
         parameter_bounds = ([0, 0, 0, 0], [np.inf, np.inf, np.inf, np.inf])
-    
+
         # popt   = Optimal parameters for the curve fit
         # pcov   = The estimated covariance of popt
         popt, pcov = curve_fit(
@@ -3398,7 +3398,7 @@ class ProcessImage:
             bounds=parameter_bounds,
             maxfev=500000,
         )
-    
+
         # Vizualization before photobleach normalization
         fig1, ax = plt.subplots(figsize=(8.0, 5.8))
         (p01,) = ax.plot(
@@ -3426,14 +3426,14 @@ class ProcessImage:
         ax.xaxis.set_ticks_position("bottom")
         ax.yaxis.set_ticks_position("left")
         plt.show()
-    
+
         # Normalization of fluorescence signal (e.g., division by the fit)
         fluorescence_trace_normalized = np.true_divide(
             data, bleachfunc(time_axis, *popt)
         )
-        
-        return fluorescence_trace_normalized      
-    
+
+        return fluorescence_trace_normalized
+
     def Protein_biexponential_fit(data, swing, sampling_rate):
         """
         Give a 1D trace, do bi-exponential fit on it.
@@ -3451,7 +3451,7 @@ class ProcessImage:
             DESCRIPTION.
 
         """
-        
+
         time_axis = np.arange(len(data))/sampling_rate
 
         # =============================================================================
@@ -3461,14 +3461,14 @@ class ProcessImage:
         #     ) was defined as C above.
         # =============================================================================
         def func(t, A, t1, C, t2):
-            return A * (C * np.exp(-(t / t1)) + (1 - C) * np.exp(-(t / t2)))          
-        
+            return A * (C * np.exp(-(t / t1)) + (1 - C) * np.exp(-(t / t2)))
+
         if swing == "upswing":
             data -= np.max(data)
             parameter_bounds = ([-np.inf, 0, 0, 0], [0, 1, 1, 1])
         elif swing == "downswing":
             data -= np.min(data)
-            parameter_bounds = ([0, 0, 0, 0], [np.inf, 1, 1, 1])   
+            parameter_bounds = ([0, 0, 0, 0], [np.inf, 1, 1, 1])
         # popt   = Optimal parameters for the curve fit
         # pcov   = The estimated covariance of popt
         popt, pcov = curve_fit(
@@ -3478,7 +3478,7 @@ class ProcessImage:
             bounds=parameter_bounds,
             maxfev=500000,
         )
-        
+
         # Find the fast and slow constant
         upswing_fast_constant = min([popt[1], popt[3]])
         upswing_slow_constant = max([popt[1], popt[3]])
@@ -3488,7 +3488,7 @@ class ProcessImage:
             upswing_fast_component_percentage = 1 - popt[2]
         else:
             upswing_fast_component_percentage = popt[2]
-    
+
         # Vizualization before photobleach normalization
         fig1, ax = plt.subplots(figsize=(8.0, 5.8))
         (p01,) = ax.plot(
@@ -3527,18 +3527,18 @@ class ProcessImage:
             ],
         )
         plt.show()
-    
+
         # Normalization of fluorescence signal (e.g., division by the fit)
         fluorescence_trace_normalized = np.true_divide(
             data, func(time_axis, *popt)
         )
-        
-        return fluorescence_trace_normalized      
-    
+
+        return fluorescence_trace_normalized
+
     def PhotoBleachingCorrection(data, sampling_rate, show_fitting = True, normalize_method = "true divide"):
         """
         Give a 1D trace, do bi-exponential fit on it.
-    
+
         Parameters
         ----------
         data : np array
@@ -3550,24 +3550,24 @@ class ProcessImage:
         normalize_method: string
             "true divide": Normalization of fluorescence signal (e.g., division by the fit)
             "substract": Normalize by just substracting the fitting trace.
-        
+
         Returns
         -------
         fluorescence_trace_normalized : np.array
             Corrected trace.
         fitting_stacts : dict
             Dictionary offering fitting data
-    
+
         """
         time_axis = np.arange(len(data))/sampling_rate
-        
+
         # Bi-exponential curve for the fitting algorithm
         def bleachfunc(t, scale, a, t1, t2):
             return scale * (a * np.exp(-(t / t1)) + (1 - a) * np.exp(-(t / t2)))
-    
+
         # Parameter bounds for the parameters in the bi-exponential function
         parameter_bounds = ([-np.inf, 0, 0, 0], [np.inf, 1, np.inf, np.inf])
-    
+
         # popt   = Optimal parameters for the curve fit
         # pcov   = The estimated covariance of popt
         popt, pcov = curve_fit(
@@ -3577,10 +3577,10 @@ class ProcessImage:
             bounds=parameter_bounds,
             maxfev=500000,
         )
-        
+
         # fast_component_percentage, from 0 to 1
         fast_component_percentage = popt[1]
-        
+
         # Get the fast tau, smaller one of the two.
         if popt[2] > popt[3]:
             fast_tau_component = popt[3]
@@ -3588,17 +3588,17 @@ class ProcessImage:
         else:
             fast_tau_component = popt[2]
             slow_tau_component = popt[3]
-        
-        # Summarize fitting 
+
+        # Summarize fitting
         fitting_stacts = {}
         fitting_stacts['fast_component_percentage'] = fast_component_percentage
         fitting_stacts['fast_tau_component'] = fast_tau_component
         fitting_stacts['slow_tau_component'] = slow_tau_component
         fitting_stacts['scale'] = popt[0]
-        
+
         # Reconstruct the fitting
         fitted_trace = bleachfunc(time_axis, *popt)
-        
+
         # ======== Vizualization before photobleach normalization ============
         if show_fitting:
             fig1, ax = plt.subplots(figsize=(6.0, 4))
@@ -3628,7 +3628,7 @@ class ProcessImage:
             ax.yaxis.set_ticks_position("left")
             plt.show()
         #=====================================================================
-        
+
         # Normalize
         if normalize_method == "true divide":
             # Normalization of fluorescence signal (e.g., division by the fit)
@@ -3637,15 +3637,15 @@ class ProcessImage:
             )
         elif normalize_method == "substract":
             fluorescence_trace_normalized = data - fitted_trace
-        
-        return fluorescence_trace_normalized, fitting_stacts   
+
+        return fluorescence_trace_normalized, fitting_stacts
 
 
     def ReducedChiSquared(measured_array,fit_array,n_params,plateau_percentage=0.25):
         """
         This function calculates the reduced chi squared given the measurements and the fitted curve. It works only
         when the measurement reaches a plateau value (important for the estimation of the variance).
-        
+
         Parameters
         ----------
         measured_array : 1D array
@@ -3659,7 +3659,7 @@ class ProcessImage:
         plateau_percentage : float, optional
             Percentage of the data points that make up the plateau value. In principle, an exponential function is
             extinguished after 5*tau, choose the threshold accordingly. The default is 0.25.
-    
+
         Returns
         -------
         float
@@ -3668,19 +3668,19 @@ class ProcessImage:
             if =1, the fit is good (within the noise);
             if <<1, the noise is overestimated, difficult to extrapolate conclusions
         """
-        
+
         #Calculation of the variance (noise) on the final points of the plateau
         variance=np.var(measured_array[int((1-plateau_percentage)*(len(measured_array)-1)):],ddof=1)
-        
+
         if len(measured_array)!=len(fit_array):
             raise ValueError('Measured array and fit array must have the same length!')
-        
+
         #Calculation of the Chi squared
         X2=np.sum((measured_array-fit_array)**2/variance)
-        
+
         #Calculation of the reduced Chi squared
         Reduced_X2=X2/(len(measured_array)-n_params)
-        
+
         return Reduced_X2
 
     #%%
@@ -3825,7 +3825,7 @@ class ProcessImage:
             output = np.max(image_stack, axis=0).astype(np.uint16)
 
         return output
-    
+
     def average_filtering(image, filter_side_length):
         """
         Convolution with a mean filter.
@@ -3844,9 +3844,9 @@ class ProcessImage:
 
         """
         image_mean_filtered = filters.convolve(
-            image, 
+            image,
             np.full((filter_side_length, filter_side_length), 1/filter_side_length**2))
-        
+
         return image_mean_filtered
     #%%
     """
@@ -3937,7 +3937,7 @@ class ProcessImage:
         for file in os.listdir(Nest_data_directory):
             if file_keyword  in file or "TIF" in file:
                 fileNameList.append(os.path.join(Nest_data_directory, file))
-        
+
         img_stack = []
         for each_file_name in fileNameList:
             # For each coordinate, find all position files in the stack, according to Zmax file name.
@@ -3946,17 +3946,17 @@ class ProcessImage:
             #     if each_file_name[0 : each_file_name.index("Zmax")] + "Zpos" in file:
             #         file_name_stack.append(file)
             # print(file_name_stack)
-            
-            # for file in file_name_stack: 
+
+            # for file in file_name_stack:
             img_stack.append(imread(each_file_name))
-            
+
         focus_degree_list, index_highest_focus_degree = ProcessImage.find_infocus_from_list(
-            img_stack, 
+            img_stack,
             method
         )
-        
+
         print(fileNameList[index_highest_focus_degree])
-        
+
         if save_image == True:
             # Save the file.
             with skimtiff.TiffWriter(
@@ -3991,11 +3991,11 @@ class ProcessImage:
                 focus_degree_list.append(ProcessImage.local_entropy(each_img, amax=None))
             elif method == "variance_of_laplacian":
                 focus_degree_list.append(ProcessImage.variance_of_laplacian(each_img.astype("float32")))
-            
+
         print(focus_degree_list)
-        
+
         index_highest_focus_degree = focus_degree_list.index(max(focus_degree_list))
-        
+
         return focus_degree_list, index_highest_focus_degree
 
     def cam_screening_post_processing(directory, seperate_folder = True, save_max_projection = True):
@@ -4032,10 +4032,10 @@ class ProcessImage:
                 for each_file_name in fileNameList:
                     if each_coordinate in each_file_name and each_round in each_file_name:
                         img_zstack_list.append(each_file_name)
-                    
+
                 coordinate_infor = each_coordinate
                 #each_file_name[each_file_name.index("Coord") : each_file_name.index("_Cam")]
-                
+
                 # ---------------------------------------------Calculate the z max projection-----------------------------------------------------------------------
                 ZStackOrder = 0
                 for each_z_img_filename in img_zstack_list:
@@ -4097,7 +4097,7 @@ class ProcessImage:
                            ) as tif:
                                tif.save(
                                    Cam_image_maxprojection.astype(np.uint16), compress=0
-                               )                       
+                               )
 
         # return img_zstack_list
 
@@ -4367,7 +4367,7 @@ class ProcessImage:
             focus_map_dict[Each_round] = final_focus_map_holder
 
         return focus_map_dict
-    
+
     #%%
     """
     # =============================================================================
@@ -4378,7 +4378,7 @@ class ProcessImage:
         main_directory,
         marker = "blankingall",
         rhodopsin="Not specified",
-    ):  
+    ):
         """
         Calculate and display the photocurrent.
 
@@ -4404,9 +4404,9 @@ class ProcessImage:
             if "Wavefroms_sr_" in file and "npy" in file:
                 wave_fileName = os.path.join(main_directory, file)
                 temp_wave_container = np.load(wave_fileName, allow_pickle=True)
-                
+
                 wave_file_sampling_rate = int(file[file.index("sr_")+3:file.index(".npy")])
-                
+
             if "Ip" in file and "npy" in file:
                 current_fileName = os.path.join(main_directory, file)
                 temp_current_container = np.load(current_fileName, allow_pickle=True)
@@ -4415,39 +4415,39 @@ class ProcessImage:
                 # Probe gain: low-100M ohem
                 # [DAQ recording / 10**8 (voltage to current)]* 10**12 (A to pA) == pA
                 current_curve = temp_current_container[6:len(temp_current_container)-1] * 10000
-                
+
                 patchcurrentlabel = np.arange(len(current_curve)) / wave_file_sampling_rate
-                
+
         # Get the blanking waveform as indication of laser on and off.
         for i in temp_wave_container:
             if i['Sepcification'] == marker:
                 blanking_waveform = i['Waveform'][1:len(i['Waveform'])-1]
 
         laser_on_phases, laser_off_phases= ProcessImage.threshold_seperator(blanking_waveform, 1)
-        
+
         laser_on_phase_current = []
         for phase_key in laser_on_phases:
-            
+
             current_each_phase = np.mean(current_curve[laser_on_phases[phase_key][0] : laser_on_phases[phase_key][1]])
             laser_on_phase_current.append(current_each_phase)
             # plt.figure()
             # plt.plot(current_each_phase)
             # plt.show()
-            
+
             # print("Mean value of each phase: {} pA".format(np.mean(current_each_phase)))
         laser_off_phase_current = []
         for phase_key in laser_off_phases:
-            
+
             current_each_phase = np.mean(current_curve[laser_off_phases[phase_key][0] : laser_off_phases[phase_key][1]])
-            laser_off_phase_current.append(current_each_phase)            
-        
+            laser_off_phase_current.append(current_each_phase)
+
         laser_on_phase_current = sum(laser_on_phase_current) / len(laser_on_phase_current)
         laser_off_phase_current = sum(laser_off_phase_current) / len(laser_off_phase_current)
         print("laser_on_phase_current: {}".format(laser_on_phase_current))
         print("laser_off_phase_current: {}".format(laser_off_phase_current))
-        
+
         photo_current = round(laser_on_phase_current - laser_off_phase_current, 3)
-        
+
         electrical_signals_figure, ax1 = plt.subplots(1, 1)
 
         ax1.plot(
@@ -4457,7 +4457,7 @@ class ProcessImage:
         ax1.set_xlabel("time(s)")
         ax1.set_ylabel("Current (pA)")
         plt.show()
-        
+
         if True:
             electrical_signals_figure.savefig(
                 (
@@ -4467,8 +4467,8 @@ class ProcessImage:
                     )
                 ),
                 dpi=1000,
-            )        
-        
+            )
+
     #%%
     """
     # =============================================================================
@@ -4482,7 +4482,7 @@ class ProcessImage:
         number_of_periods = 25
     ):
         """
-        For PMT contour scan, average over all contour points as one time point and 
+        For PMT contour scan, average over all contour points as one time point and
         plot the trace along time.
 
         Parameters
@@ -4501,33 +4501,33 @@ class ProcessImage:
 
         """
         raw_PMT_trace = np.load(path)[0:]
-        
+
         # Calculate the mean of 100 contour points as one point.
         avg_cell_trace = np.mean(raw_PMT_trace.reshape(len(raw_PMT_trace)//points_per_contour, points_per_contour), axis = 1)
-        
+
         time_axis = np.arange(len(avg_cell_trace))/(DAQ_sampling_rate/points_per_contour)
-        
+
         fig, ax = plt.subplots(figsize=(7.0, 4.8))
         plt.title('Average trace')
         plt.plot(time_axis, avg_cell_trace)
         ax.set_ylabel("Fluorescence (a.u.)", fontsize=11)
         ax.set_xlabel("Time (s)", fontsize=11)
-        plt.show()  
-        
+        plt.show()
+
         # Correct for photo-bleaching
         fluorescence_trace_normalized = ProcessImage.Biexponential_fit(avg_cell_trace, sampling_rate = DAQ_sampling_rate//points_per_contour)
 
         # time_axis = np.arange(len(fluorescence_trace_normalized))/DAQ_sampling_rate
-        
+
         fig, ax = plt.subplots(figsize=(7.0, 4.8))
         plt.title('Normalized trace')
         ax.set_ylabel("Fluorescence (a.u.)", fontsize=11)
         ax.set_xlabel("Time (s)", fontsize=11)
         ax.plot(time_axis, fluorescence_trace_normalized)
         plt.show()
-        
+
         # Average over repeative periods
-        # Average from the late 80% of the trials 
+        # Average from the late 80% of the trials
         fluorescence_trace_normalized_for_average = fluorescence_trace_normalized[round(len(fluorescence_trace_normalized)*0.2):]
 
         averaged_single_period = np.mean\
@@ -4536,30 +4536,30 @@ class ProcessImage:
 
         # For fitting, bring the last sample to the front as t=0
         averaged_single_period = np.roll(averaged_single_period, 1)
-        
+
         time_axis = np.arange(len(averaged_single_period))/(DAQ_sampling_rate/points_per_contour)
-        
+
         fig, ax = plt.subplots(figsize=(7.0, 4.8))
         plt.title('Averaged single period')
         plt.plot(time_axis, averaged_single_period)
         ax.set_ylabel("Fluorescence (a.u.)", fontsize=11)
         ax.set_xlabel("Time (s)", fontsize=11)
         plt.show()
-        
-        # SNR analysis        
+
+        # SNR analysis
         SNR = ProcessImage.signal_to_noise(fluorescence_trace_normalized[200:1000])
-        
+
         time_axis = np.arange(len(fluorescence_trace_normalized[200:1000]))/DAQ_sampling_rate
-        
+
         fig, ax = plt.subplots(figsize=(7.0, 4.8))
         plt.title('Selection of normalized trace, SNR = {}'.format(SNR))
         plt.plot(time_axis, fluorescence_trace_normalized[200:1000])
         ax.set_ylabel("Fluorescence (a.u.)", fontsize=11)
         ax.set_xlabel("Time (s)", fontsize=11)
         plt.show()
-        
+
         return averaged_single_period
-    
+
     def CurveFit_PMT(
         path,
         DAQ_sampling_rate = 50000,
@@ -4567,25 +4567,25 @@ class ProcessImage:
         step_voltage_frequency = 5,
         number_of_periods = 25
     ):
-        
+
         averaged_single_period = ProcessImage.PMT_contour_scan_processing(path, DAQ_sampling_rate, points_per_contour, number_of_periods)
-        
+
         mean_trace_sampling_rate = DAQ_sampling_rate//points_per_contour
-        
+
         single_period_1st_half = ProcessImage.Protein_biexponential_fit(averaged_single_period[0:int(len(averaged_single_period)/2)], swing = 'upswing', sampling_rate = mean_trace_sampling_rate)
-                             
+
         single_period_2nd_half = ProcessImage.Protein_biexponential_fit(averaged_single_period[int(len(averaged_single_period)/2) : len(averaged_single_period)], swing = 'downswing', sampling_rate = mean_trace_sampling_rate)
-          
-        
+
+
         # time_axis = np.arange(len(single_period_1st_half))/mean_trace_sampling_rate
-        
+
         # fig, ax = plt.subplots(figsize=(7.0, 4.8))
         # plt.title('single_period_1st_half trace')
         # ax.set_ylabel("Fluorescence (a.u.)", fontsize=11)
         # ax.set_xlabel("Time (s)", fontsize=11)
         # ax.plot(time_axis, single_period_1st_half)
         # plt.show()
-        
+
     #%%
     """
     # =============================================================================
@@ -4596,7 +4596,7 @@ class ProcessImage:
         path,
         title = "Boxplot",
         dark_style = False
-    ):  
+    ):
         """
         Making box plot of for example bringhtness screening comparison data.
 
@@ -4617,14 +4617,14 @@ class ProcessImage:
         # Read in file
         xls = pd.ExcelFile(path)
         excel_data_ = pd.read_excel(xls)
-        
+
         # Put each column to list
         data_to_list = []
         for column in excel_data_:
             data_to_list.append(excel_data_[column].dropna().tolist())
-            
+
         # plt.style.use('dark_background')
-        
+
         fig, ax = plt.subplots()
         # Boxplot settings
         # boxprops = dict(linestyle='--', \
@@ -4634,32 +4634,32 @@ class ProcessImage:
         # flierprops = dict(marker='o', markerfacecolor='gray', markersize=4,
         #                   linestyle='none')
         # meanlineprops = dict(linestyle='-', linewidth=3, color='lavender')
-        
+
         # To add n numbers
         number_of_cells = []
         for data in data_to_list:
             number_of_cells.append(len(data))
-            
+
             # Calculate the mean value
             column_mean_value = sum(data) / len(data)
             print('Mean value: {}'.format(column_mean_value))
-            
+
         column_names = list(excel_data_.columns)
 
         listed_facts = []
         for each_varient in range(len(column_names)):
-            listed_facts.append(column_names[each_varient]+'\n'+'n = '+str(number_of_cells[each_varient]))    
-            
+            listed_facts.append(column_names[each_varient]+'\n'+'n = '+str(number_of_cells[each_varient]))
+
         # =========================== Perform T-test =================================
         for i in range(len(listed_facts)):
             print("Fixed item for ttest in this round: {}".format(listed_facts[i]))
             for j in range(len(listed_facts)):
                 print("The other item: {}".format(listed_facts[j]))
                 #perform two sample t-test with unequal variances
-                print(stats.ttest_ind(a=data_to_list[i], b=data_to_list[j], equal_var=True))            
-        
+                print(stats.ttest_ind(a=data_to_list[i], b=data_to_list[j], equal_var=True))
+
         xticks_pos_list = list(range(0,len(column_names)))
-        
+
         # Build the plot
         # fig, ax = plt.subplots(figsize=(10.0, 8))
         # fig, ax = plt.subplots()
@@ -4669,28 +4669,28 @@ class ProcessImage:
         # ax.boxplot(data_to_list, positions = xticks_pos_list, \
         #            notch=True, patch_artist=True, boxprops=boxprops, \
         #                flierprops=flierprops, medianprops=meanlineprops)
-        
+
         # Hide the right and top spines
         ax.spines['right'].set_visible(False)
         ax.spines['top'].set_visible(False)
-        
+
         # Only show ticks on the left and bottom spines
         ax.yaxis.set_ticks_position('left')
         ax.xaxis.set_ticks_position('bottom')
-        
+
         ax.set_ylabel(title)
         plt.xticks(xticks_pos_list, listed_facts)
-        
+
         ax.set_title(" ")
-        
+
         bar_plot = True
-        
+
         if bar_plot == True:
             x_pos = np.arange(len(listed_facts))+1
 
             # Build the plot
             fig, ax = plt.subplots(figsize=(10.0, 8))
-            
+
             CTEs=[]
             error=[]
             for each_data_list in data_to_list:
@@ -4699,7 +4699,7 @@ class ProcessImage:
                 std = np.std(np.array(each_data_list))
                 sem = std / np.sqrt(len(each_data_list))
                 error.append(sem)
-                
+
             ax.bar(x_pos, CTEs,
                     width=0.3,
                     color='lightsteelblue',
@@ -4711,13 +4711,13 @@ class ProcessImage:
                     ecolor='black',
                     error_kw=dict(lw=2, capsize=7, capthick=2),
                     capsize=14)
-            
-                
+
+
             # Add the scatters
             # for i in range(len(listed_facts)):
             #     for each_point in range(len(data_to_list[i])):
             #         ax.scatter(x_pos[i], data_to_list[i][each_point], color='grey')
-            
+
             ax.set_xticks(x_pos)
             ax.set_xticklabels(listed_facts)
             # ax.set_xticklabels([])
@@ -4726,55 +4726,55 @@ class ProcessImage:
             # ax.set_title(title)
             # plt.yticks(np.arange(0, max(CTEs)+2, 2.0))
             ax.yaxis.grid(False)
-            
+
             # Hide the right and top spines
             ax.spines['right'].set_visible(False)
             ax.spines['top'].set_visible(False)
-            
+
             # Only show ticks on the left and bottom spines
             ax.yaxis.set_ticks_position('left')
             ax.spines['left'].set_linewidth(2)
             ax.xaxis.set_ticks_position('bottom')
             ax.spines['bottom'].set_linewidth(2)
-                
+
             # Save the figure and show
             plt.tight_layout()
             # plt.savefig('bar_plot_with_error_bars.png')
             plt.show()
-    
+
     def Screening_scatters_3D(
         path,
         dark_style = False
-    ):  
+    ):
         xls = pd.ExcelFile(path)
-        
+
         excel_data_ = pd.read_excel(xls)
-        
+
         if dark_style == True:
             plt.style.use('dark_background')
-        
+
         fig = plt.figure()
         ax = Axes3D(fig)
-        
+
         sequence_containing_x_vals = excel_data_["Lib_Tag_contour_ratio"]
         sequence_containing_y_vals = excel_data_["Contour_soma_ratio_Lib"]
         sequence_containing_z_vals = excel_data_["Mean_intensity_in_contour_Lib"]
-        
+
         ax.scatter(sequence_containing_x_vals, \
                    sequence_containing_y_vals, \
                    sequence_containing_z_vals, \
                    c=excel_data_["Lib_Tag_contour_ratio"]+\
                    excel_data_["Contour_soma_ratio_Lib"]+\
                    excel_data_["Mean_intensity_in_contour_Lib"],cmap='jet')
-        
+
         plt.xlim(0, 5)
         plt.ylim(1, 5)
-        
+
         ax.set_xlabel('Arch/eGFP ratio')
         ax.set_ylabel('Contour/soma ratio')
         ax.set_title("Mutants performance space")
         ax.set_zlabel('Absolute intensity')
-        
+
         plt.show()
 
     def Compare_df_bargraph(
@@ -4783,10 +4783,10 @@ class ProcessImage:
         key_field = ['df/f'],
         title = "",
         dark_style = False
-    ):  
+    ):
         """
         Generating bar graph of comparision between mutants' df/f from sheets in excel.
-    
+
         Parameters
         ----------
         path : str
@@ -4799,44 +4799,44 @@ class ProcessImage:
             Title of the graph. The default is "Boxplot".
         dark_style : bol, optional
             If to use dark style. The default is False.
-    
+
         Returns
         -------
         None.
-    
+
         """
         # Read in file
         xls = pd.ExcelFile(path)
-        
+
         # For time constant, if fast component percentage is lower than this threshold,
         # instead of showing fast time constant only, generate a overall constant that
-        # is the percentage sum of fast and slow constant. 
+        # is the percentage sum of fast and slow constant.
         fast_constant_percentage_threshold = 40
-        
+
         for plotting_property in key_field:
-    
+
             data_list = []
             for each_sheet in sheet_dictionary:
-                
+
                 data_frame_each_sheet = pd.read_excel(xls, each_sheet)
-                
+
                 if sheet_dictionary[each_sheet] == None:
                     # If all rows in the sheet are valid data
                     column_values = data_frame_each_sheet\
                                      [plotting_property].values
-                                     
+
                     if plotting_property == "upswing fast tau(s)":
                         Tfast_percentage_values = data_frame_each_sheet\
                                          ["fast constant percentage(%)"].values
                         Tslow_values = data_frame_each_sheet\
-                                         ["upswing slow tau(s)"].values                      
-                                         
+                                         ["upswing slow tau(s)"].values
+
                 else:
                     # If sheet_dictionary says the range of valid data
                     column_values = data_frame_each_sheet.iloc\
                                     [sheet_dictionary[each_sheet][0]:sheet_dictionary[each_sheet][1]]\
                                     [plotting_property].values
-                                    
+
                     if plotting_property == "upswing fast tau(s)":
                         Tfast_percentage_values = data_frame_each_sheet\
                                     [sheet_dictionary[each_sheet][0]:sheet_dictionary[each_sheet][1]]\
@@ -4844,66 +4844,66 @@ class ProcessImage:
                         Tslow_values = data_frame_each_sheet\
                                     [sheet_dictionary[each_sheet][0]:sheet_dictionary[each_sheet][1]]\
                                     ["upswing slow tau(s)"].values
-                                         
+
                 # Data type check
                 delete_index = []
                 for each_content_index in range(len(column_values)):
-        
+
                     # if not a float number, delete it.
                     if type(column_values[each_content_index]) != np.float64 and type(column_values[each_content_index]) != float:
                         delete_index.append(each_content_index)
-                        
+
                 column_values = np.delete(column_values, delete_index)
-        
-                for each_content_index in range(len(column_values)):           
+
+                for each_content_index in range(len(column_values)):
                     # In case of plotting time constants, make the selection here
                     if plotting_property == "upswing fast tau(s)":
-                        
+
                         # For the time constant, if fast component percentage is too low
                         if float(Tfast_percentage_values[each_content_index]) < fast_constant_percentage_threshold:
                             # delete_index.append(each_content_index)
                             fast_time_constant = column_values[each_content_index]
                             fast_time_constant_percentage = Tfast_percentage_values[each_content_index]/100
                             slow_time_constant = Tslow_values[each_content_index]
-        
+
                             overall_time_constant = fast_time_constant * fast_time_constant_percentage\
                                                     + slow_time_constant * (1 - fast_time_constant_percentage)
-                                                    
+
                             column_values[each_content_index] = overall_time_constant
-                            
-                
+
+
                 # Get rid of the nan
                 column_values = [x for x in column_values if str(x) != 'nan']
-                
+
                 if plotting_property == "upswing fast tau(s)":
                     # convert to ms
                     column_values  = [element * 1000 for element in column_values]
-                 
+
                 data_list.append(column_values)
-            
+
             CTEs = []
             error = []
             number_of_cells = []
-        
+
             for data in data_list:
                 # Calculate the average
                 mean = np.mean(data)
                 CTEs.append(mean)
-                
+
                 # Calculate the standard deviation
                 std = np.std(data)
                 error.append(std)
-                
+
                 number_of_cells.append(len(data))
-            
+
             listed_facts = []
             for each_varient in sheet_dictionary:
                 listed_facts.append(each_varient)
                 # listed_facts.append(sheet_dictionary[each_varient]+'\n'+'n = '+str(number_of_cells[each_varient]))
-            
+
             # Define labels, positions, bar heights and error bar heights
             x_pos = np.arange(len(sheet_dictionary))
-            
+
             # Build the plot
             fig, ax = plt.subplots(figsize=(10.0, 8))
             ax.bar(x_pos, CTEs,
@@ -4913,12 +4913,12 @@ class ProcessImage:
                    ecolor='black',
                    error_kw=dict(lw=2, capsize=7, capthick=2),
                    capsize=14)
-            
+
             # Add the scatters
             for i in range(len(sheet_dictionary)):
                 for each_point in range(len(data_list[i])):
                     ax.scatter(x_pos[i], data_list[i][each_point], color='grey')
-            
+
             if plotting_property == "df/f":
                 ax.set_ylabel('ΔF/F(%) to 100mv', fontsize=14)
             elif plotting_property == "upswing fast tau(s)":
@@ -4932,22 +4932,22 @@ class ProcessImage:
             ax.set_title(title)
             # plt.yticks(np.arange(0, max(x)+1, 1.0))
             ax.yaxis.grid(False)
-            
+
             # Hide the right and top spines
             ax.spines['right'].set_visible(False)
             ax.spines['top'].set_visible(False)
-            
+
             # Only show ticks on the left and bottom spines
             ax.yaxis.set_ticks_position('left')
             ax.spines['left'].set_linewidth(2)
             ax.xaxis.set_ticks_position('bottom')
             ax.spines['bottom'].set_linewidth(2)
-            
+
             # Save the figure and show
             plt.tight_layout()
             # plt.savefig('bar_plot_with_error_bars.png')
             plt.show()
-            
+
     #%%
     # =============================================================================
     #     Curve fitting, updated version
@@ -4964,10 +4964,10 @@ class PatchAnalysis:
         main_directory=None,
         rhodopsin="Not specified",
     ):
-        
+
         """
         # ========================== Workflow ================================
-        
+
         # ---------------- Input for initialization of the class -------------
         # weighted_trace   = Weighted trace of fluorescence signal
         # waveform       = waveform generated from Native Instruments DAQ, here is The configured Vp trace
@@ -4977,39 +4977,39 @@ class PatchAnalysis:
         # camera_fps     = Frames per second of the recording camera
         # V_Hz           = Frequency of the periodic voltage waveform
         # DAQ_sampling_rate         = Sampling frequency of provided voltage waveform
-        # skip           = Skip(number of periods in the beginning) to period where rhodopsin has reach steady state fluorescence        
-        
+        # skip           = Skip(number of periods in the beginning) to period where rhodopsin has reach steady state fluorescence
+
         # === Use bi-exponential fit to correct photo bleaching
-        # === 
-        
-        
+        # ===
+
+
         # ====================================================================
         """
 
         self.weighted_trace = weighted_trace
         self.actual_frame_number = len(self.weighted_trace)
-        
+
         self.waveform = DAQ_waveform
-        
+
         self.camera_fps = camera_fps
-        
+
         self.DAQ_sampling_rate = DAQ_sampling_rate
-        
+
         self.skip = int(Skip_periods)
 
         self.rhodopsin = rhodopsin
-        
+
         # Total time in seconds
         self.total_time = round(len(self.waveform) / DAQ_sampling_rate)
-        
+
         # Total number of patch voltage steps
         self.total_number_of_votalgeSteps = int(self.total_time * voltage_step_frequency)
 
         self.main_directory = main_directory
-        
+
         # ====================================================================
         self.desired_frame_number = self.total_time * self.camera_fps
-        
+
         # Sometimes there's missing frame at the beginning of the video
         self.missing_frame_number = self.desired_frame_number - self.actual_frame_number
         if self.missing_frame_number != 0:
@@ -5018,15 +5018,15 @@ class PatchAnalysis:
         else:
             self.missing_frame_flag = False
             print("No frame number")
-        
+
         # Check if waveform length is multiple of desired_frame_number
         self.waveform_binning_factor = len(self.waveform) / self.desired_frame_number
-        
+
         if self.waveform_binning_factor.is_integer():
             pass
         else:
             print("DAQ_waveform length doesn't fit")
-            
+
         # Calculate how many frames should be assigned to each voltage period
         self.frame_number_per_voltage_step = self.desired_frame_number / self.total_number_of_votalgeSteps
 
@@ -5034,8 +5034,8 @@ class PatchAnalysis:
             self.frame_number_per_voltage_step = int(self.frame_number_per_voltage_step)
         else:
             print("Error: frame_number_per_voltage_step")
-        
-        
+
+
     def Photobleach(self):
         """
         Do bleaching correction on the weighted trace.
@@ -5047,7 +5047,7 @@ class PatchAnalysis:
         # Time axis for camera fluorescence signal
         self.time = (
             np.arange(self.actual_frame_number) / self.camera_fps
-        )  
+        )
 
         # Bi-exponential curve for the fitting algorithm
         def bleachfunc(t, a, t1, b, t2):
@@ -5108,12 +5108,12 @@ class PatchAnalysis:
         self.fluorescence_trace_for_sensitivity = np.true_divide(
             self.weighted_trace, bleachfunc(self.time, *popt)
         )
-        
+
         if True:
             np.save(os.path.join(
                             self.main_directory,
                             "Patch analysis//fluorescence_trace_for_sensitivity.npy"), self.fluorescence_trace_for_sensitivity)
-            
+
         # Here substract the fitted base line in order to calculate time constants.
         self.fluorescence_for_kinetics = self.weighted_trace - bleachfunc(
             self.time, *popt
@@ -5162,37 +5162,37 @@ class PatchAnalysis:
                 dpi=1000,
             )
 
-    
+
     def ExtractPeriod(self):
-        
+
         # ================= Cut out the skipping periods =====================
         # Here use self.fluorescence_trace_for_sensitivity
         self.skip_frame_number = int(self.frame_number_per_voltage_step * self.skip - self.missing_frame_number)
 
         self.weighted_trace_trimed = self.fluorescence_trace_for_sensitivity[self.skip_frame_number:]
-        
+
         # ================= Calculate an averaged period =====================
 
         self.used_number_of_votalgeSteps = int(self.total_number_of_votalgeSteps - self.skip)
 
         self.averaged_single_period = np.mean(\
         self.weighted_trace_trimed.reshape((self.used_number_of_votalgeSteps, self.frame_number_per_voltage_step)), axis = 0)
-        
+
         # Time axis in seconds
         self.single_period_time_axis = np.arange(len(self.averaged_single_period)) / self.camera_fps
-        
+
         # ========== Daq signals in an averaged period ==========
         #   Camera triggers: True True ... True True | False ... False False
         #   Voltage patch:   0.3  0.3  ... 0.3  0.3  | -0.7  ... -0.7  -0.7
-        
+
         # For fitting, bring the last sample to the front as t=0
         self.averaged_single_period = np.roll(self.averaged_single_period, 1)
-        
+
         # # Move baseline to 1.
         # self.averaged_single_period += 1 - np.amin(self.averaged_single_period)
-        
+
     def FitSinglePeriod(self):
-        
+
         fig5, ax = plt.subplots(figsize=(10.0, 8))
 
         # ===== Bi-exponential function for the fitting algorithm =====
@@ -5207,9 +5207,9 @@ class PatchAnalysis:
             return A * (C * np.exp(-(t / t1)) + (1 - C) * np.exp(-(t / t2)))
 
         parameter_bounds = ([-np.inf, 0, 0, 0], [np.inf, 0.1, 1, 1])
-        
+
         fitting_length = int(len(self.averaged_single_period)/2)
-        
+
         # ========================= Upswing ==================================
 
         # First half time axis for fitting in seconds
@@ -5218,7 +5218,7 @@ class PatchAnalysis:
         self.upswing_single_period_raw = self.averaged_single_period[:fitting_length]
         # self.upswing_single_period += np.amin(self.upswing_single_period)
         self.upswing_single_period = self.upswing_single_period_raw - np.amax(self.upswing_single_period_raw)
-        
+
         # Curve fitting of every isolated signal, similar to the photobleach algorithm
         popt, pcov = curve_fit(
             func,
@@ -5261,7 +5261,7 @@ class PatchAnalysis:
             np.save(os.path.join(
                             self.main_directory,
                             "Patch analysis//avg_fluorescence_upswing_half.npy"), self.upswing_single_period)
-            
+
         # Axis and labels for fig
         ax.set_title("Bi-exponential fitting of averaged up-swings", size=14)
         ax.set_ylabel("Fluorescence (a.u.)", fontsize=11)
@@ -5292,16 +5292,16 @@ class PatchAnalysis:
                 ),
                 dpi=1200,
             )
-            
+
         # ===== Single exponential function for the fitting algorithm =====
 
         fig5_2, ax_2 = plt.subplots(figsize=(10.0, 8))
-        
+
         def func_single_exponential(t, A, t1):
             return A * (np.exp(-(t / t1)))
 
         parameter_bounds_single_exponential = ([-np.inf, 0], [np.inf, 0.1])
-        
+
         # Curve fitting of every isolated signal, similar to the photobleach algorithm
         popt, pcov = curve_fit(
             func_single_exponential,
@@ -5329,7 +5329,7 @@ class PatchAnalysis:
             color=(0.9, 0, 0),
             label="Single exponential fit",
         )
-            
+
         # Axis and labels for fig
         ax_2.set_title("Single exponential fitting of averaged up-swings", size=14)
         ax_2.set_ylabel("Fluorescence (a.u.)", fontsize=11)
@@ -5359,14 +5359,14 @@ class PatchAnalysis:
             )
 
         # =========================== Downswing ==============================
-        
+
         # Last half of trace for fitting
         self.downswing_single_period_raw = self.averaged_single_period[fitting_length:]
         self.downswing_single_period = self.downswing_single_period_raw - np.amin(self.downswing_single_period_raw)
 
         # Initialize figure before for-loop
         fig6, ax2 = plt.subplots(figsize=(10.0, 8))
-                
+
         # Curve fitting of every isolated signal, similar to the photobleach algorithm
         popt, pcov = curve_fit(
             func,
@@ -5409,7 +5409,7 @@ class PatchAnalysis:
             np.save(os.path.join(
                             self.main_directory,
                             "Patch analysis//avg_fluorescence_downswing.npy"), self.downswing_single_period)
-            
+
         # Axis and labels for fig
         ax2.set_title("Bi-exponential fitting of averaged down-swings", size=14)
         ax2.set_ylabel("Fluorescence (a.u.)", fontsize=11)
@@ -5442,11 +5442,11 @@ class PatchAnalysis:
             )
         # except:
         #     print('fit_on_averaged_curve failed.')
-        
+
         # ===== Single exponential function for the fitting algorithm =====
 
         fig6_2, ax2_2 = plt.subplots(figsize=(10.0, 8))
-        
+
         # Curve fitting of every isolated signal, similar to the photobleach algorithm
         popt, pcov = curve_fit(
             func_single_exponential,
@@ -5474,7 +5474,7 @@ class PatchAnalysis:
             color=(0.9, 0, 0),
             label="Single exponential fit",
         )
-            
+
         # Axis and labels for fig
         ax2_2.set_title("Single exponential fitting of averaged down-swings", size=14)
         ax2_2.set_ylabel("Fluorescence (a.u.)", fontsize=11)
@@ -5502,7 +5502,7 @@ class PatchAnalysis:
                 ),
                 dpi=1200,
             )
-        
+
     def ExtractSensitivity(self):
 
         # =============================================================================
@@ -5512,12 +5512,12 @@ class PatchAnalysis:
         # its plateau, and Fbl(baseline fluorescence) is the mean fluorescence intensity
         # averaged over 100 ms before the voltage step.
         # =============================================================================
-        
+
         # In individual period, which part percentage wise is seen as steady state.
         self.steady_state_region = [0.4, 0.98]
-        
+
         period_length = len(self.upswing_single_period_raw)
-        
+
         self.steady_state_fluorescence = self.upswing_single_period_raw[
                     round(period_length * self.steady_state_region[0]) : round(
                         period_length * self.steady_state_region[1]
@@ -5529,17 +5529,17 @@ class PatchAnalysis:
                         period_length * self.steady_state_region[1]
                     )
                 ]
-        
+
         # Calculate the Δ F/F
         Fss = np.mean(self.steady_state_fluorescence)
         Fbl = np.mean(self.baseline_fluorescence)
-        
+
         self.intensity_ratio = np.true_divide(
             Fss - Fbl,
             Fbl,
         )
 
-        # Vizualization 
+        # Vizualization
         fig_averaged_period, ax = plt.subplots(figsize=(8.0, 5.8))
 
         ax.plot(self.single_period_time_axis * 1000, self.averaged_single_period, \
@@ -5547,7 +5547,7 @@ class PatchAnalysis:
                 str(round(self.intensity_ratio * 100, 2))
                 ))
         ax.legend()
-        
+
         ax.set_title("Averaged period", size=14)
         ax.set_ylabel("Fluorescence (a.u.)", fontsize=11)
         ax.set_xlabel("Time (ms)", fontsize=11)
@@ -5566,7 +5566,7 @@ class PatchAnalysis:
                 ),
                 dpi=1200,
             )
-            
+
         np.save(os.path.join(
                     self.main_directory,
                     "Patch analysis//Averaged single period.npy",
@@ -5625,7 +5625,7 @@ class PatchAnalysis:
             ) as output_file:
                 output_file.write(self.statistics_test)
 
-    
+
     #%%
     # =============================================================================
     #     Curve fitting, adapted from Mels' code.
@@ -5660,13 +5660,13 @@ class CurveFit:
             (np.arange(len(self.fluorescence)) + 1) * 1 / self.camera_fps
         )  # Time axis for camera fluorescence signal
         self.rhodopsin = rhodopsin
-        
+
         # In the recorded Vp trace, the 0 data is sampling rate,
-        # 1 to 4 are NiDaq scaling coffecients, 
+        # 1 to 4 are NiDaq scaling coffecients,
         # 5 to 8 are extra samples for extra camera trigger,
         # The last one is padding 0 to reset NIDaq channels.
         self.waveform = waveform
-            
+
         self.total_time = round(len(self.waveform) / DAQ_sampling_rate)
         self.waveformcopy = self.waveform.copy()
         self.timewaveform = (
@@ -5735,12 +5735,12 @@ class CurveFit:
         self.fluorescence_trace_for_sensitivity = np.true_divide(
             self.fluorescence, bleachfunc(self.time, *popt)
         )
-        
+
         if True:
             np.save(os.path.join(
                             self.main_directory,
                             "Analysis results//fluorescence_trace_for_sensitivity.npy"), self.fluorescence_trace_for_sensitivity)
-            
+
         # Here substract the fitted base line in order to calculate time constants.
         self.fluorescence_for_kinetics = self.fluorescence - bleachfunc(
             self.time, *popt
@@ -6180,7 +6180,7 @@ class CurveFit:
             return A * (C * np.exp(-(t / t1)) + (1 - C) * np.exp(-(t / t2)))
 
         parameter_bounds = ([-np.inf, 0, 0, 0], [np.inf, 0.1, 1, 0.1])
-        
+
         # ============== Upswing =================
 
         # =============================================================================
@@ -6250,7 +6250,7 @@ class CurveFit:
             np.save(os.path.join(
                             self.main_directory,
                             "Analysis results//avg_fluorescence_upswing_half.npy"), self.avg_fluorescence_upswing_half)
-            
+
         # Axis and labels for fig
         ax.set_title("Bi-exponential fitting of averaged up-swings", size=14)
         ax.set_ylabel("Fluorescence (a.u.)", fontsize=11)
@@ -6345,7 +6345,7 @@ class CurveFit:
             np.save(os.path.join(
                             self.main_directory,
                             "Analysis results//avg_fluorescence_downswing.npy"), self.avg_fluorescence_downswing)
-            
+
         # Axis and labels for fig
         ax2.set_title("Bi-exponential fitting of averaged down-swings", size=14)
         ax2.set_ylabel("Fluorescence (a.u.)", fontsize=11)
@@ -6504,13 +6504,13 @@ class CurveFit:
 
         self.upper_step_values = []
         self.lower_step_values = []
-        
+
         # To get the raw averagd trace of one period
         self.upper_step_trace = []
-        self.lower_step_trace = []      
+        self.lower_step_trace = []
         upper_single_trace_number = 0
         lower_single_trace_number = 0
-        
+
         # In individual period, which part percentage wise is seen as steady state.
         self.steady_state_region = [0.4, 0.9]
 
@@ -6533,11 +6533,11 @@ class CurveFit:
                 ]
                 if ii > self.skip:
                     self.upper_step_values.append(np.mean(steady_region_segment))
-                    
+
                     self.upper_step_trace.append(self.periods_fluorescence_sensitivity[ii])
                     upper_single_trace_length = len(self.periods_fluorescence_sensitivity[ii])
                     upper_single_trace_number += 1
-                    
+
             # Down-swing period.
             else:
                 steady_region_segment = self.periods_fluorescence_sensitivity[ii][
@@ -6547,11 +6547,11 @@ class CurveFit:
                 ]
                 if ii > self.skip:
                     self.lower_step_values.append(np.mean(steady_region_segment))
-                    
+
                     self.lower_step_trace.append(self.periods_fluorescence_sensitivity[ii])
                     lower_single_trace_length = len(self.periods_fluorescence_sensitivity[ii])
                     lower_single_trace_number += 1
-            
+
             # Plot every isolated signal and its corresponding fit. Be aware of that when we apply CurveAveraging(), then
             # we have the same for every upswing and the same for every downswing. Neglect periods that we skip
             (p07,) = ax.plot(
@@ -6574,7 +6574,7 @@ class CurveFit:
                     color=(0.9, 0, 0),
                     label="Region of calculation",
                 )
-            
+
         # Calculate the Δ F/F
         self.intensity_ratio = np.true_divide(
             np.array(self.upper_step_values) - np.array(self.lower_step_values),
@@ -6615,18 +6615,18 @@ class CurveFit:
 
         # Save the raw mean trace
         self.upper_step_trace = np.array(self.upper_step_trace)
-        
+
         # ======================= Average over ===============================
         self.upper_step_averaged_trace = np.mean(\
             self.upper_step_trace.reshape((upper_single_trace_number, upper_single_trace_length)), axis = 0)
-        
+
         self.lower_step_trace = np.array(self.lower_step_trace)
         self.lower_step_averaged_trace = np.mean(\
-            self.lower_step_trace.reshape((lower_single_trace_number, lower_single_trace_length)), axis = 0)            
-        
+            self.lower_step_trace.reshape((lower_single_trace_number, lower_single_trace_length)), axis = 0)
+
         self.averaged_period = np.append(self.upper_step_averaged_trace, self.lower_step_averaged_trace)
 
-        # Vizualization 
+        # Vizualization
         fig_averaged_period, ax = plt.subplots(figsize=(8.0, 5.8))
         time_axis = np.arange(len(self.averaged_period)) / self.camera_fps * 1000
         (p01,) = ax.plot(time_axis, self.averaged_period)
@@ -6649,15 +6649,15 @@ class CurveFit:
                 ),
                 dpi=1200,
             )
-            
+
         np.save(os.path.join(
                     self.main_directory,
                     "Analysis results//Averaged period for sensitivity.npy",
                     ), self.averaged_period)
-        
+
         # single_period_length = len(self.averaged_period)
         # print("Length of single period {}".format(single_period_length))
-        
+
         # # =============================================================================
         # #     F(t) = A × (C × exp(–t/t1) + (1 – C) × exp(–t/t2)), where t1 was the time constant
         # #     of the fast component and t2 was the time constant of the slow component. The
@@ -6668,10 +6668,10 @@ class CurveFit:
         #     return A * (C * np.exp(-(t / t1)) + (1 - C) * np.exp(-(t / t2)))
 
         # parameter_bounds = ([-np.inf, 0, 0, 0], [np.inf, 0.1, 1, 0.1])
-        
+
         # fig, ax = plt.subplots(figsize=(10.0, 8))
-                
-        # # ============== Upswing =================        
+
+        # # ============== Upswing =================
         # rising_phase = self.averaged_period[0:round(single_period_length/4)]
         # # =============================================================================
         # # Only the first 50 ms in the fluorescence rise and fluorescence decay segments
@@ -6721,7 +6721,7 @@ class CurveFit:
         #     np.save(os.path.join(
         #                     self.main_directory,
         #                     "Analysis results//avg_fluorescence_upswing.npy"), self.avg_fluorescence_upswing)
-            
+
         # # Axis and labels for fig
         # ax.set_title("Bi-exponential fitting of averaged up-swings", size=14)
         # ax.set_ylabel("Fluorescence (a.u.)", fontsize=11)
@@ -6751,14 +6751,14 @@ class CurveFit:
         #             )
         #         ),
         #         dpi=1200,
-        #     )        
+        #     )
 
         # falling_phase = self.averaged_period[round(single_period_length/2):round(single_period_length*3/4)]
-    
+
         # plt.figure()
         # plt.plot(falling_phase)
-        # plt.show()        
-        
+        # plt.show()
+
     def Statistics(self):
 
         # Data transformation to put it in a nice Numpy format
@@ -7011,7 +7011,7 @@ if __name__ == "__main__":
     photo_current = False
     PMT_contour_scan_processing = True
     screening_comparison = False
-    
+
     if stitch_img == True:
         Nest_data_directory = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2022-06-10  Evolution screening validation\WT\2022-06-10_16-26-51_WT_pmt"
         Stitched_image_dict = ProcessImage.image_stitching(
@@ -7082,10 +7082,10 @@ if __name__ == "__main__":
         ProcessImage.cam_screening_post_processing(
             r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Delizzia\2020-11-19_2020-11-19_10-14-32_trial_cam_screen"
         )
-        
+
     elif photo_current == True:
         ProcessImage.PhotoCurrent(r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Patch clamp\2021-08-07 GR mutants\E166Q\CELL5\Photocurrent")
-    
+
     elif PMT_contour_scan_processing == True:
         fluorescence_trace_normalized_for_average = ProcessImage.CurveFit_PMT(r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Patch clamp\2021-08-04 2p Patch\QuasAr1\CELL3\ND1\PMT_array_2021-08-04_14-39-35.npy"\
                                                                                              , number_of_periods = 25)

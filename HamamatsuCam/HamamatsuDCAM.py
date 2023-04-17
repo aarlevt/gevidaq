@@ -1348,8 +1348,8 @@ class HamamatsuCameraRE(HamamatsuCamera):
             # Here DCAM only dumps frame info into DCAMBUF_ATTACHKIND_FRAME buffer, NO metada, part that is bigger than a frame needed is wasted.
             # There are meta data assigned for each file, session, and frame.
             timestamp_buffer_np_array = numpy.ascontiguousarray(numpy.empty(int((self.timestamp_bytes)/2), dtype=numpy.uint16))
-            self.rcam_timestamp_ptr[i] = timestamp_buffer_np_array.ctypes.data    
-        
+            self.rcam_timestamp_ptr[i] = timestamp_buffer_np_array.ctypes.data
+
         #-----------------------------------------Allocate new buffers for FRAMESTAMP.--------------------------------------------------------
         self.framestamp_bytes = 108
         framestamp_ptr_array = ctypes.c_void_p * self.number_image_buffers # Create pointers to use.
@@ -1361,7 +1361,7 @@ class HamamatsuCameraRE(HamamatsuCamera):
             # Here DCAM only dumps frame info into DCAMBUF_ATTACHKIND_FRAME buffer, NO metada, part that is bigger than a frame needed is wasted.
             # There are meta data assigned for each file, session, and frame.
             framestamp_buffer_np_array = numpy.ascontiguousarray(numpy.empty(int((self.framestamp_bytes)/2), dtype=numpy.uint16))
-            self.rcam_framestamp_ptr[i] = framestamp_buffer_np_array.ctypes.data 
+            self.rcam_framestamp_ptr[i] = framestamp_buffer_np_array.ctypes.data
         """
 
         # Attach image buffers.
@@ -1380,12 +1380,12 @@ class HamamatsuCameraRE(HamamatsuCamera):
         paramattach_frame = DCAMBUF_ATTACH(0, DCAMBUF_ATTACHKIND_FRAME,
                 self.hcam_ptr, self.number_image_buffers) # self.hcam_ptr: Set to the array of pointers of attached buffers.
         paramattach_frame.size = ctypes.sizeof(paramattach_frame)
-        
-        
+
+
         paramattach_timestamp = DCAMBUF_ATTACH(0, DCAMBUF_ATTACHKIND_TIMESTAMP,
                 self.rcam_timestamp_ptr, self.number_image_buffers) # self.hcam_ptr: Set to the array of pointers of attached buffers.
         paramattach_timestamp.size = ctypes.sizeof(paramattach_timestamp)
-        
+
         paramattach_framestamp = DCAMBUF_ATTACH(0, DCAMBUF_ATTACHKIND_FRAMESTAMP,
                 self.rcam_framestamp_ptr, self.number_image_buffers) # self.hcam_ptr: Set to the array of pointers of attached buffers.
         paramattach_framestamp.size = ctypes.sizeof(paramattach_framestamp)

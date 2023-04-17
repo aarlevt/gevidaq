@@ -5,13 +5,13 @@ Created on Tue Feb  4 12:29:32 2020
 
 @author: Izak de Heer
 
-This code is used to create two binary images for image registration without 
+This code is used to create two binary images for image registration without
 any hardware connected. One image is the theoretical DMD pattern, the other the
 theoretical image captured by the camera. The image captured by the camera
-should be diffraction-limited, however for the sake of simplicity this is 
+should be diffraction-limited, however for the sake of simplicity this is
 ignored initially. The purpose of this simplification is implementing the code
 to find the transformation from camera to DMD coordinates without dealing with
-diffraction-limited spots. 
+diffraction-limited spots.
 
 """
 

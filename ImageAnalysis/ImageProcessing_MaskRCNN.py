@@ -22,7 +22,7 @@ from skimage.morphology import (
 import skimage.external.tifffile as skimtiff
 from datetime import datetime
 from skimage.io import imread
-from scipy import ndimage 
+from scipy import ndimage
 import os
 import plotly.express as px
 
@@ -85,7 +85,7 @@ class ProcessImageML:
     #%%
     """
     # ======================================================================================================================
-    # ************************************  Retrive scanning scheme and read in images. ************************************ 
+    # ************************************  Retrive scanning scheme and read in images. ************************************
     # ======================================================================================================================
     """
 
@@ -174,7 +174,7 @@ class ProcessImageML:
                 )
 
             RoundNumberList = list(dict.fromkeys(RoundNumberList))  # Remove Duplicates
-            
+
             if "_PMT" in eachfilename:
                 CoordinatesList.append(
                     eachfilename[eachfilename.index("Coord") : eachfilename.index("_PMT")]
@@ -182,8 +182,8 @@ class ProcessImageML:
             elif "_Cam" in eachfilename:
                 CoordinatesList.append(
                     eachfilename[eachfilename.index("Coord") : eachfilename.index("_Cam")]
-                )                
-                
+                )
+
             CoordinatesList = list(dict.fromkeys(CoordinatesList))
 
         #        print(RoundNumberList, CoordinatesList, fileNameList)
@@ -192,7 +192,7 @@ class ProcessImageML:
     #%%
     """
     # ================================================================================================================
-    # ************************************  Run detection on single image  ************************************* 
+    # ************************************  Run detection on single image  *************************************
     # ================================================================================================================
     """
 
@@ -243,7 +243,7 @@ class ProcessImageML:
 
     """
     # ================================================================================================================
-    # ************************************  Organize cell properties dictionary  ************************************* 
+    # ************************************  Organize cell properties dictionary  *************************************
     # ================================================================================================================
     """
 
@@ -287,11 +287,11 @@ class ProcessImageML:
         for EachRound in RoundNumberList:
 
             cells_counted_in_round = 0
-            
+
             background_substraction = False
             # =============================================================================
             #             For background_substraction
-            # =============================================================================    
+            # =============================================================================
             # If background images are taken
             background_images_folder = os.path.join(folder, "background {}".format(EachRound))
             # print(background_images_folder)
@@ -299,7 +299,7 @@ class ProcessImageML:
                 # If the background image is taken to substract out
                 background_substraction = True
                 print("Run background substraction.")
-    
+
                 # Get all the background files names
                 background_fileNameList = []
                 for file in os.listdir(background_images_folder):
@@ -316,7 +316,7 @@ class ProcessImageML:
                 # # Smooth the background image
                 # background_image = ProcessImage.average_filtering(
                 #     background_image, filter_side_length = 25)
-            
+
                 # Save the individual file.
                 with skimtiff.TiffWriter(
                     os.path.join(background_images_folder, "calculated background.tif"),
@@ -349,7 +349,7 @@ class ProcessImageML:
                                 except:
                                     ImgNameInfor = Eachfilename[1][
                                         0 : Eachfilename[1].index("_Cam")
-                                    ]  # get rid of '_Cam_Zmax.tif' in the name.                                    
+                                    ]  # get rid of '_Cam_Zmax.tif' in the name.
                             elif "Zfocus" in Eachfilename[1]:
                                 ImgNameInfor = Eachfilename[1][
                                     0 : len(Eachfilename[1]) - 16
@@ -366,7 +366,7 @@ class ProcessImageML:
                     # =========================================================================
                     # Imagepath      = self.Detector._fixPathName(_imagefilename)
                     Rawimage = imread(_imagefilename)
-                    
+
                     # Background substraction
                     if background_substraction == True:
                         # Convert to signed int to perform substraction
@@ -375,9 +375,9 @@ class ProcessImageML:
                         Rawimage = Rawimage.clip(min=0)
                         # Set back to uint
                         Rawimage = Rawimage.astype(np.uint16)
-                        
+
                         camera_dark_level = 100
-                        
+
                         # # Normalize to the illumination intensity
                         # Rawimage = np.uint16(Rawimage \
                         #         / ((background_image - camera_dark_level)\
@@ -390,7 +390,7 @@ class ProcessImageML:
                     #                        RawimageCleared = Rawimage.copy()
 
                     image = ProcessImage.convert_for_MaskRCNN(Rawimage)
-                    
+
                     # Run the detection on input image.
                     results = self.Detector.detect([image])
 
@@ -422,7 +422,7 @@ class ProcessImageML:
 
                     # segmentationImg = Image.fromarray(fig) #generate an image object
                     # segmentationImg.save(os.path.join(folder, 'MLimages_{}\{}.tif'.format(round_num, ImgNameInfor)))#save as tif
-                    
+
                     # Use retrieveDataFromML from ImageProcessing.py to extract numbers.
                     if self.cell_counted_inRound == 0:
                         (
@@ -556,11 +556,11 @@ class ProcessImageML:
             background_image = ProcessImage.image_stack_calculation(
                 background_fileNameList, operation="mean"
             )
-            
+
             # # Smooth the image
             # background_image = ProcessImage.average_filtering(
             #     background_image, filter_side_length = 25)
-            
+
             # Save the individual file.
             with skimtiff.TiffWriter(
                 os.path.join(root_folder, "background", "calculated background.tif"),
@@ -583,14 +583,14 @@ class ProcessImageML:
 
             if background_substraction == True:
                 Rawimage = np.abs(Rawimage - background_image).astype(np.uint16)
-                
+
                 camera_dark_level = 100
-                
+
                 # # Normalize to the illumination intensity
                 # Rawimage = np.uint16(Rawimage \
                 #         / ((background_image - camera_dark_level)\
                 #            /(np.amin(background_image) - camera_dark_level)))
-                
+
             # Analyze each image
             # Run the detection on input image.
             MLresults = self.DetectionOnImage(
@@ -662,37 +662,37 @@ class ProcessImageML:
             )
 
         return cell_Data
-    
+
     def Generate_connection_map(self, file):
-        
+
         # Return mini mask (all mask are 28 by 28 pixels). One can use CreateFullMask
         # from the utils to resize the mask to the same shape as the image. This is not
         # recommended as it is time consuming and many operations can be done using the
         # small mask and it bounding box coordinates and the ReshapeMask2BBox function
         # from the utils.
         self.config.RETURN_MINI_MASK = False
-        
+
         if True:
             # Load the spiking HEK cells weight
             self.config.WeigthPath = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Martijn\SpikingHek.h5"
         self.Detector.LoadWeigths(self.config.WeigthPath, by_name=True)
         print("Weight file: {}".format(self.config.WeigthPath))
-        
+
         if type(file) == str:
             # Load the image
             Image = skimage.io.imread(file)
         else:
             Image = file
-        
+
         R = self.Detector.detect([Image])
         Result= R[0]
         #Get shape of image
-        
+
         #Total number of HEK cells present, equal to N in Brian2
         num_cells = len(Result['rois'])
         #What now if you try to do this? does this give the mask as an array for ever cell in the form of mask[:,:,ii]?
         #Mask = ReshapeMask2BBox(Result['masks'][:,:,:],Result['rois'][:,:])
-        
+
         #Defining some arrays
         Area = np.zeros(num_cells)
         Center_Coor = np.zeros((2,num_cells))
@@ -701,31 +701,31 @@ class ProcessImageML:
         Pre_Network = []
         Post_Network = []
         Gap_Weight = np.zeros((num_cells,num_cells))
-        # Threshold_Connex = 
-        
+        # Threshold_Connex =
+
         for i in range(num_cells):
             Sub_Selec.append([])
-        
+
         for ii in range(num_cells):
             #Extract coord BBox
             y1, x1, y2, x2 = Result['rois'][ii,:]
             #Extract mask with the rescaling function
             Mask = Result['masks'][:,:,ii]
-            
+
             #Now can do any analysis for area and center coord
             #Area for each cell
             Area[ii] = np.sum(Mask,where=True) #*Resolution #Still need to find resolution of 1 pixel >> this sums the number of pixels
             #Center coordinate for each cell
             Center_Coor[0][ii] = ((x2-x1)/2) + x1
             Center_Coor[1][ii] = ((y2-y1)/2) + y1
-            
+
             for jj in range(num_cells):
                 y1t, x1t, y2t, x2t = Result['rois'][jj,:]
                 #Searching for sub-selection >> BBoxs must overlap
                 if ii != jj:
                     if not (x1 > x2t or x2 < x1t or y1 > y2t or y2 < y1t): #Check this still #left, right, top, bottom
                         Sub_Selec[ii].append(jj)
-                
+
         for ii in range(num_cells):
             Mask = Result['masks'][:,:,ii]
             for pp in range(len(Sub_Selec[ii])):
@@ -741,14 +741,14 @@ class ProcessImageML:
                     Pre_Network.append(ii)
                     Post_Network.append(jj)
                     Gap_Weight[ii][jj] = Degree_Overlap #* Resolution
-                    
+
         #To test if correctly read make scatterplot with location and sizes
         plt.figure(0)
         for i in range(len(Area)):
             if i in Pre_Network:
                 plt.scatter(Center_Coor[0][i],Center_Coor[1][i],color='red',s=(Area[i]/20), alpha = 0.5)
             else:
-                plt.scatter(Center_Coor[0][i],Center_Coor[1][i],color='blue',s=(Area[i]/20), alpha = 0.5)  
+                plt.scatter(Center_Coor[0][i],Center_Coor[1][i],color='blue',s=(Area[i]/20), alpha = 0.5)
             plt.axis([0,len(Mask),len(Mask),0])
             plt.xlabel('x')
             plt.ylabel('y')
@@ -761,19 +761,19 @@ class ProcessImageML:
             Result['class_ids'],
             class_names=[None, None, None, None],
             )
-        
+
         Gap_Weight1 = np.triu(Gap_Weight)
         Gap_weight = Gap_Weight1 + Gap_Weight1.T - np.diag(np.diag(Gap_Weight1))
-        
+
         Pre_Network = np.array(Pre_Network)
         Post_Network = np.array(Post_Network)
-        
+
         # np.save('Size',Area)
         # np.save('Gap_Weight',Gap_Weight)
         # np.save('Pre_Network',Pre_Network)
         # np.save('Post_Network',Post_Network)
         # np.save('Center_Coor',Center_Coor)
-        
+
     #%%
 def showPlotlyScatter(self, DataFrame, x_axis, y_axis, saving_directory):
         """
@@ -843,18 +843,18 @@ if __name__ == "__main__":
     #     print(endtime-starttime)
 
     cell_data, MLresults = ProcessML.analyze_single_image(img, show_each_cell=True)
-    
+
     cell_index = 0
     MLresults['masks'][:,:,cell_index]
     # ProcessML.DetectionOnImage(img, show_result = True)
 
     # cell_data = ProcessML.analyze_images_in_folder\
     #     (folder=r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Delizzia\2021-02-25 Helios WT screening 1000ng 532nm\pos3', generate_zmax = True)
-    
+
     # file = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\ML images\NewAnnotationDaanPart2\Camera\Spiking HEK\1.png"
     # ProcessML.Generate_connection_map(file)
-    
-   
+
+
 # import json
 # from skimage.draw import polygon
 # import numpy as np
@@ -873,27 +873,27 @@ if __name__ == "__main__":
 # for coord in celll["points"]:
 #     celll_x.append(coord[0])
 #     celll_y.append(coord[1])
-    
-# yy, xx = polygon(celll_x, celll_y)    
+
+# yy, xx = polygon(celll_x, celll_y)
 # image = np.zeros((500,500))
 # image [xx,yy] =1
 # fig, ax = plt.subplots()
 # ax.imshow(image)
 # plt.show()
 
-# results = ProcessML.DetectionOnImage(img, show_result = True) 
+# results = ProcessML.DetectionOnImage(img, show_result = True)
 
 # results_json = json.dumps(results['masks'])
-# #with open(r"M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data/ML images/FishZehra/V/Validation/fish1jr.png") as f: 
+# #with open(r"M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data/ML images/FishZehra/V/Validation/fish1jr.png") as f:
 # #    f.write(results_json)
-    
-    
+
+
 
 
 # results_json = json.dumps(results['masks'])
-# with open(r"M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data/ML images/FishZehra/V/Validation/fish1jr.png") as f: 
+# with open(r"M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data/ML images/FishZehra/V/Validation/fish1jr.png") as f:
 #     f.write(results_json)
-# masks = results['masks'] 
+# masks = results['masks']
 # for i in range(len(masks)):
 #     mask_image = masks[:,:,i]
 
@@ -901,5 +901,5 @@ if __name__ == "__main__":
 #     img_name = 'waka' + str(i) + '.png'
 #     cv2.imwrite(os.path.join(path , img_name), mask_image*255)
 #     cv2.waitKey(0)
-            
+
 

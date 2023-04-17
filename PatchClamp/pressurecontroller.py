@@ -12,12 +12,12 @@ class PressureController(serial.Serial):
     """ Pressure Controller communication commands for serial communication.
     This class is for controlling the Pressure Controller.
     """
-    
+
     def __init__(self, address, baud):
         super().__init__(port=address, baudrate=baud, timeout=1)
         self.ENDOFLINE = '\n'   # Carriage return
-    
-    
+
+
     def readFlush(self):
         # Read serial port and flush input
         if self.inWaiting():
@@ -30,21 +30,21 @@ class PressureController(serial.Serial):
                 response = ""
         else:
             response = ""
-        
+
         return response
-    
-    
+
+
     def setPres(self, pressure):
         """
         This sets the pressure to the given target pressure value.
             Send: P 100
         """
         command = "P %d" % pressure + self.ENDOFLINE
-        
+
         # Encode the command to ascii and send to the device
         self.write(command.encode('ascii'))
-    
-    
+
+
     def setPresHold(self, pressure):
         """
         This sets the pressure to the given target pressure value once and does
@@ -52,42 +52,42 @@ class PressureController(serial.Serial):
             Send: PH 100
         """
         command = "PH %d" % pressure + self.ENDOFLINE
-        
+
         # Encode the command to ascii and send to the device
         self.write(command.encode('ascii'))
-    
-    
+
+
     def doPulse(self, magnitude):
         """
         This gives a pressure pulse with the desired magnitude.
             Send: S -100
         """
         command = "S %d" % magnitude + self.ENDOFLINE
-        
+
         # Encode the command to ascii and send to the device
         self.write(command.encode('ascii'))
-    
-    
+
+
     def LCDoff(self):
         """
         This turns the LCD display on the pressure controller off.
         """
         command = "DIM" + self.ENDOFLINE
-        
+
         # Encode the command to ascii and send to the device
         self.write(command.encode('ascii'))
-    
-    
+
+
     def LCDon(self):
         """
         This turns the LCD display on the pressure controller off.
         """
         command = "LCD" + self.ENDOFLINE
-        
+
         # Encode the command to ascii and send to the device
         self.write(command.encode('ascii'))
-    
-    
+
+
     def goIdle(self):
         """
         This lets the pressure controller enter idle mode. The device is does
@@ -95,11 +95,11 @@ class PressureController(serial.Serial):
         while waiting for wakeUp.
         """
         command = "IDLE" + self.ENDOFLINE
-        
+
         # Encode the command to ascii and send to the device
         self.write(command.encode('ascii'))
-    
-    
+
+
     def wakeUp(self):
         """
         This wakes up the pressure controller from idle mode. Waking up resets
@@ -107,7 +107,7 @@ class PressureController(serial.Serial):
         sensors.
         """
         command = "W8KE" + self.ENDOFLINE
-        
+
         # Encode the command to ascii and send to the device
         self.write(command.encode('ascii'))
 

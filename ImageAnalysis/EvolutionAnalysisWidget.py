@@ -264,7 +264,7 @@ class MainGUI(QWidget):
         LoadSettingLayout.addWidget(self.FilepathSwitchBox, 1, 0)
         self.FilepathSwitchBox.setToolTip(
             "For camera screening and generating z-max, choose cam z-max.\nFor normal analysis in folder, configure the path is enough."
-        )        
+        )
 
         self.AnalysisRoundBox = QSpinBox(self)
         self.AnalysisRoundBox.setMaximum(2000)
@@ -536,7 +536,7 @@ class MainGUI(QWidget):
                 cell_data = self.ProcessML.analyze_images_in_folder(
                     self.Analysis_saving_directory
                 )
-                    
+
         # =============================================================================
         #         # ===== One GFP round, one Arch round. =====
         # =============================================================================
@@ -548,12 +548,12 @@ class MainGUI(QWidget):
             else:
                 # For camera screening analysis, use Spiking HEK weight
                 self.ProcessML.config.WeigthPath = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Martijn\SpikingHek.h5"
-                
+
                 # Generate the max projection
-                ProcessImage.cam_screening_post_processing(self.Analysis_saving_directory, 
-                                                           seperate_folder = False, 
+                ProcessImage.cam_screening_post_processing(self.Analysis_saving_directory,
+                                                           seperate_folder = False,
                                                            save_max_projection = True)
-                
+
             tag_folder = self.Tag_folder
             lib_folder = self.Lib_folder
 
@@ -572,7 +572,7 @@ class MainGUI(QWidget):
                 self.Mean_intensity_in_contour_thres,
                 self.Contour_soma_ratio_thres,
             )
-            
+
             # if self.FilepathSwitchBox.currentText() == "Cam Z-max":
             #     DataFrames_filtered.to_excel(
             #         os.path.join(
@@ -580,7 +580,7 @@ class MainGUI(QWidget):
             #             datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + "cam_CellsProperties.xlsx",
             #         )
             #     )
-        
+
             self.DataFrame_sorted = ProcessImage.sort_on_axes(
                 DataFrames_filtered,
                 axis_1=self.X_axisBox.currentText(),
@@ -992,7 +992,7 @@ class MainGUI(QWidget):
         """
         # --------------------Show image with cell in box----------------------
         # -------------- readin image---------------
-        
+
         if self.ShowLibImgButton.isChecked():
             # ====== Display the library image ======
             if "ImgNameInfor" in self.CurrentRankCellpProperties.index:
@@ -1025,8 +1025,8 @@ class MainGUI(QWidget):
                     # In case of camera screening
                     self.lib_imagefilename = os.path.join(
                         self.Lib_folder, self.meta_data + "_Cam_Zmax.tif"
-                    )    
-                    
+                    )
+
             print(
                 self.lib_imagefilename[
                     len(self.lib_imagefilename) - 50 : len(self.lib_imagefilename)
@@ -1123,7 +1123,7 @@ class MainGUI(QWidget):
             self.loaded_image_display[minc:maxc, minr] = 10**4
             self.loaded_image_display[minc:maxc, maxr] = 10**4
             self.loaded_image_display[minc, minr:maxr] = 10**4
-            self.loaded_image_display[maxc, minr:maxr] = 10**4           
+            self.loaded_image_display[maxc, minr:maxr] = 10**4
 
         # -------Show image in imageview-------------
         if self.FilepathSwitchBox.currentText() != "Cam Z-max":
@@ -1135,7 +1135,7 @@ class MainGUI(QWidget):
         elif self.FilepathSwitchBox.currentText() == "Cam Z-max":
             self.OriginalImg_item.setImage(
                 self.loaded_image_display, autoLevels=True
-            )      
+            )
             self.OriginalImg_item.setLevels((50, 190))
         #            self.Matdisplay_Figure.clear()
         #            ax1 = self.Matdisplay_Figure.add_subplot(111)
