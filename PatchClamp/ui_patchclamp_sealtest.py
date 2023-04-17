@@ -8,7 +8,6 @@ Part of this code was derived from:
     https://github.com/sidneycadot/pyqt-and-graphing/blob/master/PyQtGraphing.py
 
 """
-from __future__ import division
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QColor, QPen, QPixmap

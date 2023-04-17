@@ -5,7 +5,6 @@ Created on Mon Sep 28 11:42:01 2020
 @author: xinmeng
 """
 
-from __future__ import division
 import sys
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QFont

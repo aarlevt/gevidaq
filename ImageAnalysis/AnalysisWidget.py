@@ -9,7 +9,6 @@ Created on Tue Feb 25 17:27:04 2020
 -------------------------------------------------------------------------------------------------------------------------------------
 """
 
-from __future__ import division
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import pyqtSignal, QRectF
 from PyQt5.QtGui import QFont

@@ -5,7 +5,6 @@ Created on Tue Dec 17 23:40:26 2019
 @author: Meng
 """
 
-from __future__ import division
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QIcon, QTextCursor, QFont

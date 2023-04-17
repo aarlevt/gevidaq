@@ -5,7 +5,6 @@ Created on Wed Mar  4 12:18:12 2020
 @author: xinmeng
 """
 
-from __future__ import division
 import sys
 
 sys.path.append("../")

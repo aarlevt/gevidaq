@@ -5,7 +5,6 @@ Created on Wed Mar  4 14:03:52 2020
 @author: xinmeng
 """
 
-from __future__ import division
 import sys
 
 from PyQt5 import QtWidgets

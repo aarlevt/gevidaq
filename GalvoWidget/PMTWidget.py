@@ -4,7 +4,6 @@ Created on Tue Jan 21 13:34:56 2020
 
 @author: xinmeng
 """
-from __future__ import division
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt, pyqtSignal, QPoint
 from PyQt5.QtGui import QColor, QPen, QFont

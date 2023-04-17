@@ -21,7 +21,6 @@ Created on Sat Aug 10 20:54:40 2019
     - CoordinatesManager.CoordinatesWidget: Widget to create mask based on widefield image. Project mask with DMD or galvos
     ============================== ==============================================
 """
-from __future__ import division
 import os
 import sys
 

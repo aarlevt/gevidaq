@@ -11,7 +11,6 @@ Created on Fri Dec 13 23:04:00 2019
 
 """
 
-from __future__ import division
 import sys
 import numpy as np
 from matplotlib import pyplot as plt

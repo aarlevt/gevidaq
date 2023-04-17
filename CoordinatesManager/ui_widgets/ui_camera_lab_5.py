@@ -34,7 +34,6 @@ TO DO:
 
 # ['ThorCam','ThorlabsUSBCamera','ThorCam']
 
-from __future__ import division
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import (
     QDialogButtonBox,

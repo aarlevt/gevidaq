@@ -5,7 +5,6 @@ Created on Tue Apr 14 18:47:31 2020
 @author: xinmeng
 """
 
-from __future__ import division
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt, pyqtSignal, QRectF, QTimer
 from PyQt5.QtGui import (
