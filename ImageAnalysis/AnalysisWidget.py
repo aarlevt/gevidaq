@@ -430,7 +430,7 @@ class AnalysisWidgetUI(QWidget):
 
                 # Load the configured patch voltage waveform
                 for each_waveform in self.configured_waveforms_container:
-                    if each_waveform['Sepcification'] == "patchAO":
+                    if each_waveform['Specification'] == "patchAO":
                         self.configured_Vp = each_waveform['Waveform']
 
                         print("Length of configured_Vp: {}".format(len(self.configured_Vp)))
@@ -1185,25 +1185,25 @@ class PlotAnalysisGUI(QWidget):
                 figure, (ax1, ax2, ax3) = plt.subplots(3, 1)
 
             for i in range(len(temp_loaded_container)):
-                if temp_loaded_container[i]["Sepcification"] == "640AO":
+                if temp_loaded_container[i]["Specification"] == "640AO":
                     pass
                 #                    ax1.plot(xlabel_all, temp_loaded_container[i]['Waveform'], label='640AO', color='r')
-                elif temp_loaded_container[i]["Sepcification"] == "488AO":
+                elif temp_loaded_container[i]["Specification"] == "488AO":
                     ax1.plot(
                         xlabel_all,
                         temp_loaded_container[i]["Waveform"],
                         label="488AO",
                         color="b",
                     )
-                elif temp_loaded_container[i]["Sepcification"] == "Perfusion_8":
+                elif temp_loaded_container[i]["Specification"] == "Perfusion_8":
                     ax1.plot(
                         xlabel_all, temp_loaded_container[i]["Waveform"], label="KCL"
                     )
-                elif temp_loaded_container[i]["Sepcification"] == "Perfusion_7":
+                elif temp_loaded_container[i]["Specification"] == "Perfusion_7":
                     ax1.plot(
                         xlabel_all, temp_loaded_container[i]["Waveform"], label="EC"
                     )
-                elif temp_loaded_container[i]["Sepcification"] == "Perfusion_2":
+                elif temp_loaded_container[i]["Specification"] == "Perfusion_2":
                     ax1.plot(
                         xlabel_all,
                         temp_loaded_container[i]["Waveform"],
@@ -1294,31 +1294,31 @@ class PlotAnalysisGUI(QWidget):
                     figure, (ax1, ax2, ax3) = plt.subplots(3, 1)
 
                 for i in range(len(temp_loaded_container)):
-                    if temp_loaded_container[i]["Sepcification"] == "640AO":
+                    if temp_loaded_container[i]["Specification"] == "640AO":
                         ax1.plot(
                             xlabel_all,
                             temp_loaded_container[i]["Waveform"],
                             label="640AO",
                             color="r",
                         )
-                    elif temp_loaded_container[i]["Sepcification"] == "488AO":
+                    elif temp_loaded_container[i]["Specification"] == "488AO":
                         ax1.plot(
                             xlabel_all,
                             temp_loaded_container[i]["Waveform"],
                             label="488AO",
                             color="b",
                         )
-                    elif temp_loaded_container[i]["Sepcification"] == "Perfusion_8":
+                    elif temp_loaded_container[i]["Specification"] == "Perfusion_8":
                         ax1.plot(
                             xlabel_all,
                             temp_loaded_container[i]["Waveform"],
                             label="KCL",
                         )
-                    elif temp_loaded_container[i]["Sepcification"] == "Perfusion_7":
+                    elif temp_loaded_container[i]["Specification"] == "Perfusion_7":
                         ax1.plot(
                             xlabel_all, temp_loaded_container[i]["Waveform"], label="EC"
                         )
-                    elif temp_loaded_container[i]["Sepcification"] == "Perfusion_2":
+                    elif temp_loaded_container[i]["Specification"] == "Perfusion_2":
                         ax1.plot(
                             xlabel_all,
                             temp_loaded_container[i]["Waveform"],

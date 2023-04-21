@@ -888,7 +888,7 @@ class WaveformGenerator(QWidget):
 
             for i in range(len(temp_loaded_container)):
 
-                channel_keyword = temp_loaded_container[i]["Sepcification"]
+                channel_keyword = temp_loaded_container[i]["Specification"]
 
                 self.waveform_data_dict[channel_keyword] = temp_loaded_container[i][
                     "Waveform"
@@ -1602,14 +1602,14 @@ class WaveformGenerator(QWidget):
     def organize_waveforms(self):
         """
         Each waveforms are first placed into a structure array with data tpye:
-        np.dtype([('Waveform', float, (length_of_sig,)), ('Sepcification', 'U20')])
+        np.dtype([('Waveform', float, (length_of_sig,)), ('Specification', 'U20')])
         and then append to a list and saved as np file.
 
         It's the last step before executing waveforms.
 
         To load the waveforms from saved np file:
             Trace = np.load(file path)[index of channel]("Waveform")
-            Channel name = np.load(file path)[index of channel]("Sepcification")
+            Channel name = np.load(file path)[index of channel]("Specification")
 
         Returns
         -------
@@ -1886,10 +1886,10 @@ class WaveformGenerator(QWidget):
 
 
         dataType_analog = np.dtype(
-            [("Waveform", float, (self.reference_length,)), ("Sepcification", "U20")]
+            [("Waveform", float, (self.reference_length,)), ("Specification", "U20")]
         )
         dataType_digital = np.dtype(
-            [("Waveform", bool, (self.reference_length,)), ("Sepcification", "U20")]
+            [("Waveform", bool, (self.reference_length,)), ("Specification", "U20")]
         )
 
 
@@ -1981,10 +1981,10 @@ class WaveformGenerator(QWidget):
 
             ciao = []  # Variable name 'ciao' was defined by Nicolo Ceffa.
 
-            for i in range(len(self.analog_array["Sepcification"])):
+            for i in range(len(self.analog_array["Specification"])):
                 ciao.append(self.analog_array[i])
 
-            for i in range(len(self.digital_array["Sepcification"])):
+            for i in range(len(self.digital_array["Specification"])):
                 ciao.append(self.digital_array[i])
 
             np.save(

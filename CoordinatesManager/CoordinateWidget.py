@@ -1212,7 +1212,7 @@ class DMDWidget:
     def galvos_scan_mask(self):
         # reference_length = 100
         # tp_digital = np.dtype(
-        #     [("Waveform", bool, (reference_length,)), ("Sepcification", "U20")]
+        #     [("Waveform", bool, (reference_length,)), ("Specification", "U20")]
         # )
 
         if len(self.ui_widget.roi_list_2p) == 0:

@@ -1361,9 +1361,9 @@ class ProcessImage:
             X_interpolated = np.tile(np.around(X_interpolated, decimals=3), repeats)
             Y_interpolated = np.tile(np.around(Y_interpolated, decimals=3), repeats)
 
-            # Pure numerical np arrays need to be converted to structured array, with 'Sepcification' field being the channel name.
+            # Pure numerical np arrays need to be converted to structured array, with 'Specification' field being the channel name.
             tp_analog = np.dtype(
-                [("Waveform", float, (len(X_interpolated),)), ("Sepcification", "U20")]
+                [("Waveform", float, (len(X_interpolated),)), ("Specification", "U20")]
             )
             ContourArray_forDaq = np.zeros(2, dtype=tp_analog)
             ContourArray_forDaq[0] = np.array(
@@ -4403,7 +4403,7 @@ class ProcessImage:
 
         # Get the blanking waveform as indication of laser on and off.
         for i in temp_wave_container:
-            if i['Sepcification'] == marker:
+            if i['Specification'] == marker:
                 blanking_waveform = i['Waveform'][1:len(i['Waveform'])-1]
 
         laser_on_phases, laser_off_phases= ProcessImage.threshold_seperator(blanking_waveform, 1)

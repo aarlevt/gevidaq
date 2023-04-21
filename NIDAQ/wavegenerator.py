@@ -971,10 +971,10 @@ def dark_probe(
     # plt.show()
 
     dataType_analog = np.dtype(
-        [("Waveform", float, (len(sig),)), ("Sepcification", "U20")]
+        [("Waveform", float, (len(sig),)), ("Specification", "U20")]
     )
     dataType_digital = np.dtype(
-        [("Waveform", bool, (len(camera_signal),)), ("Sepcification", "U20")]
+        [("Waveform", bool, (len(camera_signal),)), ("Specification", "U20")]
     )
     analog_array = np.zeros(1, dtype=dataType_analog)
     digital_array = np.zeros(1, dtype=dataType_digital)

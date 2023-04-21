@@ -1393,7 +1393,7 @@ class Mainbody(QtWidgets.QWidget):
                             "Round {}, recording channels:{}.".format(
                                 eachround + 1, waveformPackage[eachwaveform][3]
                             )
-                        )  # [1]['Sepcification']
+                        )  # [1]['Specification']
                 #                    else:
                 #                        self.normalOutputWritten('Round {} No recording channel.\n'.format(eachround+1))
                 except:
@@ -1403,24 +1403,24 @@ class Mainbody(QtWidgets.QWidget):
                     self.normalOutputWritten(
                         "Round {}, Analog signals:{}.\n".format(
                             eachround + 1,
-                            waveformPackage[eachwaveform][1]["Sepcification"],
+                            waveformPackage[eachwaveform][1]["Specification"],
                         )
                     )
                     print(
                         "Round {}, Analog signals:{}.".format(
                             eachround + 1,
-                            waveformPackage[eachwaveform][1]["Sepcification"],
+                            waveformPackage[eachwaveform][1]["Specification"],
                         )
                     )  #
                 except:
                     self.normalOutputWritten("No Analog signals.\n")
                     print("No Analog signals.")
                 try:
-                    if len(waveformPackage[eachwaveform][2]["Sepcification"]) != 0:
+                    if len(waveformPackage[eachwaveform][2]["Specification"]) != 0:
                         self.normalOutputWritten(
                             "Round {}, Digital signals:{}.\n".format(
                                 eachround + 1,
-                                waveformPackage[eachwaveform][2]["Sepcification"],
+                                waveformPackage[eachwaveform][2]["Specification"],
                             )
                         )
                         self.normalOutputWritten(
@@ -1439,7 +1439,7 @@ class Mainbody(QtWidgets.QWidget):
                         print(
                             "Round {}, Digital signals:{}.".format(
                                 eachround + 1,
-                                waveformPackage[eachwaveform][2]["Sepcification"],
+                                waveformPackage[eachwaveform][2]["Specification"],
                             )
                         )  #
                 #                    else:

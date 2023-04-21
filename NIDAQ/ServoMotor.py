@@ -43,7 +43,7 @@ class Servo:
             #            plt.show()
             PWM_wave_organized = np.array(
                 [(target_servo, PWM_wave)],
-                dtype=[("Sepcification", "U20"), ("Waveform", bool, (len(PWM_wave),))],
+                dtype=[("Specification", "U20"), ("Waveform", bool, (len(PWM_wave),))],
             )
 
             self.mission.runWaveforms(

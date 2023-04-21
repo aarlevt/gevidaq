@@ -26,7 +26,7 @@ class DAQmission(
 ):  # For all-purpose Nidaq tasks, use "Dev1/ai22" as reference channel.
     """
     # For all-purpose Nidaq tasks. Use "Dev1/ai22" as reference channel.
-    # 'Sepcification' is the wrong spelling of 'Specification'.
+    # 'Specification' is the wrong spelling of 'Specification'.
     """
 
     collected_data = pyqtSignal(np.ndarray)
@@ -37,7 +37,7 @@ class DAQmission(
         super().__init__(*args, **kwargs)
         """
         Specifiy NI-daq channels. channel_LUT in the form of dictionary, with keys being the
-        purpose of the channel (the same as the fields from the input waveforms' "Sepcification"
+        purpose of the channel (the same as the fields from the input waveforms' "Specification"
         field) and values being the port of the daq. If not specified it will load the dictionary
         from NiDaqChannels class in NIDAQ.constants.
         """
@@ -115,7 +115,7 @@ class DAQmission(
               Signals for the analog channels.
               It's a structured array with two fields:
               1) 'Waveform': Raw 1-D np.array of actual float voltage signals.
-              2) 'Sepcification': string telling which device to control that help to specify the NI-daq port, check self.channel_LUT.
+              2) 'Specification': string telling which device to control that help to specify the NI-daq port, check self.channel_LUT.
 
               Multiple waveforms should be stack on top of each other using np.stack.
 
@@ -124,8 +124,8 @@ class DAQmission(
            -digitalsignals:
               Signals for the digital channels.
               It's a structured array with two fields: 1) 'Waveform': Raw 1-D np.array of type bool.
-                                                       2) 'Sepcification': string that specifies the NI-daq port.
-                                                          for example: dtype = np.dtype([('Waveform', float, (self.reference_length,)), ('Sepcification', 'U20')])
+                                                       2) 'Specification': string that specifies the NI-daq port.
+                                                          for example: dtype = np.dtype([('Waveform', float, (self.reference_length,)), ('Specification', 'U20')])
            -readinchannels:
               A list that contains the readin channels wanted.
         """
@@ -149,32 +149,32 @@ class DAQmission(
         # If there are kyes with information like 'galvosxavgnum', extract the
         # information and then convert the key to 'galvosx'.
         if Analog_channel_number != 0:
-            for i in range(len(analog_signals["Sepcification"])):
-                if "galvosxavgnum" in analog_signals["Sepcification"][i]:
+            for i in range(len(analog_signals["Specification"])):
+                if "galvosxavgnum" in analog_signals["Specification"][i]:
                     self.averagenumber = int(
-                        analog_signals["Sepcification"][i][
-                            analog_signals["Sepcification"][i].index("_")
-                            + 1 : len(analog_signals["Sepcification"][i])
+                        analog_signals["Specification"][i][
+                            analog_signals["Specification"][i].index("_")
+                            + 1 : len(analog_signals["Specification"][i])
                         ]
                     )
-                    self.galvosx_originalkey = analog_signals["Sepcification"][i]
-                    analog_signals["Sepcification"][i] = "galvosx"
-                elif "galvosyypixels" in analog_signals["Sepcification"][i]:
+                    self.galvosx_originalkey = analog_signals["Specification"][i]
+                    analog_signals["Specification"][i] = "galvosx"
+                elif "galvosyypixels" in analog_signals["Specification"][i]:
                     self.ypixelnumber = int(
-                        analog_signals["Sepcification"][i][
-                            analog_signals["Sepcification"][i].index("_")
-                            + 1 : len(analog_signals["Sepcification"][i])
+                        analog_signals["Specification"][i][
+                            analog_signals["Specification"][i].index("_")
+                            + 1 : len(analog_signals["Specification"][i])
                         ]
                     )
-                    self.galvosy_originalkey = analog_signals["Sepcification"][i]
-                    analog_signals["Sepcification"][i] = "galvosy"
-                elif "galvos_X_contour" in analog_signals["Sepcification"][i]:
-                    self.galvosx_originalkey = analog_signals["Sepcification"][i]
-                    analog_signals["Sepcification"][i] = "galvosx"
+                    self.galvosy_originalkey = analog_signals["Specification"][i]
+                    analog_signals["Specification"][i] = "galvosy"
+                elif "galvos_X_contour" in analog_signals["Specification"][i]:
+                    self.galvosx_originalkey = analog_signals["Specification"][i]
+                    analog_signals["Specification"][i] = "galvosx"
 
-                elif "galvos_Y_contour" in analog_signals["Sepcification"][i]:
-                    self.galvosy_originalkey = analog_signals["Sepcification"][i]
-                    analog_signals["Sepcification"][i] = "galvosy"
+                elif "galvos_Y_contour" in analog_signals["Specification"][i]:
+                    self.galvosy_originalkey = analog_signals["Specification"][i]
+                    analog_signals["Specification"][i] = "galvosy"
 
         # ----------------------------------------------------------------------
 
@@ -189,14 +189,14 @@ class DAQmission(
             if len(analog_signals["Waveform"]) != 0:
                 num_rows, num_cols = analog_signals["Waveform"].shape
                 for i in range(int(num_rows)):
-                    if "Dev1" in self.channel_LUT[analog_signals["Sepcification"][i]]:
+                    if "Dev1" in self.channel_LUT[analog_signals["Specification"][i]]:
                         self.Dev1_analog_channel_list.append(
-                            self.channel_LUT[analog_signals["Sepcification"][i]]
+                            self.channel_LUT[analog_signals["Specification"][i]]
                         )
                         Dev1_analog_waveforms_list.append(analog_signals["Waveform"][i])
                     else:
                         self.Dev2_analog_channel_list.append(
-                            self.channel_LUT[analog_signals["Sepcification"][i]]
+                            self.channel_LUT[analog_signals["Specification"][i]]
                         )
                         Dev2_analog_waveforms_list.append(analog_signals["Waveform"][i])
 
@@ -271,9 +271,9 @@ class DAQmission(
         for i in range(Digital_channel_number):
 
             convernum = int(
-                self.channel_LUT[digital_signals["Sepcification"][i]][
-                    self.channel_LUT[digital_signals["Sepcification"][i]].index("line")
-                    + 4 : len(self.channel_LUT[digital_signals["Sepcification"][i]])
+                self.channel_LUT[digital_signals["Specification"][i]][
+                    self.channel_LUT[digital_signals["Specification"][i]].index("line")
+                    + 4 : len(self.channel_LUT[digital_signals["Specification"][i]])
                 ]
             )
             Digital_samples_to_write[i] = Digital_samples_to_write[i] * (
@@ -601,11 +601,11 @@ class DAQmission(
 
             # set the keys of galvos back for next round
             if Analog_channel_number != 0:
-                for i in range(len(analog_signals["Sepcification"])):
-                    if "galvosx" in analog_signals["Sepcification"][i]:
-                        analog_signals["Sepcification"][i] = self.galvosx_originalkey
-                    elif "galvosy" in analog_signals["Sepcification"][i]:
-                        analog_signals["Sepcification"][i] = self.galvosy_originalkey
+                for i in range(len(analog_signals["Specification"])):
+                    if "galvosx" in analog_signals["Specification"][i]:
+                        analog_signals["Specification"][i] = self.galvosx_originalkey
+                    elif "galvosy" in analog_signals["Specification"][i]:
+                        analog_signals["Specification"][i] = self.galvosy_originalkey
 
             """
             # =============================================================================
@@ -841,11 +841,11 @@ class DAQmission(
 
             # set the keys of galvos back for next round
             if Analog_channel_number != 0:
-                for i in range(len(analog_signals["Sepcification"])):
-                    if "galvosx" in analog_signals["Sepcification"][i]:
-                        analog_signals["Sepcification"][i] = self.galvosx_originalkey
-                    elif "galvosy" in analog_signals["Sepcification"][i]:
-                        analog_signals["Sepcification"][i] = self.galvosy_originalkey
+                for i in range(len(analog_signals["Specification"])):
+                    if "galvosx" in analog_signals["Specification"][i]:
+                        analog_signals["Specification"][i] = self.galvosx_originalkey
+                    elif "galvosy" in analog_signals["Specification"][i]:
+                        analog_signals["Specification"][i] = self.galvosy_originalkey
 
             """
             # =============================================================================
