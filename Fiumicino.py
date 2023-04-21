@@ -29,28 +29,25 @@ from PyQt5.QtCore import QSize
 from PyQt5.QtGui import QIcon, QTextCursor, QFont
 
 import pyqtgraph as pg
-import StylishQT
+from . import StylishQT
 
-import PatchClamp.ui_patchclamp_sealtest
-import NIDAQ.WaveformWidget
-import GalvoWidget.PMTWidget
-import ImageAnalysis.AnalysisWidget
-import SampleStageControl.StageMoveWidget
-import NIDAQ.AOTFWidget
-import NIDAQ.DAQoperator
-import ThorlabsFilterSlider.FilterSliderWidget
-import PI_ObjectiveMotor.ObjMotorWidget
-import ThorlabsKCube.KCubeWidget
-import InsightX3.TwoPhotonLaserUI
+from . import PatchClamp
+from . import NIDAQ
+from . import GalvoWidget
+from . import ImageAnalysis
+from . import SampleStageControl
+from . import ThorlabsFilterSlider
+from . import PI_ObjectiveMotor
+from . import ThorlabsKCube
+from . import InsightX3
 
 # import GeneralWidgets.Weather_GUI
-import ScreeningWidget.Evolution_GUI_v7
+from . import ScreeningWidget
 
 import pyqtgraph.console
-import HamamatsuCam.HamamatsuUI
-import CoordinatesManager.CoordinateWidget2
-import CoordinatesManager.DMDminiWidget
-import PatchClamp.smartpatcher_frontend
+from . import HamamatsuCam
+from . import CoordinatesManager
+from . import Icons
 
 # Setting graph settings
 # """
@@ -65,15 +62,9 @@ class Mainbody(QtWidgets.QWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # Set directory to current folder. Specific command depends on platform,
-        # i.e. first command gives error in Linux and second command gives error
-        # on Windows.
-        try:
-            os.chdir(os.path.dirname(sys.argv[0]))
-        except:
-            pass
+        with Icons.Path("Icon.png") as path:
+            self.setWindowIcon(QIcon(path))
 
-        self.setWindowIcon(QIcon("./Icons/Icon.png"))
         self.setFont(QFont("Arial"))
 
         # ----------------------------------------------------------------------
@@ -110,7 +101,7 @@ class Mainbody(QtWidgets.QWidget):
         # =============================================================================
 
         try:
-            self.savedirectory = "M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data"
+            self.savedirectory = "M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data"  # TODO hardcoded path
         except:
             self.savedirectory = os.path.join(
                 os.path.expanduser("~"), "Desktop"
@@ -141,7 +132,8 @@ class Mainbody(QtWidgets.QWidget):
         # self.setdirectorycontrolLayout.addWidget(QLabel("Saving prefix:"), 0, 0)
 
         self.toolButtonOpenDialog = QtWidgets.QPushButton()
-        self.toolButtonOpenDialog.setIcon(QIcon("./Icons/Browse.png"))
+        with Icons.Path("Browse.png") as path:
+            self.toolButtonOpenDialog.setIcon(QIcon(path))
         self.toolButtonOpenDialog.setObjectName("toolButtonOpenDialog")
         self.toolButtonOpenDialog.clicked.connect(self.set_saving_directory)
 
@@ -157,13 +149,15 @@ class Mainbody(QtWidgets.QWidget):
         self.setdirectorycontrolLayout.addWidget(self.console_text_edit, 1, 0, 5, 3)
 
         self.setMetaTextButton = QtWidgets.QPushButton()
-        self.setMetaTextButton.setIcon(QIcon("./Icons/write.png"))
+        with Icons.Path("write.png") as path:
+            self.setMetaTextButton.setIcon(QIcon(path))
         self.setMetaTextButton.setObjectName("Init. Meta Text")
         self.setdirectorycontrolLayout.addWidget(self.setMetaTextButton, 1, 3, 1, 1)
         self.setMetaTextButton.clicked.connect(self.Init_Meta_Text)
 
         self.saveMetaTextButton = QtWidgets.QPushButton()
-        self.saveMetaTextButton.setIcon(QIcon("./Icons/save.png"))
+        with Icons.Path("save.png") as path:
+            self.saveMetaTextButton.setIcon(QIcon(path))
         self.saveMetaTextButton.setObjectName("Save Meta Text")
         self.setdirectorycontrolLayout.addWidget(self.saveMetaTextButton, 2, 3, 1, 1)
         self.saveMetaTextButton.clicked.connect(self.Save_Meta_Text)
@@ -178,14 +172,14 @@ class Mainbody(QtWidgets.QWidget):
         #         GUI for general buttons
         # =============================================================================
 
-        self.shutter2PButton = StylishQT.checkableButton(
-            Icon_path="./Icons/shutter.png"
-        )
+        with Icons.Path("shutter.png") as path:
+            self.shutter2PButton = StylishQT.checkableButton(Icon_path=path)
         self.shutter2PButton.clicked.connect(self.shutter2Paction)
         self.shutter2PButton.setFixedWidth(46)
         self.shutter2PButton.setToolTip("Open/Close InsightX3 shutter")
 
-        self.LEDButton = StylishQT.checkableButton(Icon_path="./Icons/LED.png")
+        with Icons.Path("LED.png") as path:
+            self.LEDButton = StylishQT.checkableButton(Icon_path=path)
         self.LEDButton.clicked.connect(self.LEDaction)
         self.LEDButton.setFixedWidth(46)
         self.LEDButton.setToolTip("Turn on/off LED")
@@ -260,7 +254,8 @@ class Mainbody(QtWidgets.QWidget):
         self.open_Insight = StylishQT.FancyPushButton(
             40, 50, color1=(176, 224, 230), color2=(135, 206, 250)
         )
-        self.open_Insight.setIcon(QIcon("./Icons/two_photon.png"))
+        with Icons.Path("two_photon.png") as path:
+            self.open_Insight.setIcon(QIcon(path))
         self.open_Insight.setToolTip("Open 2-p laser widget")
         self.open_Insight.setIconSize(QSize(45, 45))
         self.open_Insight.setFixedWidth(65)
@@ -275,7 +270,8 @@ class Mainbody(QtWidgets.QWidget):
         self.open_screening_button = StylishQT.FancyPushButton(
             40, 50, color1=(245, 245, 220), color2=(255, 228, 196)
         )
-        self.open_screening_button.setIcon(QIcon("./Icons/Screening1.png"))
+        with Icons.Path("Screening1.png") as path:
+            self.open_screening_button.setIcon(QIcon(path))
         self.open_screening_button.setToolTip("Open screening widget")
         self.open_screening_button.setIconSize(QSize(45, 45))
         self.open_screening_button.setFixedWidth(65)
@@ -290,7 +286,8 @@ class Mainbody(QtWidgets.QWidget):
         self.open_sealtest_button = StylishQT.FancyPushButton(
             40, 50, color1=(255, 153, 255), color2=(204, 208, 255)
         )
-        self.open_sealtest_button.setIcon(QIcon("./Icons/patchclamp.png"))
+        with Icons.Path("patchclamp.png") as path:
+            self.open_sealtest_button.setIcon(QIcon(path))
         # self.open_sealtest_button.setText("Seal test")
         self.open_sealtest_button.setToolTip("Open sealtest widget")
         self.open_sealtest_button.setIconSize(QSize(45, 45))
@@ -307,7 +304,8 @@ class Mainbody(QtWidgets.QWidget):
         self.open_AutoPatcher_button = StylishQT.FancyPushButton(
             40, 50, color1=(50, 50, 255), color2=(100, 100, 255)
         )
-        self.open_AutoPatcher_button.setIcon(QIcon("./Icons/patchclamp.png"))
+        with Icons.Path("patchclamp.png") as path:
+            self.open_AutoPatcher_button.setIcon(QIcon(path))
         # self.open_sealtest_button.setText("Seal test")
         self.open_AutoPatcher_button.setToolTip("Open AutoPatcher")
         self.open_AutoPatcher_button.setIconSize(QSize(45, 45))
@@ -511,14 +509,14 @@ class Mainbody(QtWidgets.QWidget):
         event.accept()
 
 
+def run_app():
+    app = QtWidgets.QApplication(sys.argv)
+    QtWidgets.QApplication.setStyle(QtWidgets.QStyleFactory.create("Fusion"))
+    pg.setConfigOptions(imageAxisOrder="row-major")
+    mainwin = Mainbody()
+    mainwin.show()
+    app.exec_()
+
+
 if __name__ == "__main__":
-
-    def run_app():
-        app = QtWidgets.QApplication(sys.argv)
-        QtWidgets.QApplication.setStyle(QtWidgets.QStyleFactory.create("Fusion"))
-        pg.setConfigOptions(imageAxisOrder="row-major")
-        mainwin = Mainbody()
-        mainwin.show()
-        app.exec_()
-
     run_app()

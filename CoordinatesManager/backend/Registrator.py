@@ -6,6 +6,7 @@ Created on Tue Mar 31 10:30:41 2020
 """
 import sys
 import json
+import importlib.resources
 
 import numpy as np
 import time
@@ -136,7 +137,7 @@ class RegistrationThread(QThread):
         self.cam.Exit()
 
         ## Save transformation to file
-        with open(
+        with open(  # TODO fix path
             "CoordinatesManager/Registration/transformation.txt", "w"
         ) as json_file:
 
@@ -258,15 +259,15 @@ class RegistrationThread(QThread):
             time.sleep(0.1)
 
     def read_dmd_coordinates_from_file(self):
-        file = open(
-            "./CoordinatesManager/Registration_Images/TouchingSquares/positions.txt",
-            "r",
+        module = sys.modules[__package__]
+        files = importlib.resources.files(module)
+        positions = files.joinpath(
+            "Registration_Images/TouchingSquares/positions.txt"
         )
-
         self.dmd_coordinates = []
-        for ln in file.readlines():
-            self.dmd_coordinates.append(ln.strip().split(","))
-        file.close()
+        with positions.open() as file:
+            for ln in file.readlines():
+                self.dmd_coordinates.append(ln.strip().split(","))
 
         return np.asarray(self.dmd_coordinates).astype(int)
 

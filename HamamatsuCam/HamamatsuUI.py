@@ -36,6 +36,7 @@ from PyQt5.QtWidgets import (
 import pyqtgraph as pg
 import sys
 import os
+import importlib.resources
 import time
 import threading
 import numpy as np
@@ -45,13 +46,9 @@ from datetime import datetime
 import tifffile as skimtiff
 from skimage.measure import block_reduce
 
-# Ensure that the Widget can be run either independently or as part of Tupolev.
-if __name__ == "__main__":
-    abspath = os.path.abspath(__file__)
-    dname = os.path.dirname(abspath)
-    os.chdir(dname + "/../")
-from HamamatsuCam.HamamatsuDCAM import *  # TODO star import
-import StylishQT
+from ..HamamatsuCam import HamamatsuDCAM
+from .. import StylishQT
+from .. import Icons
 
 """
 Some general settings for pyqtgraph, these only have to do with appearance
@@ -80,7 +77,7 @@ class CameraUI(QMainWindow):
         self.ShowROIImgSwitch = False
         self.ROIselector_ispresented = False
         self.Live_sleeptime = 0.06666  # default camera live fps
-        self.default_folder = "M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data"
+        self.default_folder = "M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data"  # TODO hardcoded path
         # ----------------------------------------------------------------------
         # ----------------------------------GUI---------------------------------
         # ----------------------------------------------------------------------
@@ -92,14 +89,16 @@ class CameraUI(QMainWindow):
         menuBar = self.menuBar()
         fileMenu = menuBar.addMenu("&Camera")
 
-        ActConnectCamera = QAction(QIcon("./Icons/on.png"), "Connect camera", self)
+        with Icons.Path("on.png") as path:
+            ActConnectCamera = QAction(QIcon(path), "Connect camera", self)
         ActConnectCamera.setShortcut("Ctrl+c")
         ActConnectCamera.setStatusTip("Connect camera")
         ActConnectCamera.triggered.connect(self.ConnectCamera)
 
-        ActDisconnectCamera = QAction(
-            QIcon("./Icons/off.png"), "Disconnect camera", self
-        )
+        with Icons.Path("off.png") as path:
+            ActDisconnectCamera = QAction(
+                QIcon(path), "Disconnect camera", self
+            )
         ActDisconnectCamera.setShortcut("Ctrl+d")
         ActDisconnectCamera.triggered.connect(self.DisconnectCamera)
 
@@ -504,7 +503,8 @@ class CameraUI(QMainWindow):
         dir_container_layout = QGridLayout()
 
         self.BrowseStreamFileButton = QPushButton()
-        self.BrowseStreamFileButton.setIcon(QIcon("./Icons/Browse.png"))
+        with Icons.Path("Browse.png") as path:
+            self.BrowseStreamFileButton.setIcon(QIcon(path))
         self.BrowseStreamFileButton.clicked.connect(lambda: self.SetSavingDirectory())
         dir_container_layout.addWidget(self.BrowseStreamFileButton, 0, 0)
 
@@ -555,7 +555,8 @@ class CameraUI(QMainWindow):
         SnapImgButton = StylishQT.FancyPushButton(
             23, 32, color1=(255, 204, 229), color2=(153, 153, 255)
         )
-        SnapImgButton.setIcon(QIcon("./Icons/snap.png"))
+        with Icons.Path("snap.png") as path:
+            SnapImgButton.setIcon(QIcon(path))
         SnapImgButton.clicked.connect(self.SnapImg)
         SnapImgButton.setToolTip("Snap an image.")
         CamLiveActionLayout.addWidget(SnapImgButton, 1, 1, 1, 1)
@@ -659,7 +660,8 @@ class CameraUI(QMainWindow):
 
         self.StartStreamButton = QPushButton()
         self.StartStreamButton.setToolTip("Stream")
-        self.StartStreamButton.setIcon(QIcon("./Icons/StartStreaming.png"))
+        with Icons.Path("StartStreaming.png") as path:
+            self.StartStreamButton.setIcon(QIcon(path))
         self.StartStreamButton.setCheckable(True)
         self.StartStreamButton.setEnabled(False)
         self.StartStreamButton.clicked.connect(self.StreamingSwitchEvent)
@@ -694,7 +696,8 @@ class CameraUI(QMainWindow):
         CamStreamBusylabel = QLabel()
         CamStreamBusylabel.setFixedHeight(35)
         CamStreamBusylabel.setAlignment(Qt.AlignVCenter)
-        self.StreamBusymovie = QMovie("./Icons/progressbar.gif")
+        with Icons.Path("progressbar.gif") as path:
+            self.StreamBusymovie = QMovie(path)
 
         CamStreamBusylabel.setMovie(self.StreamBusymovie)
         CamStreamBusyWidget.layout.addWidget(CamStreamBusylabel, 0, 1)
@@ -823,13 +826,15 @@ class CameraUI(QMainWindow):
         #         Load dcamapi.dll version: 19.12.641.5901
         # =============================================================================
         """
-        dcam = ctypes.WinDLL(
-            r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\People\Xin Meng\Code\Python_test\HamamatsuCam\19_12\dcamapi.dll"
-        )
 
-        paraminit = DCAMAPI_INIT(0, 0, 0, 0, None, None)
+        files = importlib.resources.files(sys.modules[__package__])
+        traversable = files.joinpath("19_12/dcamapi.dll")
+        with importlib.resources.as_file(traversable) as path:
+            self.dcam = ctypes.WinDLL(str(path))
+
+        paraminit = HamamatsuDCAM.DCAMAPI_INIT(0, 0, 0, 0, None, None)
         paraminit.size = ctypes.sizeof(paraminit)
-        error_code = dcam.dcamapi_init(ctypes.byref(paraminit))  # TODO unused
+        error_code = self.dcam.dcamapi_init(ctypes.byref(paraminit))  # TODO unused
         # if (error_code != DCAMERR_NOERROR):
         #    raise DCAMException("DCAM initialization failed with error code " + str(error_code))
 
@@ -839,7 +844,7 @@ class CameraUI(QMainWindow):
 
         if n_cameras > 0:
             # ------------------------Initialization----------------------------
-            self.hcam = HamamatsuCameraMR(camera_id=0)
+            self.hcam = HamamatsuDCAM.HamamatsuCameraMR(camera_id=0)
 
             # Enable defect correction
             self.hcam.setPropertyValue("defect_correct_mode", 2)
@@ -884,7 +889,7 @@ class CameraUI(QMainWindow):
 
     def DisconnectCamera(self):
         self.hcam.shutdown()
-        dcam.dcamapi_uninit()  # TODO undefined
+        self.dcam.dcamapi_uninit()
         self.CamStatusLabel.setText("Camera disconnected.")
 
     def cam_connect_switch(self):
@@ -1599,7 +1604,7 @@ class CameraUI(QMainWindow):
     def closeEvent(self, event):
         try:
             self.hcam.shutdown()
-            dcam.dcamapi_uninit()  # TODO undefined
+            self.dcam.dcamapi_uninit()
         except:
             pass
         self.close()
@@ -1645,10 +1650,12 @@ class CameraUI(QMainWindow):
         if self.StartStreamButton.isChecked():
             self.StreamBusymovie.start()
             self.StreamStatusStackedWidget.setCurrentIndex(1)
-            self.StartStreamButton.setIcon(QIcon("./Icons/STOP.png"))
+            with Icons.Path("STOP.png") as path:
+                self.StartStreamButton.setIcon(QIcon(path))
             self.StartStreamingThread()
         else:
-            self.StartStreamButton.setIcon(QIcon("./Icons/StartStreaming.png"))
+            with Icons.Path("StartStreaming.png") as path:
+                self.StartStreamButton.setIcon(QIcon(path))
             self.StopStreamingThread()
 
     def StartStreamingThread(self):
@@ -1662,7 +1669,8 @@ class CameraUI(QMainWindow):
     def StopStreamingThread(self):
         if self.isStreaming == True and self.isLiving == False:
             self.StartStreamButton.setChecked(False)
-            self.StartStreamButton.setIcon(QIcon("./Icons/StartStreaming.png"))
+            with Icons.Path("StartStreaming.png") as path:
+                self.StartStreamButton.setIcon(QIcon(path))
             self.StartStreamButton.setEnabled(False)
             self.CamStreamActionContainer.setEnabled(False)
 

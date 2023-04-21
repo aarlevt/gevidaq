@@ -14,18 +14,12 @@ import numpy as np
 import threading
 import os
 
-if __name__ == "__main__":
-    abspath = os.path.abspath(__file__)
-    dname = os.path.dirname(abspath)
-    os.chdir(dname + "/../")
 import copy
-import NIDAQ.WaveformWidget
-from ScreeningWidget.EvolutionScanningThread import (
-    ScanningExecutionThread,
-)  # This is the thread file for execution.
-import NIDAQ.AOTFWidget
-import StylishQT
+from .. import NIDAQ
+from .EvolutionScanningThread import ScanningExecutionThread
+from .. import StylishQT
 import datetime
+from .. import Icons
 
 
 class Mainbody(QtWidgets.QWidget):
@@ -34,10 +28,10 @@ class Mainbody(QtWidgets.QWidget):
     #%%
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        os.chdir("./")  # Set directory to current folder.
         self.setFont(QFont("Arial"))
 
-        self.setWindowIcon(QIcon("./Icons/screening.png"))
+        with Icons.Path("screening.png") as path:
+            self.setWindowIcon(QIcon(path))
         self.setWindowTitle("Gorgonzola")
         self.layout = QtWidgets.QGridLayout(self)
 
@@ -56,7 +50,7 @@ class Mainbody(QtWidgets.QWidget):
         self.popnexttopimgcounter = 0
 
         self.quick_start_location = [
-            r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\2020-8-26 Screening Lenti Archon\2020-08-26_11-28-50_Pipeline.npy"
+            r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\2020-8-26 Screening Lenti Archon\2020-08-26_11-28-50_Pipeline.npy"  # TODO hardcoded path
         ]
 
         self.Tag_round_infor = []
@@ -120,7 +114,8 @@ class Mainbody(QtWidgets.QWidget):
         self.GeneralSettingContainerLayout.addWidget(self.prefixtextbox, 0, 3)
 
         self.toolButtonOpenDialog = QtWidgets.QPushButton()
-        self.toolButtonOpenDialog.setIcon(QIcon("./Icons/Browse.png"))
+        with Icons.Path("Browse.png") as path:
+            self.toolButtonOpenDialog.setIcon(QIcon(path))
         self.toolButtonOpenDialog.clicked.connect(self._open_file_dialog)
 
         self.GeneralSettingContainerLayout.addWidget(self.toolButtonOpenDialog, 0, 0)
@@ -1171,7 +1166,7 @@ class Mainbody(QtWidgets.QWidget):
         self.show_pipline_infor()
 
     def auto_saving_directory(self):
-        self.savedirectory = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\{}_{}".format(
+        self.savedirectory = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\{}_{}".format(  # TODO hardcoded path
             datetime.datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
             str(self.prefixtextbox.text()),
         )
@@ -1183,7 +1178,7 @@ class Mainbody(QtWidgets.QWidget):
     def _open_file_dialog(self):
         self.savedirectory = str(
             QtWidgets.QFileDialog.getExistingDirectory(
-                directory="M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data"
+                directory="M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data"  # TODO hardcoded path
             )
         )
         self.savedirectorytextbox.setText(self.savedirectory)
@@ -1332,7 +1327,7 @@ class Mainbody(QtWidgets.QWidget):
         self.pipelinenpfileName, _ = QtWidgets.QFileDialog.getOpenFileName(
             self,
             "Single File",
-            "M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data",
+            "M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data",  # TODO hardcoded path
             "(*.npy)",
         )
 

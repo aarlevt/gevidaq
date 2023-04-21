@@ -13,17 +13,11 @@ Created on Tue Aug 18 13:54:51 2020
 
 import os
 
-# Ensure that the Widget can be run either independently or as part of Tupolev.
-if __name__ == "__main__":
-    abspath = os.path.abspath(__file__)
-    dname = os.path.dirname(abspath)
-    os.chdir(dname + "/../")
-
-from PI_ObjectiveMotor.focuser import PIMotor
-from ImageAnalysis.ImageProcessing import ProcessImage
-from GalvoWidget.GalvoScan_backend import RasterScan
-from HamamatsuCam.HamamatsuActuator import CamActuator
-from NIDAQ.DAQoperator import DAQmission
+from .focuser import PIMotor
+from ..ImageAnalysis.ImageProcessing import ProcessImage
+from ..GalvoWidget.GalvoScan_backend import RasterScan
+from ..HamamatsuCam.HamamatsuActuator import CamActuator
+from ..NIDAQ.DAQoperator import DAQmission
 import tifffile as skimtiff
 import time
 import matplotlib.pyplot as plt
@@ -271,7 +265,7 @@ class FocusFinder:
             if False:
                 with skimtiff.TiffWriter(
                     os.path.join(
-                        r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\People\Xin Meng\paperwork\Dissertation\Figures\Chapter 4\Bisection\data\trial2",
+                        r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\People\Xin Meng\paperwork\Dissertation\Figures\Chapter 4\Bisection\data\trial2",  # TODO hardcoded path
                         str(obj_position).replace(".", "_") + ".tif",
                     )
                 ) as tif:
@@ -313,7 +307,7 @@ class FocusFinder:
             if False:
                 with skimtiff.TiffWriter(
                     os.path.join(
-                        r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Xin\2021-03-06 Camera AF\beads",
+                        r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Xin\2021-03-06 Camera AF\beads",  # TODO hardcoded path
                         str(obj_position).replace(".", "_") + ".tif",
                     )
                 ) as tif:

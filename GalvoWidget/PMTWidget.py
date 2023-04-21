@@ -20,24 +20,18 @@ from PyQt5.QtWidgets import (
 )
 
 import pyqtgraph as pg
+import os
 import sys
 import numpy as np
 from PIL import Image
 from datetime import datetime
-import os
 
-# Ensure that the Widget can be run either independently or as part of Tupolev.
-if __name__ == "__main__":
-    abspath = os.path.abspath(__file__)
-    dname = os.path.dirname(abspath)
-    os.chdir(dname + "/../")
-
-from GeneralUsage.ThreadingFunc import run_in_thread
-from NIDAQ.constants import HardwareConstants
-from GalvoWidget.pmt_thread import pmtimagingTest, pmtimagingTest_contour
-from GalvoWidget.GalvoScan_backend import PMT_zscan
-from NIDAQ.DAQoperator import DAQmission
-import StylishQT
+from ..GeneralUsage.ThreadingFunc import run_in_thread
+from ..NIDAQ.constants import HardwareConstants
+from .pmt_thread import pmtimagingTest, pmtimagingTest_contour
+from .GalvoScan_backend import PMT_zscan
+from ..NIDAQ.DAQoperator import DAQmission
+from .. import StylishQT
 
 
 class PMTWidgetUI(QWidget):
@@ -48,7 +42,6 @@ class PMTWidgetUI(QWidget):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        #        os.chdir('./')# Set directory to current folder.
         self.setFont(QFont("Arial"))
 
         self.setMinimumSize(1200, 850)
@@ -58,7 +51,7 @@ class PMTWidgetUI(QWidget):
         self.pmtTest = pmtimagingTest()
         self.pmtTest_contour = pmtimagingTest_contour()
 
-        self.savedirectory = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\pmt_image_default_dump"
+        self.savedirectory = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\pmt_image_default_dump"  # TODO hardcoded path
         self.prefixtextboxtext = "_fromGalvoWidget"
 
         self.contour_ROI_signals_dict = {}

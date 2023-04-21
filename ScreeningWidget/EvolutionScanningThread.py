@@ -14,14 +14,14 @@ import math
 from skimage.io import imread
 import tifffile as skimtiff
 
-from SampleStageControl.stage import LudlStage
-from NIDAQ.DAQoperator import DAQmission
-from PI_ObjectiveMotor.focuser import PIMotor
-from PI_ObjectiveMotor.AutoFocus import FocusFinder
-from ThorlabsFilterSlider.filterpyserial import ELL9Filter
-from InsightX3.TwoPhotonLaser_backend import InsightX3
-from HamamatsuCam.HamamatsuActuator import CamActuator
-from ImageAnalysis.ImageProcessing import ProcessImage
+from ..SampleStageControl.stage import LudlStage
+from ..NIDAQ.DAQoperator import DAQmission
+from ..PI_ObjectiveMotor.focuser import PIMotor
+from ..PI_ObjectiveMotor.AutoFocus import FocusFinder
+from ..ThorlabsFilterSlider.filterpyserial import ELL9Filter
+from ..InsightX3.TwoPhotonLaser_backend import InsightX3
+from ..HamamatsuCam.HamamatsuActuator import CamActuator
+from ..ImageAnalysis.ImageProcessing import ProcessImage
 
 # ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
 class ScanningExecutionThread(QThread):
@@ -433,7 +433,7 @@ class ScanningExecutionThread(QThread):
                             if len(PhotocyclePackageToBeExecute) > 0:
 
                                 # Load the previous acquired camera image
-                                self.cam_tif_name = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\2020-8-13 Screening Archon1 library V5 and 6\V6\Round2_Coords181_R19800C0_PMT_0Zmax.tif"
+                                self.cam_tif_name = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\2020-8-13 Screening Archon1 library V5 and 6\V6\Round2_Coords181_R19800C0_PMT_0Zmax.tif"  # TODO hardcoded path
                                 previous_cam_img = imread(self.cam_tif_name)
                                 img_width = previous_cam_img.shape[1]
 
@@ -1439,7 +1439,7 @@ if __name__ == "__main__":
     def generate_tif_name(extra_text="_"):
 
         tif_name = os.path.join(
-            r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\People\Xin Meng\Code",
+            r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\People\Xin Meng\Code",  # TODO hardcoded path
             "Round"
             + str(1)
             + "_Coords"

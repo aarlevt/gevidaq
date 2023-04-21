@@ -7,7 +7,7 @@ Created on Thu May  7 15:50:10 2020
 
 import numpy as np
 import matplotlib.pyplot as plt
-import skimage.external.tifffile as skimtiff
+import tifffile as skimtiff
 from datetime import datetime
 from skimage.io import imread
 import os
@@ -24,7 +24,7 @@ from .ImageProcessing import ProcessImage
 class ProcessImageML:
     def __init__(
         self,
-        WeigthPath=r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Martijn\FinalResults\ModelWeights.h5",
+        WeigthPath=r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Martijn\FinalResults\ModelWeights.h5",  # TODO hardcoded path
         *args,
         **kwargs
     ):
@@ -40,7 +40,7 @@ class ProcessImageML:
         self.config = cellConfig()
         self.config.LogDir = ""
         self.config.CCoor_STD_DEV = 0.1
-        # self.config.WeigthPath = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Martijn\SpikingHek.h5"
+        # self.config.WeigthPath = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Martijn\SpikingHek.h5"  # TODO hardcoded path
         self.config.WeigthPath = WeigthPath
 
         # These four setting use the old configurations. The results are slightly different due to scaling.
@@ -655,7 +655,7 @@ class ProcessImageML:
 
         if True:
             # Load the spiking HEK cells weight
-            self.config.WeigthPath = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Martijn\SpikingHek.h5"
+            self.config.WeigthPath = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Martijn\SpikingHek.h5"  # TODO hardcoded path
         self.Detector.LoadWeigths(self.config.WeigthPath, by_name=True)
         print("Weight file: {}".format(self.config.WeigthPath))
 
@@ -787,8 +787,8 @@ if __name__ == "__main__":
     # from skimage.io import imread
     # =============================================================================
 
-    tag_folder = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\2020-4-08 Archon citrine library 100FOVs\trial_3_library_cellspicked"
-    lib_folder = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\2020-7-30 Archon1 comparision 100 FOV\code_test"
+    tag_folder = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\2020-4-08 Archon citrine library 100FOVs\trial_3_library_cellspicked"  # TODO hardcoded path
+    lib_folder = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\2020-7-30 Archon1 comparision 100 FOV\code_test"  # TODO hardcoded path
 
     tag_round = "Round1"
     lib_round = "Round2"
@@ -796,13 +796,13 @@ if __name__ == "__main__":
     # ProcessML = ProcessImageML(WeigthPath = r"C:\MaskRCNN\MaskRCNNGit\MaskRCNN\MaskRCNN\Data\Xin_training_200epoch_2021_1_20\cell20210121T2259\mask_rcnn_cell_0200.h5")
     # ProcessML = ProcessImageML(WeigthPath = r"C:\MaskRCNN\MaskRCNNGit\MaskRCNN\MaskRCNN\Data\Xin_training\cell20210107T1533\mask_rcnn_cell_0050.h5")
     ProcessML = ProcessImageML(
-        WeigthPath=r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Martijn\SpikingHek.h5"
+        WeigthPath=r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Martijn\SpikingHek.h5"  # TODO hardcoded path
     )
     # ProcessML = ProcessImageML()
     # ProcessML.config.WeigthPath = r"C:\MaskRCNN\MaskRCNNGit\MaskRCNN\MaskRCNN\Data\Xin_training\cell20210107T1533\mask_rcnn_cell_0050.h5"
     print(ProcessML.config.WeigthPath)
     # 5.6s for each detection
-    img_name = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\People\Xin Meng\paperwork\Dissertation\Figures\Chapter 3\DMD ML application\FOV3\raw_2021-10-06_12-00-44.tif"
+    img_name = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\People\Xin Meng\paperwork\Dissertation\Figures\Chapter 3\DMD ML application\FOV3\raw_2021-10-06_12-00-44.tif"  # TODO hardcoded path
     img = skimage.io.imread(img_name)
     # for _ in range(5):
     #     starttime = time.time()
@@ -817,9 +817,9 @@ if __name__ == "__main__":
     # ProcessML.DetectionOnImage(img, show_result = True)
 
     # cell_data = ProcessML.analyze_images_in_folder\
-    #     (folder=r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Delizzia\2021-02-25 Helios WT screening 1000ng 532nm\pos3', generate_zmax = True)
+    #     (folder=r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Delizzia\2021-02-25 Helios WT screening 1000ng 532nm\pos3', generate_zmax = True)  # TODO hardcoded path
 
-    # file = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\ML images\NewAnnotationDaanPart2\Camera\Spiking HEK\1.png"
+    # file = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\ML images\NewAnnotationDaanPart2\Camera\Spiking HEK\1.png"  # TODO hardcoded path
     # ProcessML.Generate_connection_map(file)
 
 
@@ -829,7 +829,7 @@ if __name__ == "__main__":
 # import matplotlib.pyplot as plt
 # import cv2
 # from skimage.io import imread
-# f = open ("M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data/ML images/FishZehra/V/Validation/fish1jr.json")
+# f = open ("M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data/ML images/FishZehra/V/Validation/fish1jr.json")  # TODO hardcoded path
 
 # data = json.load(f)
 # cells = data["shapes"]
@@ -852,20 +852,20 @@ if __name__ == "__main__":
 # results = ProcessML.DetectionOnImage(img, show_result = True)
 
 # results_json = json.dumps(results['masks'])
-# #with open(r"M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data/ML images/FishZehra/V/Validation/fish1jr.png") as f:
+# #with open(r"M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data/ML images/FishZehra/V/Validation/fish1jr.png") as f:  # TODO hardcoded path
 # #    f.write(results_json)
 
 
 
 
 # results_json = json.dumps(results['masks'])
-# with open(r"M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data/ML images/FishZehra/V/Validation/fish1jr.png") as f:
+# with open(r"M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data/ML images/FishZehra/V/Validation/fish1jr.png") as f:  # TODO hardcoded path
 #     f.write(results_json)
 # masks = results['masks']
 # for i in range(len(masks)):
 #     mask_image = masks[:,:,i]
 
-#     path = r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\People\Zehra Kaynak'
+#     path = r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\People\Zehra Kaynak'  # TODO hardcoded path
 #     img_name = 'waka' + str(i) + '.png'
 #     cv2.imwrite(os.path.join(path , img_name), mask_image*255)
 #     cv2.waitKey(0)

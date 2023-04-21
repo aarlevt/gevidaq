@@ -7,7 +7,6 @@ Created on Mon Sep 27 15:48:59 2021
 """
 
 
-import sys
 import numpy as np
 from PyQt5.QtCore import pyqtSignal, QThread, pyqtSlot
 
@@ -15,9 +14,8 @@ import nidaqmx
 from nidaqmx.stream_readers import AnalogMultiChannelReader
 from nidaqmx.stream_writers import AnalogSingleChannelWriter
 
-sys.path.append("../")
-from NIDAQ.wavegenerator import blockWave
-from NIDAQ.constants import MeasurementConstants, NiDaqChannels
+from ..NIDAQ.wavegenerator import blockWave
+from ..NIDAQ.constants import MeasurementConstants, NiDaqChannels
 
 
 class SealTestThread(QThread):

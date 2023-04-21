@@ -16,16 +16,17 @@ from PyQt5.QtWidgets import (
 )
 from PyQt5 import QtGui
 from PyQt5.QtCore import pyqtSignal
-from StylishQT import roundQGroupBox
+from ..StylishQT import roundQGroupBox
 
-from CoordinatesManager import Registrator, CoordinateTransformations
-from ImageAnalysis.ImageProcessing import ProcessImage
-from GalvoWidget.pmt_thread import pmtimagingTest_contour
+from . import Registrator, CoordinateTransformations
+from . import Registration
+from ..ImageAnalysis.ImageProcessing import ProcessImage
+from ..GalvoWidget.pmt_thread import pmtimagingTest_contour
 
 from skimage.draw import polygon2mask
 
 import sys
-import os
+import importlib.resources
 import numpy as np
 
 import matplotlib.pyplot as plt
@@ -43,7 +44,7 @@ class GalvoWidget(QWidget):
         self.main_application = parent
 
         self.set_transformation_saving_location(
-            os.getcwd() + "/CoordinatesManager/Registration/galvo_transformation"
+            importlib.resources.files(Registration)
         )
 
         self.init_gui()
@@ -186,17 +187,25 @@ class GalvoWidget(QWidget):
             self.galvoThread.aboutToQuitHandler()
             self.scan_button.setText("Start scan")
 
-    def set_transformation_saving_location(self, filename):
-        self.transformation_file_name = filename
+    def set_transformation_saving_location(self, traversable):
+        self.transformation_location = traversable
 
     def save_transformation(self):
         size = self.transform.shape[0]
-        np.savetxt(
-            self.transformation_file_name, np.reshape(self.transform, (-1, size))
+        traversable = self.transformation_location.joinpath(
+            "galvo_transformation"
         )
+        with importlib.resources.as_file(traversable) as path:
+            np.savetxt(
+                path.as_posix(), np.reshape(self.transform, (-1, size))
+            )
 
     def open_latest_transformation(self):
-        transform = np.loadtxt(self.transformation_file_name)
+        traversable = self.transformation_location.joinpath(
+            "galvo_transformation"
+        )
+        with importlib.resources.as_file(traversable) as path:
+            transform = np.loadtxt(path.as_posix())
 
         self.transform = np.reshape(transform, (transform.shape[1], -1, 2))
         print("Transform for galvos loaded:")

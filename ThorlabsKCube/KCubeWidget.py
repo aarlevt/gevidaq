@@ -12,16 +12,10 @@ from PyQt5.QtGui import QFont
 from PyQt5.QtWidgets import QWidget, QGridLayout
 
 import threading
-import os
 
-# Ensure that the Widget can be run either independently or as part of Tupolev.
-if __name__ == "__main__":
-    abspath = os.path.abspath(__file__)
-    dname = os.path.dirname(abspath)
-    os.chdir(dname + "/../")
-import StylishQT
+from .. import StylishQT
 
-from ThorlabsKCube.KCube_backend import KCube
+from .KCube_backend import KCube
 
 
 class KCubeWidgetUI(QWidget):

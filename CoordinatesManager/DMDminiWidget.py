@@ -13,24 +13,17 @@ from PyQt5.QtWidgets import (
 
 from PyQt5.QtGui import QFont
 import sys
-import os
 
-# Ensure that the Widget can be run either independently or as part of Tupolev.
-if __name__ == "__main__":
-    abspath = os.path.abspath(__file__)
-    dname = os.path.dirname(abspath)
-    os.chdir(dname + "/../")
-from CoordinatesManager import DMDActuator
-from GeneralUsage.ThreadingFunc import run_in_thread
+from . import DMDActuator
+from ..GeneralUsage.ThreadingFunc import run_in_thread
 
 import numpy as np
-import StylishQT
+from .. import StylishQT
 
 
 class DMDminiWidgetUI(QWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        #        os.chdir('./')# Set directory to current folder.
         self.setFont(QFont("Arial"))
 
         self.setMinimumHeight(150)

@@ -13,11 +13,7 @@ from nidaqmx.stream_readers import AnalogSingleChannelReader
 from PyQt5.QtCore import pyqtSignal, QThread
 import numpy as np
 
-import sys
-
-sys.path.append("../")
-
-import NIDAQ.wavegenerator
+from ..NIDAQ import wavegenerator
 
 # =============================================================================
 # For continuous raster scanning
@@ -149,7 +145,7 @@ class pmtimagingTest:
         self.offsetsamples_galvo = []
 
         # Generate galvo samples
-        self.samples_1, self.samples_2 = NIDAQ.wavegenerator.waveRecPic(
+        self.samples_1, self.samples_2 = wavegenerator.waveRecPic(
             sampleRate=self.Daq_sample_rate,
             imAngle=0,
             voltXMin=Value_voltXMin,

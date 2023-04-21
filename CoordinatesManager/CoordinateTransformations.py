@@ -11,12 +11,9 @@ Modified based on Izak's code for higher level interface.
 
 from scipy import optimize
 import numpy as np
-import os
+import importlib.resources
 
-if __name__ == "__main__":
-    abspath = os.path.abspath(__file__)
-    dname = os.path.dirname(abspath)
-    os.chdir(dname + "/../")
+from . import Registration
 
 
 def _transform_x(p, *kwargs):
@@ -235,10 +232,11 @@ def load_transformation(target):
 
     """
     # Load transformation
-    transformation_filename = os.path.join(
-        os.getcwd() + "\CoordinatesManager\Registration\{}".format(target)
-    )
-    transform_matrix_flat = np.loadtxt(transformation_filename)
+    traversable = importlib.resources.files(Registration)
+    with importlib.resources.as_file(traversable.joinpath(target)) as path:
+        transformation_filename = str(path)
+        transform_matrix_flat = np.loadtxt(transformation_filename)
+
     # Reshape the text matrix into (2, 2, 2)
     transform_matrix = np.reshape(
         transform_matrix_flat, (transform_matrix_flat.shape[1], -1, 2)

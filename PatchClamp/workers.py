@@ -10,7 +10,7 @@ import time
 import numpy as np
 from PyQt5.QtCore import QObject, pyqtSignal, pyqtSlot
 
-from PatchClamp.ImageProcessing_patchclamp import PatchClampImageProcessing as ia
+from .ImageProcessing_patchclamp import PatchClampImageProcessing as ia
 
 
 class Worker(QObject):

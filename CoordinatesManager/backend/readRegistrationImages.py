@@ -17,7 +17,7 @@ import scipy.signal
 import math as m
 import os
 
-from CoordinatesManager import Registrator
+from .. import Registrator
 
 
 def gaussian(x, y, x0, y0, sigma, amp):
@@ -429,7 +429,7 @@ if __name__ == "__main__":
 
         for i in range(6):
             image = plt.imread(
-                os.getcwd()
+                os.getcwd()  # TODO fix path
                 + "/CoordinatesManager/Registration_Images/DMD Registration Data/TouchingSquaresWithCells1/image_"
                 + str(i)
                 + ".png"
@@ -460,7 +460,7 @@ if __name__ == "__main__":
 
     if False:
         image = plt.imread(
-            os.getcwd()
+            os.getcwd()  # TODO fix path
             + "/CoordinatesManager/Registration_Images/DMD Registration Data/TouchingSquaresWithCells1/image_"
             + str(0)
             + ".png"
@@ -472,7 +472,7 @@ if __name__ == "__main__":
         fig, axs = plt.subplots(1, 4)
 
         image_org = plt.imread(
-            os.getcwd()
+            os.getcwd()  # TODO fix path
             + "/CoordinatesManager/Registration_Images/DMD Registration Data/TouchingSquaresWithCells1/image_"
             + str(1)
             + ".png"

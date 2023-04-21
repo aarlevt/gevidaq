@@ -9,7 +9,6 @@ Widely Tunable, Ultra-Fast, Solid-State Laser System.
 
 import sys
 
-sys.path.append("../")
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QFont
 
@@ -24,11 +23,11 @@ from PyQt5.QtWidgets import (
 )
 
 import time
-import sys
 import threading
 import queue
-from InsightX3.TwoPhotonLaser_backend import InsightX3
-import StylishQT
+
+from .TwoPhotonLaser_backend import InsightX3
+from .. import StylishQT
 
 
 class InsightWidgetUI(QWidget):
@@ -38,7 +37,6 @@ class InsightWidgetUI(QWidget):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        #        os.chdir('./')# Set directory to current folder.
         self.setFont(QFont("Arial"))
         #        self.Laserinstance = TwoPhotonExecutor(address = 'COM11', WatchdogTimer = 3, WatchdogFreq = 1.1)
 

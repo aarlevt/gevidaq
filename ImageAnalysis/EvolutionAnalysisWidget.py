@@ -71,7 +71,6 @@ class MainGUI(QWidget):
     #%%
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        os.chdir("./")  # Set directory to current folder.
         self.setFont(QFont("Arial"))
 
         #        self.setMinimumSize(900, 1020)
@@ -476,7 +475,7 @@ class MainGUI(QWidget):
         # For camera images analysis, load the weight file which is trained on spiking HEK cells
         if len(self.Tag_round_infor) == 0 and len(self.Lib_round_infor) == 0:
             self.ProcessML = ProcessImageML(
-                WeigthPath=r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Martijn\SpikingHek.h5"
+                WeigthPath=r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Martijn\SpikingHek.h5"  # TODO hardcoded path
             )
         else:
             self.ProcessML = ProcessImageML()
@@ -488,7 +487,7 @@ class MainGUI(QWidget):
 
             if self.FilepathSwitchBox.currentText() == "Cam Z-max":
                 # For camera screening analysis, use Spiking HEK weight
-                self.ProcessML.config.WeigthPath = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Martijn\SpikingHek.h5"
+                self.ProcessML.config.WeigthPath = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Martijn\SpikingHek.h5"  # TODO hardcoded path
                 # If need to do z-max projection first and then analyse on them
                 cell_data = self.ProcessML.analyze_images_in_folder(
                     self.Analysis_saving_directory, generate_zmax=True
@@ -506,7 +505,7 @@ class MainGUI(QWidget):
 
             if self.FilepathSwitchBox.currentText() == "Cam Z-max":
                 # For camera screening analysis, use Spiking HEK weight
-                self.ProcessML.config.WeigthPath = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Martijn\SpikingHek.h5"
+                self.ProcessML.config.WeigthPath = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Martijn\SpikingHek.h5"  # TODO hardcoded path
                 # If need to do z-max projection first and then analyse on them
                 cell_data = self.ProcessML.analyze_images_in_folder(
                     self.Analysis_saving_directory, generate_zmax=True
@@ -527,7 +526,7 @@ class MainGUI(QWidget):
                 pass
             else:
                 # For camera screening analysis, use Spiking HEK weight
-                self.ProcessML.config.WeigthPath = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Martijn\SpikingHek.h5"
+                self.ProcessML.config.WeigthPath = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Martijn\SpikingHek.h5"  # TODO hardcoded path
 
                 # Generate the max projection
                 ProcessImage.cam_screening_post_processing(self.Analysis_saving_directory,
@@ -727,7 +726,7 @@ class MainGUI(QWidget):
         self.ExcelfileName, _ = QtWidgets.QFileDialog.getOpenFileName(
             self,
             "Single File",
-            r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope",
+            r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope",  # TODO hardcoded path
             "(*.xlsx)",
         )
         try:

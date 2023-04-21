@@ -34,18 +34,17 @@ import sys
 import numpy as np
 import math
 
-sys.path.append("../")
-
-from PatchClamp.patchclamp import (
+from .patchclamp import (
     PatchclampSealTest,
     PatchclampSealTest_hold,
     PatchclampSealTest_currentclamp,
     PatchclampSealTest_zap,
 )
-from NIDAQ.constants import MeasurementConstants
-from NIDAQ.DAQoperator import DAQmission
+from ..NIDAQ.constants import MeasurementConstants
+from ..NIDAQ.DAQoperator import DAQmission
 import threading
-import StylishQT
+from .. import StylishQT
+from .. import Icons
 
 # Setting graph settings
 """
@@ -105,7 +104,7 @@ class SlidingWindow(pg.PlotWidget):
 class PatchclampSealTestUI(QWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.saving_dir = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Patch clamp\seal_test"
+        self.saving_dir = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Patch clamp\seal_test"  # TODO hardcoded path
 
         # ------------------------Initiating patchclamp class-------------------
         self.sealTest = PatchclampSealTest()
@@ -130,8 +129,10 @@ class PatchclampSealTestUI(QWidget):
         self.setFixedHeight(770)
         self.setWindowTitle("Patchclamp Seal Test")
 
-        self.ICON_RED_LED = "./Icons/off.png"
-        self.ICON_GREEN_LED = "/Icons/on.png"
+        with Icons.Path("off.png") as path:
+            self.ICON_RED_LED = QPixmap(path)
+        with Icons.Path("on.png") as path:
+            self.ICON_GREEN_LED = QPixmap(path)
         self.is_sealtesting = False
 
         # ------------------------------Gains-----------------------------------
@@ -216,9 +217,9 @@ class PatchclampSealTestUI(QWidget):
         # zapContainer.setFixedWidth(320)
         zapContainerLayout = QGridLayout()
 
-        self.ICON_zap = "./Icons/zap.jpg"
         self.zapiconlabel = QLabel()
-        self.zapiconlabel.setPixmap(QPixmap(self.ICON_zap))
+        with Icons.Path("zap.jpg") as path:
+            self.zapiconlabel.setPixmap(QPixmap(path))
         zapContainerLayout.addWidget(self.zapiconlabel, 0, 0)
 
         self.zapButton = QPushButton("ZAP!")
@@ -262,7 +263,7 @@ class PatchclampSealTestUI(QWidget):
         HoldContainerLayout.addWidget(self.HoldingList, 1, 1)
 
         # self.iconlabel = QLabel(self)
-        # self.iconlabel.setPixmap(QPixmap(self.ICON_RED_LED))
+        # self.iconlabel.setPixmap(self.ICON_RED_LED)
         # HoldContainerLayout.addWidget(self.iconlabel, 1, 1)
 
         self.holdingbutton = QPushButton("Hold")
@@ -479,10 +480,10 @@ class PatchclampSealTestUI(QWidget):
             # self.setRedlight()
 
     def setRedlight(self):
-        self.iconlabel.setPixmap(QPixmap(self.ICON_RED_LED))
+        self.iconlabel.setPixmap(self.ICON_RED_LED)
 
     def setGreenlight(self):
-        self.iconlabel.setPixmap(QPixmap(self.ICON_GREEN_LED))
+        self.iconlabel.setPixmap(self.ICON_GREEN_LED)
 
     def startUpdatingGUIThread(self):
         time.sleep(0.3)

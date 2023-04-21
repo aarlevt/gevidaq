@@ -5,12 +5,14 @@ Created on Sun Feb  6 11:31:11 2022
 @author: TvdrBurgt
 """
 
-import os
+import importlib.resources
 import json
+import sys
+
 import numpy as np
 from PyQt5.QtCore import QObject, QThread
 
-from PatchClamp.workers import Worker
+from .workers import Worker
 
 
 class SmartPatcher(QObject):
@@ -33,7 +35,6 @@ class SmartPatcher(QObject):
         self.update_constants_from_JSON()           # overwrite constants from JSON
 
         # Autopatch variables
-        self.save_directory = os.getcwd()#+'\\feedback\\'
         self._operation_mode = "Default"
         self._resistance_reference = None           # in MΩ
         self._target_coordinates = np.array(        # [Xcam,Ycam,Zobj] in (pix,pix,μm)
@@ -166,15 +167,17 @@ class SmartPatcher(QObject):
     def update_constants_from_JSON(self):
         # read json file with autopatcher constants and update them in backend
         try:
-            filedirectory = os.path.dirname(os.path.abspath('__file__'))
-            with open(filedirectory+"/PatchClamp/autopatch_configuration.txt", "r") as json_infile:
+            files = importlib.resources.files(sys.modules[__package__])
+            traversable = files.joinpath("autopatch_configuration.txt")
+            with traversable.open() as json_infile:
                 data = json.load(json_infile)
-                self.pixel_size = data["pixel_size"]
-                self.image_size = data["image_size"]
-                self.pipette_orientation = data["pipette_orientation"]
-                self.pipette_diameter = data["pipette_diameter"]
-                self.rotation_angles = data["rotation_angles"]
-                self.focus_offset = data["focus_offset"]
+
+            self.pixel_size = data["pixel_size"]
+            self.image_size = data["image_size"]
+            self.pipette_orientation = data["pipette_orientation"]
+            self.pipette_diameter = data["pipette_diameter"]
+            self.rotation_angles = data["rotation_angles"]
+            self.focus_offset = data["focus_offset"]
         except FileNotFoundError:
             self.write_constants_to_JSON()
 
@@ -187,9 +190,14 @@ class SmartPatcher(QObject):
             "rotation_angles": self.rotation_angles,
             "focus_offset": self.focus_offset
             }
-        filedirectory = os.path.dirname(os.path.abspath('__file__'))
-        with open(filedirectory+"/PatchClamp/autopatch_configuration.txt", "w") as json_outfile:
-            json.dump(data, json_outfile)
+        try:
+            files = importlib.resources.files(sys.modules[__package__])
+            traversable = files.joinpath("autopatch_configuration.txt")
+            with traversable.open("w") as json_outfile:
+                json.dump(data, json_outfile)
+        except OSError as exc:
+            raise exc  # TODO logging
+
 
 
     def account4rotation(self, origin, target):

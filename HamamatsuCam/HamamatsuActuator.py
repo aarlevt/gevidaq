@@ -5,21 +5,15 @@ Created on Wed May 27 17:14:53 2020
 
 @author: xinmeng
 """
-import sys
-import os
-
 import numpy as np
 import tifffile as skimtiff
 import ctypes
 import time
 import threading
+import sys
+import importlib.resources
 
-try:
-    from HamamatsuDCAM import *  # TODO star import
-except:
-    from HamamatsuCam.HamamatsuDCAM import *
-# Append parent folder to system path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+from . import HamamatsuDCAM
 
 # =============================================================================
 # Script based Hamamatsu camera operations
@@ -63,11 +57,12 @@ class CamActuator:
         #         Initialize the camera
         #         Set default camera properties.
         # =====================================================================
-        self.dcam = ctypes.WinDLL(
-            r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\People\Xin Meng\Code\Python_test\HamamatsuCam\19_12\dcamapi.dll"
-        )
+        files = importlib.resources.files(sys.modules[__package__])
+        traversable = files.joinpath("19_12/dcamapi.dll")
+        with importlib.resources.as_file(traversable) as path:
+            self.dcam = ctypes.WinDLL(str(path))
 
-        paraminit = DCAMAPI_INIT(0, 0, 0, 0, None, None)
+        paraminit = HamamatsuDCAM.DCAMAPI_INIT(0, 0, 0, 0, None, None)
         paraminit.size = ctypes.sizeof(paraminit)
         error_code = self.dcam.dcamapi_init(ctypes.byref(paraminit))  # TODO unused
         # if (error_code != DCAMERR_NOERROR):
@@ -78,7 +73,7 @@ class CamActuator:
 
         if n_cameras > 0:
             # ------------------------Initialization----------------------------
-            self.hcam = HamamatsuCameraMR(camera_id=0)
+            self.hcam = HamamatsuDCAM.HamamatsuCameraMR(camera_id=0)
 
             # Enable defect correction
             self.hcam.setPropertyValue("defect_correct_mode", 2)
@@ -309,7 +304,7 @@ if __name__ == "__main__":
     #        time.sleep(0.5)
     time.sleep(3.5)
     cam.isSaving = True
-    tif_name = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\test.tif"
+    tif_name = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\test.tif"  # TODO hardcoded path
     cam.StopStreaming(saving_dir=tif_name)
     # Make sure that the saving process is finished.
     while cam.isSaving == True:

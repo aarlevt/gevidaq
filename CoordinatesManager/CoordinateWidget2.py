@@ -8,30 +8,20 @@ Modified by Xin, adding machine learning portal.
 """
 
 import sys
-import os
-
-# Ensure that the Widget can be run either independently or as part of Tupolev.
-if __name__ == "__main__":
-    abspath = os.path.abspath(__file__)
-    dname = os.path.dirname(abspath)
-    os.chdir(dname + "/../")
-    # os.chdir(os.getcwd()+'/')
 
 # Backend
 
-from CoordinatesManager import (
+from . import (
     ManualRegistration,
     DMDWidget,
     GalvoWidget,
     StageRegistrationWidget,
 )
 
-# from NIDAQ.generalDaqerThread import execute_analog_readin_optional_digital_thread
-
-from ImageAnalysis.ImageProcessing import ProcessImage
+from ..ImageAnalysis.ImageProcessing import ProcessImage
 
 # UI
-from CoordinatesManager.ui_widgets.DrawingWidget import DrawingWidget
+from .ui_widgets.DrawingWidget import DrawingWidget
 
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QIcon
@@ -47,7 +37,7 @@ from PyQt5.QtWidgets import (
 )
 
 from PyQt5.QtCore import pyqtSignal
-from StylishQT import cleanButton, roundQGroupBox, SquareImageView
+from ..StylishQT import cleanButton, roundQGroupBox, SquareImageView
 
 import pyqtgraph as pg
 
@@ -64,10 +54,9 @@ import matplotlib.patches as mpatches
 from skimage.io import imread
 from skimage.measure import find_contours
 
-try:
-    from ImageAnalysis.ImageProcessing_MaskRCNN import ProcessImageML
-except ImportError:
-    print("None MaskRCNN environment.")
+from .. import Icons
+
+# from ..ImageAnalysis.ImageProcessing_MaskRCNN import ProcessImageML  # TODO import failure
 
 
 class CoordinatesWidgetUI(QWidget):
@@ -217,7 +206,8 @@ class CoordinatesWidgetUI(QWidget):
             "Click arrow to enable WASD keyboard control"
         )
         self.previous_mask_button.setFixedWidth(60)
-        self.previous_mask_button.setIcon(QIcon("./Icons/LeftArrow.png"))
+        with Icons.Path("LeftArrow.png") as path:
+            self.previous_mask_button.setIcon(QIcon(path))
         self.previous_mask_button.clicked.connect(lambda: self.show_mask_with_index(-1))
         self.maskGeneratorContainerLayout.addWidget(self.previous_mask_button, 1, 2)
 
@@ -228,7 +218,8 @@ class CoordinatesWidgetUI(QWidget):
         )
         self.next_mask_button.setToolTip("Click arrow to enable WASD keyboard control")
         self.next_mask_button.setFixedWidth(60)
-        self.next_mask_button.setIcon(QIcon("./Icons/RightArrow.png"))
+        with Icons.Path("RightArrow.png") as path:
+            self.next_mask_button.setIcon(QIcon(path))
         self.next_mask_button.clicked.connect(lambda: self.show_mask_with_index(1))
         self.maskGeneratorContainerLayout.addWidget(self.next_mask_button, 1, 3)
 
@@ -571,14 +562,14 @@ class CoordinatesWidgetUI(QWidget):
     def init_ML(self):
         # Initialize the detector instance and load the model.
         self.ProcessML = ProcessImageML(
-            WeigthPath=r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Martijn\SpikingHek.h5")
+            WeigthPath=r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Martijn\SpikingHek.h5")  # TODO hardcoded path
         self.MessageBack.emit("Mask-RCNN environment configured.")
 
     def run_ML_onImg_and_display(self):
         # self.ResetLiveImgView()
         # For testing
         # snap_from_camera = plt.imread\
-        # (r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Vidya\Imaging\Octoscope\2020-10-08 Archon lib V7\V7_gfp_5v_telescope_2.TIF")
+        # (r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Vidya\Imaging\Octoscope\2020-10-08 Archon lib V7\V7_gfp_5v_telescope_2.TIF")  # TODO hardcoded path
         # self.selection_view.setImage(snap_from_camera)
 
         """Run MaskRCNN on input image"""

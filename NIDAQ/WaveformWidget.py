@@ -39,26 +39,21 @@ import pyqtgraph.exporters
 from pyqtgraph import PlotDataItem
 import os
 
-# Ensure that the Widget can be run either independently or as part of Tupolev.
-if __name__ == "__main__":
-    abspath = os.path.abspath(__file__)
-    dname = os.path.dirname(abspath)
-    os.chdir(dname + "/../")
-from NIDAQ.wavegenerator import (
+from .wavegenerator import (
     waveRecPic,
     generate_AO_for640,
     generate_digital_waveform,
     generate_ramp,
     generate_AO,
 )
-from NIDAQ.DAQoperator import DAQmission
-from ThorlabsFilterSlider.filterpyserial import ELL9Filter
+from .DAQoperator import DAQmission
+from ..ThorlabsFilterSlider.filterpyserial import ELL9Filter
 from PIL import Image
 
 import threading
 import time
 from datetime import datetime
-import StylishQT
+from .. import StylishQT
 
 
 class WaveformGenerator(QWidget):
@@ -844,7 +839,7 @@ class WaveformGenerator(QWidget):
         self.wavenpfileName, _ = QtWidgets.QFileDialog.getOpenFileName(
             self,
             "Single File",
-            "M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data",
+            "M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data",  # TODO hardcoded path
             "(*.npy)",
         )
         self.textbox_loadwave.setText(self.wavenpfileName)

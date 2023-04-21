@@ -5,8 +5,11 @@ Created on Thu Dec  9 10:18:47 2021
 @author: TvdrBurgt
 """
 
+import importlib.resources
 
 from pipython import GCSDevice, pitools
+
+from .. import PI_ObjectiveMotor
 
 
 class PIMotor:
@@ -19,8 +22,11 @@ class PIMotor:
     def __init__(self, objective_motor_handle=None):
         # Connect the objective motor if it is not given
         if objective_motor_handle == None:
-            self.objective = GCSDevice(gcsdll=__file__+'/../../'+'/PI_ObjectiveMotor/PI_GCS2_DLL_x64.dll')
-            self.objective.ConnectUSB(serialnum='PI C-863 Mercury SN 0185500828')
+            files = importlib.resources.files(PI_ObjectiveMotor)
+            traversable = files.joinpath("PI_GCS2_DLL_x64.dll")
+            with importlib.resources.as_file(traversable) as path:
+                self.objective = GCSDevice(gcsdll=str(path))
+            self.objective.ConnectUSB(serialnum='PI C-863 Mercury SN 0185500828')  # TODO magic string
         else:
             self.objective = objective_motor_handle
 

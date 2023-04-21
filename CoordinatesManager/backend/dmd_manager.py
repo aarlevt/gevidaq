@@ -9,10 +9,8 @@ Created on Tue Dec  4 14:12:40 2018
 import os
 import numpy as np
 
-cdir = os.getcwd()
-from DMDManager.backend import ALP4
+from DMDManager.backend import ALP4  # TODO import failure
 
-os.chdir(cdir)
 
 
 class DMD_manager:
@@ -24,8 +22,7 @@ class DMD_manager:
 
         """
         # Load the Vialux .dll
-        cdir = os.getcwd() + "./DMDManager"
-        print(os.getcwd())
+        cdir = os.getcwd() + "./DMDManager"  # TODO fix path
 
         self.DMD = ALP4.ALP4(
             version="4.3", libDir=r"" + cdir

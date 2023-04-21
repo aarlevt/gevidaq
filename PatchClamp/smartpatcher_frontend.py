@@ -17,15 +17,14 @@ from PyQt5.QtWidgets import QWidget, QGridLayout, QPushButton, QDoubleSpinBox, Q
 import pyqtgraph.exporters
 import pyqtgraph as pg
 
-sys.path.append('./')
-from NIDAQ.constants import MeasurementConstants
-from PatchClamp.smartpatcher_backend import SmartPatcher
-from PatchClamp.camerathread import CameraThread
-from PatchClamp.sealtestthread import SealTestThread
-from PatchClamp.pressurethread import PressureThread
-from PatchClamp.objective import PIMotor
-from PatchClamp.micromanipulator import ScientificaPatchStar
-from PatchClamp.stage import LudlStage
+from ..NIDAQ.constants import MeasurementConstants
+from .smartpatcher_backend import SmartPatcher
+from .camerathread import CameraThread
+from .sealtestthread import SealTestThread
+from .pressurethread import PressureThread
+from .objective import PIMotor
+from .micromanipulator import ScientificaPatchStar
+from .stage import LudlStage
 
 
 
@@ -600,7 +599,7 @@ class PatchClampUI(QWidget):
     def request_snap(self):
         if self.backend.camerathread is not None:
             I = self.backend.camerathread.snap()
-            io.imsave(self.backend.save_directory+'snapshot.tif', I, check_contrast=False)
+            io.imsave('snapshot.tif', I, check_contrast=False)
             self.toggle_pauselive()
             self.update_live(I)
         else:

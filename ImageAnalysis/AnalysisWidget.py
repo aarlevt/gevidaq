@@ -40,13 +40,8 @@ import time
 from scipy.optimize import curve_fit
 import tifffile as skimtiff
 
-# Ensure that the Widget can be run either independently or as part of Tupolev.
-if __name__ == "__main__":
-    abspath = os.path.abspath(__file__)
-    dname = os.path.dirname(abspath)
-    os.chdir(dname + "/../")
-from ImageAnalysis.ImageProcessing import ProcessImage, PatchAnalysis
-import StylishQT
+from .ImageProcessing import ProcessImage, PatchAnalysis
+from .. import StylishQT
 
 
 class AnalysisWidgetUI(QWidget):
@@ -59,14 +54,13 @@ class AnalysisWidgetUI(QWidget):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        #        os.chdir('./')# Set directory to current folder.
         self.setFont(QFont("Arial"))
 
         self.setMinimumSize(1250, 850)
         self.setWindowTitle("AnalysisWidget")
         self.layout = QGridLayout(self)
         self.savedirectory = (
-            r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Patch clamp"
+            r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Patch clamp"  # TODO hardcoded path
         )
         self.OC = 0.1  # Patch clamp constant
         # **************************************************************************************************************************************
@@ -493,7 +487,7 @@ class AnalysisWidgetUI(QWidget):
         self.fileName_background, _ = QtWidgets.QFileDialog.getOpenFileName(
             self,
             "Single File",
-            "M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data",
+            "M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data",  # TODO hardcoded path
             "Image files (*.jpg *.tif)",
         )
         self.textbox_Background_filename.setText(self.fileName_background)

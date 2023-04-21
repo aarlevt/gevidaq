@@ -4,18 +4,14 @@ Created on Thu Mar 21 14:41:41 2019
 
 @author: xinmeng
 """
-import os
+import importlib.resources
+import sys
 import time
-
-if __name__ == "__main__":
-    abspath = os.path.abspath(__file__)
-    dname = os.path.dirname(abspath)
-    os.chdir(dname + "/../")
 
 try:
     from pipython import GCSDevice
     from pipython import pitools
-except:
+except ImportError:
     print("pipython not configured.")
 
 
@@ -44,11 +40,11 @@ class PIMotor:
             REFMODE = "FNL"  # TODO unused
 
             # Get the path to dll in the same folder.
-            abspath = os.path.abspath(__file__)
-            dname = os.path.dirname(abspath) + "/PI_GCS2_DLL_x64.dll"
-            print(dname)
+            files = importlib.resources.files(sys.modules[__package__])
+            traversable = files.joinpath("PI_GCS2_DLL_x64.dll")
+            with importlib.resources.as_file(traversable) as path:
+                self.pidevice = GCSDevice(gcsdll=str(path))
 
-            self.pidevice = GCSDevice(gcsdll=dname)
             print(self.pidevice.EnumerateUSB())
             # InterfaceSetupDlg() is an interactive dialog. There are other methods to
             # connect to an interface without user interaction.

@@ -4,13 +4,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 from skimage import measure
 import skimage.draw
-import os
 
-old_cwd = os.getcwd()
-os.chdir(os.getcwd() + "/../../")
-import CoordinateTransformations
-
-os.chdir(old_cwd)
+from .. import CoordinateTransformations
 
 from skimage.measure import block_reduce
 

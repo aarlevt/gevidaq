@@ -5,9 +5,6 @@ Created on Wed Mar  4 12:18:12 2020
 @author: xinmeng
 """
 
-import sys
-
-sys.path.append("../")
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QFont
@@ -23,13 +20,11 @@ from PyQt5.QtWidgets import (
 
 import pyqtgraph as pg
 import threading
-import os
 
-# Append parent folder to system path
-sys.path.append(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-import StylishQT
-from NIDAQ.ServoMotor import Servo
-from NIDAQ.DAQoperator import DAQmission
+from .. import StylishQT
+from .ServoMotor import Servo
+from .DAQoperator import DAQmission
+from .. import Icons
 
 
 class AOTFWidgetUI(QWidget):
@@ -41,7 +36,6 @@ class AOTFWidgetUI(QWidget):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        #        os.chdir('./')# Set directory to current folder.
         self.setFont(QFont("Arial"))
 
         #        self.setMinimumSize(1350,900)
@@ -70,9 +64,10 @@ class AOTFWidgetUI(QWidget):
         self.AOTFcontrolLayout = QGridLayout()
         self.AOTFcontrolWidget.setLayout(self.AOTFcontrolLayout)
 
-        self.shutter640Button = StylishQT.checkableButton(
-            Icon_path="./Icons/shutter.png", background_color="#DEC8C4"
-        )
+        with Icons.Path("shutter.png") as path:
+            self.shutter640Button = StylishQT.checkableButton(
+                Icon_path=path, background_color="#DEC8C4"
+            )
 
         self.slider640 = QSlider(Qt.Horizontal)
         self.slider640.setMinimum(0)
@@ -96,9 +91,10 @@ class AOTFWidgetUI(QWidget):
         )
         self.AOTFcontrolLayout.addWidget(self.switchbutton_blankingAll, 0, 2, 1, 2)
 
-        self.shutter532Button = StylishQT.checkableButton(
-            Icon_path="./Icons/shutter.png", background_color="#CDDEC4"
-        )
+        with Icons.Path("shutter.png") as path:
+            self.shutter532Button = StylishQT.checkableButton(
+                Icon_path=path, background_color="#CDDEC4"
+            )
 
         self.slider532 = QSlider(Qt.Horizontal)
         self.slider532.setMinimum(0)
@@ -144,9 +140,10 @@ class AOTFWidgetUI(QWidget):
         )
         # self.AOTFcontrolLayout.addWidget(self.switchbutton_488, 2, 1)
 
-        self.shutter488Button = StylishQT.checkableButton(
-            Icon_path="./Icons/shutter.png", background_color="#C4DDDE"
-        )
+        with Icons.Path("shutter.png") as path:
+            self.shutter488Button = StylishQT.checkableButton(
+                Icon_path=path, background_color="#C4DDDE"
+            )
         self.shutter488Button.clicked.connect(lambda: self.shutter_CW_action("488"))
 
         self.AOTFcontrolLayout.addWidget(self.shutter640Button, 1, 4)
@@ -303,9 +300,7 @@ class AOTFWidgetUI(QWidget):
 
 
 if __name__ == "__main__":
-
-    #    import sys
-    sys.path.append("../")
+    import sys
 
     def run_app():
         app = QtWidgets.QApplication(sys.argv)

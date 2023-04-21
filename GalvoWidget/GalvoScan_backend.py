@@ -14,16 +14,10 @@ import time
 import os
 #import matplotlib.pyplot as plt
 
-# Ensure that the Widget can be run either independently or as part of Tupolev.
-if __name__ == "__main__":
-    abspath = os.path.abspath(__file__)
-    dname = os.path.dirname(abspath)
-    os.chdir(dname + "/../")
-
 import numpy as np
-import NIDAQ.wavegenerator
+from ..NIDAQ import wavegenerator
 
-from PI_ObjectiveMotor.focuser import PIMotor
+from ..PI_ObjectiveMotor.focuser import PIMotor
 
 
 class RasterScan:
@@ -69,7 +63,7 @@ class RasterScan:
         self.flag_return_image = return_image
 
         # Generate galvo samples
-        self.samples_X, self.samples_Y = NIDAQ.wavegenerator.waveRecPic(
+        self.samples_X, self.samples_Y = wavegenerator.waveRecPic(
             sampleRate=self.Daq_sample_rate,
             imAngle=0,
             voltXMin=-1 * self.edge_volt,
@@ -318,7 +312,7 @@ if __name__ == "__main__":
     # plt.show()
 
     z_stack = PMT_zscan(
-        r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Xin\2021-04-18 Filter bleed through\New folder",
+        r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Xin\2021-04-18 Filter bleed through\New folder",  # TODO hardcoded path
         z_depth=0.012,
     )
     z_stack.start_scan()

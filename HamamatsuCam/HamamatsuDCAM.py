@@ -18,6 +18,8 @@ Xin Adapted for Brinks lab
 import ctypes
 import ctypes.util
 import numpy
+import sys
+import importlib.resources
 
 import time
 
@@ -75,11 +77,13 @@ DCAMBUF_ATTACHKIND_FRAMESTAMP = 2
 
 # Specify dcam-api location
 try:
-    dcam = ctypes.WinDLL(
-        r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\People\Xin Meng\Code\Python_test\HamamatsuCam\19_12\dcamapi.dll"
-    )
-except:
-    pass
+    files = importlib.resources.files(sys.modules[__package__])
+    traversable = files.joinpath("19_12/dcamapi.dll")
+    with importlib.resources.as_file(traversable) as path:
+        dcam = ctypes.WinDLL(str(path))
+except Exception as exc:
+    import logging
+    logging.critical("could not load dll", exc_info=exc)
 
 
 # Hamamatsu structures.
@@ -289,8 +293,8 @@ def convertPropertyName(p_name):
     return p_name.lower().replace(" ", "_")
 
 
-# class DCAMException(halExceptions.HardwareException):
-#    pass
+class DCAMException(BaseException):
+    pass
 
 
 class HCamData(object):
@@ -568,7 +572,7 @@ class HamamatsuCamera(object):
             "dcamprop_getattr",
         )
         if ret == 0:
-            print("property", property_id, "is not supported")  #TODO undefined
+            print("property", property_name, "is not supported")  #TODO logging
             return False
         else:
             return p_attr
@@ -950,7 +954,7 @@ class HamamatsuCamera(object):
             self.acquisition_mode = mode
             self.number_frames = number_frames
         else:
-            raise DCAMException("Unrecognized acqusition mode: " + mode)  # TODO undefined
+            raise DCAMException("Unrecognized acqusition mode: " + mode)
 
     def startAcquisition(self):
         """
@@ -1651,7 +1655,7 @@ if __name__ == "__main__":
     # Initialization
     # Load dcamapi.dll version 19.12.641.5901
     dcam = ctypes.WinDLL(
-        r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\People\Xin Meng\Code\Python_test\HamamatsuCam\19_12\dcamapi.dll"
+        r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\People\Xin Meng\Code\Python_test\HamamatsuCam\19_12\dcamapi.dll"  # TODO hardcoded path
     )
 
     paraminit = DCAMAPI_INIT(0, 0, 0, 0, None, None)
@@ -1792,7 +1796,7 @@ if __name__ == "__main__":
                 hcam.stopAcquisition()
 
             if True:
-                video_name = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Xin\2020-3-31 cam matrix reconstruct\recordtest.tif"
+                video_name = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Xin\2020-3-31 cam matrix reconstruct\recordtest.tif"  # TODO hardcoded path
                 with skimtiff.TiffWriter(video_name, append=True, imagej=True) as tif:
                     write_starttime = time.time()
                     for eachframe in range(frame_num):
@@ -1847,7 +1851,7 @@ if __name__ == "__main__":
         elif Streaming_to_disk == True:
 
             rcam = HamamatsuCameraRE(
-                path="M:\\tnw\\ist\\do\\projects\\Neurophotonics\\Brinkslab\\People\\Xin Meng\\Code\\Python_test\\HamamatsuCam\\test_fullframe",
+                path="M:\\tnw\\ist\\do\\projects\\Neurophotonics\\Brinkslab\\People\\Xin Meng\\Code\\Python_test\\HamamatsuCam\\test_fullframe",  # TODO hardcoded path
                 ext="dcimg",
                 camera_id=0,
             )
@@ -1939,7 +1943,7 @@ if __name__ == "__main__":
 
     # Access the binary data
     # Seems start from 576 it's the frist pixel value.
-    #            xbash = np.fromfile(r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Equipment\Hamamatsu Orca Flash\test.tif', dtype='uint16')
+    #            xbash = np.fromfile(r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Equipment\Hamamatsu Orca Flash\test.tif', dtype='uint16')  # TODO hardcoded path
     #            print(xbash[576])
     #            print(xbash[72])
     dcam.dcamapi_uninit()

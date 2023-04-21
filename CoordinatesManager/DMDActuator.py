@@ -6,9 +6,10 @@ Created on Mon Jul  6 09:38:26 2020
 @author: Izak de Heer
 """
 
-from CoordinatesManager.backend import ALP4
+from .backend import ALP4
 import numpy as np
-import os
+import importlib.resources
+import sys
 
 
 class DMDActuator:
@@ -21,14 +22,11 @@ class DMDActuator:
 
     def initialize_DMD(self):
         # Load the Vialux .dll
-        try:
-            cdir = os.getcwd() + "\\CoordinatesManager"
+        traversable = importlib.resources.files(sys.modules[__package__])
+        with importlib.resources.as_file(traversable) as path:
             self.DMD = ALP4.ALP4(
-                version="4.3", libDir=r"" + cdir
+                version="4.3", libDir=str(path)
             )  # Use version 4.3 for the alp4395.dll
-        except:
-            cdir = os.getcwd()
-            self.DMD = ALP4.ALP4(version="4.3", libDir=r"" + cdir)
 
         # Initialize the device
         self.DMD.Initialize(13388)  # TODO magic number

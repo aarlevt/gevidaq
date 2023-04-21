@@ -6,6 +6,7 @@ Created on Wed May 20 15:46:40 2020
 @author: Izak de Heer
 """
 
+# TODO unused file
 import skimage.filters
 import skimage.io
 import matplotlib.pyplot as plt

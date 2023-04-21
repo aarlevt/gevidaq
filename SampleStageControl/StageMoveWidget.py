@@ -20,21 +20,15 @@ from PyQt5.QtWidgets import (
     QLineEdit,
 )
 import pyqtgraph as pg
-import os
 import threading
 
-# Ensure that the Widget can be run either independently or as part of Tupolev.
-if __name__ == "__main__":
-    abspath = os.path.abspath(__file__)
-    dname = os.path.dirname(abspath)
-    os.chdir(dname + "/../")
-from SampleStageControl.stage import LudlStage
+from .stage import LudlStage
+from .. import Icons
 
 
 class StageWidgetUI(QWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        #        os.chdir('./')# Set directory to current folder.
         self.setFont(QFont("Arial"))
         self.ludlStage = LudlStage("COM12")
         #        self.setMinimumSize(1350,900)
@@ -69,7 +63,8 @@ class StageWidgetUI(QWidget):
         self.stage_upwards.setToolTip("Click arrow to enable WASD keyboard control")
         self.stage_upwards.setFixedWidth(40)
         self.stage_upwards.setFixedHeight(40)
-        self.stage_upwards.setIcon(QIcon("./Icons/UpArrow.png"))
+        with Icons.Path("UpArrow.png") as path:
+            self.stage_upwards.setIcon(QIcon(path))
         self.stage_upwards.setIconSize(QSize(35, 35))
         self.stagecontrolLayout.addWidget(self.stage_upwards, 1, 4)
         self.stage_upwards.clicked.connect(
@@ -85,7 +80,8 @@ class StageWidgetUI(QWidget):
         self.stage_left.setToolTip("Click arrow to enable WASD keyboard control")
         self.stage_left.setFixedWidth(40)
         self.stage_left.setFixedHeight(40)
-        self.stage_left.setIcon(QIcon("./Icons/LeftArrow.png"))
+        with Icons.Path("LeftArrow.png") as path:
+            self.stage_left.setIcon(QIcon(path))
         #        self.stage_left.setStyleSheet("QPushButton {padding: 10px;}");
         self.stage_left.setIconSize(QSize(35, 35))
         self.stagecontrolLayout.addWidget(self.stage_left, 2, 3)
@@ -102,7 +98,8 @@ class StageWidgetUI(QWidget):
         self.stage_right.setToolTip("Click arrow to enable WASD keyboard control")
         self.stage_right.setFixedWidth(40)
         self.stage_right.setFixedHeight(40)
-        self.stage_right.setIcon(QIcon("./Icons/RightArrow.png"))
+        with Icons.Path("RightArrow.png") as path:
+            self.stage_right.setIcon(QIcon(path))
         self.stage_right.setIconSize(QSize(35, 35))
         self.stagecontrolLayout.addWidget(self.stage_right, 2, 5)
         self.stage_right.clicked.connect(
@@ -118,7 +115,8 @@ class StageWidgetUI(QWidget):
         self.stage_down.setToolTip("Click arrow to enable WASD keyboard control")
         self.stage_down.setFixedWidth(40)
         self.stage_down.setFixedHeight(40)
-        self.stage_down.setIcon(QIcon("./Icons/DownArrow.png"))
+        with Icons.Path("DownArrow.png") as path:
+            self.stage_down.setIcon(QIcon(path))
         self.stage_down.setIconSize(QSize(35, 35))
         self.stagecontrolLayout.addWidget(self.stage_down, 2, 4)
         self.stage_down.clicked.connect(
@@ -139,7 +137,8 @@ class StageWidgetUI(QWidget):
         #        self.stagecontrolLayout.addWidget(self.stage_current_pos_Label, 1, 0)
 
         self.stage_goto = QPushButton()
-        self.stage_goto.setIcon(QIcon("./Icons/move_coord.png"))
+        with Icons.Path("move_coord.png") as path:
+            self.stage_goto.setIcon(QIcon(path))
         self.stage_goto.setToolTip("Move to absolute position")
         self.stage_goto.setStyleSheet(
             "QPushButton {color:white;background-color: #CCFFFF;}"

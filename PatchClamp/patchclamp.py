@@ -15,12 +15,8 @@ from PyQt5.QtCore import pyqtSignal, QThread
 
 import numpy as np
 
-import sys
-
-sys.path.append("../")
-
-from NIDAQ.wavegenerator import blockWave
-from NIDAQ.constants import MeasurementConstants, NiDaqChannels
+from ..NIDAQ.wavegenerator import blockWave
+from ..NIDAQ.constants import MeasurementConstants, NiDaqChannels
 
 
 class ContinuousPatchThread(QThread):

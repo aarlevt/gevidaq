@@ -5,15 +5,7 @@ Created on Thu Jul 16 15:47:20 2020
 @author: xinmeng
 """
 
-import os
-
-# Ensure that the Widget can be run either independently or as part of Tupolev.
-if __name__ == "__main__":
-    abspath = os.path.abspath(__file__)
-    dname = os.path.dirname(abspath)
-    os.chdir(dname + "/../")
-    # os.chdir(os.getcwd()+'/')
-from NIDAQ.DAQoperator import DAQmission
+from .DAQoperator import DAQmission
 
 # Backend
 

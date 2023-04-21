@@ -12,10 +12,10 @@ from PyQt5.QtWidgets import (
     QGridLayout,
 )
 
-from StylishQT import roundQGroupBox
+from ..StylishQT import roundQGroupBox
 
-from SampleStageControl.stage import LudlStage
-from HamamatsuCam.HamamatsuActuator import CamActuator
+from ..SampleStageControl.stage import LudlStage
+from ..HamamatsuCam.HamamatsuActuator import CamActuator
 
 import sys
 import os
@@ -37,7 +37,7 @@ class StageWidget(QWidget):
         self.main_application = parent
 
         self.set_image_saving_location(
-            os.getcwd() + "/CoordinatesManager/Registration_Images/StageRegistration/"
+            os.getcwd() + "./CoordinatesManager/Registration_Images/StageRegistration/"  # TODO fix path
         )
 
         self.init_gui()

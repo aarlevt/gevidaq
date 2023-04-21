@@ -221,7 +221,7 @@ if __name__ == "__main__":
             for i in range(num_points):
                 if method == "squares":
                     image = plt.imread(
-                        os.getcwd()
+                        os.getcwd()  # TODO fix path
                         + "/CoordinatesManager/Registration_Images/TouchingSquares/TouchingSquaresWithCells"
                         + str(n + 1)
                         + "/image_"
@@ -230,7 +230,7 @@ if __name__ == "__main__":
                     )
                 else:
                     image = plt.imread(
-                        os.getcwd()
+                        os.getcwd()  # TODO fix path
                         + "/CoordinatesManager/Registration_Images/TouchingSquares/CircleWithCells"
                         + str(n + 1)
                         + "/image_"
@@ -268,7 +268,7 @@ if __name__ == "__main__":
             for i in range(num_points):
                 if method == "squares":
                     image = plt.imread(
-                        os.getcwd()
+                        os.getcwd()  # TODO fix path
                         + "/CoordinatesManager/Registration_Images/DMD Registration Data/TouchingSquaresWithCells"
                         + str(n + 1)
                         + "/image_"
@@ -277,7 +277,7 @@ if __name__ == "__main__":
                     )
                 else:
                     image = plt.imread(
-                        os.getcwd()
+                        os.getcwd()  # TODO fix path
                         + "/CoordinatesManager/Registration_Images/DMD Registration Data/CircleWithCells"
                         + str(n + 1)
                         + "/image_"

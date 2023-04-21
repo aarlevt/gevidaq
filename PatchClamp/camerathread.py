@@ -11,7 +11,7 @@ import numpy as np
 from copy import copy
 from PyQt5.QtCore import pyqtSignal, pyqtSlot, QThread, QMutex
 
-from HamamatsuCam.HamamatsuActuator import CamActuator
+from ..HamamatsuCam.HamamatsuActuator import CamActuator
 
 
 class CameraThread(QThread):

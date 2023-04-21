@@ -17,10 +17,8 @@ from nidaqmx.stream_readers import AnalogMultiChannelReader
 from datetime import datetime
 import os
 from PyQt5.QtCore import pyqtSignal, QThread
-import sys
 
-sys.path.append("../")
-from NIDAQ.constants import NiDaqChannels
+from .constants import NiDaqChannels
 
 
 class DAQmission(

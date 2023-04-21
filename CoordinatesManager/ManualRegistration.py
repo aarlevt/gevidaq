@@ -17,25 +17,16 @@ from PyQt5.QtWidgets import (
 )
 
 from PyQt5.QtCore import pyqtSignal
-from StylishQT import roundQGroupBox
+from ..StylishQT import roundQGroupBox
 
 from pyqtgraph import QtGui
 
-from CoordinatesManager.ui_widgets.SelectPointImageView import SelectPointImageView
-from CoordinatesManager import CoordinateTransformations
+from .ui_widgets.SelectPointImageView import SelectPointImageView
+from . import CoordinateTransformations
 
-import os
 import sys
 import matplotlib.pyplot as plt
 import numpy as np
-
-# from CoordinatesManager.Scratch.findTransformationCurvefit import find_transform
-
-# Ensure that the Widget can be run either independently or as part of Tupolev.
-if __name__ == "__main__":
-    abspath = os.path.abspath(__file__)
-    dname = os.path.dirname(abspath)
-    os.chdir(dname + "/../")
 
 
 class ManualRegistrationWindow(QWidget):

@@ -24,15 +24,10 @@ from PyQt5.QtWidgets import (
 from PyQt5.QtCore import QThread
 import pyqtgraph as pg
 import threading
-import os
 
-# Ensure that the Widget can be run either independently or as part of Tupolev.
-if __name__ == "__main__":
-    abspath = os.path.abspath(__file__)
-    dname = os.path.dirname(abspath)
-    os.chdir(dname + "/../")
-import StylishQT
-from PI_ObjectiveMotor.focuser import PIMotor
+from .. import StylishQT
+from .focuser import PIMotor
+from .. import Icons
 
 
 class ObjMotorWidgetUI(QWidget):
@@ -43,7 +38,6 @@ class ObjMotorWidgetUI(QWidget):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        #        os.chdir('./')# Set directory to current folder.
         self.setFont(QFont("Arial"))
 
         self.setMinimumHeight(150)
@@ -91,7 +85,8 @@ class ObjMotorWidgetUI(QWidget):
             "QPushButton:hover:!pressed {color:white;background-color: #CCFFFF;}"
         )
 
-        self.ObjMotor_upwards.setIcon(QIcon("./Icons/UpArrow.png"))
+        with Icons.Path("UpArrow.png") as path:
+            self.ObjMotor_upwards.setIcon(QIcon(path))
         self.ObjMotor_upwards.setIconSize(QSize(20, 20))
         self.ObjMotorcontrolLayout.addWidget(self.ObjMotor_upwards, 2, 3)
         self.ObjMotor_upwards.clicked.connect(
@@ -105,7 +100,8 @@ class ObjMotorWidgetUI(QWidget):
             "QPushButton:hover:!pressed {color:white;background-color: #CCFFFF;}"
         )
 
-        self.ObjMotor_down.setIcon(QIcon("./Icons/DownArrow.png"))
+        with Icons.Path("DownArrow.png") as path:
+            self.ObjMotor_down.setIcon(QIcon(path))
         self.ObjMotor_down.setIconSize(QSize(20, 20))
         self.ObjMotorcontrolLayout.addWidget(self.ObjMotor_down, 3, 3)
         self.ObjMotor_down.clicked.connect(
@@ -128,7 +124,8 @@ class ObjMotorWidgetUI(QWidget):
         )
 
         self.ObjMotor_goto = QPushButton()
-        self.ObjMotor_goto.setIcon(QIcon("./Icons/move_coord.png"))
+        with Icons.Path("move_coord.png") as path:
+            self.ObjMotor_goto.setIcon(QIcon(path))
         self.ObjMotor_goto.setToolTip("Move to absolute position")
         self.ObjMotor_goto.setStyleSheet(
             "QPushButton {color:white;background-color: #CCFFFF;}"

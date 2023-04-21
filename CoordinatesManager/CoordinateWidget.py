@@ -10,17 +10,11 @@ Created on Tue Feb  4 11:57:36 2020
 import sys
 import os
 import json
-
-# Ensure that the Widget can be run either independently or as part of Tupolev.
-if __name__ == "__main__":
-    abspath = os.path.abspath(__file__)
-    dname = os.path.dirname(abspath)
-    os.chdir(dname + "/../")
-    # os.chdir(os.getcwd()+'/')
+import importlib.resources
 
 # Backend
 
-from CoordinatesManager.backend.Registrator import RegistrationThread
+from CoordinatesManager.backend.Registrator import RegistrationThread  # TODO import failure
 from CoordinatesManager import DMDActuator
 from CoordinatesManager import ManualRegistration
 
@@ -62,6 +56,8 @@ import threading
 import numpy as np
 import datetime
 import matplotlib.pyplot as plt
+
+from . import Registration
 
 
 class CoordinatesWidgetUI(QWidget):
@@ -962,11 +958,10 @@ class DMDWidget:
 
     def read_transformations_from_file(self):
         try:
-            with open(
-                "CoordinateManager/Registration/transformation.txt", "r"
-            ) as json_file:
+            files = importlib.resources.files(Registration)
+            with files.joinpath("transformation.txt").open() as json_file:
                 self.dict_transformations = json.load(json_file)
-        except:
+        except OSError:
             self.ui_widget.normalOutputWritten(
                 "No transformation could be loaded from previous registration run."
             )
@@ -988,7 +983,7 @@ class DMDWidget:
             return
 
         # Load the Vialux .dll
-        cdir = os.getcwd() + "\\CoordinateManager"
+        cdir = os.getcwd() + "\\CoordinateManager"  # TODO fix path
         self.DMD = ALP4(  # TODO undefined
             version="4.3", libDir=r"" + cdir
         )  # Use version 4.3 for the alp4395.dll

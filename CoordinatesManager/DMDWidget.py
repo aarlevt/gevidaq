@@ -32,16 +32,12 @@ from PyQt5 import QtGui
 
 import sys
 import os
+import importlib.resources
 
-# Ensure that the Widget can be run either independently or as part of Tupolev.
-if __name__ == "__main__":
-    abspath = os.path.abspath(__file__)
-    dname = os.path.dirname(abspath)
-    os.chdir(dname + "/../")
-
-from CoordinatesManager import DMDActuator, Registrator, CoordinateTransformations
-from ImageAnalysis.ImageProcessing import ProcessImage
-from StylishQT import roundQGroupBox
+from . import DMDActuator, Registrator, CoordinateTransformations
+from ..ImageAnalysis.ImageProcessing import ProcessImage
+from ..StylishQT import roundQGroupBox
+from . import Registration
 import matplotlib.pyplot as plt
 from skimage.color import rgb2gray
 import numpy as np
@@ -59,7 +55,7 @@ class DMDWidget(QWidget):
         self.main_application = parent
 
         self.set_transformation_saving_location(
-            os.getcwd() + "/CoordinatesManager/Registration/dmd_transformation"
+            importlib.resources.files(Registration)
         )
 
         self.init_gui()
@@ -492,24 +488,30 @@ class DMDWidget(QWidget):
         self.DMD_actuator.free_memory()
         self.mask = None
 
-    def set_transformation_saving_location(self, filename):
-        self.transformation_file_name = filename
+    def set_transformation_saving_location(self, traversable):
+        self.transformation_location = traversable
 
     def save_transformation(self):
         for laser, transform in self.transform.items():
             size = transform.shape[0]
-            np.savetxt(
-                self.transformation_file_name + laser, np.reshape(transform, (-1, size))
+            traversable = self.transformation_location.joinpath(
+                f"dmd_transformation{laser}"
             )
+            with importlib.resources.as_file(traversable) as path:
+                np.savetxt(path.as_posix(), np.reshape(transform, (-1, size)))
 
     def open_latest_transformation(self):
         self.transform = {}
         lasers = ["640", "532", "488"]
         for laser in lasers:
             try:
-                transform = np.loadtxt(self.transformation_file_name + laser)
-            except:
-                pass
+                traversable = self.transformation_location.joinpath(
+                    f"dmd_transformation{laser}"
+                )
+                with importlib.resources.as_file(traversable) as path:
+                    transform = np.loadtxt(path.as_posix())
+            except OSError as exc:
+                raise exc  # TODO logging
             else:
                 print("Transform for " + laser + " loaded.")
                 self.transform[laser] = np.reshape(

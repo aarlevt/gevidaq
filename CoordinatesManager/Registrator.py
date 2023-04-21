@@ -11,13 +11,13 @@ import time
 #from PyQt5.QtCore import QThread, pyqtSignal
 import matplotlib.pyplot as plt
 import skimage.draw
-from CoordinatesManager.backend import readRegistrationImages
-from CoordinatesManager import CoordinateTransformations
-from NIDAQ.DAQoperator import DAQmission
+from .backend import readRegistrationImages
+from . import CoordinateTransformations
+from ..NIDAQ.DAQoperator import DAQmission
 
-from HamamatsuCam.HamamatsuActuator import CamActuator
+from ..HamamatsuCam.HamamatsuActuator import CamActuator
 
-# from SampleStageControl.Stagemovement_Thread import StagemovementRelativeThread, StagemovementAbsoluteThread
+# from ..SampleStageControl.Stagemovement_Thread import StagemovementRelativeThread, StagemovementAbsoluteThread
 
 
 class GalvoRegistrator:
@@ -64,7 +64,7 @@ class GalvoRegistrator:
 
             image = self.cam.SnapImage(0.06)
             plt.imsave(
-                os.getcwd()
+                os.getcwd()  # TODO fix path
                 + "/CoordinatesManager/Registration_Images/2P/image_"
                 + str(i)
                 + ".png",
@@ -140,7 +140,7 @@ class DMDRegistator:
 
             image = self.cam.SnapImage(0.01)
             plt.imsave(
-                os.getcwd()
+                os.getcwd()  # TODO fix path
                 + "/CoordinatesManager/Registration_Images/TouchingSquares/image_"
                 + str(i)
                 + ".png",

@@ -3,7 +3,7 @@ import matplotlib.pyplot as plt
 import math
 from scipy import signal
 
-from NIDAQ.constants import HardwareConstants
+from .constants import HardwareConstants
 
 
 def xValuesSingleSawtooth(
@@ -916,7 +916,7 @@ def dark_probe(
     t_on=15.0,
     t_probe=0.5,
 ):
-    savedirectory = "M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data/Marco/phd/2021-04-08 NovArch dark probe/"
+    savedirectory = "M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data/Marco/phd/2021-04-08 NovArch dark probe/"  # TODO hardcoded path
 
     n = int((dt_max - dt_min) / dt_step) + 1
     Dt = np.linspace(dt_min, dt_max, n)

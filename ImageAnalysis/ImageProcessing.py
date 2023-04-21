@@ -6959,9 +6959,9 @@ if __name__ == "__main__":
 
     # =============================================================================
     # =============================================================================
-    #     tag_folder = r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\2020-05-12 Archon lib 400FOVs 4 grid\trial_1'
+    #     tag_folder = r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\2020-05-12 Archon lib 400FOVs 4 grid\trial_1'  # TODO hardcoded path
     #     lib_folder = r'D:\XinMeng\imageCollection\Fov3\New folder (3)'
-    #   #   tag_folder = r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\2020-3-6 Archon brightness screening\NovArch library'
+    #   #   tag_folder = r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\2020-3-6 Archon brightness screening\NovArch library'  # TODO hardcoded path
     #
     #     tag_round = 'Round1'
     #     lib_round = 'Round4'
@@ -6992,7 +6992,7 @@ if __name__ == "__main__":
     screening_comparison = False
 
     if stitch_img == True:
-        Nest_data_directory = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2022-06-10  Evolution screening validation\WT\2022-06-10_16-26-51_WT_pmt"
+        Nest_data_directory = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2022-06-10  Evolution screening validation\WT\2022-06-10_16-26-51_WT_pmt"  # TODO hardcoded path
         Stitched_image_dict = ProcessImage.image_stitching(
             Nest_data_directory, scanning_coord_step = 1568, row_data_folder=True
         )
@@ -7005,41 +7005,41 @@ if __name__ == "__main__":
             )
 
     elif retrievefocus_map == True:
-        Nest_data_directory = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2020-11-5 Lib z3_2p5um 9coords AF gap3"
+        Nest_data_directory = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2020-11-5 Lib z3_2p5um 9coords AF gap3"  # TODO hardcoded path
         focus_map_dict = ProcessImage.retrieve_focus_map(Nest_data_directory)
 
     elif find_focus == True:
         ProcessImage.find_infocus_from_stack(
-            r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Xin\2021-08-12 camera focus\fov3",
+            r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Xin\2021-08-12 camera focus\fov3",  # TODO hardcoded path
             method = "variance_of_laplacian",
             save_image = False
         )
 
     elif registration == True:
         data_1_xlsx = pd.ExcelFile(
-            r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2020-11-17 photobleaching WT LentiII\Round2_2020-11-20_17-29-19_CellsProperties.xlsx"
+            r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2020-11-17 photobleaching WT LentiII\Round2_2020-11-20_17-29-19_CellsProperties.xlsx"  # TODO hardcoded path
         )
         data_1 = pd.read_excel(data_1_xlsx)
         data_2_xlsx = pd.ExcelFile(
-            r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2020-11-17 photobleaching WT LentiII\Round3_2020-11-20_17-32-28_CellsProperties.xlsx"
+            r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2020-11-17 photobleaching WT LentiII\Round3_2020-11-20_17-32-28_CellsProperties.xlsx"  # TODO hardcoded path
         )
         data_2 = pd.read_excel(data_2_xlsx)
         data_3_xlsx = pd.ExcelFile(
-            r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2020-11-17 photobleaching WT LentiII\Round4_2020-11-20_17-35-24_CellsProperties.xlsx"
+            r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2020-11-17 photobleaching WT LentiII\Round4_2020-11-20_17-35-24_CellsProperties.xlsx"  # TODO hardcoded path
         )
         data_3 = pd.read_excel(data_3_xlsx)
 
         registered_dataframe = ProcessImage.Register_cells([data_1, data_2, data_3])
         # registered_dataframe = ProcessImage.Register_between_dataframes(data_1, data_2)
     # else:
-    #     res,diff = ProcessImage.find_repeat_imgs(r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2020-11-24_2020-11-24_16-45-26_2rounds_GFP_olddish', similarity_thres = 400)
+    #     res,diff = ProcessImage.find_repeat_imgs(r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2020-11-24_2020-11-24_16-45-26_2rounds_GFP_olddish', similarity_thres = 400)  # TODO hardcoded path
     elif merge_dataFrames == True:
         data_1_xlsx = pd.ExcelFile(
-            r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2021-01-27 Lib8 Archon KCl 8b8 ND1p5ND0p3\m1.xlsx"
+            r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2021-01-27 Lib8 Archon KCl 8b8 ND1p5ND0p3\m1.xlsx"  # TODO hardcoded path
         )
         data_1 = pd.read_excel(data_1_xlsx)
         data_2_xlsx = pd.ExcelFile(
-            r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2021-01-27 Lib8 Archon KCl 8b8 ND1p5ND0p3\m2.xlsx"
+            r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2021-01-27 Lib8 Archon KCl 8b8 ND1p5ND0p3\m2.xlsx"  # TODO hardcoded path
         )
         data_2 = pd.read_excel(data_2_xlsx)
 
@@ -7053,20 +7053,20 @@ if __name__ == "__main__":
             Cell_DataFrame_Merged, 0.2, 1
         )
         DataFrames_filtered.to_excel(
-            r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2021-01-27 Lib8 Archon KCl 8b8 ND1p5ND0p3\m3.xlsx"
+            r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2021-01-27 Lib8 Archon KCl 8b8 ND1p5ND0p3\m3.xlsx"  # TODO hardcoded path
         )
         # DataFrame_sorted = ProcessImage.Sorting_onTwoaxes(DataFrames_filtered, 'KC_EC_Mean_intensity_in_contour_ratio', 'Mean_intensity_in_contour_Lib_EC', 0, 1)
 
     elif cam_screening_analysis == True:
         ProcessImage.cam_screening_post_processing(
-            r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Delizzia\2020-11-19_2020-11-19_10-14-32_trial_cam_screen"
+            r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Delizzia\2020-11-19_2020-11-19_10-14-32_trial_cam_screen"  # TODO hardcoded path
         )
 
     elif photo_current == True:
-        ProcessImage.PhotoCurrent(r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Patch clamp\2021-08-07 GR mutants\E166Q\CELL5\Photocurrent")
+        ProcessImage.PhotoCurrent(r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Patch clamp\2021-08-07 GR mutants\E166Q\CELL5\Photocurrent")  # TODO hardcoded path
 
     elif PMT_contour_scan_processing == True:
-        fluorescence_trace_normalized_for_average = ProcessImage.CurveFit_PMT(r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Patch clamp\2021-08-04 2p Patch\QuasAr1\CELL3\ND1\PMT_array_2021-08-04_14-39-35.npy"\
+        fluorescence_trace_normalized_for_average = ProcessImage.CurveFit_PMT(r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Patch clamp\2021-08-04 2p Patch\QuasAr1\CELL3\ND1\PMT_array_2021-08-04_14-39-35.npy"  # TODO hardcoded path
                                                                                              , number_of_periods = 25)
     elif screening_comparison == True:
-        ProcessImage.Screening_boxplot(r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2022-06-14 evolution screening H106R\data collection ratio.xlsx")
+        ProcessImage.Screening_boxplot(r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2022-06-14 evolution screening H106R\data collection ratio.xlsx")  # TODO hardcoded path

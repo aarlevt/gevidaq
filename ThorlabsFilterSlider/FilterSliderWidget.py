@@ -12,16 +12,10 @@ from PyQt5.QtGui import QFont
 import pyqtgraph as pg
 import threading
 import sys
-import os
 
-# Ensure that the Widget can be run either independently or as part of Tupolev.
-if __name__ == "__main__":
-    abspath = os.path.abspath(__file__)
-    dname = os.path.dirname(abspath)
-    os.chdir(dname + "/../")
-import StylishQT
+from .. import StylishQT
 
-from ThorlabsFilterSlider.filterpyserial import ELL9Filter
+from .filterpyserial import ELL9Filter
 
 
 class FilterSliderWidgetUI(QtWidgets.QWidget):
@@ -32,7 +26,6 @@ class FilterSliderWidgetUI(QtWidgets.QWidget):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        #        os.chdir('./')# Set directory to current folder.
         self.setFont(QFont("Arial"))
 
         self.resize(265, 130)

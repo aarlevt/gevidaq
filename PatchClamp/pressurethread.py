@@ -10,7 +10,7 @@ import time
 import numpy as np
 from PyQt5.QtCore import pyqtSignal, pyqtSlot, QThread
 
-from PatchClamp.pressurecontroller import PressureController
+from .pressurecontroller import PressureController
 
 
 class PressureThread(QThread):
