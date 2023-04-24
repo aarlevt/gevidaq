@@ -62,7 +62,7 @@ class Mainbody(QtWidgets.QWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        with Icons.Path("Icon.png") as path:
+        with Icons.Path("Logo.png") as path:
             self.setWindowIcon(QIcon(path))
 
         self.setFont(QFont("Arial"))
