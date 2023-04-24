@@ -12,7 +12,7 @@ Created on Tue Jul  7 10:44:31 2020
     of frames in sequence, set ALP_BIN_MODE to ALP_BIN_UNINTERRUPTED to project
     only one still image to avoid noise introduced by dark phase.
 
-Adding 'laser' to CoordinateWidget2 signal list.
+Adding 'laser' to CoordinateWidget signal list.
 """
 from PyQt5 import QtWidgets
 from PyQt5.QtWidgets import (

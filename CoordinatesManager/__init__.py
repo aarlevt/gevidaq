@@ -1,3 +1,3 @@
-from . import CoordinateWidget2
+from . import CoordinateWidget
 from . import DMDminiWidget
-__all__ = ["CoordinateWidget2", "DMDminiWidget"]
+__all__ = ["CoordinateWidget", "DMDminiWidget"]

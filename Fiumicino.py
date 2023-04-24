@@ -88,7 +88,7 @@ class Mainbody(QtWidgets.QWidget):
         )
         self.Analysis_WidgetInstance = ImageAnalysis.AnalysisWidget.AnalysisWidgetUI()
         self.Coordinate_WidgetInstance = (
-            CoordinatesManager.CoordinateWidget2.CoordinatesWidgetUI()
+            CoordinatesManager.CoordinateWidget.CoordinatesWidgetUI()
         )
 
         # --------------Add tab widgets-------------------
