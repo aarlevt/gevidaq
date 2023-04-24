@@ -103,20 +103,15 @@ class GalvoWidget(QWidget):
     def request_mask_coordinates(self):
         self.sig_request_mask_coordinates.emit()
 
-    def receive_mask_coordinates(self, sig):
+    def receive_mask_coordinates(self, sig_from_CoordinateWidget):
         """
         Receive signal from CoordinateWidget
         ----------
         """
         #!!! need to adapt to multiple frames!
-        for each_roi_index in range(len(sig_from_CoordinateWidget)):  # TODO undefined
+        for each_roi_index in range(len(sig_from_CoordinateWidget)):
 
             list_of_rois = sig_from_CoordinateWidget[each_roi_index][0]
-            flag_fill_contour = sig_from_CoordinateWidget[each_roi_index][1]
-            contour_thickness = sig_from_CoordinateWidget[each_roi_index][2]
-            flag_invert_mode = sig_from_CoordinateWidget[each_roi_index][3]
-            for_which_laser = sig_from_CoordinateWidget[each_roi_index][4]
-
             list_of_rois = self.transform_coordinates(list_of_rois)
 
             self.create_voltage_signal(list_of_rois)

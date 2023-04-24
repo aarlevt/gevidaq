@@ -59,9 +59,7 @@ class AnalysisWidgetUI(QWidget):
         self.setMinimumSize(1250, 850)
         self.setWindowTitle("AnalysisWidget")
         self.layout = QGridLayout(self)
-        self.savedirectory = (
-            r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Patch clamp"  # TODO hardcoded path
-        )
+        self.savedirectory = ""
         self.OC = 0.1  # Patch clamp constant
         # **************************************************************************************************************************************
         # --------------------------------------------------------------------------------------------------------------------------------------
@@ -1213,76 +1211,8 @@ class PlotAnalysisGUI(QWidget):
             ax1.set_xlabel("time(s)")
             ax1.set_ylabel("Volt")
             ax1.legend()
-
-            if "Recorded_trace" in self.Checked_display_list:
-                #        plt.yticks(np.round(np.arange(min(Vm), max(Vm), 0.05), 2))
-                # Read in recorded waves
-                Readin_fileName = (
-                    self.recorded_wave_fileName
-                )
-
-                if (
-                    "Vp" in os.path.split(Readin_fileName)[1]
-                ):  # See which channel is recorded
-                    Vm = np.load(Readin_fileName, allow_pickle=True)
-                    Vm = Vm[9:-1]  # first 5 are sampling rate, Daq coffs
-                    # Vm[0] = Vm[1]
-
-                ax2.set_xlabel("time(s)")
-                ax2.set_title("Recording")
-                ax2.set_ylabel("V (Vm*10)")
-                ax2.plot(xlabel_all, Vm, label="Vm")
-                # ax2.annotate('Vm diff = '+str(Vm_diff*100)+'mV', xy=(0, max(Vm)-0.1))
-                ax2.legend()
-            elif (
-                "Recorded_trace" not in self.Checked_display_list
-                and len(self.Checked_display_list) == 2
-            ):
-                ax2.plot(
-                    self.cam_trace_time_label / self.samplingrate_cam,
-                    self.cam_trace_fluorescence_dictionary[
-                        "region_{0}".format(region_number + 1)  # TODO undefined
-                    ],
-                    label="Fluorescence",
-                )
-                ax2.set_xlabel("time(s)")
-                ax2.set_title(
-                    "ROI Fluorescence"
-                    + " ("
-                    + str(
-                        self.cam_trace_fluorescence_filename_dictionary[
-                            "region_{0}".format(region_number + 1)  # TODO undefined
-                        ]
-                    )
-                    + ")"
-                )
-                ax2.set_ylabel("CamCounts")
-                ax2.legend()
-
-            if len(self.Checked_display_list) == 3:
-                ax3.plot(
-                    self.cam_trace_time_label / self.samplingrate_cam,
-                    self.cam_trace_fluorescence_dictionary[
-                        "region_{0}".format(region_number + 1)  # TODO undefined
-                    ],
-                    label="Fluorescence",
-                )
-                ax3.set_xlabel("time(s)")
-                ax3.set_title(
-                    "ROI Fluorescence"
-                    + " ("
-                    + str(
-                        self.cam_trace_fluorescence_filename_dictionary[
-                            "region_{0}".format(region_number + 1)  # TODO undefined
-                        ]
-                    )
-                    + ")"
-                )
-                ax3.set_ylabel("CamCounts")
-                ax3.legend()
-            # plt.autoscale(enable=True, axis="y", tight=False)
             figure.tight_layout()
-            plt.show()
+            plt.show()  # TODO cleanup
         # ----------------------------------------------------For plots with camera regions-----------------------------------------------------
         if len(self.region_file_name) != 0:
             for region_number in range(len(self.region_file_name)):

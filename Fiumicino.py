@@ -100,12 +100,7 @@ class Mainbody(QtWidgets.QWidget):
         self.tabs.addTab(self.Analysis_WidgetInstance, "Image analysis")
         # =============================================================================
 
-        try:
-            self.savedirectory = "M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data"  # TODO hardcoded path
-        except:
-            self.savedirectory = os.path.join(
-                os.path.expanduser("~"), "Desktop"
-            )  #'M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data'
+        self.savedirectory = ""
 
         """
         # =============================================================================

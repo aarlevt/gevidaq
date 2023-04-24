@@ -74,19 +74,9 @@ def gaussian_fitting(image):
     return np.array((popt[0], popt[1]))
 
 
-def touchingCoordinateFinder(image, method="curvefit"):
+def touchingCoordinateFinder(image):
     image = skimage.filters.gaussian(image, 10)
-
-    if method == "curvefit":
-        coordinate = findTouchingSquaresCenterCoordinate_curvefit(image)
-    elif method == "correlation":
-        coordinate = findTouchingSquaresCenterCoordinate_correlationt(image)  # TODO undefined
-    elif method == "centroid":
-        coordinate = findTouchingSquaresCenterCoordinate_centroid(image)
-    else:
-        print("Invalid method: choose curvefit, correlation or centroid")
-        return
-
+    coordinate = findTouchingSquaresCenterCoordinate_curvefit(image)
     return coordinate
 
 
@@ -299,56 +289,6 @@ def findTouchingSquaresCenterCoordinate_curvefit(image):
     )
 
     return coordinates
-
-
-def findTouchingSquaresCenterCoordinate_correlation(image):
-
-    """
-    Function that finds the center coordinates of two touching squares using
-    a curve fit function, applied on a binary, thresholded image and a
-    template of the touching squares. Returns the center coordinates.
-
-    """
-
-    self._selectROI()  # TODO undefined
-    mask_width = self.bbox[1] - self.bbox[0]  # TODO all undefined, none of this works...
-    mask_height = self.bbox[3] - self.bbox[2]
-    h_mask_width = m.floor(mask_width / 2)
-    h_mask_height = m.floor(mask_height / 2)
-
-    mask = self.touching_squares(
-        mask_width,
-        mask_height,
-        h_mask_width,
-        h_mask_height,
-        h_mask_width,
-        h_mask_height,
-    )
-    mask = np.reshape(mask, (mask_width, mask_height))
-
-    result = scipy.signal.correlate(self.img_selection > self.threshold, mask)
-    coordinate = np.squeeze(np.asarray(np.where(result == np.amax(result))))
-    self.coordinates = np.array(
-        (
-            coordinate[0] - h_mask_width + self.bbox[0],
-            coordinate[1] - h_mask_height + self.bbox[2],
-        )
-    ).astype(int)
-
-
-def findTouchingSquaresCenterCoordinate_centroid(image):
-    """
-    Function that finds the center coordinates of two touching squares using
-    the centroid method. Returns the center coordinates.
-    """
-
-    self._selectROI()
-
-    M = skimage.measure.moments(self.img_selection > self.threshold, order=1)
-    centroid = (M[1, 0] / M[0, 0], M[0, 1] / M[0, 0])
-    self.coordinates = np.array(
-        (centroid[0] + self.bbox[0], centroid[1] + self.bbox[2])
-    ).astype(int)
 
 
 if __name__ == "__main__":
