@@ -7,8 +7,6 @@ Created on Thu Jul 16 15:47:20 2020
 
 from .DAQoperator import DAQmission
 
-# Backend
-
 import numpy as np
 import math
 

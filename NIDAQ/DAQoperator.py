@@ -9,7 +9,6 @@ READIN TASK HAS TO START AHEAD OF READ MANY SAMPLES, OTHERWISE ITS NOT in SYN!!!
 """
 # The adaptive NI DAQ tool
 
-# import time
 import nidaqmx
 import numpy as np
 from nidaqmx.constants import AcquisitionType, LineGrouping

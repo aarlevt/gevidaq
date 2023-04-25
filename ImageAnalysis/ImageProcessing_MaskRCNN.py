@@ -13,8 +13,6 @@ from skimage.io import imread
 import os
 import plotly.express as px
 
-# ----------------------------------TF-2----------------------------------------
-
 from MaskRCNN.Configurations.ConfigFileInferenceOld import cellConfig
 from MaskRCNN.Engine.MaskRCNN import MaskRCNN as modellib
 import MaskRCNN.Miscellaneous.visualize as visualize

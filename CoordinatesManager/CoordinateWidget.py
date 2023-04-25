@@ -9,8 +9,6 @@ Modified by Xin, adding machine learning portal.
 
 import sys
 
-# Backend
-
 from . import (
     ManualRegistration,
     DMDWidget,
@@ -20,7 +18,6 @@ from . import (
 
 from ..ImageAnalysis.ImageProcessing import ProcessImage
 
-# UI
 from .ui_widgets.DrawingWidget import DrawingWidget
 
 from PyQt5 import QtWidgets
@@ -41,7 +38,6 @@ from ..StylishQT import cleanButton, roundQGroupBox, SquareImageView
 
 import pyqtgraph as pg
 
-# General libraries
 import threading
 import colorsys
 import random
@@ -55,8 +51,6 @@ from skimage.io import imread
 from skimage.measure import find_contours
 
 from .. import Icons
-
-# from ..ImageAnalysis.ImageProcessing_MaskRCNN import ProcessImageML  # TODO import failure
 
 
 class CoordinatesWidgetUI(QWidget):
