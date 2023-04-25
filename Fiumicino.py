@@ -41,21 +41,12 @@ from . import PI_ObjectiveMotor
 from . import ThorlabsKCube
 from . import InsightX3
 
-# import GeneralWidgets.Weather_GUI
 from . import ScreeningWidget
 
 import pyqtgraph.console
 from . import HamamatsuCam
 from . import CoordinatesManager
 from . import Icons
-
-# Setting graph settings
-# """
-# pg.setConfigOption('background', 'w')
-# pg.setConfigOption('foreground', 'k')
-# pg.setConfigOption('useOpenGL', True)
-# pg.setConfigOption('leftButtonPan', False)
-# """
 
 
 class Mainbody(QtWidgets.QWidget):
@@ -331,10 +322,7 @@ class Mainbody(QtWidgets.QWidget):
         self.Coordinate_WidgetInstance.sig_finished_registration.connect(
             lambda: self.AOTFWidgetInstance.set_registration_mode(False)
         )
-        # self.Coordinate_WidgetInstance.sig_control_laser.connect(self.AOTFWidgetInstance.control_for_registration)
-        # self.Coordinate_WidgetInstance.sig_console_print.connect(self.normalOutputWritten)
         self.Coordinate_WidgetInstance.MessageBack.connect(self.normalOutputWritten)
-        # self.AOTFWidgetInstance.sig_lasers_status_changed.connect(self.Coordinate_WidgetInstance.lasers_status_changed)
 
         self.Analysis_WidgetInstance.MessageBack.connect(self.normalOutputWritten)
         self.Analysis_WidgetInstance.Cellselection_DMD_mask_contour.connect(
@@ -347,7 +335,6 @@ class Mainbody(QtWidgets.QWidget):
             self.Coordinate_WidgetInstance.receive_image_from_camera
         )
 
-        # self.Camera_WidgetInstance.default_folder = self.savedirectory
         """
         ***************************************************************************************************************************************
         ************************************************************END of GUI*****************************************************************
@@ -392,11 +379,6 @@ class Mainbody(QtWidgets.QWidget):
         # Time needed for single round of contour scanning
         self.Waveformer_WidgetInstance.time_per_contour = time_per_contour
 
-    #    def PassVariable_AnalysisWidget_to_DMDWidget(self, output_mask_from_Cellselection):
-    #        print('Mask from AnalysisWidget_to_DMDWidget')
-    #
-    #        self.Coordinate_WidgetInstance.mask = output_mask_from_Cellselection
-    #        self.Coordinate_WidgetInstance.mask_view.setImage(output_mask_from_Cellselection)
     # =============================================================================
     #     Fucs for set directory
     # =============================================================================
@@ -444,19 +426,6 @@ class Mainbody(QtWidgets.QWidget):
             daq.sendSingleDigital("LED", True)
         else:
             daq.sendSingleDigital("LED", False)
-
-    # =============================================================================
-    #    Fucs for external windows
-    # =============================================================================
-    # def open_camera(self):
-    #     self.camWindow = HamamatsuCam.HamamatsuUI.CameraUI()
-    #     self.camWindow.show()
-
-    #     # Connect camera with DMD widget, so that snapped images are shown in
-    #     # DMD widget.
-    #     self.camWindow.signal_SnapImg.connect(self.Coordinate_WidgetInstance.receive_image_from_camera)
-
-    #     self.camWindow.default_folder = self.savedirectory
 
     def open_Insight_UI(self):
         self.open_Insight_UIWindow = InsightX3.TwoPhotonLaserUI.InsightWidgetUI()

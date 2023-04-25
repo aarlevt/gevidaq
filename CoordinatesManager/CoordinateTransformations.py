@@ -323,24 +323,3 @@ if __name__ == "__main__":
         np.array([[251, 249], [100, 100]]), "PMT2Camera", scanning_config=[5, 500]
     )
     print(new_list_of_coordinates[0])
-    # grid_points_x = 2
-    # grid_points_y = 3
-
-    # x_coords = np.linspace(0, 768, grid_points_x+2)[1:-1].astype(int)
-    # y_coords = np.linspace(0, 1024, grid_points_y+2)[1:-1].astype(int)
-
-    # px = np.linspace(0, 768, 4)[1:-1].astype(int)
-    # py = np.linspace(0, 1024, 5)[1:-1].astype(int)
-
-    # qx = np.array((571, 1121, 1730, 648, 1120, 1648))
-    # qy = np.array((807, 797, 861, 1411, 1348, 1340))
-
-    # coord_out = np.reshape((np.meshgrid(x_coords, y_coords)), (2, -1), order='F').transpose()
-    # coord_in = np.stack((qy,qx), axis=1)
-
-    # soln1 = np.round(polynomial2DFit(coord_in, coord_out), 3)
-
-    # print('in x:')
-    # print(soln1[:,:,0])
-    # print('in y:')
-    # print(soln1[:,:,1])

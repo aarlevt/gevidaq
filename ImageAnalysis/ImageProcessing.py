@@ -5,6 +5,7 @@ Created on Sat Mar  7 16:46:47 2020
 @author: xinmeng
 """
 
+import math
 import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
@@ -370,23 +371,7 @@ class ProcessImage:
                 # --------------------------------------------------------------
                 filled_mask_area = len(np.where(filled_mask_convolve2d == 1)[0])
                 contour_mask_perimeter = len(np.where(contour_mask_thin_line == 1)[0])
-                Roundness = 4 * 3.1415 * filled_mask_area / contour_mask_perimeter ** 2
-                #                print('Roundness: {}'.format(4*3.1415*filled_mask_area/contour_mask_perimeter**2))
-
-                #                    Calculate central moments
-                # --------------------------------------------------------------
-                #                M = moments(filled_mask_convolve2d)
-                #                centroid = (M[1, 0] / M[0, 0], M[0, 1] / M[0, 0])
-                #                Img_moments_central = moments_central(filled_mask_convolve2d, centroid, order=4)
-                ##                print(Img_moments_central)
-                #                Img_moments_hu = moments_hu(Img_moments_central/np.amax(Img_moments_central))
-                #
-                #                # Log scale hu moments
-                #                for EachMoment in range(len(Img_moments_hu)):
-                #                    Img_moments_hu[EachMoment] = -1* np.copysign(1.0, Img_moments_hu[EachMoment]) * np.log10(abs(Img_moments_hu[EachMoment]))
-
-                #                print(sum(Img_moments_hu[0:4]))
-                #                print('Img_moments_hu is {}'.format(Img_moments_hu))
+                Roundness = 4 * math.pi * filled_mask_area / contour_mask_perimeter ** 2
 
                 # --------------------------------------------------------------
                 # Roundness Threshold
@@ -409,9 +394,6 @@ class ProcessImage:
                     contour_soma_ratio = MeanIntensity_Contour / MeanIntensity_Soma
 
                     Cell_Area_Img = filled_mask_convolve2d * RawRegionImg
-                    # Calculate the entrophy of the image.
-                    #                entr_img = entropy(Cell_Area_Img/np.amax(Cell_Area_Img), disk(5))
-                    #                print(np.mean(entr_img))
 
                     # ---------------------Calculate dead pixels----------------
                     DeadPixelNum = len(np.where(Cell_Area_Img >= 3.86)[0])
@@ -421,7 +403,6 @@ class ProcessImage:
                     DeadPixelPercentage = round(
                         DeadPixelNum / filled_mask_convolve2d_area, 3
                     )
-                    #                    print('Dead Pixel percentage: {}'.format(DeadPixelPercentage)) # b[np.where(aa==16)]=2
 
                     if str(MeanIntensity_FilledArea) == "nan":
                         MeanIntensity_FilledArea = 0
@@ -439,14 +420,6 @@ class ProcessImage:
                             contour_soma_ratio,
                             Roundness,
                         )
-
-                        #                    plt.figure()
-                        #                    plt.imshow(RawRegionImg)
-                        #                    plt.show()
-                        #    # #
-                        #                    plt.figure()
-                        #                    plt.imshow(filled_mask_convolve2d)
-                        #                    plt.show()
 
                         # --------------------------------------------------Add red boundingbox to axis----------------------------------------------
                         rect = mpatches.Rectangle(
@@ -474,7 +447,7 @@ class ProcessImage:
                                 fontsize=8,
                                 color="yellow",
                                 style="italic",
-                            )  # ,bbox={'facecolor':'red', 'alpha':0.3, 'pad':8})
+                            )
 
                         CellSequenceInRegion += 1
         if show_img == True:
@@ -646,14 +619,6 @@ class ProcessImage:
                     contour_soma_ratio,
                 )
 
-                # plt.figure()
-                # plt.imshow(RawRegionImg)
-                # plt.show()
-
-                # plt.figure()
-                # plt.imshow(contour_mask_of_cell)
-                # plt.show()
-
                 # --------------------------------------------------Add red boundingbox to axis----------------------------------------------
                 rect = mpatches.Rectangle(
                     (minc, minr),
@@ -766,8 +731,6 @@ class ProcessImage:
 
             for m in range(len(col1)):
                 image[row1[m], col1[m]] = 5
-                # filledimg[contour[:, 0], contour[:, 1]] = 2
-            # ax.plot(contour[:, 1]+minc, contour[:, 0]+minr, linewidth=3, color='yellow')
         binarycontour = np.where(image == 5, 1, 0)
 
         return binarycontour
@@ -936,7 +899,6 @@ class ProcessImage:
         SubCellClearUpSize = int(
             region_area * 0.30
         )  # Assume that trash parts won't take up 35% of the whole cell boundbox area
-        #                    print('minsize: '+str(SubCellClearUpSize))
         IndividualCellCleared = filled_mask_reconstructed.copy()
 
         clear_border(IndividualCellCleared)
@@ -991,7 +953,6 @@ class ProcessImage:
 
         CellSequenceInRegion = 0
         CellSkeletonizedContourDict = {}
-        #        dtype = [('No.', int), ('Mean intensity', float), ('Mean intensity in contour', float), ('Contour soma ratio', float)]
 
         for region in regionprops(
             label_image, intensity_image=image
@@ -1049,13 +1010,6 @@ class ProcessImage:
                     RawRegionImg_for_contour.copy(),
                     contour_thres,
                 )
-                #                plt.figure()
-                #                plt.imshow(contour_mask_thin_line)
-                #                plt.show()
-                # after here intensityimage_intensity is changed from contour labeled with number 5 to binary image
-                #                contour_mask_of_cell = imageanalysistoolbox.inward_mask_dilation(contour_mask_thin_line.copy() ,filled_mask_convolve2d, contour_dilationparameter)
-                # --------------------------------------------------------------
-                #                print(len(np.where(contour_mask_thin_line == 1)[0]))
                 if len(np.where(contour_mask_thin_line == 1)[0]) > 0:
                     # -------------------Sorting and filtering----------------------
                     clockwise_sorted_raw_trace = ProcessImage.sort_index_clockwise(
@@ -1085,9 +1039,6 @@ class ProcessImage:
                     figure, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 10))
                     ax1.imshow(ContourFullFOV, cmap=plt.cm.gray)
                     ax2.imshow(filtered_cellmap * 2 + RawRegionImg, cmap=plt.cm.gray)
-                    #                ax2.imshow(ContourFullFOV*2+image, cmap = plt.cm.gray)
-                    #                ax2.imshow(filled_mask_convolve2d, cmap = plt.cm.gray)
-                    #                figure.tight_layout()
                     plt.show()
 
                     # ------------Organize for Ni-daq execution---------------------
@@ -1118,8 +1069,6 @@ class ProcessImage:
                     Y_interpolated = f_y(newy)
 
                     # -----------speed and accelation check-------------------------
-                    #                contour_x_speed = np.diff(X_interpolated)/time_gap
-                    #                contour_y_speed = np.diff(Y_interpolated)/time_gap
                     time_gap = 1 / sampling_rate
                     contour_x_acceleration = (
                         np.diff(X_interpolated, n=2) / time_gap ** 2
@@ -1192,10 +1141,6 @@ class ProcessImage:
                 y_last_clockwise = clockwiselist[-1][1]
                 x_last_cclockwise = cclockwiselist[-1][0]
                 y_last_cclockwise = cclockwiselist[-1][1]
-                #                if (x_last_clockwise-p[0])**2+(y_last_clockwise-p[1])**2 == 1 and \
-                #                ((x_last_clockwise-p[0])**2+(y_last_clockwise-p[1])**2) < ((x_last_cclockwise-p[0])**2+(y_last_cclockwise-p[1])**2):
-                #                    clockwiselist.append(p)
-                #                    coordstorage.remove(p)
                 if (x_last_clockwise - p[0]) ** 2 + (
                     y_last_clockwise - p[1]
                 ) ** 2 <= 2 and (
@@ -1213,8 +1158,6 @@ class ProcessImage:
                 ) > (
                     (x_last_cclockwise - p[0]) ** 2 + (y_last_cclockwise - p[1]) ** 2
                 ):
-                    #                    print((cclockwiselist[-1][0]-p[0])**2+(cclockwiselist[-1][1]-p[1])**2)
-                    #                    print('cc')
                     cclockwiselist.append(p)
                     coordstorage.remove(p)
                     break
@@ -1245,9 +1188,6 @@ class ProcessImage:
             if time.time() > timeout + 2:
                 print("timeout")
                 break
-        #        print(clockwiselist[-1])
-        #        print(cclockwiselist[-1])
-        #        print(p)
         print(coordstorage)
         cclockwiselist.reverse()
         result = clockwiselist + cclockwiselist
@@ -1270,9 +1210,6 @@ class ProcessImage:
                 Unfiltered_contour_routine_Y, rawcoord[1]
             )
 
-        # filtering and show filtered contour
-        #        X_routine = medfilt(Unfiltered_contour_routine_X, kernel_size=filtering_kernel)
-        #        Y_routine = medfilt(Unfiltered_contour_routine_Y, kernel_size=filtering_kernel)
         X_routine = filters.gaussian_filter1d(
             Unfiltered_contour_routine_X, sigma=filtering_kernel
         )
@@ -1372,8 +1309,6 @@ class ProcessImage:
             ContourArray_forDaq[1] = np.array(
                 [(Y_interpolated, "galvos_Y_contour")], dtype=tp_analog
             )
-
-            # ContourArray_forDaq = np.vstack((X_interpolated,Y_interpolated))
         else:
             print("Error: no contour found")
             return
@@ -2264,25 +2199,6 @@ class ProcessImage:
 
             print("Start linking cells...")
 
-            # start_time = time.time()
-            # # Get the pd.series from first cell.
-            # first_pd_data_of_single_cell = self.register_single_cell(("Cell {}".format(0), self.cell_Data_1.iloc[0]))
-            # # Make sure that there's content in first pd data.
-            # i = 1
-            # while type(first_pd_data_of_single_cell) == bool:
-            #     first_pd_data_of_single_cell = self.register_single_cell(("Cell {}".format(i), self.cell_Data_1.iloc[0]))
-            #     i += 1
-
-            # Cell_DataFrame_Merged = first_pd_data_of_single_cell
-
-            # with concurrent.futures.ProcessPoolExecutor() as executor:
-            #     for pd_data_of_single_cell in executor.map(self.register_single_cell, self.cell_Data_1.iterrows()):
-            #         if type(pd_data_of_single_cell) != bool:
-            #           Cell_DataFrame_Merged = pd.concat((Cell_DataFrame_Merged, pd_data_of_single_cell), axis = 1)
-
-            # end_time = time.time()
-            # print("Register takes {}".format(end_time - start_time))
-
             # Assume that cell_Data_1 is the tag protein dataframe, for each of the cell bounding box,
             # find the one with the most intersection from library dataframe.
             start_time = time.time()
@@ -2336,8 +2252,6 @@ class ProcessImage:
                     index_2,
                     row_Data_2,
                 ) in DataFrame_of_same_coordinate_Data2.iterrows():
-                    # ImgNameInforString_Data2 = row_Data_2["ImgNameInfor_Lib"]
-
                     bounding_box_str_Data_2 = row_Data_2["BoundingBox_Lib"]
                     # Retrieve boundingbox information
                     minr_Data_2 = int(
@@ -3142,12 +3056,6 @@ class ProcessImage:
         weightimage = weightimage / np.mean(weightimage)
 
         estimate_DV[np.isnan(estimate_DV)] = 0  # Set places where imgs2 == NaN to zero
-        """
-        dVout = squeeze(mean(mean(imgs2.*repmat(weightimg, [1 1 L])))) #squeeze takes something along the time axis and puts it 1xn vector
-
-        Vout = dVout + avgV
-        offsetimg = avgimg - avgV*corrimg
-        """
 
         return corrimage, weightimage, sigmaimage
 
@@ -3236,11 +3144,6 @@ class ProcessImage:
         focus_degree_array = np.asarray(raw_data_list)
 
         x_axis = np.arange(len(raw_data_list))
-
-        # n = len(raw_data_list)  # the number of data
-        # mean = sum(x_axis * focus_degree_array) / n  # mean value of data
-        # sigma = ( sum(focus_degree_array * (x_axis - mean) ** 2) / n)  # note this correction
-        # NOTE sigma is defined in the gaus function arguments
 
         def gaus(x, a, x0, sigma):
             return a * np.exp(-((x - x0) ** 2) / (2 * sigma ** 2))
@@ -3923,14 +3826,6 @@ class ProcessImage:
 
         img_stack = []
         for each_file_name in fileNameList:
-            # For each coordinate, find all position files in the stack, according to Zmax file name.
-            # file_name_stack = []
-            # for file in os.listdir(Nest_data_directory):
-            #     if each_file_name[0 : each_file_name.index("Zmax")] + "Zpos" in file:
-            #         file_name_stack.append(file)
-            # print(file_name_stack)
-
-            # for file in file_name_stack:
             img_stack.append(imread(each_file_name))
 
         focus_degree_list, index_highest_focus_degree = ProcessImage.find_infocus_from_list(
@@ -4017,7 +3912,6 @@ class ProcessImage:
                         img_zstack_list.append(each_file_name)
 
                 coordinate_infor = each_coordinate
-                #each_file_name[each_file_name.index("Coord") : each_file_name.index("_Cam")]
 
                 # ---------------------------------------------Calculate the z max projection-----------------------------------------------------------------------
                 ZStackOrder = 0
@@ -4413,11 +4307,6 @@ class ProcessImage:
 
             current_each_phase = np.mean(current_curve[laser_on_phases[phase_key][0] : laser_on_phases[phase_key][1]])
             laser_on_phase_current.append(current_each_phase)
-            # plt.figure()
-            # plt.plot(current_each_phase)
-            # plt.show()
-
-            # print("Mean value of each phase: {} pA".format(np.mean(current_each_phase)))
         laser_off_phase_current = []
         for phase_key in laser_off_phases:
 
@@ -4500,8 +4389,6 @@ class ProcessImage:
         # Correct for photo-bleaching
         fluorescence_trace_normalized = ProcessImage.Biexponential_fit(avg_cell_trace, sampling_rate = DAQ_sampling_rate//points_per_contour)
 
-        # time_axis = np.arange(len(fluorescence_trace_normalized))/DAQ_sampling_rate
-
         fig, ax = plt.subplots(figsize=(7.0, 4.8))
         plt.title('Normalized trace')
         ax.set_ylabel("Fluorescence (a.u.)", fontsize=11)
@@ -4559,16 +4446,6 @@ class ProcessImage:
 
         single_period_2nd_half = ProcessImage.Protein_biexponential_fit(averaged_single_period[int(len(averaged_single_period)/2) : len(averaged_single_period)], swing = 'downswing', sampling_rate = mean_trace_sampling_rate)  # TODO unused
 
-
-        # time_axis = np.arange(len(single_period_1st_half))/mean_trace_sampling_rate
-
-        # fig, ax = plt.subplots(figsize=(7.0, 4.8))
-        # plt.title('single_period_1st_half trace')
-        # ax.set_ylabel("Fluorescence (a.u.)", fontsize=11)
-        # ax.set_xlabel("Time (s)", fontsize=11)
-        # ax.plot(time_axis, single_period_1st_half)
-        # plt.show()
-
     #%%
     """
     # =============================================================================
@@ -4606,17 +4483,7 @@ class ProcessImage:
         for column in excel_data_:
             data_to_list.append(excel_data_[column].dropna().tolist())
 
-        # plt.style.use('dark_background')
-
         fig, ax = plt.subplots()
-        # Boxplot settings
-        # boxprops = dict(linestyle='--', \
-        #                 linewidth=2, \
-        #                 facecolor='cornflowerblue',\
-        #                 color = 'lavender')
-        # flierprops = dict(marker='o', markerfacecolor='gray', markersize=4,
-        #                   linestyle='none')
-        # meanlineprops = dict(linestyle='-', linewidth=3, color='lavender')
 
         # To add n numbers
         number_of_cells = []
@@ -4644,14 +4511,8 @@ class ProcessImage:
         xticks_pos_list = list(range(0,len(column_names)))
 
         # Build the plot
-        # fig, ax = plt.subplots(figsize=(10.0, 8))
-        # fig, ax = plt.subplots()
         ax = sns.boxplot(data=data_to_list,color='steelblue', width=0.4, fliersize = 0)
         ax = sns.stripplot(data=data_to_list, color="grey", size=4, linewidth=1, alpha=.8)
-
-        # ax.boxplot(data_to_list, positions = xticks_pos_list, \
-        #            notch=True, patch_artist=True, boxprops=boxprops, \
-        #                flierprops=flierprops, medianprops=meanlineprops)
 
         # Hide the right and top spines
         ax.spines['right'].set_visible(False)
@@ -4697,17 +4558,10 @@ class ProcessImage:
 
 
             # Add the scatters
-            # for i in range(len(listed_facts)):
-            #     for each_point in range(len(data_to_list[i])):
-            #         ax.scatter(x_pos[i], data_to_list[i][each_point], color='grey')
-
             ax.set_xticks(x_pos)
             ax.set_xticklabels(listed_facts)
-            # ax.set_xticklabels([])
             plt.xticks(rotation=45, fontsize=14)
             plt.yticks(fontsize=14)
-            # ax.set_title(title)
-            # plt.yticks(np.arange(0, max(CTEs)+2, 2.0))
             ax.yaxis.grid(False)
 
             # Hide the right and top spines
@@ -4722,7 +4576,6 @@ class ProcessImage:
 
             # Save the figure and show
             plt.tight_layout()
-            # plt.savefig('bar_plot_with_error_bars.png')
             plt.show()
 
     def Screening_scatters_3D(
@@ -4844,7 +4697,6 @@ class ProcessImage:
 
                         # For the time constant, if fast component percentage is too low
                         if float(Tfast_percentage_values[each_content_index]) < fast_constant_percentage_threshold:
-                            # delete_index.append(each_content_index)
                             fast_time_constant = column_values[each_content_index]
                             fast_time_constant_percentage = Tfast_percentage_values[each_content_index]/100
                             slow_time_constant = Tslow_values[each_content_index]
@@ -4913,7 +4765,6 @@ class ProcessImage:
             plt.xticks(rotation=45)
             plt.yticks(fontsize=12)
             ax.set_title(title)
-            # plt.yticks(np.arange(0, max(x)+1, 1.0))
             ax.yaxis.grid(False)
 
             # Hide the right and top spines
@@ -5423,8 +5274,6 @@ class PatchAnalysis:
                 ),
                 dpi=1200,
             )
-        # except:
-        #     print('fit_on_averaged_curve failed.')
 
         # ===== Single exponential function for the fitting algorithm =====
 
@@ -5772,20 +5621,6 @@ class CurveFit:
                 dpi=1000,
             )
 
-        # Vizualization of waveform provided
-        # fig3, ax = plt.subplots()
-        # p04, = ax.plot(self.timewaveform, self.waveform*1000/10) # *1000 is to convert to mV; 10 is to correct for the *10 gain at the patch clamp amplifier.
-        # ax.set_title('Voltage waveform', size=14)
-        # ax.set_ylabel('Voltage (mV)', fontsize=11)
-        # ax.set_xlabel('Time (s)', fontsize=11)
-        # ax.spines['right'].set_visible(False)
-        # ax.spines['top'].set_visible(False)
-        # ax.xaxis.set_ticks_position('bottom')
-        # ax.yaxis.set_ticks_position('left')
-        # plt.show()
-        # Uncomment if you want to save the figure
-        # plt.savefig()
-
         # Store parameters for the photobleach bi-exponential fit
         # The conditionals make sure that 't1' is always the fast
         # time component and 't2' is the slow time component
@@ -6082,20 +5917,6 @@ class CurveFit:
             self.fluorescence_downswing[self.skip :], ddof=1, axis=0
         )
 
-        # self.avg_fluorescence_upswing_normalized = normalize_array(
-        #     np.mean(self.fluorescence_upswing[self.skip :], axis=0)
-        # )
-        # self.std_fluorescence_upswing_normalized = np.std(
-        #     normalize_array(self.fluorescence_upswing[self.skip :]), ddof=1, axis=0
-        # )
-
-        # self.avg_fluorescence_downswing_normalized = normalize_array(
-        #     np.mean(self.fluorescence_downswing[self.skip :], axis=0)
-        # )
-        # self.std_fluorescence_downswing_normalized = np.std(
-        #     normalize_array(self.fluorescence_downswing[self.skip :]), ddof=1, axis=0
-        # )
-
         self.avg_time_upswing = np.mean(self.time_upswing[self.skip :], axis=0)
         self.std_time_upswing = np.std(self.time_upswing[self.skip :], ddof=1, axis=0)
 
@@ -6115,35 +5936,6 @@ class CurveFit:
             np.array([self.avg_time_upswing, self.avg_time_downswing]),
             (int(self.total_number_of_periods), 1),
         )
-
-        # #Vizualization of curve averaging (seperate)
-        # fig4_1, ax_1 = plt.subplots(figsize=(8.0, 5.8))
-        # p05, = ax_1.plot(self.avg_time_upswing*1000, self.avg_fluorescence_upswing_normalized, label = "Upswing", color='blue')
-        # ax_1.fill_between(self.avg_time_upswing*1000, self.avg_fluorescence_upswing_normalized + self.std_fluorescence_upswing_normalized, self.avg_fluorescence_upswing_normalized - self.std_fluorescence_upswing_normalized, facecolor='blue', alpha=0.5)
-        # ax_1.set_title("Upswing", size=14)
-        # ax_1.set_ylabel('Fluorescence (a.u.)', fontsize = 11)
-        # ax_1.set_xlabel('Time (ms)', fontsize = 11)
-        # ax_1.spines['right'].set_visible(False)
-        # ax_1.spines['top'].set_visible(False)
-        # ax_1.xaxis.set_ticks_position('bottom')
-        # ax_1.yaxis.set_ticks_position('left')
-        # plt.show()
-        # if self.main_directory != None:
-        #     fig4_1.savefig((os.path.join(self.main_directory, 'Analysis results//Averaged upswing trace.png')), dpi=1000)
-
-        # fig4_2, ax_2 = plt.subplots(figsize=(8.0, 5.8))
-        # p06, = ax_2.plot(self.avg_time_downswing*1000, self.avg_fluorescence_downswing_normalized, label = "Downswing", color=(0.9, 0.4, 0))
-        # ax_2.fill_between(self.avg_time_downswing*1000, self.avg_fluorescence_downswing_normalized + self.std_fluorescence_downswing_normalized, self.avg_fluorescence_downswing_normalized - self.std_fluorescence_downswing_normalized, facecolor=(0.9, 0.4, 0), alpha=0.5)
-        # ax_2.set_title("Downswing", size=14)
-        # ax_2.set_ylabel('Fluorescence (a.u.)', fontsize = 11)
-        # ax_2.set_xlabel('Time (ms)', fontsize = 11)
-        # ax_2.spines['right'].set_visible(False)
-        # ax_2.spines['top'].set_visible(False)
-        # ax_2.xaxis.set_ticks_position('bottom')
-        # ax_2.yaxis.set_ticks_position('left')
-        # plt.show()
-        # if self.main_directory != None:
-        #     fig4_2.savefig((os.path.join(self.main_directory, 'Analysis results//Averaged downswing trace.png')), dpi=1000)
 
     def fit_on_averaged_curve(self):
 
@@ -6638,110 +6430,6 @@ class CurveFit:
                     "Analysis results//Averaged period for sensitivity.npy",
                     ), self.averaged_period)
 
-        # single_period_length = len(self.averaged_period)
-        # print("Length of single period {}".format(single_period_length))
-
-        # # =============================================================================
-        # #     F(t) = A × (C × exp(–t/t1) + (1 – C) × exp(–t/t2)), where t1 was the time constant
-        # #     of the fast component and t2 was the time constant of the slow component. The
-        # #     percentage of the total magnitude that was associated with the fast component (%t1
-        # #     ) was defined as C above.
-        # # =============================================================================
-        # def func(t, A, t1, C, t2):
-        #     return A * (C * np.exp(-(t / t1)) + (1 - C) * np.exp(-(t / t2)))
-
-        # parameter_bounds = ([-np.inf, 0, 0, 0], [np.inf, 0.1, 1, 0.1])
-
-        # fig, ax = plt.subplots(figsize=(10.0, 8))
-
-        # # ============== Upswing =================
-        # rising_phase = self.averaged_period[0:round(single_period_length/4)]
-        # # =============================================================================
-        # # Only the first 50 ms in the fluorescence rise and fluorescence decay segments
-        # # were used in the downstream bi-exponential fitting.
-        # # Here we have 5hz step, so first half will be 50 ms in time.
-        # # =============================================================================
-
-        # # Curve fitting of every isolated signal, similar to the photobleach algorithm
-        # popt, pcov = curve_fit(
-        #     func,
-        #     self.avg_time_upswing,
-        #     rising_phase,
-        #     bounds=parameter_bounds,
-        #     maxfev=500000,
-        # )
-
-        # # Find the fast and slow constant
-        # self.upswing_fast_constant = min([popt[1], popt[3]])
-        # self.upswing_slow_constant = max([popt[1], popt[3]])
-
-        # # Get the fast component percentage.
-        # if popt[1] > popt[3]:
-        #     self.upswing_fast_component_percentage = 1 - popt[2]
-        # else:
-        #     self.upswing_fast_component_percentage = popt[2]
-
-        # # Plot every isolated signal and its corresponding fit. Be aware of that when we apply CurveAveraging(), then
-        # # we have the same for every upswing and the same for every downswing. Neglect periods that we skip
-        # (p07,) = ax.plot(
-        #     self.avg_time_upswing * 1000,
-        #     rising_phase,
-        #     label="Experimental data",
-        #     color="blue",
-        #     alpha=0.5,
-        # )
-
-        # (p08,) = ax.plot(
-        #     self.avg_time_upswing * 1000,
-        #     func(self.avg_time_upswing, *popt),
-        #     color=(0.9, 0, 0),
-        #     label="Bi-exponential fit",
-        # )
-        # if True:
-        #     np.save(os.path.join(
-        #                     self.main_directory,
-        #                     "Analysis results//avg_fluorescence_upswing_fit.npy"), func(self.avg_time_upswing, *popt))
-        #     np.save(os.path.join(
-        #                     self.main_directory,
-        #                     "Analysis results//avg_fluorescence_upswing.npy"), self.avg_fluorescence_upswing)
-
-        # # Axis and labels for fig
-        # ax.set_title("Bi-exponential fitting of averaged up-swings", size=14)
-        # ax.set_ylabel("Fluorescence (a.u.)", fontsize=11)
-        # ax.set_xlabel("Time(ms)", fontsize=11)
-        # ax.legend(
-        #     [p08, p07],
-        #     [
-        #         "Fit ({} ms/ {} ms, fast component percentage: {}%)".format(
-        #             str(self.upswing_fast_constant * 1000)[:5],
-        #             str(self.upswing_slow_constant * 1000)[:5],
-        #             str(self.upswing_fast_component_percentage * 100)[:5],
-        #         ),
-        #         "Experimental data",
-        #     ],
-        # )
-        # ax.spines["right"].set_visible(False)
-        # ax.spines["top"].set_visible(False)
-        # ax.xaxis.set_ticks_position("bottom")
-        # ax.yaxis.set_ticks_position("left")
-        # plt.show()
-        # if self.main_directory != None:
-        #     fig.savefig(
-        #         (
-        #             os.path.join(
-        #                 self.main_directory,
-        #                 "Analysis results//Bi-exponential fitting from averaged up-swings.png",
-        #             )
-        #         ),
-        #         dpi=1200,
-        #     )
-
-        # falling_phase = self.averaged_period[round(single_period_length/2):round(single_period_length*3/4)]
-
-        # plt.figure()
-        # plt.plot(falling_phase)
-        # plt.show()
-
     def Statistics(self):
 
         # Data transformation to put it in a nice Numpy format
@@ -6751,16 +6439,6 @@ class CurveFit:
 
         self.time_constant_upswing = self.time_constant_parameters[::2, :]
         self.time_constant_downswing = self.time_constant_parameters[1::2, :]
-
-        # delta F/F and steady-state fluorescence values, not normalized
-        # self.vertical_translation[::2]: The upper step values.
-        # self.vertical_translation[1::2]: The lower step values.
-        # self.intensity_ratio = np.true_divide(np.array(self.vertical_translation[::2]) - np.array(self.vertical_translation[1::2]), np.array(self.vertical_translation[1::2]))
-
-        # self.intensity_ratio = np.true_divide(self.vertical_translation[::2], self.vertical_translation[1::2])
-        # self.avg_intensity_ratio = np.mean(self.intensity_ratio[self.skip:])
-        # self.std_intensity_ratio = np.std(self.intensity_ratio[self.skip:], ddof=1)
-        # self.DeltaF = f'{self.avg_intensity_ratio:.6f} +/- {self.std_intensity_ratio:.6f}'
 
         # Amplitude of fast time constant
         # Upswing
@@ -6944,43 +6622,6 @@ class CurveFit:
 
 
 if __name__ == "__main__":
-    #    speedGalvo = 20000.0 #Volt/s
-    #    AccelerationGalvo = 1.54*10**8 #Acceleration galvo in volt/s^2
-    #    #--------------------------------------------------------------------------
-    #    PMT_image = imread(r'D:\XinMeng\imageCollection\Round2_Coord3_R1500C1500_PMT_2.tif', as_gray=True)
-    ##    time_gap = 1/50000
-    #
-    #    RegionProposalMask, RegionProposalOriginalImage = ProcessImage.generate_mask(PMT_image, openingfactor=2,
-    #                                                                                                closingfactor=4, binary_adaptive_block_size=335)#256(151) 500(335)
-    #
-    #    CellSkeletonizedContourDict= ProcessImage.get_Skeletonized_contour(PMT_image, RegionProposalMask, smallest_size=400, contour_thres=0.001,
-    #                                                                                       contour_dilationparameter=11, cell_region_opening_factor=1, cell_region_closing_factor=2,
-    #                                                                                       scanning_voltage=5, points_per_contour=500, sampling_rate = 50000)
-
-    # =============================================================================
-    # =============================================================================
-    #     tag_folder = r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\2020-05-12 Archon lib 400FOVs 4 grid\trial_1'  # TODO hardcoded path
-    #     lib_folder = r'D:\XinMeng\imageCollection\Fov3\New folder (3)'
-    #   #   tag_folder = r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\2020-3-6 Archon brightness screening\NovArch library'  # TODO hardcoded path
-    #
-    #     tag_round = 'Round1'
-    #     lib_round = 'Round4'
-    #
-    #     EvaluatingPara_1 = 'Mean intensity divided by tag'
-    #     EvaluatingPara_2 = 'Contour soma ratio'
-    #
-    #     MeanIntensityThreshold = 0.16
-    #
-    #     starttime = time.time()
-    #
-    #     tagprotein_cell_properties_dict = ProcessImage.TagFluorescenceAnalysis(tag_folder, tag_round, Roundness_threshold = 2.1)
-    #     print('tag done.')
-    #
-    #     tagprotein_cell_properties_dict_meanIntensity_list = []
-    #     for eachpos in tagprotein_cell_properties_dict:
-    #         for i in range(len(tagprotein_cell_properties_dict[eachpos])):
-    #             tagprotein_cell_properties_dict_meanIntensity_list.append(tagprotein_cell_properties_dict[eachpos]['Mean intensity'][i])
-    # =============================================================================
     stitch_img = False
     retrievefocus_map = False
     find_focus = False
@@ -7030,9 +6671,6 @@ if __name__ == "__main__":
         data_3 = pd.read_excel(data_3_xlsx)
 
         registered_dataframe = ProcessImage.Register_cells([data_1, data_2, data_3])
-        # registered_dataframe = ProcessImage.Register_between_dataframes(data_1, data_2)
-    # else:
-    #     res,diff = ProcessImage.find_repeat_imgs(r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2020-11-24_2020-11-24_16-45-26_2rounds_GFP_olddish', similarity_thres = 400)  # TODO hardcoded path
     elif merge_dataFrames == True:
         data_1_xlsx = pd.ExcelFile(
             r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2021-01-27 Lib8 Archon KCl 8b8 ND1p5ND0p3\m1.xlsx"  # TODO hardcoded path
@@ -7055,7 +6693,6 @@ if __name__ == "__main__":
         DataFrames_filtered.to_excel(
             r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2021-01-27 Lib8 Archon KCl 8b8 ND1p5ND0p3\m3.xlsx"  # TODO hardcoded path
         )
-        # DataFrame_sorted = ProcessImage.Sorting_onTwoaxes(DataFrames_filtered, 'KC_EC_Mean_intensity_in_contour_ratio', 'Mean_intensity_in_contour_Lib_EC', 0, 1)
 
     elif cam_screening_analysis == True:
         ProcessImage.cam_screening_post_processing(

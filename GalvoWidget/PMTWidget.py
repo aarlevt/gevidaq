@@ -122,10 +122,6 @@ class PMTWidgetUI(QWidget):
         pmtContourContainer = StylishQT.roundQGroupBox(title="Contour selection")
         # pmtContourContainer.setFixedWidth(280)
         self.pmtContourLayout = QGridLayout()
-        # contour_Description = QLabel(
-        #"Handle number updates when parking mouse cursor upon ROI. Points in contour are divided evenly between handles.")
-        # contour_Description.setStyleSheet('color: blue')
-        # self.pmtContourLayout.addWidget(contour_Description,0,0)
 
         self.pmt_handlenum_Label = QLabel("Handle number: ")
         self.pmtContourLayout.addWidget(self.pmt_handlenum_Label, 1, 0)
@@ -426,12 +422,6 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
 
         self.clicked_points_list.append(point)
 
-        # if len(self.clicked_points_list) == 1:
-        #     self.click_poly_roi = pg.ROI(point)
-        #     self.pmtvb.addItem(self.click_poly_roi)
-        # else:
-        #     self.click_poly_roi.addFreeHandle(point)
-
         if len(self.clicked_points_list) == 1:
             # In case of first click
             self.starting_point = self.clicked_points_list[0]
@@ -541,11 +531,6 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
             )
             time_per_frame_pmt = Totalscansamples / self.Daq_sample_rate_pmt
 
-            # ScanArrayXnum = int((Totalscansamples / self.averagenum) / Value_yPixels)
-
-            # r1 = QRectF(500, 500, ScanArrayXnum, int(Value_yPixels))
-            # self.pmtimageitem.setRect(r1)
-
             self.pmtTest.pmtimagingThread.measurement.connect(
                 self.update_pmt_Graphs
             )  # Connecting to the measurement signal
@@ -567,10 +552,6 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
         )
         contour_freq = self.Daq_sample_rate_pmt / self.points_per_round
 
-        # r1 = QRectF(500, 500, ScanArrayXnum, int(Value_yPixels))
-        # self.pmtimageitem.setRect(r1)
-
-        # self.pmtTest_contour.pmtimagingThread_contour.measurement.connect(self.update_pmt_Graphs) #Connecting to the measurement signal
         self.pmt_fps_Label.setText("Contour frequency:  %.4f Hz" % contour_freq)
         self.pmtTest_contour.start()
         self.MessageToMainGUI("---!! Continuous contour scanning !!---" + "\n")
@@ -587,19 +568,12 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
                 + ".tif",
             )
         )  # save as tif
-        # np.save(os.path.join(self.savedirectory, 'PMT'+ self.saving_prefix +datetime.now().strftime('%Y-%m-%d_%H-%M-%S')), self.data_pmtcontineous)
 
     def update_pmt_Graphs(self, data):
         """Update graphs."""
 
         self.data_pmtcontineous = data
         self.pmtvideoWidget.setImage(data)
-        # self.pmtimgroi.setImage(
-        #     self.roi.getArrayRegion(data, self.pmtimageitem), levels=(0, data.max())
-        # )
-        #
-
-        # self.pmtvideoWidget.update_pmt_Window(self.data_pmtcontineous)
 
     def show_handle_num(self, roi_item):
         """
@@ -632,7 +606,6 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
         self.click_poly_roi = pg.PolyLineROI(
             current_roi_handles_list, pen=self.ROIpen, closed = True
         )  # , maxBounds=r1
-        # self.roi.addRotateHandle([40,0], [0.5, 0.5])
         self.click_poly_roi.sigHoverEvent.connect(
             lambda: self.show_handle_num(self.click_poly_roi)
         )  # update handle numbers
@@ -704,8 +677,6 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
         # Number of points in single round of contour scan
         self.points_per_round = len(self.final_stacked_voltage_signals[0])
 
-        # print(self.final_stacked_voltage_signals)
-
         # To the main widget Fiumicino
         self.emit_contour_signal()
 
@@ -737,23 +708,6 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
         None.
 
         """
-        # self.pmtvb.removeItem(self.roi)
-
-        # self.ROIpen = QPen()  # creates a default pen
-        # self.ROIpen.setStyle(Qt.DashDotLine)
-        # self.ROIpen.setWidth(1)
-        # self.ROIpen.setBrush(QColor(0, 161, 255))
-        # self.roi = pg.PolyLineROI(
-        #     [[0, 0], [80, 0], [80, 80], [0, 80]], closed=True, pen=self.ROIpen
-        # )  # , maxBounds=r1
-        # # self.roi.addRotateHandle([40,0], [0.5, 0.5])
-        # self.roi.sigHoverEvent.connect(
-        #     lambda: self.show_handle_num()
-        # )  # update handle numbers
-
-        # self.pmtvb.addItem(self.roi)  # add ROIs to main image
-
-        #=====================================================================
         try:
             self.pmtvb.removeItem(self.click_poly_roi)
         except:
@@ -919,7 +873,6 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
                     ) ** (0.5)
                     num_of_Interpolation = distance_vector // self.averaged_uniform_step
 
-                    # Interpolation_remaining = distance_vector%self.averaged_uniform_step
                     self.Interpolation_remaining_fornextround = (
                         self.averaged_uniform_step
                         * (
@@ -995,10 +948,10 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
                     if self.Interpolation_remaining_fornextround != 0:
                         self.Interpolation_remaining_fornextround_x = Interpolation_x_diff / (
                             distance_vector / self.Interpolation_remaining_fornextround
-                        )  # (self.Interpolation_remaining_fornextround/distance_vector)*Interpolation_x_diff
+                        )
                         self.Interpolation_remaining_fornextround_y = Interpolation_y_diff / (
                             distance_vector / self.Interpolation_remaining_fornextround
-                        )  # (self.Interpolation_remaining_fornextround/distance_vector)*Interpolation_y_diff
+                        )
                     else:
                         self.Interpolation_remaining_fornextround_x = 0
                         self.Interpolation_remaining_fornextround_y = 0
@@ -1092,8 +1045,6 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
                         distance_vector - self.Interpolation_remaining_fornextround
                     ) // self.averaged_uniform_step
 
-                    # self.Interpolation_remaining_fornextround = self.averaged_uniform_step*\
-                    # (1-((distance_vector-self.Interpolation_remaining_fornextround)/self.averaged_uniform_step-num_of_Interpolation))
                     self.Interpolation_remaining_fornextround_x = (
                         self.Interpolation_remaining_fornextround / distance_vector
                     ) * Interpolation_x_diff
@@ -1200,36 +1151,6 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
                                           self.handle_viewbox_coordinate_position_array_expanded_x,
                                           self.handle_viewbox_coordinate_position_array_expanded_y)
 
-        # print(current_stacked_voltage_signals)
-
-        # stacked_voltage_signals_length_hori = len(current_stacked_voltage_signals[1])
-
-        # try:
-        #     # Setting the starting point
-        #     # starting_point_index = np.argmax(current_stacked_voltage_signals[1,:]) # Set lowest point in view as start
-
-        #     starting_point_index = np.where(np.all(current_stacked_voltage_signals == np.array(self.starting_point), axis = 0))[0][0]
-
-        #     # Set two parts
-        #     moving_forward_part = current_stacked_voltage_signals[:,\
-        #                                                           starting_point_index:stacked_voltage_signals_length_hori]
-        #     moving_backward_part = current_stacked_voltage_signals[:,\
-        #                                                           0:starting_point_index]
-        #     # Create container
-        #     resequenced_stacked_voltage_signals = np.zeros((current_stacked_voltage_signals.shape[0],\
-        #                                                     current_stacked_voltage_signals.shape[1]))
-        #     # Fill in container with first part and 2nd part
-        #     resequenced_stacked_voltage_signals[:,\
-        #                                         0:len(moving_forward_part[1])] \
-        #         = moving_forward_part
-
-        #     resequenced_stacked_voltage_signals[:,\
-        #                                         len(moving_forward_part[1]):stacked_voltage_signals_length_hori] \
-        #         = moving_backward_part
-        # except:
-        #     print("Fail to find starting point.")
-        #     resequenced_stacked_voltage_signals = current_stacked_voltage_signals
-
         resequenced_stacked_voltage_signals = current_stacked_voltage_signals
         print(resequenced_stacked_voltage_signals)
 
@@ -1307,7 +1228,6 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
                     Interpolation_temp,
                     axis=0,
                 )
-                # self.handle_scene_coordinate_position_array_expanded=np.delete(self.handle_scene_coordinate_position_array_expanded, 0, 0)
 
         # Interpolation between last and first
         Interpolation_x_diff = (
@@ -1462,10 +1382,6 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
         constants = HardwareConstants()
         speedGalvo = constants.maxGalvoSpeed  # Volt/s
         aGalvo = constants.maxGalvoAccel  # Acceleration galvo in volt/s^2
-        # print(np.amax(abs(contour_x_speed)))
-        # print(np.amax(abs(contour_y_speed)))
-        # print(np.amax(abs(contour_x_acceleration)))
-        # print(np.amax(abs(contour_y_acceleration)))
 
         print(
             str(np.mean(abs(contour_x_speed)))
@@ -1513,52 +1429,6 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
             self.final_stacked_voltage_signals[1],
         )
 
-    # def generate_contour_for_waveform(self):
-    #     self.contour_time = int(self.textbox1L.value())
-    #     self.time_per_contour = (
-    #         1 / int(self.contour_samprate.value()) * 1000
-    #     ) * self.contour_point_number
-    #     repeatnum_contour = int(self.contour_time / self.time_per_contour)
-    #     self.repeated_contoursamples_1 = np.tile(
-    #         self.handle_viewbox_coordinate_position_array_expanded_x, repeatnum_contour
-    #     )
-    #     self.repeated_contoursamples_2 = np.tile(
-    #         self.handle_viewbox_coordinate_position_array_expanded_y, repeatnum_contour
-    #     )
-
-    #     self.handle_viewbox_coordinate_position_array_expanded_forDaq_waveform = (
-    #         np.vstack((self.repeated_contoursamples_1, self.repeated_contoursamples_2))
-    #     )
-
-    #     return self.handle_viewbox_coordinate_position_array_expanded_forDaq_waveform
-
-    # def generate_galvos_contour_graphy(self):
-
-    #     self.xlabelhere_galvos = (
-    #         np.arange(
-    #             len(
-    #                 self.handle_viewbox_coordinate_position_array_expanded_forDaq_waveform[
-    #                     1, :
-    #                 ]
-    #             )
-    #         )
-    #         / self.Daq_sample_rate_pmt
-    #     )
-    #     self.PlotDataItem_galvos = PlotDataItem(
-    #         self.xlabelhere_galvos,
-    #         self.handle_viewbox_coordinate_position_array_expanded_forDaq_waveform[
-    #             1, :
-    #         ],
-    #     )
-    #     self.PlotDataItem_galvos.setDownsampling(auto=True, method="mean")
-    #     self.PlotDataItem_galvos.setPen("w")
-
-    #     self.pw.addItem(self.PlotDataItem_galvos)
-    #     self.textitem_galvos = pg.TextItem(text="Contour", color=("w"), anchor=(1, 1))
-    #     self.textitem_galvos.setPos(0, 5)
-    #     self.pw.addItem(self.textitem_galvos)
-
-
     def start_Zstack_scanning(self):
         """
         Create the stack scanning instance and run.
@@ -1597,17 +1467,6 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
         """Stop the seal test."""
         self.pmtTest_contour.aboutToQuitHandler()
         self.MessageToMainGUI("---!! Contour stopped !!---" + "\n")
-
-    #    def closeEvent(self, event):
-    #
-    #        QtWidgets.QApplication.quit()
-    #        event.accept()
-    '''
-    def closeEvent(self, event):
-        """On closing the application we have to make sure that the measuremnt
-        stops and the device gets freed."""
-        self.stopMeasurement()
-    '''
 
 
 if __name__ == "__main__":

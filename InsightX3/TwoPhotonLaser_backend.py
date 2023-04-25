@@ -360,45 +360,6 @@ if __name__ == "__main__":
 
         targetwavelength = 1280
 
-        #    QueryWatchDog = QueryLaserStatusThread(Laserinstance, 1.1)
-        #
-        #    QueryWatchDog.start()
-        #    time.sleep(1)
-        #    print(QueryWatchDog.Status_wavelength)
-        #
-        #    time.sleep(1)
-        #    QueryWatchDog.stopflag = True
-        #    time.sleep(1)
-        #    Laserinstance.SetWavelength(1280)
-        #    time.sleep(1)
-        #    #Restart query thread
-        #    QueryWatchDog.stopflag = False
-        #    QueryWatchDog.start()
-        #    time.sleep(1)
-        #    print(QueryWatchDog.Status_wavelength)
-        #    time.sleep(1)
-        #
-        #    QueryWatchDog.stopflag = True
-        #    time.sleep(2)
-        #    print(QueryWatchDog.isRunning())
-
-        #    #--------------------Wait for laser to initialize--------------------------
-        #    if 'Laser state:Initializing' in QueryWatchDog.Status_list:
-        #        while 'Laser state:Initializing' in QueryWatchDog.Status_list:
-        #            time.sleep(0.5)
-        #
-        #    if 'Laser state:Ready' in QueryWatchDog.Status_list:
-        #
-        #        """
-        #        Begin issuing a series of READ:PCTWarmedup? queries and wait for the laser to return “100” to indicate the system is fully warmed up.
-        #        """
-        #        warmupstatus = 0
-        #        while int(warmupstatus) != 100:
-        #            try:
-        #                warmupstatus = Laserinstance.QueryWarmupTime()
-        #                time.sleep(0.6)
-        #            except:
-        #                time.sleep(0.6)
 
         Status_list = Laserinstance.QueryStatus()
 

@@ -746,42 +746,6 @@ class PowerBar(QtWidgets.QWidget):
 
 
 if __name__ == "__main__":
-    # =============================================================================
-    #     import sys
-    #
-    #     app = QtWidgets.QApplication(sys.argv)
-    #
-    #     w = QtWidgets.QWidget()
-    #     lay = QtWidgets.QVBoxLayout(w)
-    #
-    #     container = roundQGroupBox(title = 'HaHA', background_color = 'azure')
-    #     lay2 = QtWidgets.QVBoxLayout(container)
-    #     lay.addWidget(container)
-    #
-    # #    for i in range(2):
-    # #        button = connectButton()
-    # #        button.setText("Kinase")
-    # #        lay2.addWidget(button)
-    #
-    #     bar = PowerBar(["#49006a", "#7a0177", "#ae017e", "#dd3497", "#f768a1", "#fa9fb5", "#fcc5c0", "#fde0dd"])
-    #     bar.setBarPadding(2)
-    #     bar.setBarSolidPercent(0.9)
-    #     bar.setBackgroundColor('gray')
-    #
-    #     bar._dial.sliderReleased.connect(lambda:print(bar._dial.value()))
-    #
-    #     lay2.addWidget(bar)
-    #     button = connectButton()
-    #     lay2.addWidget(button)
-    #
-    #     def closeEvent(self, event):
-    #         QtWidgets.QApplication.quit()
-    #         event.accept()
-    #
-    #     w.resize(640, 480)
-    #     w.show()
-    #     app.exec_()
-    # =============================================================================
     import sys
 
     app = QtWidgets.QApplication(sys.argv)

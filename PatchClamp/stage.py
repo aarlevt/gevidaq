@@ -97,25 +97,6 @@ class LudlStage:
 
             return True
 
-        # time.sleep(1)
-        # xPosition, yPosition = self.getPos()
-        # print('current pos: x:{}, y{}'.format(xPosition, yPosition))
-        # trial_num = 0
-        # while  xPosition != x or yPosition != y:
-        #     print('Failed to move, try again.')
-        #     with serial.Serial(self.address, self.baudrate, stopbits = serial.STOPBITS_TWO) as stage:
-        #         stage.write(command.encode())
-        #         stage.flush()
-        #         stage.close()
-        #         return True
-
-        #     time.sleep(1)
-        #     xPosition, yPosition = self.getPos()
-
-        #     trial_num += 1
-        #     if trial_num > 6:
-        #         break
-
     @Try_until_Success
     def moveVec(self, x, y):
         """
@@ -214,10 +195,6 @@ if __name__ == "__main__":
     step = 1500
     for i in range(10): # Repeat twice
         print('start moving..')
-        # for _ in range(2):
-        #     ludlStage.moveAbs(i * step,i * step)
-
-        #     time.sleep(0.5)
         ludlStage.moveAbs(i * step,i * step)
 
         time.sleep(1)

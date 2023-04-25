@@ -121,38 +121,6 @@ class FocusFinder:
             degree_of_focus_list.append(degree_of_focus)
         print(degree_of_focus_list)
 
-        # try:
-        #     interpolated_fitted_curve = ProcessImage.gaussian_fit(degree_of_focus_list)
-
-        #     # Generate the inpterpolated new focus position axis.
-        #     x_axis_new = np.linspace(
-        #         lower_position, upper_position, len(interpolated_fitted_curve)
-        #     )
-
-        #     # Generate a dictionary and find the position where has the highest focus degree.
-        #     max_focus_pos = dict(zip(interpolated_fitted_curve, x_axis_new))[
-        #         np.amax(interpolated_fitted_curve)
-        #     ]
-
-        #     if True:  # Plot the fitting.
-        #         plt.plot(
-        #             sample_positions,
-        #             np.asarray(degree_of_focus_list),
-        #             "b+:",
-        #             label="data",
-        #         )
-        #         plt.plot(x_axis_new, interpolated_fitted_curve, "ro:", label="fit")
-        #         plt.legend()
-        #         plt.title("Fig. Fit for focus degree")
-        #         plt.xlabel("Position")
-        #         plt.ylabel("Focus degree")
-        #         plt.show()
-
-        #     max_focus_pos = round(max_focus_pos, 6)
-        #     print(max_focus_pos)
-        #     self.pi_device_instance.move(max_focus_pos)
-        #     # max_focus_pos_focus_degree = self.evaluate_focus(round(max_focus_pos, 6))
-        # except:
         print("Fitting failed. Find max in the list.")
 
         max_focus_pos = sample_positions[
@@ -321,59 +289,8 @@ class FocusFinder:
 
         return degree_of_focus
 
-    # def explore(self, image):
-
-    #     # Calculate the focus degree.
-    #     self.current_degree_of_focus = ProcessImage.variance_of_laplacian(image)
-
-    #     # If a turning point is met (except first attempt at wrong direction),
-    #     # starts to bisection.
-    #     if self.turning_point >= 1 and self.steps_taken != 1:
-    #         self.steps_taken_after_turning =
-
-    #     self.init_search_range *= (1/2) ** (self.steps_taken_after_turning)
-
-    #     # if focus degree increases, move one step forwards.
-    #     if self.current_degree_of_focus > self.previous_degree_of_focus:
-    #         PIMotor.move(self.pi_device_instance.pidevice, self.current_pos + self.init_search_range)
-
-    #     else: # else move downwards.
-
-    #         self.init_search_range *= -1
-
-    #         # If the first attempt goes towards the wrong direction,
-    #         # turn around and move one step the other way.
-    #         if self.steps_taken == 1 and self.turning_point == 1:
-    #             # Move two step downwards.
-    #             PIMotor.move(self.pi_device_instance.pidevice, self.current_pos + 2 * self.init_search_range)
-    #             # Clean up trace, make sure the correct condition for first attempt.
-    #             self.steps_taken = 0
-    #             self.turning_point = 0
-
-    #         else: # In normal bisection situation.
-    #             PIMotor.move(self.pi_device_instance.pidevice, self.current_pos + self.init_search_range)
-    #             # Add one turning point.
-    #             self.turning_point += 1
-
-    #     self.current_pos = self.pi_device_instance.GetCurrentPos()
-    #     # Cast the current focus degree to previous for next round.
-    #     self.previous_degree_of_focus = self.current_degree_of_focus
-
-    #     # Update total number of steps.
-    #     self.steps_taken += 1
-
 
 if __name__ == "__main__":
-    # ins = FocusFinder()
-    # ins.total_step_number = 7
-    # ins.init_search_range = 0.013
-    # ins.gaussian_fit() # will return false if there's no cell in view.
-    # ins.pi_device_instance.CloseMotorConnection()
-
-    # ins = FocusFinder(
-    #     source_of_image="Camera",
-    #     imaging_conditions={"488AO": 3, "exposure_time": 0.005},
-    # )
     ins = FocusFinder()
     ins.total_step_number = 7
     ins.init_search_range = 0.012

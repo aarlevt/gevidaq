@@ -43,20 +43,6 @@ class ProcessImageML:
         # self.config.WeigthPath = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Martijn\SpikingHek.h5"  # TODO hardcoded path
         self.config.WeigthPath = WeigthPath
 
-        # These four setting use the old configurations. The results are slightly different due to scaling.
-        # However the new version will prevent any OOM erros from occuring
-        # config.IMAGE_MIN_SCALE = 2.0
-        # config.IMAGE_MIN_DIM = 1024
-        # config.IMAGE_MAX_DIM = 1024
-        # config.IMAGE_RESIZE_MODE = "pad64"
-
-        # If you use spiking hek images, uncomment the next lines, and use:
-        # Image = skimage.transform.resize(Image,[1024,1024],preserve_range=True).astype(Image.dtype)
-        # config.IMAGE_RESIZE_MODE = "square"
-        # config.IMAGE_MIN_DIM = 1024
-        # config.IMAGE_MAX_DIM = 1024
-        # config.IMAGE_MIN_SCALE = 1
-
         # Create model
         self.Detector = modellib(self.config, "inference", model_dir=self.config.LogDir)
         self.Detector.compileModel()
@@ -357,19 +343,6 @@ class ProcessImageML:
                         # Set back to uint
                         Rawimage = Rawimage.astype(np.uint16)
 
-                        # camera_dark_level = 100
-
-                        # # Normalize to the illumination intensity
-                        # Rawimage = np.uint16(Rawimage \
-                        #         / ((background_image - camera_dark_level)\
-                        #             /(np.amin(background_image) - camera_dark_level)))
-
-                    #                    if ClearImgBef == True:
-                    #                        # Clear out junk parts to make it esaier for ML detection.
-                    #                        RawimageCleared = self.preProcessMLimg(Rawimage, smallest_size=300, lowest_region_intensity=0.16)
-                    #                    else:
-                    #                        RawimageCleared = Rawimage.copy()
-
                     image = ProcessImage.convert_for_MaskRCNN(Rawimage)
 
                     # Run the detection on input image.
@@ -400,9 +373,6 @@ class ProcessImageML:
                         plt.savefig(
                             fname=fig_name, dpi=200, pad_inches=0.0, bbox_inches="tight"
                         )
-
-                    # segmentationImg = Image.fromarray(fig) #generate an image object
-                    # segmentationImg.save(os.path.join(folder, 'MLimages_{}\{}.tif'.format(round_num, ImgNameInfor)))#save as tif
 
                     # Use retrieveDataFromML from ImageProcessing.py to extract numbers.
                     if self.cell_counted_inRound == 0:
@@ -564,13 +534,6 @@ class ProcessImageML:
 
             if background_substraction == True:
                 Rawimage = np.abs(Rawimage - background_image).astype(np.uint16)
-
-                # camera_dark_level = 100
-
-                # # Normalize to the illumination intensity
-                # Rawimage = np.uint16(Rawimage \
-                #         / ((background_image - camera_dark_level)\
-                #            /(np.amin(background_image) - camera_dark_level)))
 
             # Analyze each image
             # Run the detection on input image.
@@ -793,81 +756,15 @@ if __name__ == "__main__":
     tag_round = "Round1"
     lib_round = "Round2"
 
-    # ProcessML = ProcessImageML(WeigthPath = r"C:\MaskRCNN\MaskRCNNGit\MaskRCNN\MaskRCNN\Data\Xin_training_200epoch_2021_1_20\cell20210121T2259\mask_rcnn_cell_0200.h5")
-    # ProcessML = ProcessImageML(WeigthPath = r"C:\MaskRCNN\MaskRCNNGit\MaskRCNN\MaskRCNN\Data\Xin_training\cell20210107T1533\mask_rcnn_cell_0050.h5")
     ProcessML = ProcessImageML(
         WeigthPath=r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Martijn\SpikingHek.h5"  # TODO hardcoded path
     )
-    # ProcessML = ProcessImageML()
-    # ProcessML.config.WeigthPath = r"C:\MaskRCNN\MaskRCNNGit\MaskRCNN\MaskRCNN\Data\Xin_training\cell20210107T1533\mask_rcnn_cell_0050.h5"
     print(ProcessML.config.WeigthPath)
     # 5.6s for each detection
     img_name = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\People\Xin Meng\paperwork\Dissertation\Figures\Chapter 3\DMD ML application\FOV3\raw_2021-10-06_12-00-44.tif"  # TODO hardcoded path
     img = skimage.io.imread(img_name)
-    # for _ in range(5):
-    #     starttime = time.time()
-    #     ProcessML.DetectionOnImage(img, show_result = True)
-    #     endtime = time.time()
-    #     print(endtime-starttime)
 
     cell_data, MLresults = ProcessML.analyze_single_image(img, show_each_cell=True)
 
     cell_index = 0
     MLresults['masks'][:,:,cell_index]
-    # ProcessML.DetectionOnImage(img, show_result = True)
-
-    # cell_data = ProcessML.analyze_images_in_folder\
-    #     (folder=r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Delizzia\2021-02-25 Helios WT screening 1000ng 532nm\pos3', generate_zmax = True)  # TODO hardcoded path
-
-    # file = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\ML images\NewAnnotationDaanPart2\Camera\Spiking HEK\1.png"  # TODO hardcoded path
-    # ProcessML.Generate_connection_map(file)
-
-
-# import json
-# from skimage.draw import polygon
-# import numpy as np
-# import matplotlib.pyplot as plt
-# import cv2
-# from skimage.io import imread
-# f = open ("M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data/ML images/FishZehra/V/Validation/fish1jr.json")  # TODO hardcoded path
-
-# data = json.load(f)
-# cells = data["shapes"]
-
-# celll = cells[0]
-# celll_x = []
-# celll_y = []
-
-# for coord in celll["points"]:
-#     celll_x.append(coord[0])
-#     celll_y.append(coord[1])
-
-# yy, xx = polygon(celll_x, celll_y)
-# image = np.zeros((500,500))
-# image [xx,yy] =1
-# fig, ax = plt.subplots()
-# ax.imshow(image)
-# plt.show()
-
-# results = ProcessML.DetectionOnImage(img, show_result = True)
-
-# results_json = json.dumps(results['masks'])
-# #with open(r"M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data/ML images/FishZehra/V/Validation/fish1jr.png") as f:  # TODO hardcoded path
-# #    f.write(results_json)
-
-
-
-
-# results_json = json.dumps(results['masks'])
-# with open(r"M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data/ML images/FishZehra/V/Validation/fish1jr.png") as f:  # TODO hardcoded path
-#     f.write(results_json)
-# masks = results['masks']
-# for i in range(len(masks)):
-#     mask_image = masks[:,:,i]
-
-#     path = r'M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\People\Zehra Kaynak'  # TODO hardcoded path
-#     img_name = 'waka' + str(i) + '.png'
-#     cv2.imwrite(os.path.join(path , img_name), mask_image*255)
-#     cv2.waitKey(0)
-
-

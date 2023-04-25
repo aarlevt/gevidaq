@@ -38,7 +38,6 @@ class InsightWidgetUI(QWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setFont(QFont("Arial"))
-        #        self.Laserinstance = TwoPhotonExecutor(address = 'COM11', WatchdogTimer = 3, WatchdogFreq = 1.1)
 
         self.resize(265, 150)
         self.setWindowTitle("Insight UI")
@@ -54,30 +53,21 @@ class InsightWidgetUI(QWidget):
         BasicLaserEventContainer = QGroupBox()
         self.BasicLaserEventLayout = QGridLayout()
 
-        #        self.Initialize_laserButton = QtWidgets.QPushButton('Connect')
-        #        self.Initialize_laserButton.setCheckable(True)
-        #        self.Initialize_laserButton.clicked.connect(self.Initialize_laser)
-        #        self.BasicLaserEventLayout.addWidget(self.Initialize_laserButton, 0, 0)
-
         PumpLabel = QLabel("Pump diode:")
         self.BasicLaserEventLayout.addWidget(PumpLabel, 2, 0)
-        #        PumpLabel.setAlignment(Qt.AlignRight)
 
         self.LaserSwitch = StylishQT.MySwitch("ON", "green", "OFF", "red", width=32)
         self.LaserSwitch.clicked.connect(self.LaserSwitchEvent)
         self.BasicLaserEventLayout.addWidget(self.LaserSwitch, 2, 1)
-        #        self.LaserSwitch.setEnabled(False)
 
         ShutterLabel = QLabel("Shutter:")
         self.BasicLaserEventLayout.addWidget(ShutterLabel, 1, 0)
-        #        ShutterLabel.setAlignment(Qt.AlignRight)
 
         self.ShutterSwitchButton = StylishQT.MySwitch(
             "ON", "green", "OFF", "red", width=32
         )
         self.ShutterSwitchButton.clicked.connect(self.ShutterSwitchEvent)
         self.BasicLaserEventLayout.addWidget(self.ShutterSwitchButton, 1, 1)
-        #        self.ShutterSwitchButton.setEnabled(False)
 
         self.ModeSwitchButton = StylishQT.MySwitch(
             "ALIGN MODE", "yellow", "RUNNING MODE", "cyan", width=76
@@ -95,7 +85,6 @@ class InsightWidgetUI(QWidget):
         self.SWavelengthTextbox.setKeyboardTracking(False)
         self.BasicLaserEventLayout.addWidget(self.SWavelengthTextbox, 1, 3)
         self.SWavelengthTextbox.valueChanged.connect(self.setwavelegth)
-        #        self.SWavelengthTextbox.setEnabled(False)
 
         self.WatchdogTimerTextbox = QSpinBox(self)
         self.WatchdogTimerTextbox.setMinimum(0)
@@ -106,7 +95,6 @@ class InsightWidgetUI(QWidget):
         self.BasicLaserEventLayout.addWidget(self.WatchdogTimerTextbox, 2, 3)
         self.BasicLaserEventLayout.addWidget(QLabel("Watch dog timer:"), 2, 2)
         self.WatchdogTimerTextbox.valueChanged.connect(self.setWatchdogTimer)
-        #        self.WatchdogTimerTextbox.setEnabled(False)
 
         BasicLaserEventContainer.setLayout(self.BasicLaserEventLayout)
         self.layout.addWidget(BasicLaserEventContainer, 1, 0)
@@ -123,29 +111,13 @@ class InsightWidgetUI(QWidget):
         self.layout.addWidget(LaserStatusContainer, 0, 0)
 
         self.Initialize_laser()
-        # =============================================================================
-        #         Quit event panel
-        # =============================================================================
 
-    #        LaserQuitContainer = QGroupBox('Exit')
-    #        self.LaserQuitLayout = QGridLayout()
-    #
-    #        QuitButtonStandby = QPushButton('Stand by', self)
-    #        QuitButtonStandby.clicked.connect(self.QuitStandby)
-    #        self.LaserQuitLayout.addWidget(QuitButtonStandby, 0, 0)
-    #
-    #        QuitButtonStandby = QPushButton('Hibernate', self)
-    #        QuitButtonStandby.clicked.connect(self.QuitHibernate)
-    #        self.LaserQuitLayout.addWidget(QuitButtonStandby, 0, 1)
-    #
-    #        LaserQuitContainer.setLayout(self.LaserQuitLayout)
-    #        self.layout.addWidget(LaserQuitContainer, 2, 0)
 
     def Initialize_laser(self):
         # =============================================================================
         #         Initialization
         # =============================================================================
-        self.Laserinstance = InsightX3("COM11")
+        self.Laserinstance = InsightX3("COM11")  # TODO hardcoded port
 
         self.WatchdogTimerTextbox.setEnabled(True)
         self.SWavelengthTextbox.setEnabled(True)
@@ -159,15 +131,11 @@ class InsightWidgetUI(QWidget):
             self.SWavelengthTextbox.setValue(int(self.current_wavelength))
             time.sleep(0.3)
             self.pill2kill = threading.Event()
-            # self.Status_watchdog_thread = threading.Thread(target = self.Status_watchdog, args=(self.Status_queue, querygap), daemon = True)
-            # self.Status_watchdog_thread.start()
             self.Status_list = self.Laserinstance.QueryStatus()
             self.LaserStatuslabel.setText(str(self.Status_list))
         except:
             self.LaserStatuslabel.setText("Laser not connected.")
 
-    #        self.LaserSwitch.setEnabled(True)
-    #        self.ShutterSwitchButton.setEnabled(True)
 
     """
     # =============================================================================
@@ -235,33 +203,6 @@ class InsightWidgetUI(QWidget):
 
         time.sleep(0.5)
         self.watchdog_flag = True
-
-    #        self.Status_watchdog_thread.event.set()
-    #
-    #        while True:
-    #            if self.Status_watchdog_thread.event.is_set():
-    #                #-------------Initialize laser--------------
-    #                if self.warmupstatus == False:
-    #
-    #                    warmupstatus = 0
-    #                    while int(warmupstatus) != 100:
-    #                        try:
-    #                            warmupstatus = self.Laserinstance.QueryWarmupTime()
-    #                            time.sleep(0.6)
-    #                        except:
-    #                            time.sleep(0.6)
-    #
-    #                    if int(warmupstatus) == 100:
-    #                        self.warmupstatus = True
-    #                        print('Laser fully warmed up.')
-    #                        Current_status = Status_queue.get()
-    #                        if 'Laser state:Ready' in Current_status:
-    #                            self.Laserinstance.TurnLaserON()
-    #                        break
-    #            else:
-    #                time.sleep(0.5)
-    #
-    #        self.Status_watchdog_thread.event.clear()
 
     def TurnOffLaser(self):
         self.watchdog_flag = False

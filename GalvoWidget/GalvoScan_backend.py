@@ -12,7 +12,6 @@ from nidaqmx.stream_readers import AnalogSingleChannelReader
 import tifffile as skimtiff
 import time
 import os
-#import matplotlib.pyplot as plt
 
 import numpy as np
 from ..NIDAQ import wavegenerator
@@ -288,9 +287,6 @@ class PMT_zscan:
 
         # Get the image.
         self.galvo_image = self.RasterScanins.run()
-        # plt.figure()
-        # plt.imshow(self.galvo_image)
-        # plt.show()
 
         meta_infor = "index_" + str(self.each_pos_index) + "_pos_" + str(obj_position)
 
@@ -303,14 +299,6 @@ class PMT_zscan:
 
 
 if __name__ == "__main__":
-    #import matplotlib.pyplot as plt
-
-    # galvo = RasterScan(Daq_sample_rate = 500000, edge_volt = 5)
-    # image = galvo.run()
-    # plt.figure()
-    # plt.imshow(image)
-    # plt.show()
-
     z_stack = PMT_zscan(
         r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Xin\2021-04-18 Filter bleed through\New folder",  # TODO hardcoded path
         z_depth=0.012,

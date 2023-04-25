@@ -23,7 +23,7 @@ from ..InsightX3.TwoPhotonLaser_backend import InsightX3
 from ..HamamatsuCam.HamamatsuActuator import CamActuator
 from ..ImageAnalysis.ImageProcessing import ProcessImage
 
-# ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+
 class ScanningExecutionThread(QThread):
 
     ScanningResult = pyqtSignal(
@@ -103,11 +103,6 @@ class ScanningExecutionThread(QThread):
         if len(self.RoundQueueDict["InsightEvents"]) != 0:
             self.Laserinstance = InsightX3("COM11")
             try:
-                # querygap = 1.1
-                # self.Laserinstance.SetWatchdogTimer(0) # Disable the laser watchdog!
-                #                Status_watchdog_thread = threading.Thread(target = self.Status_watchdog, args=[querygap], daemon=True)
-                #                Status_watchdog_thread.start()
-                # time.sleep(1)
                 # -------------Initialize laser--------------
                 self.watchdog_flag = False
                 time.sleep(0.5)
@@ -263,10 +258,6 @@ class ScanningExecutionThread(QThread):
                     ColumnIndex = self.coord_array["col"] + ScanningGridOffset_Col
 
                     try:
-                        # for _ in range(2): # Repeat twice
-                        #     self.ludlStage.moveAbs(RowIndex,ColumnIndex) # Row/Column indexs of np.array are opposite of stage row-col indexs.
-                        #     time.sleep(1)
-
                         move_executed = False
                         trial_number = 0
 
@@ -897,7 +888,6 @@ class ScanningExecutionThread(QThread):
                                         coordinate
                                     )
                                 )
-                        # self.RoundCoordsDict['CoordsPackage_{}'.format(EachRound + 2)][EachCoord]['focus_position'] = self.auto_focus_position
                     except:  # If it's already the last round, skip.
                         pass
 
@@ -922,12 +912,6 @@ class ScanningExecutionThread(QThread):
                             self.previous_auto_focus_position
                         )
                     )
-                    # =================Pass on auto-focus positions to coming rounds.================
-                    # try:
-                    #     # Record the position, try to write it in the NEXT round dict.
-                    #     self.RoundCoordsDict['CoordsPackage_{}'.format(EachRound + 2)][EachCoord]['focus_position'] = self.previous_auto_focus_position
-                    # except:
-                    #     pass
 
                     # Generate position list.
                     ZStacklinspaceStart = (
@@ -938,31 +922,6 @@ class ScanningExecutionThread(QThread):
                         self.previous_auto_focus_position
                         + (ZStackNum - math.floor(ZStackNum / 2) - 1) * ZStackStep
                     )
-
-                    # self.previous_auto_focus_position = self.auto_focus_position
-                    # print("=====================Move to last recorded position=================")
-                    # self.pi_device_instance.move(self.previous_auto_focus_position)
-                    # time.sleep(0.2)
-
-                    # instance_FocusFinder = FocusFinder(motor_handle = self.pi_device_instance)
-                    # print("--------------Start auto-focusing-----------------")
-                    # self.auto_focus_position = instance_FocusFinder.bisection()
-
-                    # try:
-                    #     if self.auto_focus_position[0] == False: # If there's no cell in FOV
-                    #     # Skip?  mid_position = [False, self.current_pos]
-                    #         self.auto_focus_position = self.auto_focus_position[1]
-                    # except:
-                    #     pass
-
-                    # print("--------------End of auto-focusing----------------")
-                    # time.sleep(1)
-
-                    # # Record the position, try to write it in the NEXT round dict.
-                    # try:
-                    #     self.RoundCoordsDict['CoordsPackage_{}'.format(EachRound + 2)][EachCoord]['focus_position'] = self.auto_focus_position
-                    # except:# If it's already the last round, skip.
-                    #     pass
 
                 # Generate the position list, for none-auto-focus coordinates they will use the same list variable.
                 self.ZStackPosList = np.linspace(
@@ -1208,35 +1167,6 @@ class ScanningExecutionThread(QThread):
 
         print("ProcessData executed.")
 
-    # def ProcessData(self, data_waveformreceived):
-    #     print('ZStackOrder is:'+str(self.ZStackOrder)+'numis_'+str(self.ZStackNum))
-    #     self.adcollector.save_as_binary(self.scansavedirectory)
-
-    #     self.channel_number = len(data_waveformreceived)
-
-    #     self.data_collected_0 = data_waveformreceived[0]*-1
-    #     self.data_collected_0 = self.data_collected_0[0:len(self.data_collected_0)-1]
-    #     print(len(self.data_collected_0))
-
-    #     if self.channel_number == 1:
-    #         if 'Vp' in self.readinchan:
-    #             pass
-    #         elif 'Ip' in self.readinchan:
-    #             pass
-    #         elif 'PMT' in self.readinchan:  # repeatnum, PMT_data_index_array, averagenum, ScanArrayXnum
-
-    #             # Reconstruct the image from np array and save it.
-    #             self.PMT_image_processing()
-
-    #     elif self.channel_number == 2:
-    #         if 'PMT' not in self.readinchan:
-    #             pass
-    #         elif 'PMT' in self.readinchan:
-
-    #             self.PMT_image_processing()
-
-    #     print('ProcessData executed.')
-
     def PMT_image_processing(self):
         """
         Reconstruct the image from np array and save it.
@@ -1277,7 +1207,6 @@ class ScanningExecutionThread(QThread):
                     elif Value_yPixels == 256:
                         self.PMT_image_reconstructed = self.PMT_image_reconstructed[:, 25:525]
                   # Crop size based on: M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Xin\2019-12-30 2p beads area test 4um
-                # self.PMT_image_reconstructed = self.PMT_image_reconstructed[:, 70:326] # for 256*256 images
 
                 #=== Evaluate the focus degree of re-constructed image. =======
                 self.FocusDegree_img_reconstructed = ProcessImage.local_entropy(
@@ -1322,13 +1251,6 @@ class ScanningExecutionThread(QThread):
                     self.PMT_image_reconstructed, cmap=plt.cm.gray
                 )  # For reconstructed image we pull out the first layer, getting 2d img.
                 plt.show()
-
-                # ---------------------------------------------For multiple images in one z pos, Stack the arrays into a 3d array--------------------------------------------------------------------------
-                # if imageSequence == 0:
-                #     self.PMT_image_reconstructed_stack = self.PMT_image_reconstructed[np.newaxis, :, :] # Turns into 3d array
-                # else:
-                #     self.PMT_image_reconstructed_stack = np.concatenate((self.PMT_image_reconstructed_stack, self.PMT_image_reconstructed[np.newaxis, :, :]), axis=0)
-                #     print(self.PMT_image_reconstructed_stack.shape)
 
                 # ---------------------------------------------Calculate the z max projection-----------------------------------------------------------------------
                 if self.repeatnum == 1:  # Consider one repeat image situlation
