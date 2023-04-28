@@ -26,7 +26,6 @@ from .ServoMotor import Servo
 
 
 class AOTFWidgetUI(QWidget):
-
     #    waveforms_generated = pyqtSignal(object, object, list, int)
     #    SignalForContourScanning = pyqtSignal(int, int, int, np.ndarray, np.ndarray)
     #    MessageBack = pyqtSignal(str)
@@ -75,19 +74,27 @@ class AOTFWidgetUI(QWidget):
         self.slider640.setSingleStep(1)
         self.line640 = QLineEdit(self)
         self.line640.setFixedWidth(46)
-        self.slider640.sliderReleased.connect(lambda: self.updatelinevalue(640))
+        self.slider640.sliderReleased.connect(
+            lambda: self.updatelinevalue(640)
+        )
         self.slider640.sliderReleased.connect(
             lambda: self.setChannelValue("640AO")
         )
         self.line640.returnPressed.connect(lambda: self.updateslider(640))
 
         self.switchbutton_blankingAll = StylishQT.MySwitch(
-            "Blanking ON", "spring green", "Blanking OFF", "indian red", width=60
+            "Blanking ON",
+            "spring green",
+            "Blanking OFF",
+            "indian red",
+            width=60,
         )
         self.switchbutton_blankingAll.clicked.connect(
             lambda: self.setChannelSwitch("640blanking")
         )
-        self.AOTFcontrolLayout.addWidget(self.switchbutton_blankingAll, 0, 2, 1, 2)
+        self.AOTFcontrolLayout.addWidget(
+            self.switchbutton_blankingAll, 0, 2, 1, 2
+        )
 
         with Icons.Path("shutter.png") as path:
             self.shutter532Button = StylishQT.checkableButton(
@@ -102,7 +109,9 @@ class AOTFWidgetUI(QWidget):
         self.slider532.setSingleStep(1)
         self.line532 = QLineEdit(self)
         self.line532.setFixedWidth(46)
-        self.slider532.sliderReleased.connect(lambda: self.updatelinevalue(532))
+        self.slider532.sliderReleased.connect(
+            lambda: self.updatelinevalue(532)
+        )
         self.slider532.sliderReleased.connect(
             lambda: self.setChannelValue("532AO")
         )
@@ -124,7 +133,9 @@ class AOTFWidgetUI(QWidget):
         self.slider488.setSingleStep(1)
         self.line488 = QLineEdit(self)
         self.line488.setFixedWidth(46)
-        self.slider488.sliderReleased.connect(lambda: self.updatelinevalue(488))
+        self.slider488.sliderReleased.connect(
+            lambda: self.updatelinevalue(488)
+        )
         self.slider488.sliderReleased.connect(
             lambda: self.setChannelValue("488AO")
         )
@@ -142,7 +153,9 @@ class AOTFWidgetUI(QWidget):
             self.shutter488Button = StylishQT.checkableButton(
                 Icon_path=path, background_color="#C4DDDE"
             )
-        self.shutter488Button.clicked.connect(lambda: self.shutter_CW_action("488"))
+        self.shutter488Button.clicked.connect(
+            lambda: self.shutter_CW_action("488")
+        )
 
         self.AOTFcontrolLayout.addWidget(self.shutter640Button, 1, 4)
         self.AOTFcontrolLayout.addWidget(self.slider640, 1, 2)

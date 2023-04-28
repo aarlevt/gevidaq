@@ -34,9 +34,10 @@ from .pmt_thread import pmtimagingTest, pmtimagingTest_contour
 
 
 class PMTWidgetUI(QWidget):
-
     #    waveforms_generated = pyqtSignal(object, object, list, int)
-    SignalForContourScanning = pyqtSignal(int, int, int, np.ndarray, np.ndarray)
+    SignalForContourScanning = pyqtSignal(
+        int, int, int, np.ndarray, np.ndarray
+    )
     MessageBack = pyqtSignal(str)
 
     def __init__(self, *args, **kwargs):
@@ -79,7 +80,7 @@ class PMTWidgetUI(QWidget):
         self.pmt_roiwidget.resize(150, 150)
         self.pmt_roiwidget.addLabel("ROI", row=0, col=0)
 
-        self.pmtimageroiLayout.addWidget(self.pmt_roiwidget,0,0)
+        self.pmtimageroiLayout.addWidget(self.pmt_roiwidget, 0, 0)
         # --------------------------- create ROI ------------------------------
         self.vb_2 = self.pmt_roiwidget.addViewBox(
             row=1, col=0, lockAspect=True, colspan=1
@@ -118,7 +119,9 @@ class PMTWidgetUI(QWidget):
         pmtroiContainer.setLayout(self.pmtimageroiLayout)
 
         # ----------------------------Contour-----------------------------------
-        pmtContourContainer = StylishQT.roundQGroupBox(title="Contour selection")
+        pmtContourContainer = StylishQT.roundQGroupBox(
+            title="Contour selection"
+        )
         # pmtContourContainer.setFixedWidth(280)
         self.pmtContourLayout = QGridLayout()
 
@@ -129,7 +132,7 @@ class PMTWidgetUI(QWidget):
         self.contour_strategy.addItems(["Evenly between", "Uniform"])
         self.contour_strategy.setToolTip(
             "Even in-between: points evenly distribute inbetween handles; Uniform: evenly distribute regardless of handles"
-            )
+        )
         self.pmtContourLayout.addWidget(self.contour_strategy, 1, 1)
 
         self.pointsinContour = QSpinBox(self)
@@ -156,27 +159,43 @@ class PMTWidgetUI(QWidget):
         self.roi_index_spinbox.setSingleStep(1)
         self.pmtContourLayout.addWidget(self.roi_index_spinbox, 3, 1)
 
-        self.go_to_first_handle_button = StylishQT.GeneralFancyButton(label = "Go 1st point")
+        self.go_to_first_handle_button = StylishQT.GeneralFancyButton(
+            label="Go 1st point"
+        )
         self.go_to_first_handle_button.setFixedHeight(32)
         # self.pmtContourLayout.addWidget(self.go_to_first_handle_button, 4, 1)
         self.go_to_first_handle_button.clicked.connect(self.go_to_first_point)
-        self.go_to_first_handle_button.setToolTip("Set gavlo initial positions in advance")
+        self.go_to_first_handle_button.setToolTip(
+            "Set gavlo initial positions in advance"
+        )
 
-        ROI_interaction_tips = QLabel("Hover for tips. Key F:en/disable drawing ROI")
-        ROI_interaction_tips.setToolTip("Left drag moves the ROI\n\
+        ROI_interaction_tips = QLabel(
+            "Hover for tips. Key F:en/disable drawing ROI"
+        )
+        ROI_interaction_tips.setToolTip(
+            "Left drag moves the ROI\n\
 Left drag + Ctrl moves the ROI with position snapping\n\
 Left drag + Alt rotates the ROI\n\
 Left drag + Alt + Ctrl rotates the ROI with angle snapping\n\
 Left drag + Shift scales the ROI\n\
-Left drag + Shift + Ctrl scales the ROI with size snapping")
+Left drag + Shift + Ctrl scales the ROI with size snapping"
+        )
         self.pmtContourLayout.addWidget(ROI_interaction_tips, 4, 0, 1, 2)
 
-        self.regenerate_roi_handle_button = StylishQT.GeneralFancyButton(label = "Regain ROI")
+        self.regenerate_roi_handle_button = StylishQT.GeneralFancyButton(
+            label="Regain ROI"
+        )
         self.regenerate_roi_handle_button.setFixedHeight(32)
-        self.pmtContourLayout.addWidget(self.regenerate_roi_handle_button, 3, 2)
-        self.regenerate_roi_handle_button.clicked.connect(self.regenerate_roi_handles)
+        self.pmtContourLayout.addWidget(
+            self.regenerate_roi_handle_button, 3, 2
+        )
+        self.regenerate_roi_handle_button.clicked.connect(
+            self.regenerate_roi_handles
+        )
 
-        self.reset_roi_handle_button = StylishQT.GeneralFancyButton(label = "Reset handles")
+        self.reset_roi_handle_button = StylishQT.GeneralFancyButton(
+            label="Reset handles"
+        )
         self.reset_roi_handle_button.setFixedHeight(32)
         self.pmtContourLayout.addWidget(self.reset_roi_handle_button, 3, 3)
         self.reset_roi_handle_button.clicked.connect(self.reset_roi_handles)
@@ -185,22 +204,30 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
         self.add_roi_to_stack_button = StylishQT.addButton()
         self.add_roi_to_stack_button.setFixedHeight(32)
         self.pmtContourLayout.addWidget(self.add_roi_to_stack_button, 4, 2)
-        self.add_roi_to_stack_button.clicked.connect(self.add_coordinates_to_list)
+        self.add_roi_to_stack_button.clicked.connect(
+            self.add_coordinates_to_list
+        )
 
         self.del_roi_in_stack_button = StylishQT.stop_deleteButton()
         self.del_roi_in_stack_button.setFixedHeight(32)
-        self.del_roi_in_stack_button.clicked.connect(self.del_coordinates_from_list)
+        self.del_roi_in_stack_button.clicked.connect(
+            self.del_coordinates_from_list
+        )
         self.pmtContourLayout.addWidget(self.del_roi_in_stack_button, 4, 3)
 
         self.reset_roi_stack_button = StylishQT.cleanButton("Clear")
         self.reset_roi_stack_button.setFixedHeight(32)
         self.reset_roi_stack_button.setToolTip("Clear ROI info")
         self.pmtContourLayout.addWidget(self.reset_roi_stack_button, 5, 0)
-        self.reset_roi_stack_button.clicked.connect(self.reset_coordinates_dict)
+        self.reset_roi_stack_button.clicked.connect(
+            self.reset_coordinates_dict
+        )
 
         self.generate_contour_sacn = StylishQT.generateButton()
         self.pmtContourLayout.addWidget(self.generate_contour_sacn, 5, 1)
-        self.generate_contour_sacn.clicked.connect(lambda: self.generate_final_contour_signals())
+        self.generate_contour_sacn.clicked.connect(
+            lambda: self.generate_final_contour_signals()
+        )
 
         self.do_contour_sacn = StylishQT.runButton("Contour")
         self.do_contour_sacn.setFixedHeight(32)
@@ -208,7 +235,9 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
         self.do_contour_sacn.clicked.connect(
             lambda: self.buttonenabled("contourscan", "start")
         )
-        self.do_contour_sacn.clicked.connect(lambda: self.measure_pmt_contourscan())
+        self.do_contour_sacn.clicked.connect(
+            lambda: self.measure_pmt_contourscan()
+        )
 
         self.stopButton_contour = StylishQT.stop_deleteButton()
         self.stopButton_contour.setFixedHeight(32)
@@ -305,7 +334,9 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
         self.stack_scanning_sampling_rate_spinbox.setMaximum(1000000)
         self.stack_scanning_sampling_rate_spinbox.setValue(250000)
         self.stack_scanning_sampling_rate_spinbox.setSingleStep(100000)
-        Zstack_Layout.addWidget(self.stack_scanning_sampling_rate_spinbox, 1, 1)
+        Zstack_Layout.addWidget(
+            self.stack_scanning_sampling_rate_spinbox, 1, 1
+        )
         Zstack_Layout.addWidget(QLabel("Sampling rate:"), 1, 0)
 
         self.stack_scanning_Vrange_spinbox = QSpinBox(self)
@@ -388,7 +419,6 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
         self.layout.addWidget(pmtContourContainer, 2, 1)
         self.layout.addWidget(self.scanning_tabs, 0, 1)
 
-
     # --------------------------------------------------------------------------------------------------------------------------------------
     # ------------------------------------------------------Functions for TAB 'PMT'---------------------------------------------------------
     # --------------------------------------------------------------------------------------------------------------------------------------
@@ -425,7 +455,6 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
             self.starting_point_handle_position = [x, y]
 
         elif len(self.clicked_points_list) == 2:
-
             self.click_poly_roi = pg.PolyLineROI(
                 positions=[self.starting_point, point]
             )
@@ -438,13 +467,14 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
             self.pmtvb.addItem(self.click_poly_roi)
             self.new_roi = False
 
-
         else:
             self.click_poly_roi.addFreeHandle(point)
 
             # Remove closing segment of previous mouse movement
             if len(self.click_poly_roi.segments) > 1:
-                self.click_poly_roi.removeSegment(self.click_poly_roi.segments[-1])
+                self.click_poly_roi.removeSegment(
+                    self.click_poly_roi.segments[-1]
+                )
 
             self.click_poly_roi.addSegment(
                 self.click_poly_roi.handles[-1]["item"],
@@ -459,7 +489,7 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
 
     def keyPressEvent(self, event):
         # Toggle between drawing and not drawing roi states.
-        if event.key() == 70: # If the 'f' key is pressed
+        if event.key() == 70:  # If the 'f' key is pressed
             if self.flag_is_drawing:
                 self.flag_is_drawing = False
             else:
@@ -467,7 +497,6 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
                 self.new_roi = True
 
     def buttonenabled(self, button, switch):
-
         if button == "rasterscan":
             if switch == "start":
                 self.startButton_pmt.setEnabled(False)
@@ -478,7 +507,9 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
                 self.stopButton.setEnabled(False)
 
         elif button == "contourscan":
-            if switch == "start":  # disable start button and enable stop button
+            if (
+                switch == "start"
+            ):  # disable start button and enable stop button
                 self.do_contour_sacn.setEnabled(False)
                 self.stopButton_contour.setEnabled(True)
             elif switch == "stop":
@@ -504,17 +535,23 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
 
         """
         try:
-            self.Daq_sample_rate_pmt = int(self.continuous_scanning_sr_spinbox.value())
+            self.Daq_sample_rate_pmt = int(
+                self.continuous_scanning_sr_spinbox.value()
+            )
 
             # Voltage settings, by default it's equal range square.
-            self.Value_voltXMax = self.continuous_scanning_Vrange_spinbox.value()
+            self.Value_voltXMax = (
+                self.continuous_scanning_Vrange_spinbox.value()
+            )
             self.Value_voltXMin = self.Value_voltXMax * -1
             Value_voltYMin = self.Value_voltXMin
             Value_voltYMax = self.Value_voltXMax
 
             self.Value_xPixels = int(self.Scanning_pixel_num_combobox.value())
             Value_yPixels = self.Value_xPixels
-            self.averagenum = int(self.continuous_scanning_average_spinbox.value())
+            self.averagenum = int(
+                self.continuous_scanning_average_spinbox.value()
+            )
 
             Totalscansamples = self.pmtTest.setWave(
                 self.Daq_sample_rate_pmt,
@@ -531,15 +568,18 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
             self.pmtTest.pmtimagingThread.measurement.connect(
                 self.update_pmt_Graphs
             )  # Connecting to the measurement signal
-            self.pmt_fps_Label.setText("Per frame:  %.4f s" % time_per_frame_pmt)
+            self.pmt_fps_Label.setText(
+                "Per frame:  %.4f s" % time_per_frame_pmt
+            )
             self.pmtTest.start()
 
         except:
             print("NI-Daq not connected.")
-            self.update_pmt_Graphs(data = np.zeros((Value_yPixels, Value_yPixels)))
+            self.update_pmt_Graphs(
+                data=np.zeros((Value_yPixels, Value_yPixels))
+            )
 
     def measure_pmt_contourscan(self):
-
         self.Daq_sample_rate_pmt = int(self.contour_samprate.value())
 
         self.pmtTest_contour.setWave_contourscan(
@@ -549,12 +589,16 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
         )
         contour_freq = self.Daq_sample_rate_pmt / self.points_per_round
 
-        self.pmt_fps_Label.setText("Contour frequency:  %.4f Hz" % contour_freq)
+        self.pmt_fps_Label.setText(
+            "Contour frequency:  %.4f Hz" % contour_freq
+        )
         self.pmtTest_contour.start()
         self.MessageToMainGUI("---!! Continuous contour scanning !!---" + "\n")
 
     def saveimage_pmt(self):
-        Localimg = Image.fromarray(self.data_pmtcontineous)  # generate an image object
+        Localimg = Image.fromarray(
+            self.data_pmtcontineous
+        )  # generate an image object
         Localimg.save(
             os.path.join(
                 self.savedirectory,
@@ -583,7 +627,9 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
         """
         self.ROIhandles = roi_item.getHandles()
         self.ROIhandles_nubmer = len(self.ROIhandles)
-        self.pmt_handlenum_Label.setText("Handle number: %.d" % self.ROIhandles_nubmer)
+        self.pmt_handlenum_Label.setText(
+            "Handle number: %.d" % self.ROIhandles_nubmer
+        )
 
     def regenerate_roi_handles(self):
         """
@@ -601,7 +647,7 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
         self.pmtvb.removeItem(self.click_poly_roi)
 
         self.click_poly_roi = pg.PolyLineROI(
-            current_roi_handles_list, pen=self.ROIpen, closed = True
+            current_roi_handles_list, pen=self.ROIpen, closed=True
         )  # , maxBounds=r1
         self.click_poly_roi.sigHoverEvent.connect(
             lambda: self.show_handle_num(self.click_poly_roi)
@@ -619,7 +665,9 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
 
         """
         # Generate the voltage signals
-        self.current_stacked_voltage_signals = self.generate_contour_coordinates(self.click_poly_roi)
+        self.current_stacked_voltage_signals = (
+            self.generate_contour_coordinates(self.click_poly_roi)
+        )
 
         # Place the signals to the corresponding dictionary position
         self.contour_ROI_signals_dict[
@@ -636,7 +684,6 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
         self.contour_ROI_handles_dict[
             "handles_{}".format(self.roi_index_spinbox.value())
         ] = roi_handles_scene_list
-
 
     def del_coordinates_from_list(self):
         """
@@ -662,14 +709,20 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
 
         if len(self.contour_ROI_signals_dict) == 1:
             # With only one roi in list
-            self.final_stacked_voltage_signals = self.contour_ROI_signals_dict["roi_1"]
+            self.final_stacked_voltage_signals = self.contour_ROI_signals_dict[
+                "roi_1"
+            ]
         else:
             # With multiple roi added
             temp_list = []
             for each_roi_coordinate in self.contour_ROI_signals_dict:
-                temp_list.append(self.contour_ROI_signals_dict[each_roi_coordinate])
+                temp_list.append(
+                    self.contour_ROI_signals_dict[each_roi_coordinate]
+                )
 
-            self.final_stacked_voltage_signals = np.concatenate(temp_list, axis = 1)
+            self.final_stacked_voltage_signals = np.concatenate(
+                temp_list, axis=1
+            )
 
         # Number of points in single round of contour scan
         self.points_per_round = len(self.final_stacked_voltage_signals[0])
@@ -686,15 +739,14 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
         None.
 
         """
-        first_point_x = self.final_stacked_voltage_signals[:,0][0]
-        first_point_y = self.final_stacked_voltage_signals[:,0][1]
+        first_point_x = self.final_stacked_voltage_signals[:, 0][0]
+        first_point_y = self.final_stacked_voltage_signals[:, 0][1]
 
         print("galvo move to: {}, {}".format(first_point_x, first_point_y))
 
         daq = DAQmission()
         daq.sendSingleAnalog("galvosx", first_point_x)
         daq.sendSingleAnalog("galvosy", first_point_y)
-
 
     def reset_roi_handles(self):
         """
@@ -713,7 +765,6 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
         self.clicked_points_list = []
 
     def reset_coordinates_dict(self):
-
         self.final_stacked_voltage_signals = None
         self.contour_ROI_signals_dict = {}
         # self.contour_ROI_handles_dict = {}
@@ -749,7 +800,6 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
         # self.handle_scene_coordinate_position_raw_list.insert(0,first_placed_handle)
         # self.handle_scene_coordinate_position_raw_list.pop(-1)
 
-
         self.handle_local_coordinate_position_raw_list = (
             roi_item.getLocalHandlePositions()
         )
@@ -774,11 +824,12 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
             self.Interpolation_number = self.point_num_per_line - 1
 
             # ====== Doing the uniform interpolation in between handles =======
-            self.handle_scene_coordinate_position_array_expanded = \
-                self.interpolate_evenly_between_nodes(node_number = self.ROIhandles_nubmer,
-                                                  point_num_per_line = self.point_num_per_line,
-                                                  node_position_array = self.handle_scene_coordinate_position_array)
-            #=================================================================
+            self.handle_scene_coordinate_position_array_expanded = self.interpolate_evenly_between_nodes(
+                node_number=self.ROIhandles_nubmer,
+                point_num_per_line=self.point_num_per_line,
+                node_position_array=self.handle_scene_coordinate_position_array,
+            )
+            # =================================================================
 
             self.handle_viewbox_coordinate_position_array_expanded = np.zeros(
                 (contour_point_number, 2)
@@ -786,22 +837,34 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
             # Maps from scene coordinates to the coordinate system displayed inside the ViewBox
             for i in range(contour_point_number):
                 qpoint_Scene = QPoint(
-                    int(self.handle_scene_coordinate_position_array_expanded[i][0]),
-                    int(self.handle_scene_coordinate_position_array_expanded[i][1]),
+                    int(
+                        self.handle_scene_coordinate_position_array_expanded[
+                            i
+                        ][0]
+                    ),
+                    int(
+                        self.handle_scene_coordinate_position_array_expanded[
+                            i
+                        ][1]
+                    ),
                 )
                 qpoint_viewbox = self.pmtvb.mapSceneToView(qpoint_Scene)
-                self.handle_viewbox_coordinate_position_array_expanded[i] = np.array(
-                    [qpoint_viewbox.x(), qpoint_viewbox.y()]
-                )
+                self.handle_viewbox_coordinate_position_array_expanded[
+                    i
+                ] = np.array([qpoint_viewbox.x(), qpoint_viewbox.y()])
 
             """Transform into Voltages to galvos"""
             """coordinates in the view box(handle_viewbox_coordinate_position_array_expanded_x) are equivalent to voltages sending out"""
 
-            self.handle_viewbox_coordinate_position_array_expanded_x, \
-            self.handle_viewbox_coordinate_position_array_expanded_y = \
-            self.convert_coordinates_to_voltage(Value_xPixels = self.Value_xPixels, Value_voltXMax = self.Value_voltXMax,
-                                                contour_point_number = contour_point_number,
-                                                handle_viewbox_coordinates = self.handle_viewbox_coordinate_position_array_expanded)
+            (
+                self.handle_viewbox_coordinate_position_array_expanded_x,
+                self.handle_viewbox_coordinate_position_array_expanded_y,
+            ) = self.convert_coordinates_to_voltage(
+                Value_xPixels=self.Value_xPixels,
+                Value_voltXMax=self.Value_voltXMax,
+                contour_point_number=contour_point_number,
+                handle_viewbox_coordinates=self.handle_viewbox_coordinate_position_array_expanded,
+            )
 
             # ================= The signals to NIDAQ ==================
             current_stacked_voltage_signals = np.vstack(
@@ -811,13 +874,14 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
                 )
             )
 
-            #================= Speed and acceleration check ===================
-            self.speed_acceleration_check(self.Daq_sample_rate_pmt,
-                                          self.handle_viewbox_coordinate_position_array_expanded_x,
-                                          self.handle_viewbox_coordinate_position_array_expanded_y)
+            # ================= Speed and acceleration check ===================
+            self.speed_acceleration_check(
+                self.Daq_sample_rate_pmt,
+                self.handle_viewbox_coordinate_position_array_expanded_x,
+                self.handle_viewbox_coordinate_position_array_expanded_y,
+            )
 
-
-        #============================ Uniform =================================
+        # ============================ Uniform =================================
 
         if self.contour_strategy.currentText() == "Uniform":
             # Calculate the total distance
@@ -833,7 +897,7 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
                         - self.handle_scene_coordinate_position_array[i][1]
                     )
                     distance_vector = (
-                        Interpolation_x_diff ** 2 + Interpolation_y_diff ** 2
+                        Interpolation_x_diff**2 + Interpolation_y_diff**2
                     ) ** (0.5)
                     self.total_distance = self.total_distance + distance_vector
                 else:
@@ -846,11 +910,13 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
                         - self.handle_scene_coordinate_position_array[-1][1]
                     )
                     distance_vector = (
-                        Interpolation_x_diff ** 2 + Interpolation_y_diff ** 2
+                        Interpolation_x_diff**2 + Interpolation_y_diff**2
                     ) ** (0.5)
                     self.total_distance = self.total_distance + distance_vector
 
-            self.averaged_uniform_step = self.total_distance / contour_point_number
+            self.averaged_uniform_step = (
+                self.total_distance / contour_point_number
+            )
 
             print(self.averaged_uniform_step)
             print(self.handle_scene_coordinate_position_array)
@@ -866,9 +932,11 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
                         - self.handle_scene_coordinate_position_array[i][1]
                     )
                     distance_vector = (
-                        Interpolation_x_diff ** 2 + Interpolation_y_diff ** 2
+                        Interpolation_x_diff**2 + Interpolation_y_diff**2
                     ) ** (0.5)
-                    num_of_Interpolation = distance_vector // self.averaged_uniform_step
+                    num_of_Interpolation = (
+                        distance_vector // self.averaged_uniform_step
+                    )
 
                     self.Interpolation_remaining_fornextround = (
                         self.averaged_uniform_step
@@ -894,12 +962,20 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
                     Interpolation_temp = np.array(
                         [
                             [
-                                self.handle_scene_coordinate_position_array[i][0],
-                                self.handle_scene_coordinate_position_array[i][1],
+                                self.handle_scene_coordinate_position_array[i][
+                                    0
+                                ],
+                                self.handle_scene_coordinate_position_array[i][
+                                    1
+                                ],
                             ],
                             [
-                                self.handle_scene_coordinate_position_array[i + 1][0],
-                                self.handle_scene_coordinate_position_array[i + 1][1],
+                                self.handle_scene_coordinate_position_array[
+                                    i + 1
+                                ][0],
+                                self.handle_scene_coordinate_position_array[
+                                    i + 1
+                                ][1],
                             ],
                         ]
                     )
@@ -909,14 +985,20 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
                             Interpolation_temp,
                             -1,
                             [
-                                self.handle_scene_coordinate_position_array[i][0]
+                                self.handle_scene_coordinate_position_array[i][
+                                    0
+                                ]
                                 + (j + 1) * self.Interpolation_x_step,
-                                self.handle_scene_coordinate_position_array[i + 1][1]
+                                self.handle_scene_coordinate_position_array[
+                                    i + 1
+                                ][1]
                                 + (j + 1) * self.Interpolation_y_step,
                             ],
                             axis=0,
                         )
-                    Interpolation_temp = np.delete(Interpolation_temp, -1, axis=0)
+                    Interpolation_temp = np.delete(
+                        Interpolation_temp, -1, axis=0
+                    )
 
                     self.handle_scene_coordinate_position_array_expanded_uniform = (
                         Interpolation_temp
@@ -932,10 +1014,11 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
                         - self.handle_scene_coordinate_position_array[i][1]
                     )
                     distance_vector = (
-                        Interpolation_x_diff ** 2 + Interpolation_y_diff ** 2
+                        Interpolation_x_diff**2 + Interpolation_y_diff**2
                     ) ** (0.5)
                     num_of_Interpolation = (
-                        distance_vector - self.Interpolation_remaining_fornextround
+                        distance_vector
+                        - self.Interpolation_remaining_fornextround
                     ) // self.averaged_uniform_step
                     print(
                         "Interpolation_remaining_fornextround: "
@@ -943,11 +1026,19 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
                     )
 
                     if self.Interpolation_remaining_fornextround != 0:
-                        self.Interpolation_remaining_fornextround_x = Interpolation_x_diff / (
-                            distance_vector / self.Interpolation_remaining_fornextround
+                        self.Interpolation_remaining_fornextround_x = (
+                            Interpolation_x_diff
+                            / (
+                                distance_vector
+                                / self.Interpolation_remaining_fornextround
+                            )
                         )
-                        self.Interpolation_remaining_fornextround_y = Interpolation_y_diff / (
-                            distance_vector / self.Interpolation_remaining_fornextround
+                        self.Interpolation_remaining_fornextround_y = (
+                            Interpolation_y_diff
+                            / (
+                                distance_vector
+                                / self.Interpolation_remaining_fornextround
+                            )
                         )
                     else:
                         self.Interpolation_remaining_fornextround_x = 0
@@ -966,25 +1057,39 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
                     )
 
                     self.Interpolation_x_step = Interpolation_x_diff / (
-                        (distance_vector - self.Interpolation_remaining_fornextround)
+                        (
+                            distance_vector
+                            - self.Interpolation_remaining_fornextround
+                        )
                         / self.averaged_uniform_step
                     )
                     self.Interpolation_y_step = Interpolation_y_diff / (
-                        (distance_vector - self.Interpolation_remaining_fornextround)
+                        (
+                            distance_vector
+                            - self.Interpolation_remaining_fornextround
+                        )
                         / self.averaged_uniform_step
                     )
 
                     Interpolation_temp = np.array(
                         [
                             [
-                                self.handle_scene_coordinate_position_array[i][0]
+                                self.handle_scene_coordinate_position_array[i][
+                                    0
+                                ]
                                 + self.Interpolation_remaining_fornextround_x,
-                                self.handle_scene_coordinate_position_array[i][1]
+                                self.handle_scene_coordinate_position_array[i][
+                                    1
+                                ]
                                 + self.Interpolation_remaining_fornextround_y,
                             ],
                             [
-                                self.handle_scene_coordinate_position_array[i + 1][0],
-                                self.handle_scene_coordinate_position_array[i + 1][1],
+                                self.handle_scene_coordinate_position_array[
+                                    i + 1
+                                ][0],
+                                self.handle_scene_coordinate_position_array[
+                                    i + 1
+                                ][1],
                             ],
                         ]
                     )
@@ -994,16 +1099,22 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
                             Interpolation_temp,
                             -1,
                             [
-                                self.handle_scene_coordinate_position_array[i][0]
+                                self.handle_scene_coordinate_position_array[i][
+                                    0
+                                ]
                                 + self.Interpolation_remaining_fornextround_x
                                 + (j + 1) * self.Interpolation_x_step,
-                                self.handle_scene_coordinate_position_array[i][1]
+                                self.handle_scene_coordinate_position_array[i][
+                                    1
+                                ]
                                 + self.Interpolation_remaining_fornextround_y
                                 + (j + 1) * self.Interpolation_y_step,
                             ],
                             axis=0,
                         )
-                    Interpolation_temp = np.delete(Interpolation_temp, -1, axis=0)
+                    Interpolation_temp = np.delete(
+                        Interpolation_temp, -1, axis=0
+                    )
 
                     self.handle_scene_coordinate_position_array_expanded_uniform = np.append(
                         self.handle_scene_coordinate_position_array_expanded_uniform,
@@ -1036,17 +1147,20 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
                         - self.handle_scene_coordinate_position_array[-1][1]
                     )
                     distance_vector = (
-                        Interpolation_x_diff ** 2 + Interpolation_y_diff ** 2
+                        Interpolation_x_diff**2 + Interpolation_y_diff**2
                     ) ** (0.5)
                     num_of_Interpolation = (
-                        distance_vector - self.Interpolation_remaining_fornextround
+                        distance_vector
+                        - self.Interpolation_remaining_fornextround
                     ) // self.averaged_uniform_step
 
                     self.Interpolation_remaining_fornextround_x = (
-                        self.Interpolation_remaining_fornextround / distance_vector
+                        self.Interpolation_remaining_fornextround
+                        / distance_vector
                     ) * Interpolation_x_diff
                     self.Interpolation_remaining_fornextround_y = (
-                        self.Interpolation_remaining_fornextround / distance_vector
+                        self.Interpolation_remaining_fornextround
+                        / distance_vector
                     ) * Interpolation_y_diff
 
                     # Reset the starting point
@@ -1062,25 +1176,39 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
                     )
 
                     self.Interpolation_x_step = Interpolation_x_diff / (
-                        (distance_vector - self.Interpolation_remaining_fornextround)
+                        (
+                            distance_vector
+                            - self.Interpolation_remaining_fornextround
+                        )
                         / self.averaged_uniform_step
                     )
                     self.Interpolation_y_step = Interpolation_y_diff / (
-                        (distance_vector - self.Interpolation_remaining_fornextround)
+                        (
+                            distance_vector
+                            - self.Interpolation_remaining_fornextround
+                        )
                         / self.averaged_uniform_step
                     )
 
                     Interpolation_temp = np.array(
                         [
                             [
-                                self.handle_scene_coordinate_position_array[-1][0]
+                                self.handle_scene_coordinate_position_array[
+                                    -1
+                                ][0]
                                 + self.Interpolation_remaining_fornextround_x,
-                                self.handle_scene_coordinate_position_array[-1][1]
+                                self.handle_scene_coordinate_position_array[
+                                    -1
+                                ][1]
                                 + self.Interpolation_remaining_fornextround_y,
                             ],
                             [
-                                self.handle_scene_coordinate_position_array[0][0],
-                                self.handle_scene_coordinate_position_array[0][1],
+                                self.handle_scene_coordinate_position_array[0][
+                                    0
+                                ],
+                                self.handle_scene_coordinate_position_array[0][
+                                    1
+                                ],
                             ],
                         ]
                     )
@@ -1090,16 +1218,22 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
                             Interpolation_temp,
                             -1,
                             [
-                                self.handle_scene_coordinate_position_array[-1][0]
+                                self.handle_scene_coordinate_position_array[
+                                    -1
+                                ][0]
                                 + self.Interpolation_remaining_fornextround_x
                                 + (j + 1) * self.Interpolation_x_step,
-                                self.handle_scene_coordinate_position_array[-1][1]
+                                self.handle_scene_coordinate_position_array[
+                                    -1
+                                ][1]
                                 + self.Interpolation_remaining_fornextround_y
                                 + (j + 1) * self.Interpolation_y_step,
                             ],
                             axis=0,
                         )
-                    Interpolation_temp = np.delete(Interpolation_temp, -1, axis=0)
+                    Interpolation_temp = np.delete(
+                        Interpolation_temp, -1, axis=0
+                    )
 
                     self.handle_scene_coordinate_position_array_expanded_uniform = np.append(
                         self.handle_scene_coordinate_position_array_expanded_uniform,
@@ -1108,8 +1242,10 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
                     )
 
             print(self.handle_scene_coordinate_position_array_expanded_uniform)
-            print(self.handle_scene_coordinate_position_array_expanded_uniform.shape)
-            #%%
+            print(
+                self.handle_scene_coordinate_position_array_expanded_uniform.shape
+            )
+            # %%
 
             self.handle_viewbox_coordinate_position_array_expanded = np.zeros(
                 (contour_point_number, 2)
@@ -1117,22 +1253,31 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
             # Maps from scene coordinates to the coordinate system displayed inside the ViewBox
             for i in range(contour_point_number):
                 qpoint_Scene = QPoint(
-                    self.handle_scene_coordinate_position_array_expanded_uniform[i][0],
-                    self.handle_scene_coordinate_position_array_expanded_uniform[i][1],
+                    self.handle_scene_coordinate_position_array_expanded_uniform[
+                        i
+                    ][
+                        0
+                    ],
+                    self.handle_scene_coordinate_position_array_expanded_uniform[
+                        i
+                    ][
+                        1
+                    ],
                 )
                 qpoint_viewbox = self.pmtvb.mapSceneToView(qpoint_Scene)
-                self.handle_viewbox_coordinate_position_array_expanded[i] = np.array(
-                    [qpoint_viewbox.x(), qpoint_viewbox.y()]
-                )
-
+                self.handle_viewbox_coordinate_position_array_expanded[
+                    i
+                ] = np.array([qpoint_viewbox.x(), qpoint_viewbox.y()])
 
             """Transform into Voltages to galvos"""
 
             self.handle_viewbox_coordinate_position_array_expanded_x,
-            self.handle_viewbox_coordinate_position_array_expanded_y = \
-            self.convert_coordinates_to_voltage(Value_xPixels = self.Value_xPixels, Value_voltXMax = self.Value_voltXMax,
-                                                contour_point_number = contour_point_number,
-                                                handle_viewbox_coordinates = self.handle_viewbox_coordinate_position_array_expanded)
+            self.handle_viewbox_coordinate_position_array_expanded_y = self.convert_coordinates_to_voltage(
+                Value_xPixels=self.Value_xPixels,
+                Value_voltXMax=self.Value_voltXMax,
+                contour_point_number=contour_point_number,
+                handle_viewbox_coordinates=self.handle_viewbox_coordinate_position_array_expanded,
+            )
 
             # ================= The signals to NIDAQ ==================
             current_stacked_voltage_signals = np.vstack(
@@ -1142,18 +1287,21 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
                 )
             )
 
-
-            #================= Speed and acceleration check ===================
-            self.speed_acceleration_check(self.Daq_sample_rate_pmt,
-                                          self.handle_viewbox_coordinate_position_array_expanded_x,
-                                          self.handle_viewbox_coordinate_position_array_expanded_y)
+            # ================= Speed and acceleration check ===================
+            self.speed_acceleration_check(
+                self.Daq_sample_rate_pmt,
+                self.handle_viewbox_coordinate_position_array_expanded_x,
+                self.handle_viewbox_coordinate_position_array_expanded_y,
+            )
 
         resequenced_stacked_voltage_signals = current_stacked_voltage_signals
         print(resequenced_stacked_voltage_signals)
 
         return resequenced_stacked_voltage_signals
 
-    def interpolate_evenly_between_nodes(self, node_number, point_num_per_line, node_position_array):
+    def interpolate_evenly_between_nodes(
+        self, node_number, point_num_per_line, node_position_array
+    ):
         """
         Interpolate evenly in between roi handles
 
@@ -1174,20 +1322,14 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
         # --------------------------------------Interpolation from first to last---------------------------------------------
         for i in range(node_number - 1):
             Interpolation_x_diff = (
-                node_position_array[i + 1][0]
-                - node_position_array[i][0]
+                node_position_array[i + 1][0] - node_position_array[i][0]
             )
             Interpolation_y_diff = (
-                node_position_array[i + 1][1]
-                - node_position_array[i][1]
+                node_position_array[i + 1][1] - node_position_array[i][1]
             )
 
-            Interpolation_x_step = (
-                Interpolation_x_diff / point_num_per_line
-            )
-            Interpolation_y_step = (
-                Interpolation_y_diff / point_num_per_line
-            )
+            Interpolation_x_step = Interpolation_x_diff / point_num_per_line
+            Interpolation_y_step = Interpolation_y_diff / point_num_per_line
 
             Interpolation_temp = np.array(
                 [
@@ -1216,9 +1358,7 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
                 )
             Interpolation_temp = np.delete(Interpolation_temp, 0, 0)
             if i == 0:
-                interpolated_array = (
-                    Interpolation_temp
-                )
+                interpolated_array = Interpolation_temp
             else:
                 interpolated_array = np.append(
                     interpolated_array,
@@ -1228,20 +1368,14 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
 
         # Interpolation between last and first
         Interpolation_x_diff = (
-            node_position_array[0][0]
-            - node_position_array[-1][0]
+            node_position_array[0][0] - node_position_array[-1][0]
         )
         Interpolation_y_diff = (
-            node_position_array[0][1]
-            - node_position_array[-1][1]
+            node_position_array[0][1] - node_position_array[-1][1]
         )
 
-        Interpolation_x_step = (
-            Interpolation_x_diff / point_num_per_line
-        )
-        Interpolation_y_step = (
-            Interpolation_y_diff / point_num_per_line
-        )
+        Interpolation_x_step = Interpolation_x_diff / point_num_per_line
+        Interpolation_y_step = Interpolation_y_diff / point_num_per_line
 
         Interpolation_temp = np.array(
             [
@@ -1261,10 +1395,8 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
                 Interpolation_temp,
                 1,
                 [
-                    node_position_array[0][0]
-                    - (j + 1) * Interpolation_x_step,
-                    node_position_array[0][1]
-                    - (j + 1) * Interpolation_y_step,
+                    node_position_array[0][0] - (j + 1) * Interpolation_x_step,
+                    node_position_array[0][1] - (j + 1) * Interpolation_y_step,
                 ],
                 axis=0,
             )
@@ -1279,15 +1411,23 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
 
         # ===== The first placed handle is at the end, put back to front.=====
 
-        interpolated_array_modified = np.zeros([interpolated_array.shape[0], interpolated_array.shape[1]])
-        interpolated_array_modified[0,:] = interpolated_array[-1,:]
-        interpolated_array_modified[1:interpolated_array.shape[0],:] = interpolated_array[0:interpolated_array.shape[0] -1, :]
+        interpolated_array_modified = np.zeros(
+            [interpolated_array.shape[0], interpolated_array.shape[1]]
+        )
+        interpolated_array_modified[0, :] = interpolated_array[-1, :]
+        interpolated_array_modified[
+            1 : interpolated_array.shape[0], :
+        ] = interpolated_array[0 : interpolated_array.shape[0] - 1, :]
 
         return interpolated_array_modified
 
-    def convert_coordinates_to_voltage(self, Value_xPixels, Value_voltXMax,
-                                       contour_point_number,
-                                       handle_viewbox_coordinates):
+    def convert_coordinates_to_voltage(
+        self,
+        Value_xPixels,
+        Value_voltXMax,
+        contour_point_number,
+        handle_viewbox_coordinates,
+    ):
         """
         Transform the viewbox coordinates to galvo scanning voltage signals
 
@@ -1314,33 +1454,23 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
             if Value_voltXMax == 3:
                 # for 500 x axis, the real ramp region sits around 52~552 out of 0~758
                 handle_viewbox_coordinates[:, 0] = (
-                    (handle_viewbox_coordinates[:, 0])
-                    / 500
+                    (handle_viewbox_coordinates[:, 0]) / 500
                 ) * 6 - 3  # (handle_viewbox_coordinates[:,0]-constants.pmt_3v_indentation_pixels)
                 handle_viewbox_coordinates[:, 1] = (
-                    (handle_viewbox_coordinates[:, 1])
-                    / 500
+                    (handle_viewbox_coordinates[:, 1]) / 500
                 ) * 6 - 3
                 handle_viewbox_coordinates = np.around(
                     handle_viewbox_coordinates,
                     decimals=3,
                 )
                 # shape into (n,) and stack
-                transformed_x = (
-                    np.resize(
-                        handle_viewbox_coordinates[
-                            :, 0
-                        ],
-                        (contour_point_number,),
-                    )
+                transformed_x = np.resize(
+                    handle_viewbox_coordinates[:, 0],
+                    (contour_point_number,),
                 )
-                transformed_y = (
-                    np.resize(
-                        handle_viewbox_coordinates[
-                            :, 1
-                        ],
-                        (contour_point_number,),
-                    )
+                transformed_y = np.resize(
+                    handle_viewbox_coordinates[:, 1],
+                    (contour_point_number,),
                 )
 
         return transformed_x, transformed_y
@@ -1364,14 +1494,8 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
 
         """
         time_gap = 1 / sampling_rate
-        contour_x_speed = (
-            np.diff(trace_x)
-            / time_gap
-        )
-        contour_y_speed = (
-            np.diff(trace_y)
-            / time_gap
-        )
+        contour_x_speed = np.diff(trace_x) / time_gap
+        contour_y_speed = np.diff(trace_y) / time_gap
 
         contour_x_acceleration = np.diff(contour_x_speed) / time_gap
         contour_y_acceleration = np.diff(contour_y_speed) / time_gap
@@ -1397,7 +1521,9 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
             print("Contour speed is OK")
             self.MessageToMainGUI("Contour speed is OK" + "\n")
         else:
-            QMessageBox.warning(self, "OverLoad", "Speed too high!", QMessageBox.Ok)
+            QMessageBox.warning(
+                self, "OverLoad", "Speed too high!", QMessageBox.Ok
+            )
         if aGalvo > np.amax(abs(contour_x_acceleration)) and aGalvo > np.amax(
             abs(contour_y_acceleration)
         ):
@@ -1421,7 +1547,8 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
         self.SignalForContourScanning.emit(
             int(self.points_per_round),
             self.Daq_sample_rate_pmt,
-            (1 / int(self.contour_samprate.value()) * 1000) * self.points_per_round, # time per contour scan
+            (1 / int(self.contour_samprate.value()) * 1000)
+            * self.points_per_round,  # time per contour scan
             self.final_stacked_voltage_signals[0],
             self.final_stacked_voltage_signals[1],
         )

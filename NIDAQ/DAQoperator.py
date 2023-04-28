@@ -33,7 +33,6 @@ class DAQmission(
     finishSignal = pyqtSignal()
 
     def __init__(self, channel_LUT=None, *args, **kwargs):
-
         super().__init__(*args, **kwargs)
         """
         Specifiy NI-daq channels. channel_LUT in the form of dictionary, with keys being the
@@ -157,7 +156,9 @@ class DAQmission(
                             + 1 : len(analog_signals["Specification"][i])
                         ]
                     )
-                    self.galvosx_originalkey = analog_signals["Specification"][i]
+                    self.galvosx_originalkey = analog_signals["Specification"][
+                        i
+                    ]
                     analog_signals["Specification"][i] = "galvosx"
                 elif "galvosyypixels" in analog_signals["Specification"][i]:
                     self.ypixelnumber = int(
@@ -166,14 +167,20 @@ class DAQmission(
                             + 1 : len(analog_signals["Specification"][i])
                         ]
                     )
-                    self.galvosy_originalkey = analog_signals["Specification"][i]
+                    self.galvosy_originalkey = analog_signals["Specification"][
+                        i
+                    ]
                     analog_signals["Specification"][i] = "galvosy"
                 elif "galvos_X_contour" in analog_signals["Specification"][i]:
-                    self.galvosx_originalkey = analog_signals["Specification"][i]
+                    self.galvosx_originalkey = analog_signals["Specification"][
+                        i
+                    ]
                     analog_signals["Specification"][i] = "galvosx"
 
                 elif "galvos_Y_contour" in analog_signals["Specification"][i]:
-                    self.galvosy_originalkey = analog_signals["Specification"][i]
+                    self.galvosy_originalkey = analog_signals["Specification"][
+                        i
+                    ]
                     analog_signals["Specification"][i] = "galvosy"
 
         # ----------------------------------------------------------------------
@@ -189,16 +196,27 @@ class DAQmission(
             if len(analog_signals["Waveform"]) != 0:
                 num_rows, num_cols = analog_signals["Waveform"].shape
                 for i in range(int(num_rows)):
-                    if "Dev1" in self.channel_LUT[analog_signals["Specification"][i]]:
+                    if (
+                        "Dev1"
+                        in self.channel_LUT[analog_signals["Specification"][i]]
+                    ):
                         self.Dev1_analog_channel_list.append(
-                            self.channel_LUT[analog_signals["Specification"][i]]
+                            self.channel_LUT[
+                                analog_signals["Specification"][i]
+                            ]
                         )
-                        Dev1_analog_waveforms_list.append(analog_signals["Waveform"][i])
+                        Dev1_analog_waveforms_list.append(
+                            analog_signals["Waveform"][i]
+                        )
                     else:
                         self.Dev2_analog_channel_list.append(
-                            self.channel_LUT[analog_signals["Specification"][i]]
+                            self.channel_LUT[
+                                analog_signals["Specification"][i]
+                            ]
                         )
-                        Dev2_analog_waveforms_list.append(analog_signals["Waveform"][i])
+                        Dev2_analog_waveforms_list.append(
+                            analog_signals["Waveform"][i]
+                        )
 
         Dev1_analog_channel_number = len(self.Dev1_analog_channel_list)
         Dev2_analog_channel_number = len(self.Dev2_analog_channel_list)
@@ -225,7 +243,9 @@ class DAQmission(
         # -------Stack the Analog samples of dev1 and dev2 individually---------
         # IN CASE OF ONLY ONE ARRAY, WE NEED TO CONVERT THE SHAPE TO (1,N) BY USING np.array([]) OUTSIDE THE ARRAY!!
         if Dev1_analog_channel_number == 1:
-            Dev1_analog_samples_to_write = np.array([Dev1_analog_waveforms_list[0]])
+            Dev1_analog_samples_to_write = np.array(
+                [Dev1_analog_waveforms_list[0]]
+            )
 
         elif Dev1_analog_channel_number == 0:
             Dev1_analog_samples_to_write = []
@@ -233,23 +253,33 @@ class DAQmission(
             Dev1_analog_samples_to_write = Dev1_analog_waveforms_list[0]
             for i in range(1, Dev1_analog_channel_number):
                 Dev1_analog_samples_to_write = np.vstack(
-                    (Dev1_analog_samples_to_write, Dev1_analog_waveforms_list[i])
+                    (
+                        Dev1_analog_samples_to_write,
+                        Dev1_analog_waveforms_list[i],
+                    )
                 )
 
         if Dev2_analog_channel_number == 1:
-            Dev2_analog_samples_to_write = np.array([Dev2_analog_waveforms_list[0]])
+            Dev2_analog_samples_to_write = np.array(
+                [Dev2_analog_waveforms_list[0]]
+            )
         elif Dev2_analog_channel_number == 0:
             Dev2_analog_samples_to_write = []
         else:
             Dev2_analog_samples_to_write = Dev2_analog_waveforms_list[0]
             for i in range(1, Dev2_analog_channel_number):
                 Dev2_analog_samples_to_write = np.vstack(
-                    (Dev2_analog_samples_to_write, Dev2_analog_waveforms_list[i])
+                    (
+                        Dev2_analog_samples_to_write,
+                        Dev2_analog_waveforms_list[i],
+                    )
                 )
 
         # Stack the digital samples
         if Digital_channel_number == 1:
-            Digital_samples_to_write = np.array([digital_signals["Waveform"][0]])
+            Digital_samples_to_write = np.array(
+                [digital_signals["Waveform"][0]]
+            )
 
         elif Digital_channel_number == 0:
             Digital_samples_to_write = []
@@ -266,14 +296,19 @@ class DAQmission(
         # need to send int number corresponding to the channel binary value,
         # like write 8(2^3, 0001) to channel 4.
         # The same as (0b1 << n)
-        Digital_samples_to_write = np.array(Digital_samples_to_write, dtype="uint32")
+        Digital_samples_to_write = np.array(
+            Digital_samples_to_write, dtype="uint32"
+        )
 
         for i in range(Digital_channel_number):
-
             convernum = int(
                 self.channel_LUT[digital_signals["Specification"][i]][
-                    self.channel_LUT[digital_signals["Specification"][i]].index("line")
-                    + 4 : len(self.channel_LUT[digital_signals["Specification"][i]])
+                    self.channel_LUT[
+                        digital_signals["Specification"][i]
+                    ].index("line")
+                    + 4 : len(
+                        self.channel_LUT[digital_signals["Specification"][i]]
+                    )
                 ]
             )
             Digital_samples_to_write[i] = Digital_samples_to_write[i] * (
@@ -322,7 +357,8 @@ class DAQmission(
                     )
 
                 slave_Task_2_digitallines.do_channels.add_do_chan(
-                    "/Dev1/port0", line_grouping=LineGrouping.CHAN_FOR_ALL_LINES
+                    "/Dev1/port0",
+                    line_grouping=LineGrouping.CHAN_FOR_ALL_LINES,
                 )
 
                 if self.has_recording_channel == True:
@@ -356,7 +392,9 @@ class DAQmission(
                 # ----------------------------------------------------------
 
                 # ---------------get scaling coefficients-------------------
-                self.aichannelnames = master_Task_readin.ai_channels.channel_names
+                self.aichannelnames = (
+                    master_Task_readin.ai_channels.channel_names
+                )
 
                 self.ai_dev_scaling_coeff_vp = []
                 self.ai_dev_scaling_coeff_ip = []
@@ -390,8 +428,9 @@ class DAQmission(
                 # ----------------------------------------------------------
 
                 # ----------------------setting clock-----------------------
-                if clock_source == "DAQ":  # If NI-DAQ is set as master clock source
-
+                if (
+                    clock_source == "DAQ"
+                ):  # If NI-DAQ is set as master clock source
                     # Analog clock  USE clock on Dev1 as center clock
                     slave_Task_1_analog_dev1.timing.cfg_samp_clk_timing(
                         self.sampling_rate,
@@ -410,9 +449,9 @@ class DAQmission(
                     master_Task_readin.export_signals.samp_clk_output_term = (
                         self.channel_LUT["clock1Channel"]
                     )  #'/Dev1/PFI1'#
-                    master_Task_readin.export_signals.start_trig_output_term = (
-                        self.channel_LUT["trigger1Channel"]
-                    )  #'/Dev1/PFI2'
+                    master_Task_readin.export_signals.start_trig_output_term = self.channel_LUT[
+                        "trigger1Channel"
+                    ]  #'/Dev1/PFI2'
 
                     # If dev2 is involved, set the timing for dev2.
                     if Dev2_analog_channel_number != 0:
@@ -424,7 +463,9 @@ class DAQmission(
                             )
 
                         # Set the clock of Dev2 to the receiving port from Dev1.
-                        dev2Clock = self.channel_LUT["clock2Channel"]  # /Dev2/PFI1
+                        dev2Clock = self.channel_LUT[
+                            "clock2Channel"
+                        ]  # /Dev2/PFI1
                         slave_Task_1_analog_dev2.timing.cfg_samp_clk_timing(
                             self.sampling_rate,
                             source=dev2Clock,
@@ -432,14 +473,18 @@ class DAQmission(
                             samps_per_chan=self.Waveforms_length,
                         )
 
-                        AnalogWriter = nidaqmx.stream_writers.AnalogMultiChannelWriter(
-                            slave_Task_1_analog_dev1.out_stream, auto_start=False
+                        AnalogWriter = (
+                            nidaqmx.stream_writers.AnalogMultiChannelWriter(
+                                slave_Task_1_analog_dev1.out_stream,
+                                auto_start=False,
+                            )
                         )
                         AnalogWriter.auto_start = False
 
                         AnalogWriter_dev2 = (
                             nidaqmx.stream_writers.AnalogMultiChannelWriter(
-                                slave_Task_1_analog_dev2.out_stream, auto_start=False
+                                slave_Task_1_analog_dev2.out_stream,
+                                auto_start=False,
                             )
                         )
                         AnalogWriter_dev2.auto_start = False
@@ -458,7 +503,6 @@ class DAQmission(
                 elif (
                     clock_source == "Camera"
                 ):  # All the clock should refer to camera output trigger
-
                     # Set all clock source to camera trigger receiving port.
                     self.cam_trigger_receiving_port = "/Dev1/PFI0"
 
@@ -481,9 +525,9 @@ class DAQmission(
                     master_Task_readin.export_signals.samp_clk_output_term = (
                         self.channel_LUT["clock1Channel"]
                     )  #'/Dev1/PFI1'#
-                    master_Task_readin.export_signals.start_trig_output_term = (
-                        self.channel_LUT["trigger1Channel"]
-                    )  #'/Dev1/PFI2'
+                    master_Task_readin.export_signals.start_trig_output_term = self.channel_LUT[
+                        "trigger1Channel"
+                    ]  #'/Dev1/PFI2'
                     master_Task_readin.triggers.start_trigger.cfg_dig_edge_start_trig(
                         self.cam_trigger_receiving_port
                     )
@@ -497,7 +541,9 @@ class DAQmission(
                             )
 
                         # Set clock of dev2 to the input from dev1 timing output.
-                        dev2Clock = self.channel_LUT["clock2Channel"]  # /Dev2/PFI1
+                        dev2Clock = self.channel_LUT[
+                            "clock2Channel"
+                        ]  # /Dev2/PFI1
                         slave_Task_1_analog_dev2.timing.cfg_samp_clk_timing(
                             self.sampling_rate,
                             source=dev2Clock,
@@ -508,14 +554,18 @@ class DAQmission(
 
                         # slave_Task_1_analog_dev2.triggers.start_trigger.cfg_dig_edge_start_trig(self.channel_LUT["trigger2Channel"])#'/Dev2/PFI7'
 
-                        AnalogWriter = nidaqmx.stream_writers.AnalogMultiChannelWriter(
-                            slave_Task_1_analog_dev1.out_stream, auto_start=False
+                        AnalogWriter = (
+                            nidaqmx.stream_writers.AnalogMultiChannelWriter(
+                                slave_Task_1_analog_dev1.out_stream,
+                                auto_start=False,
+                            )
                         )
                         AnalogWriter.auto_start = False
 
                         AnalogWriter_dev2 = (
                             nidaqmx.stream_writers.AnalogMultiChannelWriter(
-                                slave_Task_1_analog_dev2.out_stream, auto_start=False
+                                slave_Task_1_analog_dev2.out_stream,
+                                auto_start=False,
                             )
                         )
                         AnalogWriter_dev2.auto_start = False
@@ -540,8 +590,11 @@ class DAQmission(
                 )
                 AnalogWriter.auto_start = False
                 if Digital_channel_number != 0:
-                    DigitalWriter = nidaqmx.stream_writers.DigitalMultiChannelWriter(
-                        slave_Task_2_digitallines.out_stream, auto_start=False
+                    DigitalWriter = (
+                        nidaqmx.stream_writers.DigitalMultiChannelWriter(
+                            slave_Task_2_digitallines.out_stream,
+                            auto_start=False,
+                        )
                     )
                     DigitalWriter.auto_start = False
                 reader = AnalogMultiChannelReader(master_Task_readin.in_stream)
@@ -603,9 +656,13 @@ class DAQmission(
             if Analog_channel_number != 0:
                 for i in range(len(analog_signals["Specification"])):
                     if "galvosx" in analog_signals["Specification"][i]:
-                        analog_signals["Specification"][i] = self.galvosx_originalkey
+                        analog_signals["Specification"][
+                            i
+                        ] = self.galvosx_originalkey
                     elif "galvosy" in analog_signals["Specification"][i]:
-                        analog_signals["Specification"][i] = self.galvosy_originalkey
+                        analog_signals["Specification"][
+                            i
+                        ] = self.galvosy_originalkey
 
             """
             # =============================================================================
@@ -613,12 +670,12 @@ class DAQmission(
             # =============================================================================
             """
         elif Dev2_analog_channel_number != 0:
-
             with nidaqmx.Task() as slave_Task_1_analog_dev2, nidaqmx.Task() as master_Task_readin, nidaqmx.Task() as slave_Task_2_digitallines:
                 # adding channels
                 # Set tasks from different devices apart
                 slave_Task_2_digitallines.do_channels.add_do_chan(
-                    "/Dev1/port0", line_grouping=LineGrouping.CHAN_FOR_ALL_LINES
+                    "/Dev1/port0",
+                    line_grouping=LineGrouping.CHAN_FOR_ALL_LINES,
                 )
 
                 if self.has_recording_channel == True:
@@ -646,7 +703,9 @@ class DAQmission(
                     )
 
                 # get scaling coefficients
-                self.aichannelnames = master_Task_readin.ai_channels.channel_names
+                self.aichannelnames = (
+                    master_Task_readin.ai_channels.channel_names
+                )
 
                 self.ai_dev_scaling_coeff_vp = []
                 self.ai_dev_scaling_coeff_ip = []
@@ -678,7 +737,9 @@ class DAQmission(
                 # ----------------------------------------------------------
 
                 # ----------------------setting clock-----------------------
-                if clock_source == "DAQ":  # If NI-DAQ is set as master clock source
+                if (
+                    clock_source == "DAQ"
+                ):  # If NI-DAQ is set as master clock source
                     # setting clock
                     master_Task_readin.timing.cfg_samp_clk_timing(
                         self.sampling_rate,
@@ -689,9 +750,9 @@ class DAQmission(
                     master_Task_readin.export_signals.samp_clk_output_term = (
                         self.channel_LUT["clock1Channel"]
                     )  #'/Dev1/PFI1'#
-                    master_Task_readin.export_signals.start_trig_output_term = (
-                        self.channel_LUT["trigger1Channel"]
-                    )  #'/Dev1/PFI2'
+                    master_Task_readin.export_signals.start_trig_output_term = self.channel_LUT[
+                        "trigger1Channel"
+                    ]  #'/Dev1/PFI2'
 
                     if Dev2_analog_channel_number != 0:
                         # By default assume that read master task is in dev1
@@ -701,7 +762,9 @@ class DAQmission(
                                 self.Dev2_analog_channel_list[i]
                             )
 
-                        dev2Clock = self.channel_LUT["clock2Channel"]  # /Dev2/PFI1
+                        dev2Clock = self.channel_LUT[
+                            "clock2Channel"
+                        ]  # /Dev2/PFI1
                         slave_Task_1_analog_dev2.timing.cfg_samp_clk_timing(
                             self.sampling_rate,
                             source=dev2Clock,
@@ -711,7 +774,8 @@ class DAQmission(
 
                         AnalogWriter_dev2 = (
                             nidaqmx.stream_writers.AnalogMultiChannelWriter(
-                                slave_Task_1_analog_dev2.out_stream, auto_start=False
+                                slave_Task_1_analog_dev2.out_stream,
+                                auto_start=False,
                             )
                         )
                         AnalogWriter_dev2.auto_start = False
@@ -741,9 +805,9 @@ class DAQmission(
                     master_Task_readin.export_signals.samp_clk_output_term = (
                         self.channel_LUT["clock1Channel"]
                     )  #'/Dev1/PFI1'#
-                    master_Task_readin.export_signals.start_trig_output_term = (
-                        self.channel_LUT["trigger1Channel"]
-                    )  #'/Dev1/PFI2'
+                    master_Task_readin.export_signals.start_trig_output_term = self.channel_LUT[
+                        "trigger1Channel"
+                    ]  #'/Dev1/PFI2'
 
                     if Dev2_analog_channel_number != 0:
                         # By default assume that read master task is in dev1
@@ -753,7 +817,9 @@ class DAQmission(
                                 self.Dev2_analog_channel_list[i]
                             )
 
-                        dev2Clock = self.channel_LUT["clock2Channel"]  # /Dev2/PFI1
+                        dev2Clock = self.channel_LUT[
+                            "clock2Channel"
+                        ]  # /Dev2/PFI1
                         slave_Task_1_analog_dev2.timing.cfg_samp_clk_timing(
                             self.sampling_rate,
                             source=dev2Clock,
@@ -765,7 +831,8 @@ class DAQmission(
                         )
                         AnalogWriter_dev2 = (
                             nidaqmx.stream_writers.AnalogMultiChannelWriter(
-                                slave_Task_1_analog_dev2.out_stream, auto_start=False
+                                slave_Task_1_analog_dev2.out_stream,
+                                auto_start=False,
                             )
                         )
                         AnalogWriter_dev2.auto_start = False
@@ -786,8 +853,11 @@ class DAQmission(
                 # Configure the writer and reader
 
                 if Digital_channel_number != 0:
-                    DigitalWriter = nidaqmx.stream_writers.DigitalMultiChannelWriter(
-                        slave_Task_2_digitallines.out_stream, auto_start=False
+                    DigitalWriter = (
+                        nidaqmx.stream_writers.DigitalMultiChannelWriter(
+                            slave_Task_2_digitallines.out_stream,
+                            auto_start=False,
+                        )
                     )
                     DigitalWriter.auto_start = False
                 reader = AnalogMultiChannelReader(master_Task_readin.in_stream)
@@ -843,9 +913,13 @@ class DAQmission(
             if Analog_channel_number != 0:
                 for i in range(len(analog_signals["Specification"])):
                     if "galvosx" in analog_signals["Specification"][i]:
-                        analog_signals["Specification"][i] = self.galvosx_originalkey
+                        analog_signals["Specification"][
+                            i
+                        ] = self.galvosx_originalkey
                     elif "galvosy" in analog_signals["Specification"][i]:
-                        analog_signals["Specification"][i] = self.galvosy_originalkey
+                        analog_signals["Specification"][
+                            i
+                        ] = self.galvosy_originalkey
 
             """
             # =============================================================================
@@ -853,18 +927,20 @@ class DAQmission(
             # =============================================================================
             """
         elif self.Only_Digital_signals == True:
-
             # some preparations for digital lines
             Waveforms_length = len(digital_signals["Waveform"][0])
 
-            digitalsignalslinenumber = len(digital_signals["Waveform"])  # TODO unused
+            digitalsignalslinenumber = len(
+                digital_signals["Waveform"]
+            )  # TODO unused
 
             # Assume that dev1 is always employed
             with nidaqmx.Task() as slave_Task_2_digitallines:
                 # adding channels
                 # Set tasks from different devices apart
                 slave_Task_2_digitallines.do_channels.add_do_chan(
-                    "/Dev1/port0", line_grouping=LineGrouping.CHAN_FOR_ALL_LINES
+                    "/Dev1/port0",
+                    line_grouping=LineGrouping.CHAN_FOR_ALL_LINES,
                 )
                 # Digital clock
                 slave_Task_2_digitallines.timing.cfg_samp_clk_timing(
@@ -874,8 +950,10 @@ class DAQmission(
                 )
 
                 # Configure the writer and reader
-                DigitalWriter = nidaqmx.stream_writers.DigitalMultiChannelWriter(
-                    slave_Task_2_digitallines.out_stream, auto_start=False
+                DigitalWriter = (
+                    nidaqmx.stream_writers.DigitalMultiChannelWriter(
+                        slave_Task_2_digitallines.out_stream, auto_start=False
+                    )
                 )
                 DigitalWriter.auto_start = False
 
@@ -895,14 +973,12 @@ class DAQmission(
         # ----------------------------------------------------------------------------------------------------------------------------------
 
     def get_raw_data(self):
-
         return self.Dataholder
 
     def save_as_binary(self, directory):
         # print(self.ai_dev_scaling_coeff_vp)
         if self.has_recording_channel == True:
             if "Vp" in self.readin_channels:
-
                 if "PMT" not in self.readin_channels:
                     self.binaryfile_vp_data = np.concatenate(
                         (
@@ -914,7 +990,8 @@ class DAQmission(
                     np.save(
                         os.path.join(
                             directory,
-                            "Vp" + datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
+                            "Vp"
+                            + datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
                         ),
                         self.binaryfile_vp_data,
                     )
@@ -930,7 +1007,8 @@ class DAQmission(
                         np.save(
                             os.path.join(
                                 directory,
-                                "Ip" + datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
+                                "Ip"
+                                + datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
                             ),
                             self.binaryfile_Ip_data,
                         )
@@ -945,7 +1023,8 @@ class DAQmission(
                     np.save(
                         os.path.join(
                             directory,
-                            "Vp" + datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
+                            "Vp"
+                            + datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
                         ),
                         self.binaryfile_vp_data,
                     )
@@ -961,13 +1040,13 @@ class DAQmission(
                         np.save(
                             os.path.join(
                                 directory,
-                                "Ip" + datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
+                                "Ip"
+                                + datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
                             ),
                             self.binaryfile_Ip_data,
                         )
 
             if "Ip" in self.readin_channels:
-
                 self.binaryfile_Ip_data = np.concatenate(
                     (
                         np.array([self.sampling_rate]),
@@ -983,13 +1062,13 @@ class DAQmission(
                     self.binaryfile_Ip_data,
                 )
 
-
             if "PMT" in self.readin_channels:
                 self.data_PMT = self.Dataholder[0, :] * -1
                 np.save(
                     os.path.join(
                         directory,
-                        "PMT_array_" + datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
+                        "PMT_array_"
+                        + datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
                     ),
                     self.data_PMT,
                 )

@@ -57,7 +57,6 @@ def run_in_thread(fn):
 
     @staticmethod
     def run(*k):
-
         thread = threading.Thread(target=fn, args=(*k,), daemon=False)
         thread.start()
 
@@ -67,9 +66,9 @@ def run_in_thread(fn):
 
 
 class MainGUI(QWidget):
-
     waveforms_generated = pyqtSignal(object, object, list, int)
-    #%%
+
+    # %%
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setFont(QFont("Arial"))
@@ -102,13 +101,17 @@ class MainGUI(QWidget):
         self.Matdisplay_Figure = Figure()
         self.Matdisplay_Canvas = FigureCanvas(self.Matdisplay_Figure)
 
-        self.Matdisplay_toolbar = NavigationToolbar(self.Matdisplay_Canvas, self)
+        self.Matdisplay_toolbar = NavigationToolbar(
+            self.Matdisplay_Canvas, self
+        )
         MatDsiplayPart.layout.addWidget(self.Matdisplay_toolbar, 0, 0)
         MatDsiplayPart.layout.addWidget(self.Matdisplay_Canvas, 1, 0)
         MatDsiplayPart.setLayout(MatDsiplayPart.layout)
 
         self.OriginalImgWidget = pg.ImageView()
-        self.OriginalImg_item = self.OriginalImgWidget.getImageItem()  # setLevels
+        self.OriginalImg_item = (
+            self.OriginalImgWidget.getImageItem()
+        )  # setLevels
         self.OriginalImg_view = self.OriginalImgWidget.getView()
         self.OriginalImg_item.setAutoDownsample(True)
 
@@ -152,12 +155,16 @@ class MainGUI(QWidget):
             "Lib/KC", "#CCE5FF", "Tag/EC", "#E5FFCC", width=65
         )
         self.ShowLibImgButton.setChecked(True)
-        self.ShowLibImgButton.clicked.connect(lambda: self.GoThroughTopCells("null"))
+        self.ShowLibImgButton.clicked.connect(
+            lambda: self.GoThroughTopCells("null")
+        )
         ImageButtonContainerLayout.addWidget(self.ShowLibImgButton, 2, 7)
 
         ButtonRankNextCoordImg = QPushButton("Next →", self)
         ButtonRankNextCoordImg.setShortcut("d")
-        ButtonRankNextCoordImg.clicked.connect(lambda: self.GoThroughTopCells("next"))
+        ButtonRankNextCoordImg.clicked.connect(
+            lambda: self.GoThroughTopCells("next")
+        )
         ImageButtonContainerLayout.addWidget(ButtonRankNextCoordImg, 1, 7)
 
         GoSeqButton = QPushButton("Go to Cell_: ", self)
@@ -193,9 +200,13 @@ class MainGUI(QWidget):
 
         self.ConsoleTextDisplay = QTextEdit()
         self.ConsoleTextDisplay.setFontItalic(True)
-        self.ConsoleTextDisplay.setPlaceholderText("Notice board from console.")
+        self.ConsoleTextDisplay.setPlaceholderText(
+            "Notice board from console."
+        )
         self.ConsoleTextDisplay.setFixedHeight(150)
-        ImageButtonContainerLayout.addWidget(self.ConsoleTextDisplay, 5, 6, 3, 2)
+        ImageButtonContainerLayout.addWidget(
+            self.ConsoleTextDisplay, 5, 6, 3, 2
+        )
 
         ImageButtonContainer.setLayout(ImageButtonContainerLayout)
 
@@ -224,7 +235,9 @@ class MainGUI(QWidget):
         self.Contour_soma_ratio_thres_box.setSingleStep(0.15)
         IPLayout.addWidget(self.Contour_soma_ratio_thres_box, 0, 1)
 
-        IPLayout.addWidget(QLabel("Mean intensity in contour threshold:"), 0, 2)
+        IPLayout.addWidget(
+            QLabel("Mean intensity in contour threshold:"), 0, 2
+        )
         self.Mean_intensity_in_contour_thres_box = QDoubleSpinBox(self)
         self.Mean_intensity_in_contour_thres_box.setDecimals(4)
         self.Mean_intensity_in_contour_thres_box.setMinimum(-10)
@@ -374,7 +387,7 @@ class MainGUI(QWidget):
         self.ConsoleTextDisplay.setTextCursor(cursor)
         self.ConsoleTextDisplay.ensureCursorVisible()
 
-    #%%
+    # %%
     """
     # =============================================================================
     #     FUNCTIONS FOR DATA ANALYSIS AND DISPLAY
@@ -461,7 +474,9 @@ class MainGUI(QWidget):
         self.Mean_intensity_in_contour_thres = (
             self.Mean_intensity_in_contour_thres_box.value()
         )
-        self.Contour_soma_ratio_thres = self.Contour_soma_ratio_thres_box.value()
+        self.Contour_soma_ratio_thres = (
+            self.Contour_soma_ratio_thres_box.value()
+        )
 
         self.normalOutputWritten("Start loading images...\n")
 
@@ -477,7 +492,6 @@ class MainGUI(QWidget):
         # ===== General image analysis in folder. =====
         # =============================================================================
         if len(self.Tag_round_infor) == 0 and len(self.Lib_round_infor) == 0:
-
             if self.FilepathSwitchBox.currentText() == "Cam Z-max":
                 # For camera screening analysis, use Spiking HEK weight
                 self.ProcessML.config.WeigthPath = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Martijn\SpikingHek.h5"  # TODO hardcoded path
@@ -495,7 +509,6 @@ class MainGUI(QWidget):
         # ===== General image analysis in folder. =====
         # =============================================================================
         if len(self.Tag_round_infor) == 0 and len(self.Lib_round_infor) == 1:
-
             if self.FilepathSwitchBox.currentText() == "Cam Z-max":
                 # For camera screening analysis, use Spiking HEK weight
                 self.ProcessML.config.WeigthPath = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Martijn\SpikingHek.h5"  # TODO hardcoded path
@@ -505,15 +518,16 @@ class MainGUI(QWidget):
                 )
             else:
                 # Directly analyze images
-                cell_data = self.ProcessML.analyze_images_in_folder(  # TODO unused
-                    self.Analysis_saving_directory
+                cell_data = (
+                    self.ProcessML.analyze_images_in_folder(  # TODO unused
+                        self.Analysis_saving_directory
+                    )
                 )
 
         # =============================================================================
         # ===== One GFP round, one Arch round. =====
         # =============================================================================
         elif len(self.Tag_round_infor) == 1 and len(self.Lib_round_infor) == 1:
-
             if self.FilepathSwitchBox.currentText() != "Cam Z-max":
                 # If max projection is already generated
                 pass
@@ -522,9 +536,11 @@ class MainGUI(QWidget):
                 self.ProcessML.config.WeigthPath = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Martijn\SpikingHek.h5"  # TODO hardcoded path
 
                 # Generate the max projection
-                ProcessImage.cam_screening_post_processing(self.Analysis_saving_directory,
-                                                           seperate_folder = False,
-                                                           save_max_projection = True)
+                ProcessImage.cam_screening_post_processing(
+                    self.Analysis_saving_directory,
+                    seperate_folder=False,
+                    save_max_projection=True,
+                )
 
             tag_folder = self.Tag_folder
             lib_folder = self.Lib_folder
@@ -532,8 +548,12 @@ class MainGUI(QWidget):
             tag_round = "Round{}".format(self.Tag_round_infor[0])
             lib_round = "Round{}".format(self.Lib_round_infor[0])
 
-            cell_Data_1 = self.ProcessML.FluorescenceAnalysis(tag_folder, tag_round)
-            cell_Data_2 = self.ProcessML.FluorescenceAnalysis(lib_folder, lib_round)
+            cell_Data_1 = self.ProcessML.FluorescenceAnalysis(
+                tag_folder, tag_round
+            )
+            cell_Data_2 = self.ProcessML.FluorescenceAnalysis(
+                lib_folder, lib_round
+            )
 
             self.Cell_DataFrame_Merged = ProcessImage.MergeDataFrames(
                 cell_Data_1, cell_Data_2, method="TagLib"
@@ -564,27 +584,33 @@ class MainGUI(QWidget):
         # ===== For multiple single round wavelength experiment. =====
         # =============================================================================
         elif len(self.Tag_round_infor) == 0 and len(self.Lib_round_infor) > 2:
-
             lib_folder = self.Lib_folder
 
             for round_index in self.Lib_round_infor:
                 lib_round = "Round{}".format(round_index)
 
-                cell_Data = self.ProcessML.FluorescenceAnalysis(lib_folder, lib_round)  # TODO unused
+                cell_Data = self.ProcessML.FluorescenceAnalysis(
+                    lib_folder, lib_round
+                )  # TODO unused
 
         # =============================================================================
         # ===== For KCL assay, two rounds of lib. =====
         # =============================================================================
         elif len(self.Tag_round_infor) == 0 and len(self.Lib_round_infor) == 2:
-
-            print("===== Kcl analysis based on absolute contour intensity =====")
+            print(
+                "===== Kcl analysis based on absolute contour intensity ====="
+            )
             lib_folder = self.Lib_folder
 
             EC_round = "Round{}".format(self.Lib_round_infor[0])
             KC_round = "Round{}".format(self.Lib_round_infor[1])
 
-            cell_Data_EC = self.ProcessML.FluorescenceAnalysis(lib_folder, EC_round)
-            cell_Data_KC = self.ProcessML.FluorescenceAnalysis(lib_folder, KC_round)
+            cell_Data_EC = self.ProcessML.FluorescenceAnalysis(
+                lib_folder, EC_round
+            )
+            cell_Data_KC = self.ProcessML.FluorescenceAnalysis(
+                lib_folder, KC_round
+            )
 
             print("Start Cell_DataFrame_Merging.")
             self.Cell_DataFrame_Merged = ProcessImage.MergeDataFrames(
@@ -622,7 +648,6 @@ class MainGUI(QWidget):
         # ===== For KCL assay, two rounds of lib/tag. =====
         # =============================================================================
         elif len(self.Tag_round_infor) == 2 and len(self.Lib_round_infor) == 2:
-
             print("===== Kcl analysis based on lib/tag contour ratio =====")
             tag_folder = self.Tag_folder
             lib_folder = self.Lib_folder
@@ -693,7 +718,7 @@ class MainGUI(QWidget):
 
             self.UpdateSelectionScatter()
 
-    #%%
+    # %%
     def ReadEexcel(self):
         """
         Read in existing excel file and do the ranking and graph generating.
@@ -706,7 +731,9 @@ class MainGUI(QWidget):
         self.Mean_intensity_in_contour_thres = (
             self.Mean_intensity_in_contour_thres_box.value()
         )
-        self.Contour_soma_ratio_thres = self.Contour_soma_ratio_thres_box.value()
+        self.Contour_soma_ratio_thres = (
+            self.Contour_soma_ratio_thres_box.value()
+        )
 
         self.ExcelfileName, _ = QtWidgets.QFileDialog.getOpenFileName(
             self,
@@ -717,7 +744,9 @@ class MainGUI(QWidget):
         try:
             self.Excelfile = pd.read_excel(self.ExcelfileName)
         except:
-            self.Excelfile = pd.read_excel(self.ExcelfileName, engine="openpyxl")
+            self.Excelfile = pd.read_excel(
+                self.ExcelfileName, engine="openpyxl"
+            )
         # Return the directory name of pathname path.
         self.Tag_folder = os.path.dirname(self.ExcelfileName)
         self.Lib_folder = os.path.dirname(self.ExcelfileName)
@@ -808,7 +837,6 @@ class MainGUI(QWidget):
         self.Matdisplay_Figure.clear()
 
         if len(self.EvaluatingPara_list) == 2:
-
             ax1 = self.Matdisplay_Figure.add_subplot(111)
             ax1.scatter(
                 self.DataFrame_sorted.loc[:, self.EvaluatingPara_list[0]],
@@ -836,7 +864,6 @@ class MainGUI(QWidget):
             # (self.DataFrame_sorted, x_axis=self.EvaluatingPara_list[0], y_axis=self.EvaluatingPara_list[1], saving_directory = saving_directory)
 
         elif len(self.EvaluatingPara_list) == 3:
-
             ax1 = self.Matdisplay_Figure.add_subplot(111, projection="3d")
             ax1.scatter(
                 self.DataFrame_sorted.loc[:, self.EvaluatingPara_list[0]],
@@ -903,14 +930,15 @@ class MainGUI(QWidget):
         elif direction == "previous":
             self.pop_next_top_cell_counter -= 2
             if self.pop_next_top_cell_counter >= 0:
-
                 self.CurrentRankCellpProperties = self.DataFrame_sorted.iloc[
                     self.pop_next_top_cell_counter
                 ]
 
                 self.display_selected_image()
 
-                if self.pop_next_top_cell_counter < (self.TotaNumofCellSelected - 1):
+                if self.pop_next_top_cell_counter < (
+                    self.TotaNumofCellSelected - 1
+                ):
                     self.pop_next_top_cell_counter += 1
             else:
                 self.pop_next_top_cell_counter = 0
@@ -961,15 +989,23 @@ class MainGUI(QWidget):
             # ====== Display the library image ======
             if "ImgNameInfor" in self.CurrentRankCellpProperties.index:
                 # In brightness lib/tag dataframe
-                self.meta_data = self.CurrentRankCellpProperties.loc["ImgNameInfor"]
-                Each_bounding_box = self.CurrentRankCellpProperties.loc["BoundingBox"]
+                self.meta_data = self.CurrentRankCellpProperties.loc[
+                    "ImgNameInfor"
+                ]
+                Each_bounding_box = self.CurrentRankCellpProperties.loc[
+                    "BoundingBox"
+                ]
             elif "ImgNameInfor_Lib" in self.CurrentRankCellpProperties.index:
                 # In brightness lib/tag dataframe
-                self.meta_data = self.CurrentRankCellpProperties.loc["ImgNameInfor_Lib"]
+                self.meta_data = self.CurrentRankCellpProperties.loc[
+                    "ImgNameInfor_Lib"
+                ]
                 Each_bounding_box = self.CurrentRankCellpProperties.loc[
                     "BoundingBox_Lib"
                 ]
-            elif "ImgNameInfor_Lib_EC" in self.CurrentRankCellpProperties.index:
+            elif (
+                "ImgNameInfor_Lib_EC" in self.CurrentRankCellpProperties.index
+            ):
                 # In Kcl assay, show the KC lib image.
                 self.meta_data = self.CurrentRankCellpProperties.loc[
                     "ImgNameInfor_Lib_KC"
@@ -979,7 +1015,9 @@ class MainGUI(QWidget):
                 ]
 
             if ".tif" in self.meta_data:
-                self.lib_imagefilename = os.path.join(self.Lib_folder, self.meta_data)
+                self.lib_imagefilename = os.path.join(
+                    self.Lib_folder, self.meta_data
+                )
             else:
                 if self.FilepathSwitchBox.currentText() != "Cam Z-max":
                     self.lib_imagefilename = os.path.join(
@@ -993,24 +1031,35 @@ class MainGUI(QWidget):
 
             print(
                 self.lib_imagefilename[
-                    len(self.lib_imagefilename) - 50 : len(self.lib_imagefilename)
+                    len(self.lib_imagefilename)
+                    - 50 : len(self.lib_imagefilename)
                 ]
             )
-            self.loaded_image_display = imread(self.lib_imagefilename, as_gray=True)
+            self.loaded_image_display = imread(
+                self.lib_imagefilename, as_gray=True
+            )
 
         else:
             # ====== Display the tag protein image ======
             if "ImgNameInfor" in self.CurrentRankCellpProperties.index:
                 # In brightness lib/tag dataframe
-                self.meta_data = self.CurrentRankCellpProperties.loc["ImgNameInfor"]
-                Each_bounding_box = self.CurrentRankCellpProperties.loc["BoundingBox"]
+                self.meta_data = self.CurrentRankCellpProperties.loc[
+                    "ImgNameInfor"
+                ]
+                Each_bounding_box = self.CurrentRankCellpProperties.loc[
+                    "BoundingBox"
+                ]
             elif "ImgNameInfor_Tag" in self.CurrentRankCellpProperties.index:
                 # In brightness lib/tag dataframe
-                self.meta_data = self.CurrentRankCellpProperties.loc["ImgNameInfor_Tag"]
+                self.meta_data = self.CurrentRankCellpProperties.loc[
+                    "ImgNameInfor_Tag"
+                ]
                 Each_bounding_box = self.CurrentRankCellpProperties.loc[
                     "BoundingBox_Tag"
                 ]
-            elif "ImgNameInfor_Lib_EC" in self.CurrentRankCellpProperties.index:
+            elif (
+                "ImgNameInfor_Lib_EC" in self.CurrentRankCellpProperties.index
+            ):
                 # In Kcl assay, show the KC lib image.
                 self.meta_data = self.CurrentRankCellpProperties.loc[
                     "ImgNameInfor_Lib_EC"
@@ -1020,17 +1069,22 @@ class MainGUI(QWidget):
                 ]
 
             if ".tif" in self.meta_data:
-                self.tag_imagefilename = os.path.join(self.Tag_folder, self.meta_data)
+                self.tag_imagefilename = os.path.join(
+                    self.Tag_folder, self.meta_data
+                )
             else:
                 self.tag_imagefilename = os.path.join(
                     self.Tag_folder, self.meta_data + "_PMT_0Zmax.tif"
                 )
             print(
                 self.tag_imagefilename[
-                    len(self.tag_imagefilename) - 50 : len(self.tag_imagefilename)
+                    len(self.tag_imagefilename)
+                    - 50 : len(self.tag_imagefilename)
                 ]
             )
-            self.loaded_image_display = imread(self.tag_imagefilename, as_gray=True)
+            self.loaded_image_display = imread(
+                self.tag_imagefilename, as_gray=True
+            )
 
         # Get stage coordinates information.
         self.coordinate_text = self.meta_data[
@@ -1040,7 +1094,8 @@ class MainGUI(QWidget):
         # Retrieve boundingbox information
         minr = int(
             Each_bounding_box[
-                Each_bounding_box.index("minr") + 4 : Each_bounding_box.index("_maxr")
+                Each_bounding_box.index("minr")
+                + 4 : Each_bounding_box.index("_maxr")
             ]
         )
         maxr = (
@@ -1054,13 +1109,15 @@ class MainGUI(QWidget):
         )
         minc = int(
             Each_bounding_box[
-                Each_bounding_box.index("minc") + 4 : Each_bounding_box.index("_maxc")
+                Each_bounding_box.index("minc")
+                + 4 : Each_bounding_box.index("_maxc")
             ]
         )
         maxc = (
             int(
                 Each_bounding_box[
-                    Each_bounding_box.index("maxc") + 4 : len(Each_bounding_box)
+                    Each_bounding_box.index("maxc")
+                    + 4 : len(Each_bounding_box)
                 ]
             )
             - 1
@@ -1113,11 +1170,17 @@ class MainGUI(QWidget):
                 self.meta_data,
                 self.EvaluatingPara_list[0],
                 round(
-                    self.CurrentRankCellpProperties.loc[self.EvaluatingPara_list[0]], 4
+                    self.CurrentRankCellpProperties.loc[
+                        self.EvaluatingPara_list[0]
+                    ],
+                    4,
                 ),
                 self.EvaluatingPara_list[1],
                 round(
-                    self.CurrentRankCellpProperties.loc[self.EvaluatingPara_list[1]], 4
+                    self.CurrentRankCellpProperties.loc[
+                        self.EvaluatingPara_list[1]
+                    ],
+                    4,
                 ),
                 "IDNumber",
                 self.CurrentRankCellpProperties.name,
@@ -1130,10 +1193,11 @@ class MainGUI(QWidget):
         """
         if self.SwitchMaskButton.isChecked():
             if self.ShowLibImgButton.isChecked():
-
                 roundnum = self.meta_data[0 : self.meta_data.index("_Grid")]
 
-                if not os.path.exists(os.path.join(self.Tag_folder, "ML_masks")):
+                if not os.path.exists(
+                    os.path.join(self.Tag_folder, "ML_masks")
+                ):
                     # All the mask images from MaskRCNN are saved in tag folder
                     # Normal screening, masks saved under different folder names.
                     self.lib_mask_imagefilename = os.path.join(
@@ -1153,10 +1217,11 @@ class MainGUI(QWidget):
                 self.loaded_image_display = imread(self.lib_mask_imagefilename)
 
             else:
-
                 roundnum = self.meta_data[0 : self.meta_data.index("_Grid")]
 
-                if not os.path.exists(os.path.join(self.Tag_folder, "ML_masks")):
+                if not os.path.exists(
+                    os.path.join(self.Tag_folder, "ML_masks")
+                ):
                     # All the mask images from MaskRCNN are saved in tag folder
                     # Normal screening, masks saved under different folder names.
                     self.tag_mask_imagefilename = os.path.join(
@@ -1204,12 +1269,12 @@ class MainGUI(QWidget):
                 alpha=0.5,
             )
             ax1.scatter(
-                self.DataFrame_sorted.iloc[self.pop_next_top_cell_counter - 1, :].loc[
-                    self.EvaluatingPara_list[0]
-                ],
-                self.DataFrame_sorted.iloc[self.pop_next_top_cell_counter - 1, :].loc[
-                    self.EvaluatingPara_list[1]
-                ],
+                self.DataFrame_sorted.iloc[
+                    self.pop_next_top_cell_counter - 1, :
+                ].loc[self.EvaluatingPara_list[0]],
+                self.DataFrame_sorted.iloc[
+                    self.pop_next_top_cell_counter - 1, :
+                ].loc[self.EvaluatingPara_list[1]],
                 s=np.pi * 8,
                 c="red",
                 alpha=0.5,
@@ -1231,15 +1296,15 @@ class MainGUI(QWidget):
                 alpha=0.5,
             )
             ax1.scatter(
-                self.DataFrame_sorted.iloc[self.pop_next_top_cell_counter - 1, :].loc[
-                    self.EvaluatingPara_list[0]
-                ],
-                self.DataFrame_sorted.iloc[self.pop_next_top_cell_counter - 1, :].loc[
-                    self.EvaluatingPara_list[1]
-                ],
-                self.DataFrame_sorted.iloc[self.pop_next_top_cell_counter - 1, :].loc[
-                    self.EvaluatingPara_list[2]
-                ],
+                self.DataFrame_sorted.iloc[
+                    self.pop_next_top_cell_counter - 1, :
+                ].loc[self.EvaluatingPara_list[0]],
+                self.DataFrame_sorted.iloc[
+                    self.pop_next_top_cell_counter - 1, :
+                ].loc[self.EvaluatingPara_list[1]],
+                self.DataFrame_sorted.iloc[
+                    self.pop_next_top_cell_counter - 1, :
+                ].loc[self.EvaluatingPara_list[2]],
                 s=np.pi * 8,
                 c="red",
                 alpha=0.5,
@@ -1318,7 +1383,8 @@ class MainGUI(QWidget):
 
         coordinate_row = int(
             self.coordinate_text[
-                self.coordinate_text.index("R") + 1 : self.coordinate_text.index("C")
+                self.coordinate_text.index("R")
+                + 1 : self.coordinate_text.index("C")
             ]
         )
         coordinate_col = int(
@@ -1378,7 +1444,8 @@ class MainGUI(QWidget):
         self.DataFrame_sorted.to_excel(
             os.path.join(
                 self.Tag_folder,
-                datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + "_CellsProperties.xlsx",
+                datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+                + "_CellsProperties.xlsx",
             )
         )
 
@@ -1399,7 +1466,11 @@ class MainGUI(QWidget):
             ):
                 # If the folder is not there, create the folder
                 print("Create Picked Cells folder.")
-                os.mkdir(os.path.join(self.Analysis_saving_directory, "Picked cells"))
+                os.mkdir(
+                    os.path.join(
+                        self.Analysis_saving_directory, "Picked cells"
+                    )
+                )
 
         exporter.export(
             os.path.join(
@@ -1437,7 +1508,7 @@ class MainGUI(QWidget):
     def ResetPickedIndex(self):
         self.picked_cell_index = 1
 
-    #%%
+    # %%
 
 
 if __name__ == "__main__":

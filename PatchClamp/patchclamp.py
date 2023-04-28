@@ -58,13 +58,20 @@ class ContinuousPatchThread(QThread):
         elif (
             readDev == self.configs["clock1Channel"].split("/")[1]
         ):  # Checking if readTask is on same device as clock1.
-            readTask.export_signals.samp_clk_output_term = self.configs["clock1Channel"]
+            readTask.export_signals.samp_clk_output_term = self.configs[
+                "clock1Channel"
+            ]
             writeClock = self.configs["clock2Channel"]
         elif readDev == self.configs["clock2Channel"].split("/")[1]:
-            readTask.export_signals.samp_clk_output_term = self.configs["clock2Channel"]
+            readTask.export_signals.samp_clk_output_term = self.configs[
+                "clock2Channel"
+            ]
             writeClock = self.configs["clock1Channel"]
         else:
-            assert (True, "No corresponding clocks defined")  # TODO use exception
+            assert (
+                True,
+                "No corresponding clocks defined",
+            )  # TODO use exception
 
         readTask.timing.cfg_samp_clk_timing(
             rate=self.sampleRate,
@@ -138,7 +145,11 @@ class PatchclampSealTest:
         self.readNumber = 100  # Readnumber for the measurementThread (should be a multiple of the wavelength)
 
         wave = blockWave(
-            self.sampleRate, self.frequency, self.voltMin, self.voltMax, self.dutycycle
+            self.sampleRate,
+            self.frequency,
+            self.voltMin,
+            self.voltMax,
+            self.dutycycle,
         )
         self.measurementThread = ContinuousPatchThread(
             wave, self.sampleRate, self.readNumber
@@ -149,7 +160,11 @@ class PatchclampSealTest:
         self.voltMax = self.voltMin + diffvoltage / inVolGain
 
         self.measurementThread.wave = blockWave(
-            self.sampleRate, self.frequency, self.voltMin, self.voltMax, self.dutycycle
+            self.sampleRate,
+            self.frequency,
+            self.voltMin,
+            self.voltMax,
+            self.dutycycle,
         )
 
     def start(self):
@@ -202,13 +217,20 @@ class ContinuousPatchThread_hold(QThread):
         elif (
             readDev == self.configs["clock1Channel"].split("/")[1]
         ):  # Checking if readTask is on same device as clock1.
-            readTask.export_signals.samp_clk_output_term = self.configs["clock1Channel"]
+            readTask.export_signals.samp_clk_output_term = self.configs[
+                "clock1Channel"
+            ]
             writeClock = self.configs["clock2Channel"]
         elif readDev == self.configs["clock2Channel"].split("/")[1]:
-            readTask.export_signals.samp_clk_output_term = self.configs["clock2Channel"]
+            readTask.export_signals.samp_clk_output_term = self.configs[
+                "clock2Channel"
+            ]
             writeClock = self.configs["clock1Channel"]
         else:
-            assert (True, "No corresponding clocks defined")  # TODO use exception
+            assert (
+                True,
+                "No corresponding clocks defined",
+            )  # TODO use exception
 
         readTask.timing.cfg_samp_clk_timing(
             rate=self.sampleRate,
@@ -283,7 +305,11 @@ class PatchclampSealTest_hold:
         # self.constant = constant
         # wave = self.constant
         wave = blockWave(
-            self.sampleRate, self.frequency, self.voltMin, self.voltMax, self.dutycycle
+            self.sampleRate,
+            self.frequency,
+            self.voltMin,
+            self.voltMax,
+            self.dutycycle,
         )
         self.measurementThread_hold = ContinuousPatchThread_hold(
             wave, self.sampleRate, self.readNumber
@@ -294,7 +320,11 @@ class PatchclampSealTest_hold:
         self.voltMin = holde_volatge / 1000 / inVolGain
         # self.constants.patchSealMaxVol/constant
         self.measurementThread_hold.wave = blockWave(
-            self.sampleRate, self.frequency, self.voltMin, self.voltMax, self.dutycycle
+            self.sampleRate,
+            self.frequency,
+            self.voltMin,
+            self.voltMax,
+            self.dutycycle,
         )
 
     def start(self):
@@ -347,13 +377,20 @@ class ContinuousPatchThread_currentclamp(QThread):
         elif (
             readDev == self.configs["clock1Channel"].split("/")[1]
         ):  # Checking if readTask is on same device as clock1.
-            readTask.export_signals.samp_clk_output_term = self.configs["clock1Channel"]
+            readTask.export_signals.samp_clk_output_term = self.configs[
+                "clock1Channel"
+            ]
             writeClock = self.configs["clock2Channel"]
         elif readDev == self.configs["clock2Channel"].split("/")[1]:
-            readTask.export_signals.samp_clk_output_term = self.configs["clock2Channel"]
+            readTask.export_signals.samp_clk_output_term = self.configs[
+                "clock2Channel"
+            ]
             writeClock = self.configs["clock1Channel"]
         else:
-            assert (True, "No corresponding clocks defined")  # TODO use exception
+            assert (
+                True,
+                "No corresponding clocks defined",
+            )  # TODO use exception
 
         readTask.timing.cfg_samp_clk_timing(
             rate=self.sampleRate,
@@ -427,18 +464,28 @@ class PatchclampSealTest_currentclamp:
         self.readNumber = 500  # Readnumber for the measurementThread (should be a multiple of the wavelength)
 
         wave = blockWave(
-            self.sampleRate, self.frequency, self.voltMin, self.voltMax, self.dutycycle
+            self.sampleRate,
+            self.frequency,
+            self.voltMin,
+            self.voltMax,
+            self.dutycycle,
         )
-        self.measurementThread_currentclamp = ContinuousPatchThread_currentclamp(
-            wave, self.sampleRate, self.readNumber
+        self.measurementThread_currentclamp = (
+            ContinuousPatchThread_currentclamp(
+                wave, self.sampleRate, self.readNumber
+            )
         )
 
     def setWave(self, inVolGain, probegain, current_value):
-        self.voltMin = (current_value / (10 ** 12) / inVolGain) * probegain
-        self.voltMax = (current_value / (10 ** 12) / inVolGain) * probegain
+        self.voltMin = (current_value / (10**12) / inVolGain) * probegain
+        self.voltMax = (current_value / (10**12) / inVolGain) * probegain
 
         self.measurementThread_currentclamp.wave = blockWave(
-            self.sampleRate, self.frequency, self.voltMin, self.voltMax, self.dutycycle
+            self.sampleRate,
+            self.frequency,
+            self.voltMin,
+            self.voltMax,
+            self.dutycycle,
         )
 
     def start(self):
@@ -487,13 +534,20 @@ class ContinuousPatchThread_zap(QThread):
         elif (
             readDev == self.configs["clock1Channel"].split("/")[1]
         ):  # Checking if readTask is on same device as clock1.
-            readTask.export_signals.samp_clk_output_term = self.configs["clock1Channel"]
+            readTask.export_signals.samp_clk_output_term = self.configs[
+                "clock1Channel"
+            ]
             writeClock = self.configs["clock2Channel"]
         elif readDev == self.configs["clock2Channel"].split("/")[1]:
-            readTask.export_signals.samp_clk_output_term = self.configs["clock2Channel"]
+            readTask.export_signals.samp_clk_output_term = self.configs[
+                "clock2Channel"
+            ]
             writeClock = self.configs["clock1Channel"]
         else:
-            assert (True, "No corresponding clocks defined")  # TODO use exception
+            assert (
+                True,
+                "No corresponding clocks defined",
+            )  # TODO use exception
 
         readTask.timing.cfg_samp_clk_timing(
             rate=self.sampleRate,
@@ -524,7 +578,9 @@ class ContinuousPatchThread_zap(QThread):
 
             self.setTiming(writeTask, readTask)
 
-            reader = AnalogMultiChannelReader(readTask.in_stream)  # TODO unused
+            reader = AnalogMultiChannelReader(
+                readTask.in_stream
+            )  # TODO unused
             writer = AnalogSingleChannelWriter(writeTask.out_stream)
 
             writer.write_many_sample(self.wave)
@@ -568,7 +624,11 @@ class PatchclampSealTest_zap:
         # self.constant = constant
         # wave = self.constant
         wave = blockWave(
-            self.sampleRate, self.frequency, self.voltMin, self.voltMax, self.dutycycle
+            self.sampleRate,
+            self.frequency,
+            self.voltMin,
+            self.voltMax,
+            self.dutycycle,
         )
         self.measurementThread_zap = ContinuousPatchThread_zap(
             wave, self.sampleRate, self.readNumber

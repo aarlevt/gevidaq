@@ -64,7 +64,7 @@ class DMD_manager:
 
         # Binary amplitude image (0 or 1)
         bitDepth = 1
-        self.image *= 2 ** 8 - 1
+        self.image *= 2**8 - 1
         self.image = self.image.astype(int)
         # Allocate the onboard memory for the image sequence
         # nbImg defines the number of masks

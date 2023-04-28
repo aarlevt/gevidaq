@@ -45,7 +45,6 @@ from .ImageProcessing import PatchAnalysis, ProcessImage
 
 
 class AnalysisWidgetUI(QWidget):
-
     #    waveforms_generated = pyqtSignal(object, object, list, int)
     #    SignalForContourScanning = pyqtSignal(int, int, int, np.ndarray, np.ndarray)
     MessageBack = pyqtSignal(str)
@@ -75,7 +74,9 @@ class AnalysisWidgetUI(QWidget):
         self.readimageLayout.addWidget(self.Construct_name, 1, 0)
 
         self.switch_Vp_or_camtrace = QComboBox()
-        self.switch_Vp_or_camtrace.addItems(["Correlate to Vp", "Correlate to video", "Photocurrent"])
+        self.switch_Vp_or_camtrace.addItems(
+            ["Correlate to Vp", "Correlate to video", "Photocurrent"]
+        )
         self.readimageLayout.addWidget(self.switch_Vp_or_camtrace, 1, 1)
 
         self.textbox_directory_name = QLineEdit(self)
@@ -142,12 +143,18 @@ class AnalysisWidgetUI(QWidget):
         self.roi_average = pg.PolyLineROI(
             [[0, 0], [0, 30], [30, 30], [30, 0]], closed=True
         )
-        self.roi_average = pg.RectROI([0, 0], [30, 30], centered=True, sideScalers=True)
+        self.roi_average = pg.RectROI(
+            [0, 0], [30, 30], centered=True, sideScalers=True
+        )
         self.pw_averageimage.view.addItem(self.roi_average)
         # self.pw_weightimage = weightedimagewindow()
-        self.imageanalysisLayout_average.addWidget(self.pw_averageimage, 0, 0, 5, 3)
+        self.imageanalysisLayout_average.addWidget(
+            self.pw_averageimage, 0, 0, 5, 3
+        )
 
-        imageanalysis_average_Container.setLayout(self.imageanalysisLayout_average)
+        imageanalysis_average_Container.setLayout(
+            self.imageanalysisLayout_average
+        )
         imageanalysis_average_Container.setMinimumHeight(180)
         # ------------------------------------------------------Image Analysis-weighV window-------------------------------------------------------
         imageanalysis_weight_Container = QGroupBox("Weighted image")
@@ -163,13 +170,21 @@ class AnalysisWidgetUI(QWidget):
         )
         self.pw_weightimage.view.addItem(self.roi_weighted)
         # self.pw_weightimage = weightedimagewindow()
-        self.imageanalysisLayout_weight.addWidget(self.pw_weightimage, 0, 0, 5, 3)
+        self.imageanalysisLayout_weight.addWidget(
+            self.pw_weightimage, 0, 0, 5, 3
+        )
 
-        imageanalysis_weight_Container.setLayout(self.imageanalysisLayout_weight)
+        imageanalysis_weight_Container.setLayout(
+            self.imageanalysisLayout_weight
+        )
         imageanalysis_weight_Container.setMinimumHeight(180)
 
-        image_display_container_layout.addWidget(imageanalysis_average_Container, 0, 0)
-        image_display_container_layout.addWidget(imageanalysis_weight_Container, 0, 1)
+        image_display_container_layout.addWidget(
+            imageanalysis_average_Container, 0, 0
+        )
+        image_display_container_layout.addWidget(
+            imageanalysis_weight_Container, 0, 1
+        )
 
         # ----------------------------------------------------------------------
         Display_Container_tabs_tab3 = PlotAnalysisGUI()
@@ -194,7 +209,7 @@ class AnalysisWidgetUI(QWidget):
         # self.Display_Container_tabs_Cellselection_layout.addWidget(self.show_cellselection_gui_button, 0,0)
         # self.Display_Container_tabs_Cellselection.setLayout(self.Display_Container_tabs_Cellselection_layout)
 
-        #----------------------Show trace--------------------------------------
+        # ----------------------Show trace--------------------------------------
         Display_Container_tabs_tab4 = QWidget()
         Display_Container_tabs_tab4_layout = QGridLayout()
 
@@ -202,8 +217,12 @@ class AnalysisWidgetUI(QWidget):
         self.waveform_samplingrate_box.setMaximum(250000)
         self.waveform_samplingrate_box.setValue(50000)
         self.waveform_samplingrate_box.setSingleStep(500)
-        Display_Container_tabs_tab4_layout.addWidget(self.waveform_samplingrate_box, 0, 1)
-        Display_Container_tabs_tab4_layout.addWidget(QLabel("Sampling rate:"), 0, 0)
+        Display_Container_tabs_tab4_layout.addWidget(
+            self.waveform_samplingrate_box, 0, 1
+        )
+        Display_Container_tabs_tab4_layout.addWidget(
+            QLabel("Sampling rate:"), 0, 0
+        )
 
         self.textbox_single_waveform_filename = QLineEdit(self)
         Display_Container_tabs_tab4_layout.addWidget(
@@ -211,20 +230,28 @@ class AnalysisWidgetUI(QWidget):
         )
 
         self.button_browse_tab4 = QPushButton("Browse", self)
-        Display_Container_tabs_tab4_layout.addWidget(self.button_browse_tab4, 0, 3)
+        Display_Container_tabs_tab4_layout.addWidget(
+            self.button_browse_tab4, 0, 3
+        )
 
         self.button_browse_tab4.clicked.connect(self.get_single_waveform)
 
-        Display_Container_tabs_tab4.setLayout(Display_Container_tabs_tab4_layout)
+        Display_Container_tabs_tab4.setLayout(
+            Display_Container_tabs_tab4_layout
+        )
 
         # Add tabs
         Display_Container_tabs.addTab(
             Display_Container_tabs_Galvo_WidgetInstance, "Patch clamp display"
         )
         # Display_Container_tabs.addTab(Display_Container_tabs_tab2,"Patch display")
-        Display_Container_tabs.addTab(Display_Container_tabs_tab3, "Patch perfusion")
+        Display_Container_tabs.addTab(
+            Display_Container_tabs_tab3, "Patch perfusion"
+        )
         # Display_Container_tabs.addTab(self.Display_Container_tabs_Cellselection,"Cell selection")
-        Display_Container_tabs.addTab(Display_Container_tabs_tab4, "Display NIdaq trace")
+        Display_Container_tabs.addTab(
+            Display_Container_tabs_tab4, "Display NIdaq trace"
+        )
 
         Display_Layout.addWidget(Display_Container_tabs, 0, 0)
         Display_Container.setLayout(Display_Layout)
@@ -241,13 +268,10 @@ class AnalysisWidgetUI(QWidget):
     # --------------------------------------------------------------------------------------------------------------------------------------
     # **************************************************************************************************************************************
     def getfile(self):
-        self.main_directory = str(
-            QtWidgets.QFileDialog.getExistingDirectory()
-        )
+        self.main_directory = str(QtWidgets.QFileDialog.getExistingDirectory())
         self.textbox_directory_name.setText(self.main_directory)
 
         if self.switch_Vp_or_camtrace.currentIndex() == 0:
-
             for file in os.listdir(self.main_directory):
                 # For Labview generated data.
                 if file.endswith(".tif") or file.endswith(".TIF"):
@@ -276,7 +300,9 @@ class AnalysisWidgetUI(QWidget):
         else:
             get_ipython().run_line_magic("matplotlib", "qt")
 
-        if not os.path.exists(os.path.join(self.main_directory, "Patch analysis")):
+        if not os.path.exists(
+            os.path.join(self.main_directory, "Patch analysis")
+        ):
             # If the folder is not there, create the folder
             os.mkdir(os.path.join(self.main_directory, "Patch analysis"))
 
@@ -302,7 +328,9 @@ class AnalysisWidgetUI(QWidget):
         # Load tif video file.
         self.videostack = imread(self.fileName)
         print(self.videostack.shape)
-        self.MessageToMainGUI("Video size: " + str(self.videostack.shape) + "\n")
+        self.MessageToMainGUI(
+            "Video size: " + str(self.videostack.shape) + "\n"
+        )
         self.roi_average.maxBounds = QRectF(
             0, 0, self.videostack.shape[2], self.videostack.shape[1]
         )
@@ -353,10 +381,11 @@ class AnalysisWidgetUI(QWidget):
         self.run_analysis_button.setEnabled(False)
 
     def ReceiveVideo(self, videosentin):
-
         self.videostack = videosentin
         print(self.videostack.shape)
-        self.MessageToMainGUI("Video size: " + str(self.videostack.shape) + "\n")
+        self.MessageToMainGUI(
+            "Video size: " + str(self.videostack.shape) + "\n"
+        )
         self.roi_average.maxBounds = QRectF(
             0, 0, self.videostack.shape[2], self.videostack.shape[1]
         )
@@ -383,7 +412,9 @@ class AnalysisWidgetUI(QWidget):
             # For Labview generated data.
             if file.endswith(".Ip"):
                 self.Ipfilename = self.main_directory + "/" + file
-                curvereadingobjective_i = ProcessImage.readbinaryfile(self.Ipfilename)
+                curvereadingobjective_i = ProcessImage.readbinaryfile(
+                    self.Ipfilename
+                )
                 (
                     self.Ip,
                     self.samplingrate_display_curve,
@@ -392,7 +423,9 @@ class AnalysisWidgetUI(QWidget):
 
             elif file.endswith(".Vp"):
                 self.Vpfilename = self.main_directory + "/" + file
-                curvereadingobjective_V = ProcessImage.readbinaryfile(self.Vpfilename)
+                curvereadingobjective_V = ProcessImage.readbinaryfile(
+                    self.Vpfilename
+                )
                 (
                     self.Vp,
                     self.samplingrate_display_curve,
@@ -426,10 +459,14 @@ class AnalysisWidgetUI(QWidget):
 
                 # Load the configured patch voltage waveform
                 for each_waveform in self.configured_waveforms_container:
-                    if each_waveform['Specification'] == "patchAO":
-                        self.configured_Vp = each_waveform['Waveform']
+                    if each_waveform["Specification"] == "patchAO":
+                        self.configured_Vp = each_waveform["Waveform"]
 
-                        print("Length of configured_Vp: {}".format(len(self.configured_Vp)))
+                        print(
+                            "Length of configured_Vp: {}".format(
+                                len(self.configured_Vp)
+                            )
+                        )
 
                         if len(self.configured_Vp) % 10 == 5:
                             # First 4 numbers and the last one in the recording
@@ -437,16 +474,28 @@ class AnalysisWidgetUI(QWidget):
 
                             # Extra camera triggers: False True True False | Real signals: True
                             # Extra patch voltage:   -0.7  -0.7 -0.7 -0.7  | Real signals: 0.3
-                            self.configured_Vp = self.configured_Vp[4:][0:-1]/10
+                            self.configured_Vp = (
+                                self.configured_Vp[4:][0:-1] / 10
+                            )
 
-                            print("Length of cut Vp: {}".format(len(self.configured_Vp)))
+                            print(
+                                "Length of cut Vp: {}".format(
+                                    len(self.configured_Vp)
+                                )
+                            )
 
                         elif len(self.configured_Vp) % 10 == 2:
                             # The first number and the last one in the recording
                             # are padding values outside the real camera recording.
-                            self.configured_Vp = self.configured_Vp[1:][0:-1]/10
+                            self.configured_Vp = (
+                                self.configured_Vp[1:][0:-1] / 10
+                            )
 
-                            print("Length of cut Vp: {}".format(len(self.configured_Vp)))
+                            print(
+                                "Length of cut Vp: {}".format(
+                                    len(self.configured_Vp)
+                                )
+                            )
 
             # For python generated data
             elif file.startswith("Vp"):
@@ -505,7 +554,9 @@ class AnalysisWidgetUI(QWidget):
             )
         )
 
-        unique, counts = np.unique(self.averageimage_ROI_mask, return_counts=True)
+        unique, counts = np.unique(
+            self.averageimage_ROI_mask, return_counts=True
+        )
         count_dict = dict(zip(unique, counts))
         print("number of 1 and 0:" + str(count_dict))
 
@@ -534,7 +585,8 @@ class AnalysisWidgetUI(QWidget):
         ax0.set_ylabel("Pixel values")
         fig.savefig(
             os.path.join(
-                self.main_directory, "Patch analysis//ROI raw background trace.png"
+                self.main_directory,
+                "Patch analysis//ROI raw background trace.png",
             ),
             dpi=1000,
         )
@@ -587,17 +639,23 @@ class AnalysisWidgetUI(QWidget):
         ax1.set_ylabel("Pixel values")
         fig.savefig(
             os.path.join(
-                self.main_directory, "Patch analysis//Smoothed background trace.png"
+                self.main_directory,
+                "Patch analysis//Smoothed background trace.png",
             ),
             dpi=1000,
         )
         plt.show()
 
         # For each frame in video, substract the background
-        container = np.empty((self.videostack.shape[0],self.videostack.shape[1],self.videostack.shape[2]))
+        container = np.empty(
+            (
+                self.videostack.shape[0],
+                self.videostack.shape[1],
+                self.videostack.shape[2],
+            )
+        )
 
         for i in range(self.videostack.shape[0]):
-
             raw_frame = self.videostack[i]
 
             background_mean = self.background_trace_smoothed[i]
@@ -607,29 +665,38 @@ class AnalysisWidgetUI(QWidget):
             )
 
             temp_diff = raw_frame - background_mean_2d
-            temp_diff[temp_diff<0] = 0
+            temp_diff[temp_diff < 0] = 0
 
             container[i] = temp_diff
-            self.videostack[i,:,:] = temp_diff
+            self.videostack[i, :, :] = temp_diff
 
         print("ROI background correction done.")
-
 
         saveBgSubstractedVideop = False
         # Save the file.
         if saveBgSubstractedVideop == True:
-            with skimtiff.TiffWriter(os.path.join(self.main_directory, "Patch analysis//saveBgSubstractedVideo.tif"), append=True) as tif:
+            with skimtiff.TiffWriter(
+                os.path.join(
+                    self.main_directory,
+                    "Patch analysis//saveBgSubstractedVideo.tif",
+                ),
+                append=True,
+            ) as tif:
                 tif.save(self.videostack, compress=0)
 
         self.videostack = container
         # Show the background corrected trace.
         mean_camera_counts_backgroubd_substracted = []
         for i in range(self.videostack.shape[0]):
-            mean_camera_counts_backgroubd_substracted.append(np.mean(self.videostack[i]))
+            mean_camera_counts_backgroubd_substracted.append(
+                np.mean(self.videostack[i])
+            )
 
         fig2, ax2 = plt.subplots(figsize=(8.0, 5.8))
         fig2.suptitle("Mean camera intensity after backgroubd substracted")
-        plt.plot(self.cam_time_label, mean_camera_counts_backgroubd_substracted)
+        plt.plot(
+            self.cam_time_label, mean_camera_counts_backgroubd_substracted
+        )
         ax2.set_xlabel("time(s)")
         ax2.set_ylabel("Pixel values")
         fig2.savefig(
@@ -649,7 +716,9 @@ class AnalysisWidgetUI(QWidget):
         fig3.suptitle("Mean intensity")
         plt.imshow(self.imganalysis_averageimage)
         fig3.savefig(
-            os.path.join(self.main_directory, "Patch analysis//Mean intensity.png"),
+            os.path.join(
+                self.main_directory, "Patch analysis//Mean intensity.png"
+            ),
             dpi=1000,
         )
         plt.show()
@@ -664,10 +733,14 @@ class AnalysisWidgetUI(QWidget):
 
         """
         if self.switch_Vp_or_camtrace.currentIndex() == 0:
+            self.patchcurrentlabel = (
+                np.arange(len(self.Ip)) / self.samplingrate_display_curve
+            )
 
-            self.patchcurrentlabel = np.arange(len(self.Ip)) / self.samplingrate_display_curve
-
-            self.patchvoltagelabel = np.arange(len(self.configured_Vp)) / self.samplingrate_display_curve
+            self.patchvoltagelabel = (
+                np.arange(len(self.configured_Vp))
+                / self.samplingrate_display_curve
+            )
 
             self.electrical_signals_figure, (ax1, ax2) = plt.subplots(2, 1)
             # plt.title('Electrode recording')
@@ -675,7 +748,10 @@ class AnalysisWidgetUI(QWidget):
             # Probe gain: low-100M ohem
             # [DAQ recording / 10**8 (voltage to current)]* 10**12 (A to pA) == pA
             ax1.plot(
-                self.patchcurrentlabel, self.Ip * 10000, label="Current", color="b"
+                self.patchcurrentlabel,
+                self.Ip * 10000,
+                label="Current",
+                color="b",
             )
             ax1.set_title("Electrode recording")
             ax1.set_xlabel("time(s)")
@@ -685,7 +761,10 @@ class AnalysisWidgetUI(QWidget):
             # ax2 = self.electrical_signals_figure.add_subplot(212)
             # *1000: convert to mV; /10 is to correct for the *10 add on at patch amplifier.
             ax2.plot(
-                self.patchvoltagelabel, self.configured_Vp * 1000, label="Set voltage", color="b"
+                self.patchvoltagelabel,
+                self.configured_Vp * 1000,
+                label="Set voltage",
+                color="b",
             )
             # ax2.set_title('Voltage')
             ax2.set_xlabel("time(s)")
@@ -695,7 +774,8 @@ class AnalysisWidgetUI(QWidget):
             plt.show()
             self.electrical_signals_figure.savefig(
                 os.path.join(
-                    self.main_directory, "Patch analysis//Electrode recording.png"
+                    self.main_directory,
+                    "Patch analysis//Electrode recording.png",
                 ),
                 dpi=1000,
             )
@@ -725,7 +805,8 @@ class AnalysisWidgetUI(QWidget):
         plt.imshow(self.imganalysis_averageimage)
         fig.savefig(
             os.path.join(
-                self.main_directory, "Patch analysis//Mean intensity of raw video.png"
+                self.main_directory,
+                "Patch analysis//Mean intensity of raw video.png",
             ),
             dpi=1000,
         )
@@ -766,10 +847,18 @@ class AnalysisWidgetUI(QWidget):
 
         # self.roi_average_pos = self.roi_average.pos()
         self.roi_average_Bounds = self.roi_average.parentBounds()
-        self.roi_avg_coord_col_start = round(self.roi_average_Bounds.topLeft().x())
-        self.roi_avg_coord_col_end = round(self.roi_average_Bounds.bottomRight().x())
-        self.roi_avg_coord_raw_start = round(self.roi_average_Bounds.topLeft().y())
-        self.roi_avg_coord_raw_end = round(self.roi_average_Bounds.bottomRight().y())
+        self.roi_avg_coord_col_start = round(
+            self.roi_average_Bounds.topLeft().x()
+        )
+        self.roi_avg_coord_col_end = round(
+            self.roi_average_Bounds.bottomRight().x()
+        )
+        self.roi_avg_coord_raw_start = round(
+            self.roi_average_Bounds.topLeft().y()
+        )
+        self.roi_avg_coord_raw_end = round(
+            self.roi_average_Bounds.bottomRight().y()
+        )
 
     def calculateweight(self):
         t2 = threading.Thread(target=self.calculate_weight)
@@ -786,41 +875,54 @@ class AnalysisWidgetUI(QWidget):
         """
         if self.switch_Vp_or_camtrace.currentIndex() == 0:
             self.samplingrate_cam = self.Spincamsamplingrate.value()
-            self.downsample_ratio = int(self.samplingrate_display_curve / self.samplingrate_cam)
+            self.downsample_ratio = int(
+                self.samplingrate_display_curve / self.samplingrate_cam
+            )
 
             print("Vp downsampling ratio: {}".format(self.downsample_ratio))
             print("Sampling rate camera: {}".format(self.samplingrate_cam))
-            print("Sampling rate DAQ: {}".format(self.samplingrate_display_curve))
+            print(
+                "Sampling rate DAQ: {}".format(self.samplingrate_display_curve)
+            )
 
             try:
-                self.Vp_downsample = self.configured_Vp.reshape(-1, self.downsample_ratio).mean(
-                    axis=1
-                )
+                self.Vp_downsample = self.configured_Vp.reshape(
+                    -1, self.downsample_ratio
+                ).mean(axis=1)
 
                 # self.Vp_downsample = self.Vp_downsample[0 : len(self.videostack)]
             except:
                 print("Vp downsampling ratio is not an integer.")
                 small_ratio = int(
-                    np.floor(self.samplingrate_display_curve / self.samplingrate_cam)
+                    np.floor(
+                        self.samplingrate_display_curve / self.samplingrate_cam
+                    )
                 )
                 resample_length = int(len(self.videostack) * small_ratio)
-                self.Vp_downsample = signal.resample(self.configured_Vp, resample_length)
+                self.Vp_downsample = signal.resample(
+                    self.configured_Vp, resample_length
+                )
                 plt.figure()
                 plt.plot(self.Vp_downsample)
                 plt.show()
 
-                self.Vp_downsample = self.Vp_downsample.reshape(-1, small_ratio).mean(
-                    axis=1
-                )
+                self.Vp_downsample = self.Vp_downsample.reshape(
+                    -1, small_ratio
+                ).mean(axis=1)
 
             # If there's a missing frame in camera video(probably in the beginning),
             # cut the Vp from the beginning
-            self.Vp_downsample = self.Vp_downsample\
-                [len(self.Vp_downsample) - len(self.videostack):]
+            self.Vp_downsample = self.Vp_downsample[
+                len(self.Vp_downsample) - len(self.videostack) :
+            ]
 
             print(self.videostack.shape, self.Vp_downsample.shape)
 
-            self.corrimage, self.weightimage, self.sigmaimage = ProcessImage.extractV(
+            (
+                self.corrimage,
+                self.weightimage,
+                self.sigmaimage,
+            ) = ProcessImage.extractV(
                 self.videostack, self.Vp_downsample * 1000
             )
             # *1000: convert to mV; /10 is to correct for the *10 add on at patch amplifier(not anymore).
@@ -828,7 +930,11 @@ class AnalysisWidgetUI(QWidget):
             self.pw_weightimage.setImage(self.weightimage)
 
         elif self.switch_Vp_or_camtrace.currentIndex() == 1:
-            self.corrimage, self.weightimage, self.sigmaimage = ProcessImage.extractV(
+            (
+                self.corrimage,
+                self.weightimage,
+                self.sigmaimage,
+            ) = ProcessImage.extractV(
                 self.videostack, self.camsignalsum * 1000
             )
 
@@ -881,7 +987,9 @@ class AnalysisWidgetUI(QWidget):
         )
 
         np.save(
-            os.path.join(self.main_directory, "Patch analysis//Weighted_trace.npy"),
+            os.path.join(
+                self.main_directory, "Patch analysis//Weighted_trace.npy"
+            ),
             self.weight_trace_data,
         )
 
@@ -908,11 +1016,11 @@ class AnalysisWidgetUI(QWidget):
 
         """
         fit = PatchAnalysis(
-            weighted_trace = self.weight_trace_data,
-            DAQ_waveform = self.configured_Vp,
-            voltage_step_frequency = self.VoltageStepFrequencyQSpinBox.value(),
-            camera_fps = self.samplingrate_cam,
-            DAQ_sampling_rate = self.samplingrate_display_curve,
+            weighted_trace=self.weight_trace_data,
+            DAQ_waveform=self.configured_Vp,
+            voltage_step_frequency=self.VoltageStepFrequencyQSpinBox.value(),
+            camera_fps=self.samplingrate_cam,
+            DAQ_sampling_rate=self.samplingrate_display_curve,
             main_directory=self.main_directory,
             rhodopsin=self.Construct_name.text(),
         )
@@ -924,11 +1032,15 @@ class AnalysisWidgetUI(QWidget):
 
     def save_analyzed_image(self, catag):
         if catag == "weight_image":
-            Localimg = Image.fromarray(self.weightimage)  # generate an image object
+            Localimg = Image.fromarray(
+                self.weightimage
+            )  # generate an image object
             Localimg.save(
                 os.path.join(
                     self.savedirectory,
-                    "Weight_" + datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + ".tif",
+                    "Weight_"
+                    + datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
+                    + ".tif",
                 )
             )  # save as tif
 
@@ -956,11 +1068,13 @@ class AnalysisWidgetUI(QWidget):
         None.
 
         """
-        self.single_waveform_fileName, _ = QtWidgets.QFileDialog.getOpenFileName(
-            self,
-            "Single File"
+        (
+            self.single_waveform_fileName,
+            _,
+        ) = QtWidgets.QFileDialog.getOpenFileName(self, "Single File")
+        self.textbox_single_waveform_filename.setText(
+            self.single_waveform_fileName
         )
-        self.textbox_single_waveform_filename.setText(self.single_waveform_fileName)
 
         self.single_waveform = np.load(
             self.single_waveform_fileName, allow_pickle=True
@@ -968,11 +1082,13 @@ class AnalysisWidgetUI(QWidget):
 
         wave_sampling_rate = self.waveform_samplingrate_box.value()
 
-        time_axis = np.arange(len(self.single_waveform[9:-1]))/wave_sampling_rate
+        time_axis = (
+            np.arange(len(self.single_waveform[9:-1])) / wave_sampling_rate
+        )
 
         try:
-            if 'Ip' in self.single_waveform_fileName:
-            # If plotting the patch current
+            if "Ip" in self.single_waveform_fileName:
+                # If plotting the patch current
                 self.Ip = self.single_waveform[9:-1]
 
                 fig, ax = plt.subplots()
@@ -980,7 +1096,7 @@ class AnalysisWidgetUI(QWidget):
                 ax.set_title("Patch current")
                 ax.set_ylabel("Current (pA)")
                 ax.set_xlabel("time(s)")
-            elif 'Vp' in self.single_waveform_fileName:
+            elif "Vp" in self.single_waveform_fileName:
                 # If plotting the patch voltage
                 self.Vp = self.single_waveform[9:-1]
 
@@ -991,7 +1107,7 @@ class AnalysisWidgetUI(QWidget):
                 ax.set_xlabel("time(s)")
 
                 print(
-                "For Vp recored earlier than 22.12.2021, pls devided by 10 as the amplifier channel multipliesby 10 by default."
+                    "For Vp recored earlier than 22.12.2021, pls devided by 10 as the amplifier channel multipliesby 10 by default."
                 )
             elif "PMT" in self.single_waveform_fileName:
                 self.PMT_recording = self.single_waveform[9:-1]
@@ -1011,9 +1127,8 @@ class AnalysisWidgetUI(QWidget):
             pass
 
 
-#%%
+# %%
 class PlotAnalysisGUI(QWidget):
-
     waveforms_generated = pyqtSignal(object, object, list, int)
 
     def __init__(self, *args, **kwargs):
@@ -1038,11 +1153,15 @@ class PlotAnalysisGUI(QWidget):
         self.layout.addWidget(self.checkboxWaveform, 0, 0)
 
         self.checkboxTrace = QCheckBox("Recorded trace")
-        self.checkboxTrace.setStyleSheet('color:CadetBlue;font:bold "Times New Roman"')
+        self.checkboxTrace.setStyleSheet(
+            'color:CadetBlue;font:bold "Times New Roman"'
+        )
         self.layout.addWidget(self.checkboxTrace, 1, 0)
 
         self.checkboxCam = QCheckBox("Cam trace")
-        self.checkboxCam.setStyleSheet('color:CadetBlue;font:bold "Times New Roman"')
+        self.checkboxCam.setStyleSheet(
+            'color:CadetBlue;font:bold "Times New Roman"'
+        )
 
         self.Spincamsamplingrate = QSpinBox(self)
         self.Spincamsamplingrate.setMaximum(2000)
@@ -1074,7 +1193,9 @@ class PlotAnalysisGUI(QWidget):
         self.layout.addWidget(pmtimageContainer, 3, 0, 1, 3)
 
     def _open_file_dialog(self):
-        self.Nest_data_directory = str(QtWidgets.QFileDialog.getExistingDirectory())
+        self.Nest_data_directory = str(
+            QtWidgets.QFileDialog.getExistingDirectory()
+        )
         self.savedirectorytextbox.setText(self.Nest_data_directory)
 
     def show_graphy(self):
@@ -1091,7 +1212,9 @@ class PlotAnalysisGUI(QWidget):
 
         for file in os.listdir(self.Nest_data_directory):
             if "Wavefroms_sr_" in file:
-                self.wave_fileName = os.path.join(self.Nest_data_directory, file)
+                self.wave_fileName = os.path.join(
+                    self.Nest_data_directory, file
+                )
             elif file.endswith("csv"):  # Quick dirty fix
                 self.recorded_cam_fileName = os.path.join(
                     self.Nest_data_directory, file
@@ -1102,7 +1225,9 @@ class PlotAnalysisGUI(QWidget):
                 self.cam_trace_fluorescence_value = np.array([])
 
                 with open(self.recorded_cam_fileName, newline="") as csvfile:
-                    spamreader = csv.reader(csvfile, delimiter=" ", quotechar="|")
+                    spamreader = csv.reader(
+                        csvfile, delimiter=" ", quotechar="|"
+                    )
                     for column in spamreader:
                         coords = column[0].split(",")
                         if coords[0] != "X":  # First row and column is 'x, y'
@@ -1110,7 +1235,8 @@ class PlotAnalysisGUI(QWidget):
                                 self.cam_trace_time_label, int(coords[0])
                             )
                             self.cam_trace_fluorescence_value = np.append(
-                                self.cam_trace_fluorescence_value, float(coords[1])
+                                self.cam_trace_fluorescence_value,
+                                float(coords[1]),
                             )
                 self.cam_trace_fluorescence_dictionary[
                     "region_{0}".format(len(self.region_file_name) + 1)
@@ -1125,10 +1251,10 @@ class PlotAnalysisGUI(QWidget):
                 )
 
         # Read in configured waveforms
-        configwave_wavenpfileName = (
-            self.wave_fileName
+        configwave_wavenpfileName = self.wave_fileName
+        temp_loaded_container = np.load(
+            configwave_wavenpfileName, allow_pickle=True
         )
-        temp_loaded_container = np.load(configwave_wavenpfileName, allow_pickle=True)
 
         Daq_sample_rate = int(
             float(
@@ -1153,7 +1279,6 @@ class PlotAnalysisGUI(QWidget):
 
         # ----------------------------------------------------For patch perfusion---------------------------------------------------------------
         if len(self.region_file_name) == 0:
-
             if len(self.Checked_display_list) == 2:
                 figure, (ax1, ax2) = plt.subplots(2, 1)
 
@@ -1170,15 +1295,25 @@ class PlotAnalysisGUI(QWidget):
                         label="488AO",
                         color="b",
                     )
-                elif temp_loaded_container[i]["Specification"] == "Perfusion_8":
+                elif (
+                    temp_loaded_container[i]["Specification"] == "Perfusion_8"
+                ):
                     ax1.plot(
-                        xlabel_all, temp_loaded_container[i]["Waveform"], label="KCL"
+                        xlabel_all,
+                        temp_loaded_container[i]["Waveform"],
+                        label="KCL",
                     )
-                elif temp_loaded_container[i]["Specification"] == "Perfusion_7":
+                elif (
+                    temp_loaded_container[i]["Specification"] == "Perfusion_7"
+                ):
                     ax1.plot(
-                        xlabel_all, temp_loaded_container[i]["Waveform"], label="EC"
+                        xlabel_all,
+                        temp_loaded_container[i]["Waveform"],
+                        label="EC",
                     )
-                elif temp_loaded_container[i]["Specification"] == "Perfusion_2":
+                elif (
+                    temp_loaded_container[i]["Specification"] == "Perfusion_2"
+                ):
                     ax1.plot(
                         xlabel_all,
                         temp_loaded_container[i]["Waveform"],
@@ -1214,17 +1349,28 @@ class PlotAnalysisGUI(QWidget):
                             label="488AO",
                             color="b",
                         )
-                    elif temp_loaded_container[i]["Specification"] == "Perfusion_8":
+                    elif (
+                        temp_loaded_container[i]["Specification"]
+                        == "Perfusion_8"
+                    ):
                         ax1.plot(
                             xlabel_all,
                             temp_loaded_container[i]["Waveform"],
                             label="KCL",
                         )
-                    elif temp_loaded_container[i]["Specification"] == "Perfusion_7":
+                    elif (
+                        temp_loaded_container[i]["Specification"]
+                        == "Perfusion_7"
+                    ):
                         ax1.plot(
-                            xlabel_all, temp_loaded_container[i]["Waveform"], label="EC"
+                            xlabel_all,
+                            temp_loaded_container[i]["Waveform"],
+                            label="EC",
                         )
-                    elif temp_loaded_container[i]["Specification"] == "Perfusion_2":
+                    elif (
+                        temp_loaded_container[i]["Specification"]
+                        == "Perfusion_2"
+                    ):
                         ax1.plot(
                             xlabel_all,
                             temp_loaded_container[i]["Waveform"],
@@ -1237,9 +1383,7 @@ class PlotAnalysisGUI(QWidget):
 
                 if "Recorded_trace" in self.Checked_display_list:
                     # Read in recorded waves
-                    Readin_fileName = (
-                        self.recorded_wave_fileName
-                    )
+                    Readin_fileName = self.recorded_wave_fileName
 
                     if (
                         "Vp" in os.path.split(Readin_fileName)[1]

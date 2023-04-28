@@ -71,7 +71,7 @@ class DMDActuator:
 
         # Binary amplitude image (0 or 1)
         bitDepth = 1
-        self.image *= 2 ** 8 - 1
+        self.image *= 2**8 - 1
         self.image = self.image.astype(int)
         # Allocate the onboard memory for the image sequence
         # nbImg defines the number of masks
@@ -95,12 +95,16 @@ class DMDActuator:
 
     def inquire_status(self):
         PICTURE_TIME = self.DMD.SeqInquire(inquireType=ALP4.ALP_PICTURE_TIME)
-        ILLUMINATE_TIME = self.DMD.SeqInquire(inquireType=ALP4.ALP_ILLUMINATE_TIME)
+        ILLUMINATE_TIME = self.DMD.SeqInquire(
+            inquireType=ALP4.ALP_ILLUMINATE_TIME
+        )
         BITNUM = self.DMD.SeqInquire(inquireType=ALP4.ALP_BITNUM)
         BIN_MODE = self.DMD.SeqInquire(inquireType=ALP4.ALP_BIN_MODE)
         OFF_TIME = self.DMD.SeqInquire(inquireType=ALP4.ALP_OFF_TIME)
         PICNUM = self.DMD.SeqInquire(inquireType=ALP4.ALP_PICNUM)
-        MIN_PICTURE_TIME = self.DMD.SeqInquire(inquireType=ALP4.ALP_MIN_PICTURE_TIME)
+        MIN_PICTURE_TIME = self.DMD.SeqInquire(
+            inquireType=ALP4.ALP_MIN_PICTURE_TIME
+        )
 
         print("-------------DMD status-------------")
         print("ALP_PICTURE_TIME: {} μs".format(PICTURE_TIME))
@@ -110,9 +114,17 @@ class DMDActuator:
             print("ALP_BIN_MODE: with dark phase.")
         elif BIN_MODE == 2016:  # TODO magic number
             print("ALP_BIN_MODE: Operation without dark phase.")
-        print("ALP_OFF_TIME: {} μs (total inactive projection time)".format(OFF_TIME))
+        print(
+            "ALP_OFF_TIME: {} μs (total inactive projection time)".format(
+                OFF_TIME
+            )
+        )
         print("Number of pictures in sequence: {}".format(PICNUM))
-        print("minimum duration of the display of one picture in μs(MIN_PICTURE_TIME): {}".format(MIN_PICTURE_TIME))
+        print(
+            "minimum duration of the display of one picture in μs(MIN_PICTURE_TIME): {}".format(
+                MIN_PICTURE_TIME
+            )
+        )
         print("------------------------------------")
 
     def stop_projection(self):

@@ -77,7 +77,9 @@ class RasterScan:
         self.Totalscansamples = len(self.samples_X) * self.averagenum
         # Number of samples of each individual line of x scanning, including fly backs.
         # Devided by pixel number as it's repeated for each y line.
-        self.total_X_sample_number = int(len(self.samples_X) / self.pixel_number)
+        self.total_X_sample_number = int(
+            len(self.samples_X) / self.pixel_number
+        )
 
         self.repeated_samples_X = np.tile(self.samples_X, self.averagenum)
         self.repeated_samples_Y = np.tile(self.samples_Y, self.averagenum)
@@ -93,7 +95,6 @@ class RasterScan:
         """
 
         with nidaqmx.Task() as slave_Task, nidaqmx.Task() as master_Task:
-
             slave_Task.ao_channels.add_ao_voltage_chan("/Dev1/ao0:1")
             master_Task.ai_channels.add_ai_voltage_chan("/Dev1/ai0")
 
@@ -146,15 +147,19 @@ class RasterScan:
 
             # while not self.isInterruptionRequested():
             reader.read_many_sample(
-                data=output, number_of_samples_per_channel=self.Totalscansamples
+                data=output,
+                number_of_samples_per_channel=self.Totalscansamples,
             )
 
-            Dataholder_average = np.mean(output.reshape(self.averagenum, -1), axis=0)
+            Dataholder_average = np.mean(
+                output.reshape(self.averagenum, -1), axis=0
+            )
 
             if self.flag_return_image == True:
                 # Calculate the mean of average frames.
                 self.data_PMT = np.reshape(
-                    Dataholder_average, (self.pixel_number, self.total_X_sample_number)
+                    Dataholder_average,
+                    (self.pixel_number, self.total_X_sample_number),
                 )
 
                 # Cut off the flying back part.
@@ -236,7 +241,9 @@ class PMT_zscan:
 
         # Number of steps in total to find optimal focus.
         if z_depth != 0:
-            self.total_step_number = round((z_depth_end - self.current_pos) / z_step_size)
+            self.total_step_number = round(
+                (z_depth_end - self.current_pos) / z_step_size
+            )
         else:
             # If doing repeating imaging at the same position,
             # z_depth becomes the number of repeats.
@@ -256,7 +263,6 @@ class PMT_zscan:
         )
 
     def start_scan(self):
-
         for self.each_pos_index in range(len(self.z_stack_positions)):
             if self.scanning_flag == True:
                 # Go through each position and get image.
@@ -288,7 +294,9 @@ class PMT_zscan:
         # Get the image.
         self.galvo_image = self.RasterScanins.run()
 
-        meta_infor = "index_" + str(self.each_pos_index) + "_pos_" + str(obj_position)
+        meta_infor = (
+            "index_" + str(self.each_pos_index) + "_pos_" + str(obj_position)
+        )
 
         if True:
             with skimtiff.TiffWriter(

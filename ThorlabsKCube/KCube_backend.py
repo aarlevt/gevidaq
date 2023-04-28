@@ -26,7 +26,9 @@ class KCube:
         super().__init__(*args, **kwargs)
 
         # Set up serial number variable
-        self.serialNumber = ctypes.c_char_p("28251139".encode("utf-8"))  # TODO magic number
+        self.serialNumber = ctypes.c_char_p(
+            "28251139".encode("utf-8")
+        )  # TODO magic number
 
         self.moveTimeout = 60.0
         self.messageType = ctypes.c_ushort()

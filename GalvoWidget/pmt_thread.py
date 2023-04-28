@@ -137,7 +137,6 @@ class pmtimagingTest:
         Value_yPixels,
         averagenum,
     ):
-
         self.Daq_sample_rate = Daq_sample_rate
         self.averagenum = averagenum
 
@@ -167,7 +166,9 @@ class pmtimagingTest:
         # print(self.Digital_container_feeder[:, 0])
 
         self.repeated_samples_1 = np.tile(self.samples_1, self.averagenum)
-        self.repeated_samples_2_yaxis = np.tile(self.samples_2, self.averagenum)
+        self.repeated_samples_2_yaxis = np.tile(
+            self.samples_2, self.averagenum
+        )
 
         self.Galvo_samples = np.vstack(
             (self.repeated_samples_1, self.repeated_samples_2_yaxis)
@@ -186,7 +187,6 @@ class pmtimagingTest:
     def setWave_contourscan(
         self, Daq_sample_rate, contour_samples, contour_point_number
     ):
-
         self.Daq_sample_rate = Daq_sample_rate
         contour_point_number = contour_point_number
         self.pmtimagingThread = pmtimaging_continuous_Thread_contour(
@@ -307,7 +307,6 @@ class pmtimagingTest_contour:
     def setWave_contourscan(
         self, Daq_sample_rate, contour_samples, contour_point_number
     ):
-
         self.Daq_sample_rate = Daq_sample_rate
         contour_point_number = contour_point_number
         self.pmtimagingThread_contour = pmtimaging_continuous_Thread_contour(

@@ -44,7 +44,7 @@ class SealTestThread(QThread):
         self.voltMin = constants.patchSealMinVol
         self.voltMax = constants.patchSealMaxVol
         self.dutycycle = constants.patchSealDuty
-        self.readNumber = 100 # should be a multiple of the wavelength
+        self.readNumber = 100  # should be a multiple of the wavelength
 
         # look up channel configuration of NIDAQ
         self.configs = NiDaqChannels().look_up_table
@@ -54,11 +54,10 @@ class SealTestThread(QThread):
 
         # generate wave function from loaded constants
         self.wave = np.zeros(self.readNumber)
-        self.setWave(1,0,0)
+        self.setWave(1, 0, 0)
 
         # operation mode
-        self.mode = 'voltageclamp'
-
+        self.mode = "voltageclamp"
 
     @property
     def mode(self):
@@ -67,8 +66,7 @@ class SealTestThread(QThread):
     @mode.setter
     def mode(self, mode):
         self._mode = mode
-        print("Sealtestthread operation mode: "+mode)
-
+        print("Sealtestthread operation mode: " + mode)
 
     def stop(self):
         self.isRunning = False
@@ -79,7 +77,13 @@ class SealTestThread(QThread):
         self.voltMin = lowervoltage / inVolGain
         self.voltMax = self.voltMin + diffvoltage / inVolGain
 
-        self.wave = blockWave(self.sampleRate, self.frequency, self.voltMin, self.voltMax, self.dutycycle)
+        self.wave = blockWave(
+            self.sampleRate,
+            self.frequency,
+            self.voltMin,
+            self.voltMax,
+            self.dutycycle,
+        )
 
     def setTiming(self, writeTask, readTask):
         # Check if they are on the same device
@@ -88,17 +92,25 @@ class SealTestThread(QThread):
 
         # Check if they are on the same device
         if readDev == writeDev:
-            writeClock = ("/" + self.patchCurOutChan.split("/")[0] + "/ai/SampleClock")  # Getting the device and its sampleClock
-        elif (readDev == self.configs["clock1Channel"].split("/")[1]):  # Checking if readTask is on same device as clock1.
-            readTask.export_signals.samp_clk_output_term = self.configs["clock1Channel"]
+            writeClock = (
+                "/" + self.patchCurOutChan.split("/")[0] + "/ai/SampleClock"
+            )  # Getting the device and its sampleClock
+        elif (
+            readDev == self.configs["clock1Channel"].split("/")[1]
+        ):  # Checking if readTask is on same device as clock1.
+            readTask.export_signals.samp_clk_output_term = self.configs[
+                "clock1Channel"
+            ]
             writeClock = self.configs["clock2Channel"]
         elif readDev == self.configs["clock2Channel"].split("/")[1]:
-            readTask.export_signals.samp_clk_output_term = self.configs["clock2Channel"]
+            readTask.export_signals.samp_clk_output_term = self.configs[
+                "clock2Channel"
+            ]
             writeClock = self.configs["clock1Channel"]
         else:
             assert True, "No corresponding clocks defined"
 
-        if self.mode == 'voltageclamp':
+        if self.mode == "voltageclamp":
             readTask.timing.cfg_samp_clk_timing(
                 rate=self.sampleRate,
                 sample_mode=nidaqmx.constants.AcquisitionType.CONTINUOUS,
@@ -109,7 +121,7 @@ class SealTestThread(QThread):
                 source=writeClock,
                 sample_mode=nidaqmx.constants.AcquisitionType.CONTINUOUS,
             )
-        elif self.mode == 'zap':
+        elif self.mode == "zap":
             readTask.timing.cfg_samp_clk_timing(
                 rate=self.sampleRate,
                 sample_mode=nidaqmx.constants.AcquisitionType.FINITE,
@@ -134,14 +146,18 @@ class SealTestThread(QThread):
         zap_duration = 200
         self.sampleRate = 100000
         self.readNumber = 500
-        self.voltMax = zap_voltage/zap_voltagegain
-        self.voltMin = 0/zap_voltagegain
-        self.wave = self.voltMax * np.ones(int(int(zap_duration) * 10 / 100 / 100000 * self.sampleRate))
-        self.wave = np.append(self.wave, np.zeros(10))  # give 10*0 at the end of waveform
+        self.voltMax = zap_voltage / zap_voltagegain
+        self.voltMin = 0 / zap_voltagegain
+        self.wave = self.voltMax * np.ones(
+            int(int(zap_duration) * 10 / 100 / 100000 * self.sampleRate)
+        )
+        self.wave = np.append(
+            self.wave, np.zeros(10)
+        )  # give 10*0 at the end of waveform
         self.sampleNumber = len(self.wave)
 
         # change operation mode to zap and execute
-        self.mode = 'zap'
+        self.mode = "zap"
         self.start()
 
         # zap cannot be interupted so we press stop and just wait for it to end
@@ -149,9 +165,9 @@ class SealTestThread(QThread):
 
         # update the wavefunction for ordinary use and execute
         self.sampleRate = MeasurementConstants().patchSealSampRate
-        self.readNumber = 100 # should be a multiple of the wavelength
+        self.readNumber = 100  # should be a multiple of the wavelength
         self.setWave(0.1, 0.01, 0)
-        self.mode = 'voltageclamp'
+        self.mode = "voltageclamp"
 
         # resume sealtestthread
         self.start()
@@ -184,20 +200,23 @@ class SealTestThread(QThread):
             This way the task will have to wait slightly longer for incoming samples. And leaves the buffer
             entirely clean. This way we always know the correct numpy size and are always left with an empty
             buffer (and the buffer will not slowly fill up)."""
-            if self.mode == 'voltageclamp':
+            if self.mode == "voltageclamp":
                 output = np.zeros([2, self.readNumber])
                 writeTask.start()  # Will wait for the readtask to start so it can use its clock
                 readTask.start()
                 self.isRunning = True
                 while self.isRunning:
-                    reader.read_many_sample(data=output, number_of_samples_per_channel=self.readNumber)
+                    reader.read_many_sample(
+                        data=output,
+                        number_of_samples_per_channel=self.readNumber,
+                    )
 
                     # Emiting the data just received as a signal
-                    self.measurement.emit(output[0,:], output[1,:])
-            elif self.mode == 'zap':
+                    self.measurement.emit(output[0, :], output[1, :])
+            elif self.mode == "zap":
                 writeTask.start()  # Will wait for the readtask to start so it can use its clock
                 readTask.start()
             else:
                 pass
 
-            print('sealtest thread stopped')
+            print("sealtest thread stopped")

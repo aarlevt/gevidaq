@@ -22,7 +22,6 @@ from PIL import Image
 
 
 def writePositionsToFile(file, *args):
-
     for i in range(len(args)):
         file.write(str(args[i][0]) + "," + str(args[i][1]) + "\n")
 
@@ -38,7 +37,8 @@ def circlePatterns(*args):
         pattern = pattern.convert("L")
 
         pattern.save(
-            "./../Registration_Images/registration_mask_" + str(i) + ".png", "PNG"
+            "./../Registration_Images/registration_mask_" + str(i) + ".png",
+            "PNG",
         )
 
         file = open("./../Registration_Images/positions.txt", "w")
@@ -56,10 +56,14 @@ def touchingSquarePatterns(sigma, *args):
     for i in range(3):
         array = np.zeros([1024, 768])
         array[
-            skd.draw.rectangle((c[i, 0] - sigma, c[i, 1] - sigma), (c[i, 0], c[i, 1]))
+            skd.draw.rectangle(
+                (c[i, 0] - sigma, c[i, 1] - sigma), (c[i, 0], c[i, 1])
+            )
         ] = 255
         array[
-            skd.draw.rectangle((c[i, 0] + sigma, c[i, 1] + sigma), (c[i, 0], c[i, 1]))
+            skd.draw.rectangle(
+                (c[i, 0] + sigma, c[i, 1] + sigma), (c[i, 0], c[i, 1])
+            )
         ] = 255
 
         pattern = Image.fromarray(array)
@@ -72,7 +76,9 @@ def touchingSquarePatterns(sigma, *args):
             "PNG",
         )
 
-        file = open("./../Registration_Images/TouchingSquares/positions.txt", "w")
+        file = open(
+            "./../Registration_Images/TouchingSquares/positions.txt", "w"
+        )
         writePositionsToFile(file, p1, p2, p3)
         file.close()
 

@@ -26,13 +26,18 @@ from ..ThorlabsFilterSlider.filterpyserial import ELL9Filter
 
 
 class ScanningExecutionThread(QThread):
-
     ScanningResult = pyqtSignal(
         np.ndarray, np.ndarray, object, object
     )  # The signal for the measurement, we can connect to this signal
-    #%%
+
+    # %%
     def __init__(
-        self, RoundQueueDict, RoundCoordsDict, GeneralSettingDict, *args, **kwargs
+        self,
+        RoundQueueDict,
+        RoundCoordsDict,
+        GeneralSettingDict,
+        *args,
+        **kwargs
     ):
         super().__init__(*args, **kwargs)
         self.RoundQueueDict = RoundQueueDict
@@ -53,11 +58,12 @@ class ScanningExecutionThread(QThread):
         # Ditch the worst focus image from stack of more than 2.
         self.ditch_worst_focus = False
 
-    #%%
+    # %%
     def run(self):
         """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         #                                                               Connect devices.
-        # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
+        # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        """
         """
         # =============================================================================
         #         connect the Objective motor
@@ -85,7 +91,14 @@ class ScanningExecutionThread(QThread):
             if "RoundPackage_" in key:
                 for waveform_and_cam_key in self.RoundQueueDict[key][1]:
                     if "CameraPackage_" in waveform_and_cam_key:
-                        if len(self.RoundQueueDict[key][1][waveform_and_cam_key]) != 0:
+                        if (
+                            len(
+                                self.RoundQueueDict[key][1][
+                                    waveform_and_cam_key
+                                ]
+                            )
+                            != 0
+                        ):
                             self._use_camera = True
 
         if self._use_camera:
@@ -136,7 +149,10 @@ class ScanningExecutionThread(QThread):
             if "RoundPackage_" in key:
                 for photocycle_key in self.RoundQueueDict[key][2]:
                     if "PhotocyclePackage_" in photocycle_key:
-                        if len(self.RoundQueueDict[key][2][photocycle_key]) != 0:
+                        if (
+                            len(self.RoundQueueDict[key][2][photocycle_key])
+                            != 0
+                        ):
                             self._use_ML = True
         if self._use_ML:
             from ImageAnalysis.ImageProcessing_MaskRCNN import ProcessImageML
@@ -144,11 +160,11 @@ class ScanningExecutionThread(QThread):
             self.Predictor = ProcessImageML()
             print("ML loaded.")
 
-        #%%
+        # %%
         """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         #                                                                  Execution
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
-        TotalGridNumber = self.meshgridnumber ** 2
+        TotalGridNumber = self.meshgridnumber**2
 
         for EachGrid in range(TotalGridNumber):
             """
@@ -177,7 +193,9 @@ class ScanningExecutionThread(QThread):
                     "----------------------------------------------------------------------------"
                 )
                 print(
-                    "Below is Grid {}, Round {}.".format(EachGrid, EachRound + 1)
+                    "Below is Grid {}, Round {}.".format(
+                        EachGrid, EachRound + 1
+                    )
                 )  # EachRound+1 is the corresponding round number when setting the dictionary starting from round 1.
                 """
                 # =============================================================================
@@ -199,12 +217,16 @@ class ScanningExecutionThread(QThread):
                 # =============================================================================
                 """
                 if EachRound == 0:
-                    ZStackinfor = self.GeneralSettingDict["FocusStackInfoDict"][
-                        "RoundPackage_{}".format(EachRound + 1)
-                    ]
-                    ZStackNum = int(ZStackinfor[ZStackinfor.index("Focus") + 5])
+                    ZStackinfor = self.GeneralSettingDict[
+                        "FocusStackInfoDict"
+                    ]["RoundPackage_{}".format(EachRound + 1)]
+                    ZStackNum = int(
+                        ZStackinfor[ZStackinfor.index("Focus") + 5]
+                    )
                     ZStackStep = float(
-                        ZStackinfor[ZStackinfor.index("Being") + 5 : len(ZStackinfor)]
+                        ZStackinfor[
+                            ZStackinfor.index("Being") + 5 : len(ZStackinfor)
+                        ]
                     )
 
                     # Generate position list.
@@ -214,7 +236,8 @@ class ScanningExecutionThread(QThread):
                     )
                     ZStacklinspaceEnd = (
                         self.init_focus_position
-                        + (ZStackNum - math.floor(ZStackNum / 2) - 1) * ZStackStep
+                        + (ZStackNum - math.floor(ZStackNum / 2) - 1)
+                        * ZStackStep
                     )
 
                     self.ZStackPosList = np.linspace(
@@ -222,10 +245,12 @@ class ScanningExecutionThread(QThread):
                     )
 
                 self.currentCoordsSeq = 0
-                #%%
+                # %%
                 # -------------Unpack infor for stage move.
                 CoordsNum = len(
-                    self.RoundCoordsDict["CoordsPackage_{}".format(EachRound + 1)]
+                    self.RoundCoordsDict[
+                        "CoordsPackage_{}".format(EachRound + 1)
+                    ]
                 )
                 for EachCoord in range(CoordsNum):
                     """
@@ -247,34 +272,43 @@ class ScanningExecutionThread(QThread):
                     ][EachCoord]
 
                     # Offset coordinate row value for each well.
-                    ScanningGridOffset_Row = int(EachGrid % self.meshgridnumber) * (
-                        self.GeneralSettingDict["StageGridOffset"]
-                    )
+                    ScanningGridOffset_Row = int(
+                        EachGrid % self.meshgridnumber
+                    ) * (self.GeneralSettingDict["StageGridOffset"])
                     # Offset coordinate colunm value for each well.
-                    ScanningGridOffset_Col = int(EachGrid / self.meshgridnumber) * (
-                        self.GeneralSettingDict["StageGridOffset"]
-                    )
+                    ScanningGridOffset_Col = int(
+                        EachGrid / self.meshgridnumber
+                    ) * (self.GeneralSettingDict["StageGridOffset"])
 
                     RowIndex = self.coord_array["row"] + ScanningGridOffset_Row
-                    ColumnIndex = self.coord_array["col"] + ScanningGridOffset_Col
+                    ColumnIndex = (
+                        self.coord_array["col"] + ScanningGridOffset_Col
+                    )
 
                     try:
                         move_executed = False
                         trial_number = 0
 
                         while move_executed == False:
-
                             # Row/Column indexs of np.array are opposite of stage row-col indexs.
-                            self.ludlStage.moveAbs(
-                                RowIndex, ColumnIndex
-                            )
+                            self.ludlStage.moveAbs(RowIndex, ColumnIndex)
                             time.sleep(1.5)
 
                             # Check the position again
-                            row_Position, col_Position = self.ludlStage.getPos()
-                            print("=== Get pos: {},{} ===".format(row_Position, col_Position))
+                            (
+                                row_Position,
+                                col_Position,
+                            ) = self.ludlStage.getPos()
+                            print(
+                                "=== Get pos: {},{} ===".format(
+                                    row_Position, col_Position
+                                )
+                            )
 
-                            if row_Position == RowIndex and col_Position == ColumnIndex:
+                            if (
+                                row_Position == RowIndex
+                                and col_Position == ColumnIndex
+                            ):
                                 move_executed = True
 
                             trial_number += 1
@@ -409,7 +443,6 @@ class ScanningExecutionThread(QThread):
                         )
                         # ------------For waveforms in each coordinate----------
                         for EachWaveform in range(self.Waveform_sequence_Num):
-
                             """
                             # =============================================================================
                             #         For photo-cycle
@@ -418,12 +451,13 @@ class ScanningExecutionThread(QThread):
                             # Get the photo cycle information
                             PhotocyclePackageToBeExecute = self.RoundQueueDict[
                                 "RoundPackage_{}".format(EachRound + 1)
-                            ][2]["PhotocyclePackage_{}".format(EachWaveform + 1)]
+                            ][2][
+                                "PhotocyclePackage_{}".format(EachWaveform + 1)
+                            ]
 
                             # See if in this waveform sequence photo cycle is involved.
                             # PhotocyclePackageToBeExecute is {} if not configured.
                             if len(PhotocyclePackageToBeExecute) > 0:
-
                                 # Load the previous acquired camera image
                                 self.cam_tif_name = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\2020-8-13 Screening Archon1 library V5 and 6\V6\Round2_Coords181_R19800C0_PMT_0Zmax.tif"  # TODO hardcoded path
                                 previous_cam_img = imread(self.cam_tif_name)
@@ -444,11 +478,13 @@ class ScanningExecutionThread(QThread):
                                     print(ROIlist)
                                     # np array's column([1]) is the width of image, and is the row in stage coordinates.
                                     ROI_center_width = int(
-                                        ROIlist[1] + (ROIlist[3] - ROIlist[1]) / 2
+                                        ROIlist[1]
+                                        + (ROIlist[3] - ROIlist[1]) / 2
                                     )
                                     print("ROI_center_width ".format(ROIlist))
                                     ROI_center_height = int(
-                                        ROIlist[0] + (ROIlist[2] + ROIlist[0]) / 2
+                                        ROIlist[0]
+                                        + (ROIlist[2] + ROIlist[0]) / 2
                                     )
                                     print("ROI_center_height ".format(ROIlist))
                                     cam_stage_transform_factor = 1.135
@@ -458,12 +494,14 @@ class ScanningExecutionThread(QThread):
                                     ) * cam_stage_transform_factor
                                     print(stage_move_col)
                                     stage_move_row = (
-                                        int((img_height) / 2) - ROI_center_height
+                                        int((img_height) / 2)
+                                        - ROI_center_height
                                     ) * cam_stage_transform_factor
                                     print(stage_move_row)
                                     # Move cell of interest to the center of field of view
                                     self.ludlStage.moveRel(
-                                        xRel=stage_move_row, yRel=stage_move_col
+                                        xRel=stage_move_row,
+                                        yRel=stage_move_col,
                                     )
 
                                     time.sleep(1)
@@ -493,9 +531,9 @@ class ScanningExecutionThread(QThread):
                     )
 
                 # Time out for each round
-                time.sleep(1*0.5)
+                time.sleep(1 * 0.5)
 
-        #%%
+        # %%
         """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
         #                                                            Disconnect devices.
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
@@ -525,7 +563,8 @@ class ScanningExecutionThread(QThread):
             pass
 
         print("Error number: {}".format(self.errornum))
-    #%%
+
+    # %%
     def laser_init(self, EachRound):
         """
         Execute Insight event at the beginning of each round
@@ -577,7 +616,9 @@ class ScanningExecutionThread(QThread):
                 self.watchdog_flag = False
                 time.sleep(0.5)
                 TargetWavelen = int(
-                    InsightText[InsightText.index("To_") + 3 : len(InsightText)]
+                    InsightText[
+                        InsightText.index("To_") + 3 : len(InsightText)
+                    ]
                 )
 
                 if TargetWavelen == 1280:
@@ -594,7 +635,6 @@ class ScanningExecutionThread(QThread):
                 time.sleep(0.5)
 
         elif len(InsightX3EventIndexList) == 2:
-
             InsightText_wl = self.RoundQueueDict["InsightEvents"][
                 InsightX3EventIndexList[1]
             ]
@@ -602,7 +642,10 @@ class ScanningExecutionThread(QThread):
                 InsightX3EventIndexList[0]
             ]
 
-            if "WavelengthTo" in InsightText_wl and "Shutter_Open" in InsightText_st:
+            if (
+                "WavelengthTo" in InsightText_wl
+                and "Shutter_Open" in InsightText_st
+            ):
                 self.watchdog_flag = False
                 time.sleep(0.5)
                 TargetWavelen = int(
@@ -628,7 +671,10 @@ class ScanningExecutionThread(QThread):
                 self.watchdog_flag = True
                 time.sleep(0.5)
 
-            elif "WavelengthTo" in InsightText_wl and "Shutter_Close" in InsightText_st:
+            elif (
+                "WavelengthTo" in InsightText_wl
+                and "Shutter_Close" in InsightText_st
+            ):
                 self.watchdog_flag = False
                 time.sleep(0.5)
                 TargetWavelen = int(
@@ -680,11 +726,19 @@ class ScanningExecutionThread(QThread):
         ]
 
         if len(FilterEventIndexList) > 0:
-            NDposText = self.RoundQueueDict["FilterEvents"][FilterEventIndexList[0]]
-            NDnumber = NDposText[NDposText.index("ToPos_") + 6 : len(NDposText)]
+            NDposText = self.RoundQueueDict["FilterEvents"][
+                FilterEventIndexList[0]
+            ]
+            NDnumber = NDposText[
+                NDposText.index("ToPos_") + 6 : len(NDposText)
+            ]
 
-            EMposText = self.RoundQueueDict["FilterEvents"][FilterEventIndexList[1]]
-            EMprotein = EMposText[EMposText.index("ToPos_") + 6 : len(EMposText)]
+            EMposText = self.RoundQueueDict["FilterEvents"][
+                FilterEventIndexList[1]
+            ]
+            EMprotein = EMposText[
+                EMposText.index("ToPos_") + 6 : len(EMposText)
+            ]
 
             # "COM9" for filter 1 port, which has ND values from 0 to 3.
             # "COM7" for filter 2 port, which has ND values from 0 to 0.5.
@@ -782,14 +836,15 @@ class ScanningExecutionThread(QThread):
 
         # If manual focus correction applies, unpact the target focus infor.
         if len(self.GeneralSettingDict["FocusCorrectionMatrixDict"]) > 0:
-            FocusPosArray = self.GeneralSettingDict["FocusCorrectionMatrixDict"][
-                "RoundPackage_{}_Grid_{}".format(EachRound + 1, EachGrid)
-            ]
+            FocusPosArray = self.GeneralSettingDict[
+                "FocusCorrectionMatrixDict"
+            ]["RoundPackage_{}_Grid_{}".format(EachRound + 1, EachGrid)]
             FocusPosArray = FocusPosArray.flatten("F")
             FocusPos_fromCorrection = FocusPosArray[EachCoord]
 
             ZStacklinspaceStart = (
-                FocusPos_fromCorrection - (math.floor(ZStackNum / 2)) * ZStackStep
+                FocusPos_fromCorrection
+                - (math.floor(ZStackNum / 2)) * ZStackStep
             )
             ZStacklinspaceEnd = (
                 FocusPos_fromCorrection
@@ -801,27 +856,34 @@ class ScanningExecutionThread(QThread):
             # If go for auto-focus at this coordinate
             auto_focus_flag = self.coord_array["auto_focus_flag"]
             # auto_focus_flag = False
-            print("focus_position {}".format(self.coord_array["focus_position"]))
+            print(
+                "focus_position {}".format(self.coord_array["focus_position"])
+            )
 
             # -----------------------Auto focus---------------------------------
             if auto_focus_flag == "yes":
-
                 if self.coord_array["focus_position"] == -1.0:
                     instance_FocusFinder = FocusFinder(
                         source_of_image=AutoFocusConfig["source_of_image"],
                         init_search_range=AutoFocusConfig["init_search_range"],
                         total_step_number=AutoFocusConfig["total_step_number"],
-                        imaging_conditions=AutoFocusConfig["imaging_conditions"],
+                        imaging_conditions=AutoFocusConfig[
+                            "imaging_conditions"
+                        ],
                         motor_handle=self.pi_device_instance,
                         camera_handle=self.HamamatsuCam,
                     )
                     print("--------------Start auto-focusing-----------------")
                     if self.HamamatsuCam != None:
                         # For camera AF
-                        self.auto_focus_position = instance_FocusFinder.gaussian_fit()
+                        self.auto_focus_position = (
+                            instance_FocusFinder.gaussian_fit()
+                        )
                     else:
                         # For PMT AF
-                        self.auto_focus_position = instance_FocusFinder.bisection()
+                        self.auto_focus_position = (
+                            instance_FocusFinder.bisection()
+                        )
 
                     relative_move_coords = [[1550, 0], [0, 1550], [1550, 1550]]
                     trial_num = 0
@@ -836,7 +898,11 @@ class ScanningExecutionThread(QThread):
                                 relative_move_coords[trial_num][1],
                             )
                             time.sleep(1)
-                            print("Now stage pos is {}".format(self.ludlStage.getPos()))
+                            print(
+                                "Now stage pos is {}".format(
+                                    self.ludlStage.getPos()
+                                )
+                            )
 
                             if self.HamamatsuCam != None:
                                 # For camera AF
@@ -882,7 +948,9 @@ class ScanningExecutionThread(QThread):
                                 coordinate["row"] == AF_coord_row
                                 and coordinate["col"] == AF_coord_col
                             ):
-                                coordinate["focus_position"] = self.auto_focus_position
+                                coordinate[
+                                    "focus_position"
+                                ] = self.auto_focus_position
                                 print(
                                     "Write founded focus position to next round coord: {}.".format(
                                         coordinate
@@ -898,11 +966,11 @@ class ScanningExecutionThread(QThread):
                     )
                     ZStacklinspaceEnd = (
                         self.auto_focus_position
-                        + (ZStackNum - math.floor(ZStackNum / 2) - 1) * ZStackStep
+                        + (ZStackNum - math.floor(ZStackNum / 2) - 1)
+                        * ZStackStep
                     )
 
                 else:  # If there's already position from last round, move to it.
-
                     # EachRound+1 is current round number.
                     self.previous_auto_focus_position = self.RoundCoordsDict[
                         "CoordsPackage_{}".format(EachRound + 1)
@@ -920,7 +988,8 @@ class ScanningExecutionThread(QThread):
                     )
                     ZStacklinspaceEnd = (
                         self.previous_auto_focus_position
-                        + (ZStackNum - math.floor(ZStackNum / 2) - 1) * ZStackStep
+                        + (ZStackNum - math.floor(ZStackNum / 2) - 1)
+                        * ZStackStep
                     )
 
                 # Generate the position list, for none-auto-focus coordinates they will use the same list variable.
@@ -948,14 +1017,18 @@ class ScanningExecutionThread(QThread):
                 print("--------------Start auto-focusing-----------------")
                 if self.HamamatsuCam != None:
                     # For camera AF
-                    self.auto_focus_position = instance_FocusFinder.gaussian_fit()
+                    self.auto_focus_position = (
+                        instance_FocusFinder.gaussian_fit()
+                    )
                 else:
                     # For PMT AF
                     self.auto_focus_position = instance_FocusFinder.bisection()
 
                 relative_move_coords = [[1550, 0], [0, 1550], [1550, 1550]]
                 trial_num = 0
-                while self.auto_focus_position == False:  # If there's no cell in FOV
+                while (
+                    self.auto_focus_position == False
+                ):  # If there's no cell in FOV
                     if trial_num <= 2:
                         print("No cells found. move to next pos.")
                         # Move to next position in real scanning coordinates.
@@ -964,7 +1037,11 @@ class ScanningExecutionThread(QThread):
                             relative_move_coords[trial_num][1],
                         )
                         time.sleep(1)
-                        print("Now stage pos is {}".format(self.ludlStage.getPos()))
+                        print(
+                            "Now stage pos is {}".format(
+                                self.ludlStage.getPos()
+                            )
+                        )
 
                         if self.HamamatsuCam != None:
                             # For camera AF
@@ -973,7 +1050,9 @@ class ScanningExecutionThread(QThread):
                             )
                         else:
                             # For PMT AF
-                            self.auto_focus_position = instance_FocusFinder.bisection()
+                            self.auto_focus_position = (
+                                instance_FocusFinder.bisection()
+                            )
 
                         # Move back
                         self.ludlStage.moveRel(
@@ -1014,7 +1093,9 @@ class ScanningExecutionThread(QThread):
                             coordinate["row"] == AF_coord_row
                             and coordinate["col"] == AF_coord_col
                         ):
-                            coordinate["focus_position"] = self.auto_focus_position
+                            coordinate[
+                                "focus_position"
+                            ] = self.auto_focus_position
 
                             print(
                                 "Write founded focus position to next round coord: {}.".format(
@@ -1064,7 +1145,7 @@ class ScanningExecutionThread(QThread):
         ]["GalvoInfor_{}".format(EachWaveform + 1)]
 
         self.readinchan = WaveformPackageToBeExecute[3]
-        self.daq_sampling_rate=WaveformPackageToBeExecute[0]
+        self.daq_sampling_rate = WaveformPackageToBeExecute[0]
         self.RoundWaveformIndex = [
             EachRound + 1,
             EachWaveform + 1,
@@ -1073,18 +1154,34 @@ class ScanningExecutionThread(QThread):
 
         # ----------------Camera operations-----------------
         _camera_isUsed = False
-        if CameraPackageToBeExecute != {}:  # if camera operations are configured
+        if (
+            CameraPackageToBeExecute != {}
+        ):  # if camera operations are configured
             _camera_isUsed = True
             CamSettigList = CameraPackageToBeExecute["Settings"]
             self.HamamatsuCam.StartStreaming(
                 BufferNumber=CameraPackageToBeExecute["Buffer_number"],
-                trigger_source=CamSettigList[CamSettigList.index("trigger_source") + 1],
-                exposure_time=CamSettigList[CamSettigList.index("exposure_time") + 1],
-                trigger_active=CamSettigList[CamSettigList.index("trigger_active") + 1],
-                subarray_hsize=CamSettigList[CamSettigList.index("subarray_hsize") + 1],
-                subarray_vsize=CamSettigList[CamSettigList.index("subarray_vsize") + 1],
-                subarray_hpos=CamSettigList[CamSettigList.index("subarray_hpos") + 1],
-                subarray_vpos=CamSettigList[CamSettigList.index("subarray_vpos") + 1],
+                trigger_source=CamSettigList[
+                    CamSettigList.index("trigger_source") + 1
+                ],
+                exposure_time=CamSettigList[
+                    CamSettigList.index("exposure_time") + 1
+                ],
+                trigger_active=CamSettigList[
+                    CamSettigList.index("trigger_active") + 1
+                ],
+                subarray_hsize=CamSettigList[
+                    CamSettigList.index("subarray_hsize") + 1
+                ],
+                subarray_vsize=CamSettigList[
+                    CamSettigList.index("subarray_vsize") + 1
+                ],
+                subarray_hpos=CamSettigList[
+                    CamSettigList.index("subarray_hpos") + 1
+                ],
+                subarray_vpos=CamSettigList[
+                    CamSettigList.index("subarray_vpos") + 1
+                ],
             )
             # HamamatsuCam starts another thread to pull out frames from buffer.
             # Make sure that the camera is prepared before waveform execution.
@@ -1139,11 +1236,11 @@ class ScanningExecutionThread(QThread):
         time.sleep(0.5)
 
     def Process_raw_data(self):
-
         self.channel_number = len(self.recorded_raw_data)
 
         self.data_collected_0 = (
-            self.recorded_raw_data[0][0 : len(self.recorded_raw_data[0]) - 1] * -1
+            self.recorded_raw_data[0][0 : len(self.recorded_raw_data[0]) - 1]
+            * -1
         )
         print(len(self.data_collected_0))
 
@@ -1162,7 +1259,6 @@ class ScanningExecutionThread(QThread):
             if "PMT" not in self.readinchan:
                 pass
             elif "PMT" in self.readinchan:
-
                 self.PMT_image_processing()
 
         print("ProcessData executed.")
@@ -1177,14 +1273,15 @@ class ScanningExecutionThread(QThread):
 
         """
         for imageSequence in range(self.repeatnum):
-
             try:
                 self.PMT_image_reconstructed_array = self.data_collected_0[
                     np.where(self.PMT_data_index_array == imageSequence + 1)
                 ]
 
                 Dataholder_average = np.mean(
-                    self.PMT_image_reconstructed_array.reshape(self.averagenum, -1),
+                    self.PMT_image_reconstructed_array.reshape(
+                        self.averagenum, -1
+                    ),
                     axis=0,
                 )
 
@@ -1198,19 +1295,29 @@ class ScanningExecutionThread(QThread):
                 # Cut off the flying back part.
                 if self.daq_sampling_rate == 500000:
                     if Value_yPixels == 500:
-                        self.PMT_image_reconstructed = self.PMT_image_reconstructed[:, 50:550]
+                        self.PMT_image_reconstructed = (
+                            self.PMT_image_reconstructed[:, 50:550]
+                        )
                     elif Value_yPixels == 256:
-                        self.PMT_image_reconstructed = self.PMT_image_reconstructed[:, 70:326]
+                        self.PMT_image_reconstructed = (
+                            self.PMT_image_reconstructed[:, 70:326]
+                        )
                 elif self.daq_sampling_rate == 250000:
                     if Value_yPixels == 500:
-                        self.PMT_image_reconstructed = self.PMT_image_reconstructed[:, 25:525]
+                        self.PMT_image_reconstructed = (
+                            self.PMT_image_reconstructed[:, 25:525]
+                        )
                     elif Value_yPixels == 256:
-                        self.PMT_image_reconstructed = self.PMT_image_reconstructed[:, 25:525]
-                  # Crop size based on: M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Xin\2019-12-30 2p beads area test 4um
+                        self.PMT_image_reconstructed = (
+                            self.PMT_image_reconstructed[:, 25:525]
+                        )
+                # Crop size based on: M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Xin\2019-12-30 2p beads area test 4um
 
-                #=== Evaluate the focus degree of re-constructed image. =======
-                self.FocusDegree_img_reconstructed = ProcessImage.local_entropy(
-                    self.PMT_image_reconstructed.astype("float32")
+                # === Evaluate the focus degree of re-constructed image. =======
+                self.FocusDegree_img_reconstructed = (
+                    ProcessImage.local_entropy(
+                        self.PMT_image_reconstructed.astype("float32")
+                    )
                 )
                 print(
                     "FocusDegree_img_reconstructed is {}".format(
@@ -1271,19 +1378,29 @@ class ScanningExecutionThread(QThread):
                                     if self.focus_degree_decreasing == False:
                                         # Delete the first image.
                                         self.PMT_image_maxprojection_stack = np.delete(
-                                            self.PMT_image_maxprojection_stack, 0,axis = 0)
+                                            self.PMT_image_maxprojection_stack,
+                                            0,
+                                            axis=0,
+                                        )
                                     else:
                                         # Delete the 2nd image.
                                         self.PMT_image_maxprojection_stack = np.delete(
-                                            self.PMT_image_maxprojection_stack, 1,axis = 0)
+                                            self.PMT_image_maxprojection_stack,
+                                            1,
+                                            axis=0,
+                                        )
 
                             # Stack the newest image onto the max-projection stack.
-                            self.PMT_image_maxprojection_stack = np.concatenate(
-                                (
-                                    self.PMT_image_maxprojection_stack,
-                                    self.PMT_image_reconstructed[np.newaxis, :, :],
-                                ),
-                                axis=0,
+                            self.PMT_image_maxprojection_stack = (
+                                np.concatenate(
+                                    (
+                                        self.PMT_image_maxprojection_stack,
+                                        self.PMT_image_reconstructed[
+                                            np.newaxis, :, :
+                                        ],
+                                    ),
+                                    axis=0,
+                                )
                             )
 
                     else:
@@ -1291,7 +1408,7 @@ class ScanningExecutionThread(QThread):
                             self.PMT_image_reconstructed[np.newaxis, :, :]
                         )
 
-                #============== Save the max projection image =================
+                # ============== Save the max projection image =================
                 if self.ZStackOrder == self.ZStackNum:
                     self.PMT_image_maxprojection = np.max(
                         self.PMT_image_maxprojection_stack, axis=0
@@ -1328,7 +1445,6 @@ class ScanningExecutionThread(QThread):
                 print("No.{} image failed to generate.".format(imageSequence))
 
     def generate_tif_name(self, extra_text="_"):
-
         tif_name = os.path.join(
             self.scansavedirectory,
             "Round"
@@ -1346,7 +1462,6 @@ class ScanningExecutionThread(QThread):
 
     # ----------------------------------------------------------------WatchDog for laser----------------------------------------------------------------------------------
     def Status_watchdog(self, querygap):
-
         while True:
             if self.watchdog_flag == True:
                 self.Status_list = self.Laserinstance.QueryStatus()
@@ -1359,7 +1474,6 @@ class ScanningExecutionThread(QThread):
 if __name__ == "__main__":
 
     def generate_tif_name(extra_text="_"):
-
         tif_name = os.path.join(
             r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\People\Xin Meng\Code",  # TODO hardcoded path
             "Round"

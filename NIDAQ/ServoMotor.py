@@ -32,7 +32,10 @@ class Servo:
             PWM_wave = np.where(PWM_wave == 0, False, True)
             PWM_wave_organized = np.array(
                 [(target_servo, PWM_wave)],
-                dtype=[("Specification", "U20"), ("Waveform", bool, (len(PWM_wave),))],
+                dtype=[
+                    ("Specification", "U20"),
+                    ("Waveform", bool, (len(PWM_wave),)),
+                ],
             )
 
             self.mission.runWaveforms(
@@ -57,7 +60,9 @@ class Servo:
         voltMax         maximum value of the blockwave (float)
         dutycycle       duty cycle of the wave (wavelength at voltMax) (float)
         """
-        wavelength = int(sampleRate / frequency)  # Wavelength in number of samples
+        wavelength = int(
+            sampleRate / frequency
+        )  # Wavelength in number of samples
         # The high values
         high = np.ones(math.ceil(wavelength * dutycycle)) * voltMax
         # Low values
@@ -75,6 +80,5 @@ class Servo:
 
 
 if __name__ == "__main__":
-
     servo = Servo()
     servo.rotate(target_servo="servo_modulation_1", degree=0)

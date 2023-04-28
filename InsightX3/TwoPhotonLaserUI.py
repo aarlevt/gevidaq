@@ -54,7 +54,9 @@ class InsightWidgetUI(QWidget):
         PumpLabel = QLabel("Pump diode:")
         self.BasicLaserEventLayout.addWidget(PumpLabel, 2, 0)
 
-        self.LaserSwitch = StylishQT.MySwitch("ON", "green", "OFF", "red", width=32)
+        self.LaserSwitch = StylishQT.MySwitch(
+            "ON", "green", "OFF", "red", width=32
+        )
         self.LaserSwitch.clicked.connect(self.LaserSwitchEvent)
         self.BasicLaserEventLayout.addWidget(self.LaserSwitch, 2, 1)
 
@@ -110,7 +112,6 @@ class InsightWidgetUI(QWidget):
 
         self.Initialize_laser()
 
-
     def Initialize_laser(self):
         # =============================================================================
         #         Initialization
@@ -134,7 +135,6 @@ class InsightWidgetUI(QWidget):
         except:
             self.LaserStatuslabel.setText("Laser not connected.")
 
-
     """
     # =============================================================================
     #     Laser events
@@ -142,7 +142,6 @@ class InsightWidgetUI(QWidget):
     """
 
     def Status_watchdog(self, Status_queue, querygap):
-
         while True:
             if self.watchdog_flag == True:
                 self.Status_list = self.Laserinstance.QueryStatus()
@@ -168,7 +167,6 @@ class InsightWidgetUI(QWidget):
         self.Status_list = self.Laserinstance.QueryStatus()
         # -------------Initialize laser--------------
         if self.warmupstatus == False:
-
             warmupstatus = 0
             while int(warmupstatus) != 100:
                 try:
@@ -218,7 +216,9 @@ class InsightWidgetUI(QWidget):
             turnONShuThread = threading.Thread(target=self.TurnOnLaserShutter)
             turnONShuThread.start()
         else:
-            turnOFFShuThread = threading.Thread(target=self.TurnOffLaserShutter)
+            turnOFFShuThread = threading.Thread(
+                target=self.TurnOffLaserShutter
+            )
             turnOFFShuThread.start()
 
     def TurnOnLaserShutter(self):
@@ -325,11 +325,15 @@ class InsightWidgetUI(QWidget):
         closeEventmsg.setWindowTitle("Exiting...")
         closeEventmsg.setText(message)
 
-        QuitStandbyButton = closeEventmsg.addButton("Stand by", QMessageBox.ActionRole)
+        QuitStandbyButton = closeEventmsg.addButton(
+            "Stand by", QMessageBox.ActionRole
+        )
         QuitHibernateButton = closeEventmsg.addButton(
             "Hibernate", QMessageBox.ActionRole
         )
-        QuitCancelButton = closeEventmsg.addButton("Back", QMessageBox.RejectRole)
+        QuitCancelButton = closeEventmsg.addButton(
+            "Back", QMessageBox.RejectRole
+        )
         closeEventmsg.setDefaultButton(QuitCancelButton)
 
         QuitStandbyButton.clicked.connect(self.QuitStandby)

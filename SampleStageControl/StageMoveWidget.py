@@ -59,7 +59,9 @@ class StageWidgetUI(QWidget):
             "QPushButton {color:white;background-color: #FFCCE5;}"
             "QPushButton:hover:!pressed {color:white;background-color: #CCFFFF;}"
         )
-        self.stage_upwards.setToolTip("Click arrow to enable WASD keyboard control")
+        self.stage_upwards.setToolTip(
+            "Click arrow to enable WASD keyboard control"
+        )
         self.stage_upwards.setFixedWidth(40)
         self.stage_upwards.setFixedHeight(40)
         with Icons.Path("UpArrow.png") as path:
@@ -67,7 +69,9 @@ class StageWidgetUI(QWidget):
         self.stage_upwards.setIconSize(QSize(35, 35))
         self.stagecontrolLayout.addWidget(self.stage_upwards, 1, 4)
         self.stage_upwards.clicked.connect(
-            lambda: self.run_in_thread(self.sample_stage_move(direction="upwards"))
+            lambda: self.run_in_thread(
+                self.sample_stage_move(direction="upwards")
+            )
         )
         self.stage_upwards.setShortcut("w")
 
@@ -76,7 +80,9 @@ class StageWidgetUI(QWidget):
             "QPushButton {color:white;background-color: #FFCCE5;}"
             "QPushButton:hover:!pressed {color:white;background-color: #CCFFFF;}"
         )
-        self.stage_left.setToolTip("Click arrow to enable WASD keyboard control")
+        self.stage_left.setToolTip(
+            "Click arrow to enable WASD keyboard control"
+        )
         self.stage_left.setFixedWidth(40)
         self.stage_left.setFixedHeight(40)
         with Icons.Path("LeftArrow.png") as path:
@@ -85,7 +91,9 @@ class StageWidgetUI(QWidget):
         self.stage_left.setIconSize(QSize(35, 35))
         self.stagecontrolLayout.addWidget(self.stage_left, 2, 3)
         self.stage_left.clicked.connect(
-            lambda: self.run_in_thread(self.sample_stage_move(direction="leftwards"))
+            lambda: self.run_in_thread(
+                self.sample_stage_move(direction="leftwards")
+            )
         )
         self.stage_left.setShortcut("a")
 
@@ -94,7 +102,9 @@ class StageWidgetUI(QWidget):
             "QPushButton {color:white;background-color: #FFCCE5;}"
             "QPushButton:hover:!pressed {color:white;background-color: #CCFFFF;}"
         )
-        self.stage_right.setToolTip("Click arrow to enable WASD keyboard control")
+        self.stage_right.setToolTip(
+            "Click arrow to enable WASD keyboard control"
+        )
         self.stage_right.setFixedWidth(40)
         self.stage_right.setFixedHeight(40)
         with Icons.Path("RightArrow.png") as path:
@@ -102,7 +112,9 @@ class StageWidgetUI(QWidget):
         self.stage_right.setIconSize(QSize(35, 35))
         self.stagecontrolLayout.addWidget(self.stage_right, 2, 5)
         self.stage_right.clicked.connect(
-            lambda: self.run_in_thread(self.sample_stage_move(direction="rightwards"))
+            lambda: self.run_in_thread(
+                self.sample_stage_move(direction="rightwards")
+            )
         )
         self.stage_right.setShortcut("d")
 
@@ -111,7 +123,9 @@ class StageWidgetUI(QWidget):
             "QPushButton {color:white;background-color: #FFCCE5;}"
             "QPushButton:hover:!pressed {color:white;background-color: #CCFFFF;}"
         )
-        self.stage_down.setToolTip("Click arrow to enable WASD keyboard control")
+        self.stage_down.setToolTip(
+            "Click arrow to enable WASD keyboard control"
+        )
         self.stage_down.setFixedWidth(40)
         self.stage_down.setFixedHeight(40)
         with Icons.Path("DownArrow.png") as path:
@@ -119,7 +133,9 @@ class StageWidgetUI(QWidget):
         self.stage_down.setIconSize(QSize(35, 35))
         self.stagecontrolLayout.addWidget(self.stage_down, 2, 4)
         self.stage_down.clicked.connect(
-            lambda: self.run_in_thread(self.sample_stage_move(direction="downwards"))
+            lambda: self.run_in_thread(
+                self.sample_stage_move(direction="downwards")
+            )
         )
         self.stage_down.setShortcut("s")
 
@@ -151,7 +167,9 @@ class StageWidgetUI(QWidget):
         #                                            "QPushButton:hover:!pressed {color:green;background-color: #6495ED; border-style: outset;border-radius: 8px;border-width: 2px;font: bold 12px;padding: 6px}")
         self.stagecontrolLayout.addWidget(self.stage_goto, 1, 0)
         self.stage_goto.clicked.connect(
-            lambda: self.run_in_thread(self.sample_stage_move(direction="absolute"))
+            lambda: self.run_in_thread(
+                self.sample_stage_move(direction="absolute")
+            )
         )
 
         self.stage_goto_x = QLineEdit(self)
@@ -175,19 +193,23 @@ class StageWidgetUI(QWidget):
         # **************************************************************************************************************************************
 
     def sample_stage_move(self, direction):
-
         self.sample_move_distance_Rel = int(self.stage_speed.value())
         if direction == "upwards":
             self.ludlStage.moveRel(xRel=0, yRel=self.sample_move_distance_Rel)
         elif direction == "downwards":
-            self.ludlStage.moveRel(xRel=0, yRel=-1 * self.sample_move_distance_Rel)
+            self.ludlStage.moveRel(
+                xRel=0, yRel=-1 * self.sample_move_distance_Rel
+            )
         elif direction == "leftwards":
             self.ludlStage.moveRel(xRel=self.sample_move_distance_Rel, yRel=0)
         elif direction == "rightwards":
-            self.ludlStage.moveRel(xRel=-1 * self.sample_move_distance_Rel, yRel=0)
+            self.ludlStage.moveRel(
+                xRel=-1 * self.sample_move_distance_Rel, yRel=0
+            )
         elif direction == "absolute":
             self.ludlStage.moveAbs(
-                x=int(self.stage_goto_x.text()), y=int(self.stage_goto_y.text())
+                x=int(self.stage_goto_x.text()),
+                y=int(self.stage_goto_y.text()),
             )
         self.xPosition, self.yPosition = self.ludlStage.getPos()
 

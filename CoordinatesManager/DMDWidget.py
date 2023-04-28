@@ -41,7 +41,6 @@ from . import CoordinateTransformations, DMDActuator, Registration, Registrator
 
 
 class DMDWidget(QWidget):
-
     sig_request_mask_coordinates = pyqtSignal()
     sig_start_registration = pyqtSignal()
     sig_finished_registration = pyqtSignal()
@@ -73,7 +72,9 @@ class DMDWidget(QWidget):
         self.setLayout(layout)
 
         self.connect_button = QPushButton("Connect")
-        self.connect_button.setStyleSheet("QPushButton {background-color: #A3C1DA;}")
+        self.connect_button.setStyleSheet(
+            "QPushButton {background-color: #A3C1DA;}"
+        )
         self.register_button = QPushButton("Register")
 
         lasers = ["640", "532", "488"]
@@ -83,7 +84,9 @@ class DMDWidget(QWidget):
         self.transform_for_laser_menu.setFixedWidth(82)
         self.transform_for_laser_menu.setCurrentRow(0)
         self.project_button = QPushButton("Start projecting")
-        self.project_button.setStyleSheet("QPushButton {background-color: #99FFCC;}")
+        self.project_button.setStyleSheet(
+            "QPushButton {background-color: #99FFCC;}"
+        )
         self.clear_button = QPushButton("Clear memory")
         self.white_project_button = QPushButton("Full illum.")
         self.white_project_button.setStyleSheet(
@@ -108,10 +111,18 @@ class DMDWidget(QWidget):
         self.load_mask_container_1.setLayout(load_mask_container_layout_1)
         self.load_mask_from_widget_button = QPushButton("From mask generator")
         self.load_mask_from_file_button = QPushButton("From file")
-        self.load_mask_from_widget_button.clicked.connect(self.load_mask_from_widget)
-        self.load_mask_from_file_button.clicked.connect(self.load_mask_from_memory)
-        load_mask_container_layout_1.addWidget(self.load_mask_from_widget_button, 0, 0)
-        load_mask_container_layout_1.addWidget(self.load_mask_from_file_button, 1, 0)
+        self.load_mask_from_widget_button.clicked.connect(
+            self.load_mask_from_widget
+        )
+        self.load_mask_from_file_button.clicked.connect(
+            self.load_mask_from_memory
+        )
+        load_mask_container_layout_1.addWidget(
+            self.load_mask_from_widget_button, 0, 0
+        )
+        load_mask_container_layout_1.addWidget(
+            self.load_mask_from_file_button, 1, 0
+        )
 
         # Stack page 2
         self.load_mask_container_2 = roundQGroupBox()
@@ -187,16 +198,28 @@ class DMDWidget(QWidget):
         )
 
         settings_container_layout.addWidget(Illumination_time_label, 4, 0)
-        settings_container_layout.addWidget(self.Illumination_time_textbox, 4, 1)
+        settings_container_layout.addWidget(
+            self.Illumination_time_textbox, 4, 1
+        )
 
-        illumination_time_calculation_button = QPushButton("Fill in illu. time for Hz:")
-        settings_container_layout.addWidget(illumination_time_calculation_button, 5, 0)
-        illumination_time_calculation_button.clicked.connect(self.calculate_illumination_time_for_frequency)
+        illumination_time_calculation_button = QPushButton(
+            "Fill in illu. time for Hz:"
+        )
+        settings_container_layout.addWidget(
+            illumination_time_calculation_button, 5, 0
+        )
+        illumination_time_calculation_button.clicked.connect(
+            self.calculate_illumination_time_for_frequency
+        )
 
         self.expected_projection_frequency_textbox = QLineEdit()
-        self.expected_projection_frequency_textbox.setValidator(QtGui.QIntValidator())
+        self.expected_projection_frequency_textbox.setValidator(
+            QtGui.QIntValidator()
+        )
         self.expected_projection_frequency_textbox.setText("2000")
-        settings_container_layout.addWidget(self.expected_projection_frequency_textbox, 5, 1)
+        settings_container_layout.addWidget(
+            self.expected_projection_frequency_textbox, 5, 1
+        )
 
         settings_container_layout.addWidget(QLabel("Repeat sequence:"), 6, 0)
         settings_container_layout.addWidget(self.repeat_imgseq_button, 6, 1)
@@ -216,7 +239,7 @@ class DMDWidget(QWidget):
 
         self.open_latest_transformation()
 
-    #%%
+    # %%
     def connect(self):
         if self.connect_button.text() == "Connect":
             self.DMD_actuator = DMDActuator.DMDActuator()
@@ -228,15 +251,19 @@ class DMDWidget(QWidget):
             self.connect_button.setText("Connect")
 
     def calculate_illumination_time_for_frequency(self):
-
         # In theroy resting time between frames can be 0 us.
         cool_down_time_between_pictures = 3
 
-        expected_frequency = int(self.expected_projection_frequency_textbox.text())
+        expected_frequency = int(
+            self.expected_projection_frequency_textbox.text()
+        )
 
-        illumination_time = int(1/expected_frequency*1000000) - 1 - \
-                            self.ALP_OFF_TIME - \
-                            cool_down_time_between_pictures
+        illumination_time = (
+            int(1 / expected_frequency * 1000000)
+            - 1
+            - self.ALP_OFF_TIME
+            - cool_down_time_between_pictures
+        )
 
         self.Illumination_time_textbox.setText(str(illumination_time))
 
@@ -244,7 +271,9 @@ class DMDWidget(QWidget):
         self.sig_start_registration.emit()
         ## Add control for lasers, signal slot should be there in AOTF widget
         registrator = Registrator.DMDRegistator(self.DMD_actuator)
-        self.transform[laser] = registrator.registration(registration_pattern="circle")
+        self.transform[laser] = registrator.registration(
+            registration_pattern="circle"
+        )
         self.save_transformation()
         self.sig_finished_registration.emit()
 
@@ -274,7 +303,10 @@ class DMDWidget(QWidget):
     def load_mask_from_file(self):
         try:
             self.loadFileName, _ = QtWidgets.QFileDialog.getOpenFileName(
-                self, "Select file", "./CoordinateManager/Images/", "(*.jpg *.png)"
+                self,
+                "Select file",
+                "./CoordinateManager/Images/",
+                "(*.jpg *.png)",
             )
             image = plt.imread(self.loadFileName)
             # jpg has RGB channels, clean the 3rd channel and make it 2d.
@@ -299,7 +331,9 @@ class DMDWidget(QWidget):
             )
             list_dir_raw = sorted(os.listdir(foldername))
 
-            list_dir = [file for file in list_dir_raw if file[-3:] in ["png", "jpg"]]
+            list_dir = [
+                file for file in list_dir_raw if file[-3:] in ["png", "jpg"]
+            ]
             list_nr = len(list_dir)
             image_sequence = np.zeros([768, 1024, list_nr])
 
@@ -346,12 +380,14 @@ class DMDWidget(QWidget):
                 list_of_rois, for_which_laser
             )
 
-            mask_single_frame = ProcessImage.CreateBinaryMaskFromRoiCoordinates(
-                list_of_rois_transformed,
-                fill_contour=flag_fill_contour,
-                contour_thickness=contour_thickness,
-                invert_mask=flag_invert_mode,
-                mask_resolution=(768, 1024),
+            mask_single_frame = (
+                ProcessImage.CreateBinaryMaskFromRoiCoordinates(
+                    list_of_rois_transformed,
+                    fill_contour=flag_fill_contour,
+                    contour_thickness=contour_thickness,
+                    invert_mask=flag_invert_mode,
+                    mask_resolution=(768, 1024),
+                )
             )
             fig, axs = plt.subplots(1, 1)
             axs.imshow(mask_single_frame)
@@ -406,7 +442,6 @@ class DMDWidget(QWidget):
         return new_list_of_rois
 
     def project(self):
-
         if self.project_button.text() == "Start projecting":
             # Set the settings first.
             self.set_settings()
@@ -458,10 +493,14 @@ class DMDWidget(QWidget):
         ALP_PROJ_STEP = 2329
 
         if self.ALP_PROJ_STEP_Combox.currentText() == "ALP_DEFAULT":
-            self.DMD_actuator.DMD.ProjControl(controlType=ALP_PROJ_STEP, value=0)
+            self.DMD_actuator.DMD.ProjControl(
+                controlType=ALP_PROJ_STEP, value=0
+            )
             print("ALP_PROJ_STEP set to ALP_DEFAULT")
         elif self.ALP_PROJ_STEP_Combox.currentText() == "ALP_EDGE_RISING":
-            self.DMD_actuator.DMD.ProjControl(controlType=ALP_PROJ_STEP, value=2009)
+            self.DMD_actuator.DMD.ProjControl(
+                controlType=ALP_PROJ_STEP, value=2009
+            )
             print("ALP_PROJ_STEP set to ALP_EDGE_RISING")
 
         # Set the binary mode of DMD.
@@ -475,7 +514,10 @@ class DMDWidget(QWidget):
                 controlType=ALP_BIN_MODE, value=ALP_BIN_NORMAL
             )
             print("set to ALP_BIN_NORMAL")
-        elif self.ALP_ALP_BIN_MODE_Combox.currentText() == "ALP_BIN_UNINTERRUPTED":
+        elif (
+            self.ALP_ALP_BIN_MODE_Combox.currentText()
+            == "ALP_BIN_UNINTERRUPTED"
+        ):
             self.DMD_actuator.DMD.SeqControl(
                 controlType=ALP_BIN_MODE, value=ALP_BIN_UNINTERRUPTED
             )

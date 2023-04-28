@@ -93,7 +93,8 @@ class FocusFinder:
         self.source_of_image = source_of_image
         if source_of_image == "PMT":
             self.galvo = RasterScan(
-                Daq_sample_rate=250000, edge_volt=self.imaging_conditions["edge_volt"]
+                Daq_sample_rate=250000,
+                edge_volt=self.imaging_conditions["edge_volt"],
             )
         elif source_of_image == "Camera":
             if camera_handle == None:
@@ -104,7 +105,6 @@ class FocusFinder:
                 self.HamamatsuCam_ins = camera_handle
 
     def gaussian_fit(self, move_to_focus=True):
-
         # The upper edge.
         upper_position = self.current_pos + self.init_search_range
         # The lower edge.
@@ -157,21 +157,37 @@ class FocusFinder:
                 # Get degree of focus in the mid.
                 mid_position = (upper_position + lower_position) / 2
                 degree_of_focus_mid = self.evaluate_focus(mid_position)
-                print("mid focus degree: {}".format(round(degree_of_focus_mid, 5)))
+                print(
+                    "mid focus degree: {}".format(
+                        round(degree_of_focus_mid, 5)
+                    )
+                )
 
                 # Break the loop if focus degree is below threshold which means
                 # that there's no cell in image.
-                if not ProcessImage.if_theres_cell(self.galvo_image.astype("float32")):
+                if not ProcessImage.if_theres_cell(
+                    self.galvo_image.astype("float32")
+                ):
                     print("no cell")
                     mid_position = False
                     break
 
                 # Move to top and evaluate.
-                degree_of_focus_up = self.evaluate_focus(obj_position=upper_position)
-                print("top focus degree: {}".format(round(degree_of_focus_up, 5)))
+                degree_of_focus_up = self.evaluate_focus(
+                    obj_position=upper_position
+                )
+                print(
+                    "top focus degree: {}".format(round(degree_of_focus_up, 5))
+                )
                 # Move to bottom and evaluate.
-                degree_of_focus_low = self.evaluate_focus(obj_position=lower_position)
-                print("bot focus degree: {}".format(round(degree_of_focus_low, 5)))
+                degree_of_focus_low = self.evaluate_focus(
+                    obj_position=lower_position
+                )
+                print(
+                    "bot focus degree: {}".format(
+                        round(degree_of_focus_low, 5)
+                    )
+                )
                 # Sorting dicitonary of degrees in ascending.
                 biesection_range_dic = {
                     "top": [upper_position, degree_of_focus_up],
@@ -189,17 +205,28 @@ class FocusFinder:
                 mid_position = (upper_position + lower_position) / 2
                 degree_of_focus_mid = self.evaluate_focus(mid_position)
 
-                print("Current focus degree: {}".format(round(degree_of_focus_mid, 5)))
+                print(
+                    "Current focus degree: {}".format(
+                        round(degree_of_focus_mid, 5)
+                    )
+                )
 
             # If sits in upper half, make the middle values new bottom.
             if biesection_range_dic["top"][1] > biesection_range_dic["bot"][1]:
-                biesection_range_dic["bot"] = [mid_position, degree_of_focus_mid]
+                biesection_range_dic["bot"] = [
+                    mid_position,
+                    degree_of_focus_mid,
+                ]
             else:
-                biesection_range_dic["top"] = [mid_position, degree_of_focus_mid]
+                biesection_range_dic["top"] = [
+                    mid_position,
+                    degree_of_focus_mid,
+                ]
 
             print(
                 "The upper pos: {}; The lower: {}".format(
-                    biesection_range_dic["top"][0], biesection_range_dic["bot"][0]
+                    biesection_range_dic["top"][0],
+                    biesection_range_dic["bot"][0],
                 )
             )
 
@@ -295,6 +322,6 @@ if __name__ == "__main__":
     ins = FocusFinder()
     ins.total_step_number = 7
     ins.init_search_range = 0.012
-    ins.imaging_conditions={"edge_volt": 3},
+    ins.imaging_conditions = ({"edge_volt": 3},)
     ins.bisection()  # will return false if there's no cell in view.
     ins.pi_device_instance.CloseMotorConnection()

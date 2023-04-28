@@ -49,7 +49,6 @@ class InsightX3:
         """This is the decorator to try to execute the function until succeed."""
 
         def wrapper(*args, **kwargs):
-
             success = None
             failnumber = 0
 
@@ -60,9 +59,12 @@ class InsightX3:
                         success = True
 
                     except:
-
                         failnumber += 1
-                        print("Laser action failed, failnumber: {}".format(failnumber))
+                        print(
+                            "Laser action failed, failnumber: {}".format(
+                                failnumber
+                            )
+                        )
                         time.sleep(0.2)
                 else:
                     print("Fail for 8 times, give up - -")
@@ -163,10 +165,16 @@ class InsightX3:
 
         with serial.Serial(self.address, self.baudrate) as Insight:
             Insight.write(command.encode("ascii"))
-            warmupstatus_byte = Insight.readline()  # Reads an '\n' terminated line
+            warmupstatus_byte = (
+                Insight.readline()
+            )  # Reads an '\n' terminated line
             warmupstatus = warmupstatus_byte.decode("utf-8")
 
-            print("Warming up: {}%".format(warmupstatus[0 : len(warmupstatus) - 1]))
+            print(
+                "Warming up: {}%".format(
+                    warmupstatus[0 : len(warmupstatus) - 1]
+                )
+            )
             return warmupstatus
 
     @Try_until_Success
@@ -359,7 +367,6 @@ if __name__ == "__main__":
         Laserinstance.SetWatchdogTimer(3)
 
         targetwavelength = 1280
-
 
         Status_list = Laserinstance.QueryStatus()
 

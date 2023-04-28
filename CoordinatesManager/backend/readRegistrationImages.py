@@ -32,7 +32,7 @@ def gaussian(x, y, x0, y0, sigma, amp):
 
     X, Y = np.meshgrid(x, y)
 
-    mask = amp * np.exp((-((X - x0) ** 2) - (Y - y0) ** 2) / (2 * sigma ** 2))
+    mask = amp * np.exp((-((X - x0) ** 2) - (Y - y0) ** 2) / (2 * sigma**2))
 
     mask = mask.ravel()
     return mask
@@ -66,7 +66,8 @@ def gaussian_fitting(image):
         _gaussian,
         x,
         image[
-            x_max - bbox_size : x_max + bbox_size, y_max - bbox_size : y_max + bbox_size
+            x_max - bbox_size : x_max + bbox_size,
+            y_max - bbox_size : y_max + bbox_size,
         ].ravel(),
         p0,
         maxfev=10,
@@ -206,7 +207,9 @@ def selectROI(image):
                     np.amax(contour[i][:, 1]),
                 )
             )
-            tmp_bbox_area = (tmp_bbox[1] - tmp_bbox[0]) * (tmp_bbox[3] - tmp_bbox[2])
+            tmp_bbox_area = (tmp_bbox[1] - tmp_bbox[0]) * (
+                tmp_bbox[3] - tmp_bbox[2]
+            )
 
             if tmp_bbox_area > old_bbox_area:
                 bbox = tmp_bbox
@@ -251,13 +254,17 @@ def findCircleCenterCoordinate_curvefit(image):
     X, Y = np.mgrid[0:mask_width, 0:mask_height]
     x = np.vstack((X.ravel(), Y.ravel()))
 
-    p0 = np.array([h_mask_width, h_mask_height, 0.4 * mask_width, 0.4 * mask_height])
+    p0 = np.array(
+        [h_mask_width, h_mask_height, 0.4 * mask_width, 0.4 * mask_height]
+    )
     popt, pcov = scipy.optimize.curve_fit(
         _touching_squares, x, img_selection.ravel(), p0
     )
 
     coordinates = np.flip(
-        np.array((bbox[0] + popt[0], bbox[2] + popt[1])).astype(int).astype(int)
+        np.array((bbox[0] + popt[0], bbox[2] + popt[1]))
+        .astype(int)
+        .astype(int)
     )
 
     return coordinates
@@ -280,20 +287,23 @@ def findTouchingSquaresCenterCoordinate_curvefit(image):
     X, Y = np.mgrid[0:mask_width, 0:mask_height]
     x = np.vstack((X.ravel(), Y.ravel()))
 
-    p0 = np.array([h_mask_width, h_mask_height, 0.4 * mask_width, 0.4 * mask_height])
+    p0 = np.array(
+        [h_mask_width, h_mask_height, 0.4 * mask_width, 0.4 * mask_height]
+    )
     popt, pcov = scipy.optimize.curve_fit(
         _touching_squares, x, img_selection.ravel(), p0
     )
 
     coordinates = np.flip(
-        np.array((bbox[0] + popt[0], bbox[2] + popt[1])).astype(int).astype(int)
+        np.array((bbox[0] + popt[0], bbox[2] + popt[1]))
+        .astype(int)
+        .astype(int)
     )
 
     return coordinates
 
 
 if __name__ == "__main__":
-
     if True:
         coordinates = np.loadtxt(
             "CoordinatesManager/Results/galvo_registration_coords.txt"
@@ -329,12 +339,19 @@ if __name__ == "__main__":
             # coordinates[i,:] = gaussian_fitting(image)
             axs1[i].add_artist(
                 plt.Circle(
-                    (coordinates[i, 0], coordinates[i, 1]), 75, color="r", fill=False
+                    (coordinates[i, 0], coordinates[i, 1]),
+                    75,
+                    color="r",
+                    fill=False,
                 )
             )
             axs1[i].set_axis_off()
             axs1[i].set_title(
-                "(" + str(coordinates[i, 0]) + "," + str(coordinates[i, 1]) + ")"
+                "("
+                + str(coordinates[i, 0])
+                + ","
+                + str(coordinates[i, 1])
+                + ")"
             )
             # axs[i].scatter(coordinates[i,1], coordinates[i,0])
             # print(coordinates)
@@ -431,7 +448,10 @@ if __name__ == "__main__":
         coordinate = findTouchingSquaresCenterCoordinate_curvefit(image)
         axs[2].imshow(1 - (img_selection > threshold), cmap="binary")
         axs[2].scatter(
-            coordinate[0] - bbox[2], coordinate[1] - bbox[0], color="r", linewidths=5
+            coordinate[0] - bbox[2],
+            coordinate[1] - bbox[0],
+            color="r",
+            linewidths=5,
         )
         axs[2].set_axis_off()
 

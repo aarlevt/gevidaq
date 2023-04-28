@@ -18,7 +18,6 @@ from .filterpyserial import ELL9Filter
 
 
 class FilterSliderWidgetUI(QtWidgets.QWidget):
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setFont(QFont("Arial"))
@@ -65,7 +64,9 @@ class FilterSliderWidgetUI(QtWidgets.QWidget):
         self.FilterButtongroup_1.addButton(self.filter1_pos3)
         self.filtercontrolLayout.addWidget(self.filter1_pos3, 0, 4)
         self.FilterButtongroup_1.setExclusive(True)
-        self.FilterButtongroup_1.buttonClicked[int].connect(self.DecodeFilterMove)
+        self.FilterButtongroup_1.buttonClicked[int].connect(
+            self.DecodeFilterMove
+        )
 
         self.FilterButtongroup_2 = QtWidgets.QButtonGroup(self)
 
@@ -89,7 +90,9 @@ class FilterSliderWidgetUI(QtWidgets.QWidget):
         self.FilterButtongroup_2.addButton(self.filter2_pos3)
         self.filtercontrolLayout.addWidget(self.filter2_pos3, 1, 4)
         self.FilterButtongroup_2.setExclusive(True)
-        self.FilterButtongroup_2.buttonClicked[int].connect(self.DecodeFilterMove)
+        self.FilterButtongroup_2.buttonClicked[int].connect(
+            self.DecodeFilterMove
+        )
 
         EM_filtercontrolContainer = StylishQT.roundQGroupBox(
             title="Emission", background_color="honeydew"
@@ -109,9 +112,13 @@ class FilterSliderWidgetUI(QtWidgets.QWidget):
         self.FilterButtongroup_3.addButton(self.filter3_pos1)
         self.EM_filtercontrolContainerLayout.addWidget(self.filter3_pos1, 0, 0)
         self.FilterButtongroup_3.setExclusive(True)
-        self.FilterButtongroup_3.buttonClicked[int].connect(self.DecodeFilterMove)
+        self.FilterButtongroup_3.buttonClicked[int].connect(
+            self.DecodeFilterMove
+        )
 
-        EM_filtercontrolContainer.setLayout(self.EM_filtercontrolContainerLayout)
+        EM_filtercontrolContainer.setLayout(
+            self.EM_filtercontrolContainerLayout
+        )
         EM_filtercontrolContainer.setFixedWidth(65)
 
         ND_filtercontrolContainer.setLayout(self.filtercontrolLayout)
@@ -151,9 +158,10 @@ class FilterSliderWidgetUI(QtWidgets.QWidget):
         return thread
 
     def DecodeFilterMove(self):
-
         if self.FilterButtongroup_1.checkedId() == -2:
-            self.run_in_thread(self.filter_move_towards("COM9", 0))  # TODO hardcoded port
+            self.run_in_thread(
+                self.filter_move_towards("COM9", 0)
+            )  # TODO hardcoded port
         elif self.FilterButtongroup_1.checkedId() == -3:
             self.run_in_thread(self.filter_move_towards("COM9", 1))
         elif self.FilterButtongroup_1.checkedId() == -4:
@@ -162,7 +170,9 @@ class FilterSliderWidgetUI(QtWidgets.QWidget):
             self.run_in_thread(self.filter_move_towards("COM9", 3))
 
         if self.FilterButtongroup_2.checkedId() == -2:
-            self.run_in_thread(self.filter_move_towards("COM7", 0))  # TODO hardcoded port
+            self.run_in_thread(
+                self.filter_move_towards("COM7", 0)
+            )  # TODO hardcoded port
         elif self.FilterButtongroup_2.checkedId() == -3:
             self.run_in_thread(self.filter_move_towards("COM7", 1))
         elif self.FilterButtongroup_2.checkedId() == -4:
@@ -172,7 +182,9 @@ class FilterSliderWidgetUI(QtWidgets.QWidget):
 
         if self.FilterButtongroup_3.checkedId() == -2:
             # Move to Arch
-            self.run_in_thread(self.filter_move_towards("COM15", 0))  # TODO hardcoded port
+            self.run_in_thread(
+                self.filter_move_towards("COM15", 0)
+            )  # TODO hardcoded port
         elif self.FilterButtongroup_3.checkedId() == -3:
             self.run_in_thread(self.filter_move_towards("COM15", 1))
 

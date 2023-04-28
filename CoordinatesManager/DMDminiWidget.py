@@ -41,7 +41,9 @@ class DMDminiWidgetUI(QWidget):
 
         self.project_button = QPushButton("Fully proj.")
         self.project_button.setFixedWidth(60)
-        self.project_button.setStyleSheet("QPushButton {background-color: #99FFCC;}")
+        self.project_button.setStyleSheet(
+            "QPushButton {background-color: #99FFCC;}"
+        )
         self.project_button.setCheckable(True)
         self.project_button.clicked.connect(
             lambda: run_in_thread(self.project_full_white)
@@ -65,7 +67,6 @@ class DMDminiWidgetUI(QWidget):
             del self.DMD_actuator
 
     def project_full_white(self):
-
         if self.project_button.isChecked():
             self.project_button.setText("Stop projecting")
             self.DMD_actuator.send_data_to_DMD(np.ones((1024, 768)))
@@ -78,7 +79,7 @@ class DMDminiWidgetUI(QWidget):
             # Set the binary mode of DMD.
             ALP_BIN_MODE = 2104  # 	Binary mode: select from ALP_BIN_NORMAL and ALP_BIN_UNINTERRUPTED (AlpSeqControl)
 
-            #ALP_BIN_NORMAL = 2105  # 	Normal operation with progammable dark phase
+            # ALP_BIN_NORMAL = 2105  # 	Normal operation with progammable dark phase
             ALP_BIN_UNINTERRUPTED = 2106  # 	Operation without dark phase
 
             self.DMD_actuator.DMD.SeqControl(

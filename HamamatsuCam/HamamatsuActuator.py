@@ -65,7 +65,9 @@ class CamActuator:
 
         paraminit = HamamatsuDCAM.DCAMAPI_INIT(0, 0, 0, 0, None, None)
         paraminit.size = ctypes.sizeof(paraminit)
-        error_code = self.dcam.dcamapi_init(ctypes.byref(paraminit))  # TODO unused
+        error_code = self.dcam.dcamapi_init(
+            ctypes.byref(paraminit)
+        )  # TODO unused
         # if (error_code != DCAMERR_NOERROR):
         #    raise DCAMException("DCAM initialization failed with error code " + str(error_code))
 
@@ -121,16 +123,24 @@ class CamActuator:
                 self.metaData += "_subarray_vpos" + str(self.subarray_vpos)
             if param == "internal_frame_rate":
                 self.internal_frame_rate = self.hcam.getPropertyValue(param)[0]
-                self.metaData += "_internal_frame_rate" + str(self.internal_frame_rate)
+                self.metaData += "_internal_frame_rate" + str(
+                    self.internal_frame_rate
+                )
             if param == "image_framebytes":
                 self.image_framebytes = self.hcam.getPropertyValue(param)[0]
-                self.metaData += "_image_framebytes" + str(self.image_framebytes)
+                self.metaData += "_image_framebytes" + str(
+                    self.image_framebytes
+                )
             if param == "buffer_framebytes":
                 self.buffer_framebytes = self.hcam.getPropertyValue(param)[0]
-                self.metaData += "_buffer_framebytes" + str(self.buffer_framebytes)
+                self.metaData += "_buffer_framebytes" + str(
+                    self.buffer_framebytes
+                )
             if param == "timing_readout_time":
                 self.timing_readout_time = self.hcam.getPropertyValue(param)[0]
-                self.metaData += "_timing_readout_time" + str(self.timing_readout_time)
+                self.metaData += "_timing_readout_time" + str(
+                    self.timing_readout_time
+                )
 
     def setROI(self, ROI_vpos, ROI_hpos, ROI_vsize, ROI_hsize):
         # Set the roi of caamera, first the roi poitions and then the size.
@@ -202,7 +212,9 @@ class CamActuator:
             ] = (
                 self.hcam.getFrames()
             )  # frames is a list with HCamData type, with np_array being the image.
-            self.Live_image = np.resize(frames[-1].np_array, (dims[1], dims[0]))
+            self.Live_image = np.resize(
+                frames[-1].np_array, (dims[1], dims[0])
+            )
 
             self.subarray_vsize = dims[1]
             self.subarray_hsize = dims[0]
@@ -271,7 +283,8 @@ class CamActuator:
             with skimtiff.TiffWriter(saving_dir, append=True) as tif:
                 for eachframe in range(self.imageCount):
                     image = np.resize(
-                        self.video_list[eachframe], (self.dims[1], self.dims[0])
+                        self.video_list[eachframe],
+                        (self.dims[1], self.dims[0]),
                     )
                     tif.save(image, compress=0, description=self.metaData)
         self.isSaving = False
@@ -287,7 +300,9 @@ if __name__ == "__main__":
     cam = CamActuator()
     cam.initializeCamera()
 
-    cam.StartStreaming(BufferNumber=10, trigger_source="INTERNAL", exposure_time=0.0015)
+    cam.StartStreaming(
+        BufferNumber=10, trigger_source="INTERNAL", exposure_time=0.0015
+    )
     print("main thread continues")
     # Make sure that the camera is prepared before waveform execution.
     time.sleep(3.5)

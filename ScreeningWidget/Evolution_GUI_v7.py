@@ -21,9 +21,8 @@ from .EvolutionScanningThread import ScanningExecutionThread
 
 
 class Mainbody(QtWidgets.QWidget):
-
     # waveforms_generated = pyqtSignal(object, object, list, int)
-    #%%
+    # %%
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setFont(QFont("Arial"))
@@ -66,19 +65,31 @@ class Mainbody(QtWidgets.QWidget):
         self.prefixtextbox.returnPressed.connect(self.set_prefix)
         self.Quick_startContainerLayout.addWidget(self.prefixtextbox, 0, 0)
 
-        self.OpenSettingWidgetButton = QtWidgets.QPushButton("New pipeline", self)
+        self.OpenSettingWidgetButton = QtWidgets.QPushButton(
+            "New pipeline", self
+        )
         # self.OpenSettingWidgetButton.setCheckable(True)
-        self.Quick_startContainerLayout.addWidget(self.OpenSettingWidgetButton, 0, 1)
-        self.OpenSettingWidgetButton.clicked.connect(self.showPipelineConfigWidget)
+        self.Quick_startContainerLayout.addWidget(
+            self.OpenSettingWidgetButton, 0, 1
+        )
+        self.OpenSettingWidgetButton.clicked.connect(
+            self.showPipelineConfigWidget
+        )
 
         self.QuickStartButton_1 = QtWidgets.QPushButton("Config 1", self)
-        self.Quick_startContainerLayout.addWidget(self.QuickStartButton_1, 1, 0)
+        self.Quick_startContainerLayout.addWidget(
+            self.QuickStartButton_1, 1, 0
+        )
         self.QuickStartButton_1.clicked.connect(lambda: self.quick_start(0))
 
         self.QuickStartButton_2 = QtWidgets.QPushButton("Config 2", self)
-        self.Quick_startContainerLayout.addWidget(self.QuickStartButton_2, 2, 0)
+        self.Quick_startContainerLayout.addWidget(
+            self.QuickStartButton_2, 2, 0
+        )
 
-        self.openScreenAnalysisMLWidgetButton = QtWidgets.QPushButton("Screen Analysis ML", self)
+        self.openScreenAnalysisMLWidgetButton = QtWidgets.QPushButton(
+            "Screen Analysis ML", self
+        )
         self.Quick_startContainerLayout.addWidget(
             self.openScreenAnalysisMLWidgetButton, 3, 0
         )
@@ -100,7 +111,9 @@ class Mainbody(QtWidgets.QWidget):
         self.savedirectorytextbox = QtWidgets.QLineEdit(self)
         self.savedirectorytextbox.setPlaceholderText("Saving directory")
         self.savedirectorytextbox.setFixedWidth(300)
-        self.savedirectorytextbox.returnPressed.connect(self.update_saving_directory)
+        self.savedirectorytextbox.returnPressed.connect(
+            self.update_saving_directory
+        )
         self.GeneralSettingContainerLayout.addWidget(
             self.savedirectorytextbox, 0, 1, 1, 2
         )
@@ -116,7 +129,9 @@ class Mainbody(QtWidgets.QWidget):
             self.toolButtonOpenDialog.setIcon(QIcon(path))
         self.toolButtonOpenDialog.clicked.connect(self._open_file_dialog)
 
-        self.GeneralSettingContainerLayout.addWidget(self.toolButtonOpenDialog, 0, 0)
+        self.GeneralSettingContainerLayout.addWidget(
+            self.toolButtonOpenDialog, 0, 0
+        )
 
         ButtonConfigurePipeline = StylishQT.generateButton()
         ButtonConfigurePipeline.clicked.connect(self.ConfigGeneralSettings)
@@ -129,23 +144,33 @@ class Mainbody(QtWidgets.QWidget):
         ButtonSavePipeline.clicked.connect(self.Savepipeline)
 
         self.ImportPipelineButton = StylishQT.loadButton()
-        self.GeneralSettingContainerLayout.addWidget(self.ImportPipelineButton, 0, 5)
+        self.GeneralSettingContainerLayout.addWidget(
+            self.ImportPipelineButton, 0, 5
+        )
         self.ImportPipelineButton.clicked.connect(self.GetPipelineNPFile)
 
-        self.GeneralSettingContainerLayout.addWidget(ButtonConfigurePipeline, 0, 6)
+        self.GeneralSettingContainerLayout.addWidget(
+            ButtonConfigurePipeline, 0, 6
+        )
         self.GeneralSettingContainerLayout.addWidget(ButtonExePipeline, 0, 8)
         self.GeneralSettingContainerLayout.addWidget(ButtonSavePipeline, 0, 7)
 
         # ----------------------------------------------------------------------
         self.Analyse_roundCheckbox = QtWidgets.QCheckBox("Analyse")
-        self.Analyse_roundCheckbox.setStyleSheet('color:navy;font:bold "Times New Roman"')
+        self.Analyse_roundCheckbox.setStyleSheet(
+            'color:navy;font:bold "Times New Roman"'
+        )
         self.Analyse_roundCheckbox.setChecked(True)
         self.Analyse_roundCheckbox.setToolTip(
             "Start analysis as configured in screening analysis GUI right after screening."
         )
-        self.GeneralSettingContainerLayout.addWidget(self.Analyse_roundCheckbox, 0, 4)
+        self.GeneralSettingContainerLayout.addWidget(
+            self.Analyse_roundCheckbox, 0, 4
+        )
 
-        self.GeneralSettingContainer.setLayout(self.GeneralSettingContainerLayout)
+        self.GeneralSettingContainer.setLayout(
+            self.GeneralSettingContainerLayout
+        )
 
         # **************************************************************************************************************************************
         # -----------------------------------------------------------GUI for Billboard display------------------------------------------------------
@@ -161,10 +186,14 @@ class Mainbody(QtWidgets.QWidget):
 
         self.ConsoleTextDisplay = QtWidgets.QTextEdit()
         self.ConsoleTextDisplay.setFontItalic(True)
-        self.ConsoleTextDisplay.setPlaceholderText("Notice board from console.")
+        self.ConsoleTextDisplay.setPlaceholderText(
+            "Notice board from console."
+        )
         # self.ConsoleTextDisplay.setMaximumHeight(200)
         # self.ConsoleTextDisplay.setFixedWidth(200)
-        self.ImageDisplayContainerLayout.addWidget(self.ConsoleTextDisplay, 0, 1, 2, 1)
+        self.ImageDisplayContainerLayout.addWidget(
+            self.ConsoleTextDisplay, 0, 1, 2, 1
+        )
 
         # self.ImageDisplayContainerLayout.addWidget(ToolWidgetsContainer, 2, 0, 1, 1)
 
@@ -193,7 +222,9 @@ class Mainbody(QtWidgets.QWidget):
         self.RoundOrderBox.setSingleStep(1)
         self.RoundOrderBox.setMaximumWidth(30)
         self.PipelineContainerLayout.addWidget(self.RoundOrderBox, 1, 1)
-        self.PipelineContainerLayout.addWidget(QtWidgets.QLabel("Round sequence:"), 1, 0)
+        self.PipelineContainerLayout.addWidget(
+            QtWidgets.QLabel("Round sequence:"), 1, 0
+        )
 
         ButtonAddRound = StylishQT.addButton()
         ButtonDeleteRound = StylishQT.stop_deleteButton()
@@ -215,14 +246,20 @@ class Mainbody(QtWidgets.QWidget):
         self.ScanRepeatTextbox.setMaximum(100000)
         self.ScanRepeatTextbox.setSingleStep(1)
         self.PipelineContainerLayout.addWidget(self.ScanRepeatTextbox, 0, 1)
-        self.PipelineContainerLayout.addWidget(QtWidgets.QLabel("Meshgrid:"), 0, 0)
+        self.PipelineContainerLayout.addWidget(
+            QtWidgets.QLabel("Meshgrid:"), 0, 0
+        )
 
-        self.OpenTwoPLaserShutterCheckbox = QtWidgets.QCheckBox("Open 2P shutter first")
+        self.OpenTwoPLaserShutterCheckbox = QtWidgets.QCheckBox(
+            "Open 2P shutter first"
+        )
         self.OpenTwoPLaserShutterCheckbox.setStyleSheet(
             'color:navy;font:bold "Times New Roman"'
         )
         self.OpenTwoPLaserShutterCheckbox.setChecked(True)
-        self.PipelineContainerLayout.addWidget(self.OpenTwoPLaserShutterCheckbox, 0, 2)
+        self.PipelineContainerLayout.addWidget(
+            self.OpenTwoPLaserShutterCheckbox, 0, 2
+        )
 
         # **************************************************************************************************************************************
         # -----------------------------------------------------------GUI for StageScanContainer-------------------------------------------------
@@ -237,14 +274,18 @@ class Mainbody(QtWidgets.QWidget):
         self.ScanStepsNumTextbox.setValue(6)
         self.ScanStepsNumTextbox.setSingleStep(2)
         ScanSettingLayout.addWidget(self.ScanStepsNumTextbox, 0, 1)
-        ScanSettingLayout.addWidget(QtWidgets.QLabel("Stage scanning step number:"), 0, 0)
+        ScanSettingLayout.addWidget(
+            QtWidgets.QLabel("Stage scanning step number:"), 0, 0
+        )
 
         self.ScanstepTextbox = QtWidgets.QSpinBox(self)
         self.ScanstepTextbox.setMaximum(20000)
         self.ScanstepTextbox.setValue(1568)
         self.ScanstepTextbox.setSingleStep(500)
         ScanSettingLayout.addWidget(self.ScanstepTextbox, 1, 1)
-        ScanSettingLayout.addWidget(QtWidgets.QLabel("Stage scanning step size:"), 1, 0)
+        ScanSettingLayout.addWidget(
+            QtWidgets.QLabel("Stage scanning step size:"), 1, 0
+        )
 
         self.AutoFocusGapTextbox = QtWidgets.QSpinBox(self)
         self.AutoFocusGapTextbox.setMinimum(0)
@@ -252,18 +293,20 @@ class Mainbody(QtWidgets.QWidget):
         self.AutoFocusGapTextbox.setValue(0)
         self.AutoFocusGapTextbox.setSingleStep(2)
         self.AutoFocusGapTextbox.setToolTip(
-        "For example if =2 then there's 1 coordinate between AF. \nIf =0, all AF settings are omitted. \nIn pure-AF mode, put the same as the first AF round."
+            "For example if =2 then there's 1 coordinate between AF. \nIf =0, all AF settings are omitted. \nIn pure-AF mode, put the same as the first AF round."
         )
         # if value = 0, then no auto-focus.
         ScanSettingLayout.addWidget(self.AutoFocusGapTextbox, 0, 5)
         Auto_focus_grid_label = QtWidgets.QLabel("Auto focus grid steps:")
         Auto_focus_grid_label.setToolTip(
-        "For example if =2 then there's 1 coordinate between AF. \nIf =0, all AF settings are omitted. \nIn pure-AF mode, put the same as the first AF round."
+            "For example if =2 then there's 1 coordinate between AF. \nIf =0, all AF settings are omitted. \nIn pure-AF mode, put the same as the first AF round."
         )
         ScanSettingLayout.addWidget(Auto_focus_grid_label, 0, 4)
 
         self.AF_roundCheckbox = QtWidgets.QCheckBox("Auto-focus round")
-        self.AF_roundCheckbox.setStyleSheet('color:navy;font:bold "Times New Roman"')
+        self.AF_roundCheckbox.setStyleSheet(
+            'color:navy;font:bold "Times New Roman"'
+        )
         self.AF_roundCheckbox.setChecked(False)
         self.AF_roundCheckbox.setToolTip(
             "No waveform configuration needed for AF round."
@@ -276,7 +319,9 @@ class Mainbody(QtWidgets.QWidget):
         self.FocusStackNumTextbox.setValue(1)
         self.FocusStackNumTextbox.setSingleStep(1)
         ScanSettingLayout.addWidget(self.FocusStackNumTextbox, 1, 5)
-        ScanSettingLayout.addWidget(QtWidgets.QLabel("Focus stack number:"), 1, 4)
+        ScanSettingLayout.addWidget(
+            QtWidgets.QLabel("Focus stack number:"), 1, 4
+        )
 
         self.FocusStackStepTextbox = QtWidgets.QDoubleSpinBox(self)
         self.FocusStackStepTextbox.setMinimum(0)
@@ -285,7 +330,9 @@ class Mainbody(QtWidgets.QWidget):
         self.FocusStackStepTextbox.setValue(0.002)
         self.FocusStackStepTextbox.setSingleStep(0.001)
         ScanSettingLayout.addWidget(self.FocusStackStepTextbox, 1, 7)
-        ScanSettingLayout.addWidget(QtWidgets.QLabel("Focus stack step size(mm):"), 1, 6)
+        ScanSettingLayout.addWidget(
+            QtWidgets.QLabel("Focus stack step size(mm):"), 1, 6
+        )
 
         ScanContainer.setLayout(ScanSettingLayout)
 
@@ -295,13 +342,17 @@ class Mainbody(QtWidgets.QWidget):
         TwoPLaserContainer = QtWidgets.QGroupBox()
         TwoPLaserSettingLayout = QtWidgets.QGridLayout()  # Layout manager
 
-        self.TwoPLaserFilterCheckbox = QtWidgets.QCheckBox("Insight/Filter event")
+        self.TwoPLaserFilterCheckbox = QtWidgets.QCheckBox(
+            "Insight/Filter event"
+        )
         self.TwoPLaserFilterCheckbox.setStyleSheet(
             'color:blue;font:bold "Times New Roman"'
         )
         TwoPLaserSettingLayout.addWidget(self.TwoPLaserFilterCheckbox, 0, 0)
 
-        TwoPLaserSettingLayout.addWidget(QtWidgets.QLabel("2-P wavelength:"), 0, 1)
+        TwoPLaserSettingLayout.addWidget(
+            QtWidgets.QLabel("2-P wavelength:"), 0, 1
+        )
 
         self.TwoPLaserWavelengthbox = QtWidgets.QSpinBox(self)
         self.TwoPLaserWavelengthbox.setMinimum(680)
@@ -311,7 +362,9 @@ class Mainbody(QtWidgets.QWidget):
         TwoPLaserSettingLayout.addWidget(self.TwoPLaserWavelengthbox, 0, 2)
 
         self.TwoPLaserShutterCombox = QtWidgets.QComboBox()
-        self.TwoPLaserShutterCombox.addItems(["No shutter event", "Open", "Close"])
+        self.TwoPLaserShutterCombox.addItems(
+            ["No shutter event", "Open", "Close"]
+        )
         TwoPLaserSettingLayout.addWidget(self.TwoPLaserShutterCombox, 0, 3)
 
         # --------filter------------
@@ -348,7 +401,9 @@ class Mainbody(QtWidgets.QWidget):
         # -----------------------------------------------------------GUI for StageScanContainer-------------------------------------------------
         # **************************************************************************************************************************************
         CamAFsettingsContainer = QtWidgets.QWidget()
-        CamAFsettingsContainerLayout = QtWidgets.QGridLayout()  # Layout manager
+        CamAFsettingsContainerLayout = (
+            QtWidgets.QGridLayout()
+        )  # Layout manager
         CamAFsettingsContainer.layout = CamAFsettingsContainerLayout
 
         self.AFmethodCombox = QtWidgets.QComboBox()
@@ -388,20 +443,32 @@ class Mainbody(QtWidgets.QWidget):
         self.PMT_AF_step_numBox.setMaximum(1000)
         self.PMT_AF_step_numBox.setValue(5)
         self.PMT_AF_step_numBox.setSingleStep(1)
-        PMT_autofocus_setting_group_layout.addWidget(self.PMT_AF_step_numBox, 0, 3)
-        PMT_autofocus_setting_group_layout.addWidget(QtWidgets.QLabel("Searching increment number:"), 0, 2)
+        PMT_autofocus_setting_group_layout.addWidget(
+            self.PMT_AF_step_numBox, 0, 3
+        )
+        PMT_autofocus_setting_group_layout.addWidget(
+            QtWidgets.QLabel("Searching increment number:"), 0, 2
+        )
 
         self.PMT_AF_scan_voltBox = QtWidgets.QSpinBox(self)
         self.PMT_AF_scan_voltBox.setMinimum(1)
         self.PMT_AF_scan_voltBox.setMaximum(8)
         self.PMT_AF_scan_voltBox.setValue(5)
         self.PMT_AF_scan_voltBox.setSingleStep(1)
-        PMT_autofocus_setting_group_layout.addWidget(self.PMT_AF_scan_voltBox, 1, 1)
-        PMT_autofocus_setting_group_layout.addWidget(QtWidgets.QLabel("Scanning voltage:"), 1, 0)
+        PMT_autofocus_setting_group_layout.addWidget(
+            self.PMT_AF_scan_voltBox, 1, 1
+        )
+        PMT_autofocus_setting_group_layout.addWidget(
+            QtWidgets.QLabel("Scanning voltage:"), 1, 0
+        )
 
-        self.PMT_autofocus_setting_group.setLayout(PMT_autofocus_setting_group_layout)
+        self.PMT_autofocus_setting_group.setLayout(
+            PMT_autofocus_setting_group_layout
+        )
 
-        self.AFsettings_container_stack.addWidget(self.PMT_autofocus_setting_group)
+        self.AFsettings_container_stack.addWidget(
+            self.PMT_autofocus_setting_group
+        )
 
         # ------------------------------Camera auto focus--------------------------------
         self.Cam_autofocus_setting_group = StylishQT.roundQGroupBox(
@@ -427,8 +494,12 @@ class Mainbody(QtWidgets.QWidget):
         self.Cam_AF_step_numBox.setMaximum(1000)
         self.Cam_AF_step_numBox.setValue(10)
         self.Cam_AF_step_numBox.setSingleStep(1)
-        Cam_autofocus_setting_group_layout.addWidget(self.Cam_AF_step_numBox, 0, 3)
-        Cam_autofocus_setting_group_layout.addWidget(QtWidgets.QLabel("Searching increment number:"), 0, 2)
+        Cam_autofocus_setting_group_layout.addWidget(
+            self.Cam_AF_step_numBox, 0, 3
+        )
+        Cam_autofocus_setting_group_layout.addWidget(
+            QtWidgets.QLabel("Searching increment number:"), 0, 2
+        )
 
         self.Cam_AF_ExposureBox = QtWidgets.QDoubleSpinBox(self)
         self.Cam_AF_ExposureBox.setDecimals(5)
@@ -436,8 +507,12 @@ class Mainbody(QtWidgets.QWidget):
         self.Cam_AF_ExposureBox.setMaximum(100)
         self.Cam_AF_ExposureBox.setValue(0.003)
         self.Cam_AF_ExposureBox.setSingleStep(0.001)
-        Cam_autofocus_setting_group_layout.addWidget(self.Cam_AF_ExposureBox, 1, 1)
-        Cam_autofocus_setting_group_layout.addWidget(QtWidgets.QLabel("Exposure time(s):"), 1, 0)
+        Cam_autofocus_setting_group_layout.addWidget(
+            self.Cam_AF_ExposureBox, 1, 1
+        )
+        Cam_autofocus_setting_group_layout.addWidget(
+            QtWidgets.QLabel("Exposure time(s):"), 1, 0
+        )
 
         self.Cam_AF_AOTF_valueBox = QtWidgets.QDoubleSpinBox(self)
         self.Cam_AF_AOTF_valueBox.setDecimals(3)
@@ -445,17 +520,27 @@ class Mainbody(QtWidgets.QWidget):
         self.Cam_AF_AOTF_valueBox.setMaximum(5)
         self.Cam_AF_AOTF_valueBox.setValue(3)
         self.Cam_AF_AOTF_valueBox.setSingleStep(0.5)
-        Cam_autofocus_setting_group_layout.addWidget(self.Cam_AF_AOTF_valueBox, 1, 3)
+        Cam_autofocus_setting_group_layout.addWidget(
+            self.Cam_AF_AOTF_valueBox, 1, 3
+        )
 
         self.Cam_AF_AOTF_settingBox = QtWidgets.QComboBox()
         self.Cam_AF_AOTF_settingBox.addItems(["488AO", "532AO", "640AO"])
-        Cam_autofocus_setting_group_layout.addWidget(self.Cam_AF_AOTF_settingBox, 1, 2)
+        Cam_autofocus_setting_group_layout.addWidget(
+            self.Cam_AF_AOTF_settingBox, 1, 2
+        )
 
-        self.Cam_autofocus_setting_group.setLayout(Cam_autofocus_setting_group_layout)
+        self.Cam_autofocus_setting_group.setLayout(
+            Cam_autofocus_setting_group_layout
+        )
 
-        self.AFsettings_container_stack.addWidget(self.Cam_autofocus_setting_group)
+        self.AFsettings_container_stack.addWidget(
+            self.Cam_autofocus_setting_group
+        )
 
-        CamAFsettingsContainerLayout.addWidget(self.AFsettings_container_stack, 0, 1)
+        CamAFsettingsContainerLayout.addWidget(
+            self.AFsettings_container_stack, 0, 1
+        )
 
         CamAFsettingsContainer.setLayout(CamAFsettingsContainerLayout)
         # --------------------------------------------------------------------------------------------------------------------------------------
@@ -512,8 +597,12 @@ class Mainbody(QtWidgets.QWidget):
         waveformTab = QtWidgets.QWidget()
         waveformTabLayout = QtWidgets.QGridLayout()
 
-        self.Waveformer_widget_instance = NIDAQ.WaveformWidget.WaveformGenerator()
-        self.Waveformer_widget_instance.checkbox_saveWaveforms.setEnabled(False)
+        self.Waveformer_widget_instance = (
+            NIDAQ.WaveformWidget.WaveformGenerator()
+        )
+        self.Waveformer_widget_instance.checkbox_saveWaveforms.setEnabled(
+            False
+        )
         self.Waveformer_widget_instance.WaveformPackage.connect(
             self.UpdateWaveformerSignal
         )
@@ -521,7 +610,9 @@ class Mainbody(QtWidgets.QWidget):
             self.UpdateWaveformerGalvoInfor
         )
 
-        waveformTabLayout.addWidget(self.Waveformer_widget_instance, 2, 0, 2, 9)
+        waveformTabLayout.addWidget(
+            self.Waveformer_widget_instance, 2, 0, 2, 9
+        )
         waveformTab.setLayout(waveformTabLayout)
 
         # =============================================================================
@@ -531,14 +622,18 @@ class Mainbody(QtWidgets.QWidget):
         CameraDwellTabLayout = QtWidgets.QGridLayout()
 
         self.photocycleChecbox = QtWidgets.QCheckBox("Photo cycle")
-        self.photocycleChecbox.setStyleSheet('color:Indigo;font:bold "Times New Roman"')
+        self.photocycleChecbox.setStyleSheet(
+            'color:Indigo;font:bold "Times New Roman"'
+        )
         CameraDwellTabLayout.addWidget(self.photocycleChecbox, 0, 0)
 
         self.CamTriggerSettingBox = QtWidgets.QComboBox()
         self.CamTriggerSettingBox.addItems(["EXTERNAL", "INTERNAL"])
 
         self.CamTriggerActive_SettingBox = QtWidgets.QComboBox()
-        self.CamTriggerActive_SettingBox.addItems(["EDGE", "LEVEL", "SYNCREADOUT"])
+        self.CamTriggerActive_SettingBox.addItems(
+            ["EDGE", "LEVEL", "SYNCREADOUT"]
+        )
 
         CameraDwellTabLayout.addWidget(QtWidgets.QLabel("Trigger:"), 2, 0)
         CameraDwellTabLayout.addWidget(self.CamTriggerSettingBox, 2, 1)
@@ -547,7 +642,9 @@ class Mainbody(QtWidgets.QWidget):
         self.StreamBufferTotalFrames_spinbox = QtWidgets.QSpinBox()
         self.StreamBufferTotalFrames_spinbox.setMaximum(120000)
         self.StreamBufferTotalFrames_spinbox.setValue(0)
-        CameraDwellTabLayout.addWidget(self.StreamBufferTotalFrames_spinbox, 2, 4)
+        CameraDwellTabLayout.addWidget(
+            self.StreamBufferTotalFrames_spinbox, 2, 4
+        )
         CameraDwellTabLayout.addWidget(QtWidgets.QLabel("Buffers:"), 2, 3)
 
         self.CamExposureBox = QtWidgets.QDoubleSpinBox(self)
@@ -557,11 +654,15 @@ class Mainbody(QtWidgets.QWidget):
         self.CamExposureBox.setValue(0.001501)
         self.CamExposureBox.setSingleStep(0.001)
         CameraDwellTabLayout.addWidget(self.CamExposureBox, 2, 6)
-        CameraDwellTabLayout.addWidget(QtWidgets.QLabel("Exposure time(s):"), 2, 5)
+        CameraDwellTabLayout.addWidget(
+            QtWidgets.QLabel("Exposure time(s):"), 2, 5
+        )
 
         # ---------------------------Camera ROI settings------------------------
         CameraROIPosContainer = QtWidgets.QGroupBox("ROI position")
-        CameraROIPosContainer.setStyleSheet("QGroupBox { background-color:#F5F5F5;}")
+        CameraROIPosContainer.setStyleSheet(
+            "QGroupBox { background-color:#F5F5F5;}"
+        )
         CameraROIPosLayout = QtWidgets.QGridLayout()
 
         OffsetLabel = QtWidgets.QLabel("Offset")
@@ -606,8 +707,12 @@ class Mainbody(QtWidgets.QWidget):
 
         CameraDwellTab.setLayout(CameraDwellTabLayout)
 
-        self.EachCoordDwellSettingTabs.addTab(waveformTab, "Waveforms settings")
-        self.EachCoordDwellSettingTabs.addTab(CameraDwellTab, "Camera operations")
+        self.EachCoordDwellSettingTabs.addTab(
+            waveformTab, "Waveforms settings"
+        )
+        self.EachCoordDwellSettingTabs.addTab(
+            CameraDwellTab, "Camera operations"
+        )
 
         self.PipelineContainerLayout.addWidget(
             self.EachCoordDwellSettingTabs, 5, 0, 4, 10
@@ -619,8 +724,12 @@ class Mainbody(QtWidgets.QWidget):
         self.PipelineConfigureWidget.layout.addWidget(
             self.GeneralSettingContainer, 0, 0
         )
-        self.PipelineConfigureWidget.layout.addWidget(self.PipelineContainer, 1, 0)
-        self.PipelineConfigureWidget.setLayout(self.PipelineConfigureWidget.layout)
+        self.PipelineConfigureWidget.layout.addWidget(
+            self.PipelineContainer, 1, 0
+        )
+        self.PipelineConfigureWidget.setLayout(
+            self.PipelineConfigureWidget.layout
+        )
 
         # **************************************************************************************************************************************
         # -----------------------------------------------------------GUI for Stack widget--------------------------------------------------------
@@ -641,6 +750,7 @@ class Mainbody(QtWidgets.QWidget):
         self.showPipelineConfigWidget()
 
         from ImageAnalysis import EvolutionAnalysisWidget
+
         print("Importing EvolutionAnalysisWidget")
 
         self.ScreenAnalysisMLWindow = EvolutionAnalysisWidget.MainGUI()
@@ -652,7 +762,7 @@ class Mainbody(QtWidgets.QWidget):
 
         self.settingStackedWidget.setCurrentIndex(1)
 
-    #%%
+    # %%
     """
     #     FUNCTIONS FOR EXECUTION
 
@@ -727,7 +837,10 @@ class Mainbody(QtWidgets.QWidget):
             ] = self.FreshWaveformPackage
         except AttributeError:
             QtWidgets.QMessageBox.warning(
-                self, "Error", "Click configure waveform first!", QtWidgets.QMessageBox.Ok
+                self,
+                "Error",
+                "Click configure waveform first!",
+                QtWidgets.QMessageBox.Ok,
             )
 
         self.WaveformQueueDict_GalvoInfor[
@@ -793,7 +906,9 @@ class Mainbody(QtWidgets.QWidget):
         self,
     ):  # Empty the waveform container to avoid crosstalk between rounds.
         CurrentCamPackageSequence = self.WaveformOrderBox.value()
-        del self.CamOperationDict["CameraPackage_{}".format(CurrentCamPackageSequence)]
+        del self.CamOperationDict[
+            "CameraPackage_{}".format(CurrentCamPackageSequence)
+        ]
 
     def CleanCameraOperation(self):
         self.CamOperationDict = {}
@@ -832,7 +947,9 @@ class Mainbody(QtWidgets.QWidget):
         WaveformQueueDict = copy.deepcopy(
             self.WaveformQueueDict
         )  # Here we make the self.WaveformQueueDict private so that other rounds won't refer to the same variable.
-        WaveformQueueDict_GalvoInfor = copy.deepcopy(self.WaveformQueueDict_GalvoInfor)
+        WaveformQueueDict_GalvoInfor = copy.deepcopy(
+            self.WaveformQueueDict_GalvoInfor
+        )
         CamOperationDict = copy.deepcopy(self.CamOperationDict)
         PhotocycleDict = copy.deepcopy(self.PhotocycleDict)
 
@@ -851,21 +968,27 @@ class Mainbody(QtWidgets.QWidget):
 
         self.FocusStackInfoDict[
             "RoundPackage_{}".format(CurrentRoundSequence)
-        ] = "NumberOfFocus{}WithIncrementBeing{}".format(ZstackNumber, ZstackStep)
+        ] = "NumberOfFocus{}WithIncrementBeing{}".format(
+            ZstackNumber, ZstackStep
+        )
 
         self.AddFilterEvent()
 
         self.AddInsightEvent()
 
-        self.normalOutputWritten("Round{} added.\n".format(CurrentRoundSequence))
+        self.normalOutputWritten(
+            "Round{} added.\n".format(CurrentRoundSequence)
+        )
         print("Round added.")
 
     # -----------------------Configure filter event-----------------------------
     def AddFilterEvent(self):
         CurrentRoundSequence = self.RoundOrderBox.value()
 
-        if self.FilterCheckbox.isChecked() or self.TwoPLaserFilterCheckbox.isChecked():
-
+        if (
+            self.FilterCheckbox.isChecked()
+            or self.TwoPLaserFilterCheckbox.isChecked()
+        ):
             self.RoundQueueDict["FilterEvents"].append(
                 "Round_{}_ND_ToPos_{}".format(
                     CurrentRoundSequence, self.NDfilterCombox.currentText()
@@ -878,7 +1001,9 @@ class Mainbody(QtWidgets.QWidget):
             )
             print(self.RoundQueueDict["FilterEvents"])
             self.normalOutputWritten(
-                "FilterEvents" + str(self.RoundQueueDict["FilterEvents"]) + "\n"
+                "FilterEvents"
+                + str(self.RoundQueueDict["FilterEvents"])
+                + "\n"
             )
 
     def DelFilterEvent(self):
@@ -901,7 +1026,9 @@ class Mainbody(QtWidgets.QWidget):
                 )
             )
         print(self.RoundQueueDict["FilterEvents"])
-        self.normalOutputWritten(str(self.RoundQueueDict["FilterEvents"]) + "\n")
+        self.normalOutputWritten(
+            str(self.RoundQueueDict["FilterEvents"]) + "\n"
+        )
 
     # -----------------------Configure insight event-----------------------------
     def AddInsightEvent(self):
@@ -917,7 +1044,8 @@ class Mainbody(QtWidgets.QWidget):
             if self.TwoPLaserShutterCombox.currentText() != "No shutter event":
                 self.RoundQueueDict["InsightEvents"].append(
                     "Round_{}_Shutter_{}".format(
-                        CurrentRoundSequence, self.TwoPLaserShutterCombox.currentText()
+                        CurrentRoundSequence,
+                        self.TwoPLaserShutterCombox.currentText(),
                     )
                 )
 
@@ -939,12 +1067,15 @@ class Mainbody(QtWidgets.QWidget):
             if self.TwoPLaserShutterCombox.currentText() != "No shutter event":
                 self.RoundQueueDict["InsightEvents"].remove(
                     "Round_{}_Shutter_{}".format(
-                        CurrentRoundSequence, self.TwoPLaserShutterCombox.currentText()
+                        CurrentRoundSequence,
+                        self.TwoPLaserShutterCombox.currentText(),
                     )
                 )
 
         print(self.RoundQueueDict["InsightEvents"])
-        self.normalOutputWritten(str(self.RoundQueueDict["InsightEvents"]) + "\n")
+        self.normalOutputWritten(
+            str(self.RoundQueueDict["InsightEvents"]) + "\n"
+        )
 
     # -----------------------------Generate Scan Coords-----------------------------
     def GenerateScanCoords(self):
@@ -1011,7 +1142,9 @@ class Mainbody(QtWidgets.QWidget):
                 if AutoFocusCoordGap != 0:
                     # If auto-focus involved:
                     for row_pos in range(row_start, AutoFocusCoordGap, step):
-                        for col_pos in range(column_start, AutoFocusCoordGap, step):
+                        for col_pos in range(
+                            column_start, AutoFocusCoordGap, step
+                        ):
                             # At each left-top corner of the coordinates grid, place the
                             # flag for auto focus
                             if (
@@ -1043,26 +1176,35 @@ class Mainbody(QtWidgets.QWidget):
                                     dtype=Coords_array_dtype,
                                 )
 
-                            Coords_array = np.append(Coords_array, current_coord_array)
+                            Coords_array = np.append(
+                                Coords_array, current_coord_array
+                            )
 
                 else:
                     # If no auto-focus, put 'no' in auto_focus_flag field.
                     for row_pos in range(row_start, row_end + step, step):
-                        for col_pos in range(column_start, column_end + step, step):
-
+                        for col_pos in range(
+                            column_start, column_end + step, step
+                        ):
                             current_coord_array = np.array(
-                                [(row_pos, col_pos, "no", -1)], dtype=Coords_array_dtype
+                                [(row_pos, col_pos, "no", -1)],
+                                dtype=Coords_array_dtype,
                             )
 
-                            Coords_array = np.append(Coords_array, current_coord_array)
+                            Coords_array = np.append(
+                                Coords_array, current_coord_array
+                            )
 
         else:
             # In case of pure auto-focus round, generate coordinates at only
             # calibration positions, and put flag 'pure AF'.
             for row_pos in range(row_start, row_end, AutoFocusCoordGap):
-                for col_pos in range(column_start, column_end, AutoFocusCoordGap):
+                for col_pos in range(
+                    column_start, column_end, AutoFocusCoordGap
+                ):
                     current_coord_array = np.array(
-                        [(row_pos, col_pos, "pure AF", -1)], dtype=Coords_array_dtype
+                        [(row_pos, col_pos, "pure AF", -1)],
+                        dtype=Coords_array_dtype,
                     )
 
                     Coords_array = np.append(Coords_array, current_coord_array)
@@ -1074,8 +1216,12 @@ class Mainbody(QtWidgets.QWidget):
     def DeleteFreshRound(self):
         CurrentRoundSequence = self.RoundOrderBox.value()
         del self.RoundQueueDict["RoundPackage_{}".format(CurrentRoundSequence)]
-        del self.RoundCoordsDict["CoordsPackage_{}".format(CurrentRoundSequence)]
-        del self.RoundQueueDict["GalvoInforPackage_{}".format(CurrentRoundSequence)]
+        del self.RoundCoordsDict[
+            "CoordsPackage_{}".format(CurrentRoundSequence)
+        ]
+        del self.RoundQueueDict[
+            "GalvoInforPackage_{}".format(CurrentRoundSequence)
+        ]
         print(self.RoundQueueDict.keys())
 
     def ClearRoundQueue(self):
@@ -1093,7 +1239,7 @@ class Mainbody(QtWidgets.QWidget):
         self.normalOutputWritten("Rounds cleared.\n")
         print("Rounds cleared.")
 
-    #%%
+    # %%
     """
     # =============================================================================
     #     Configure general settings, get ready for execution
@@ -1117,7 +1263,9 @@ class Mainbody(QtWidgets.QWidget):
                 "source_of_image": "PMT",
                 "init_search_range": self.PMT_AF_init_step_sizeBox.value(),
                 "total_step_number": self.PMT_AF_step_numBox.value(),
-                "imaging_conditions": {"edge_volt": self.PMT_AF_scan_voltBox.value()},
+                "imaging_conditions": {
+                    "edge_volt": self.PMT_AF_scan_voltBox.value()
+                },
             }
         elif self.AFmethodCombox.currentIndex() == 1:
             # If use camera auto-focus
@@ -1196,7 +1344,9 @@ class Mainbody(QtWidgets.QWidget):
     def CaptureFocusCorrectionMatrix(self, CorrectionFomula):
         self.CorrectionFomula = CorrectionFomula
 
-    def CaptureFocusDuplicateMethodMatrix(self, CorrectionDictForDuplicateMethod):
+    def CaptureFocusDuplicateMethodMatrix(
+        self, CorrectionDictForDuplicateMethod
+    ):
         self.FocusDuplicateMethodInfor = CorrectionDictForDuplicateMethod
 
     def ExecutePipeline(self):
@@ -1223,7 +1373,11 @@ class Mainbody(QtWidgets.QWidget):
     def Savepipeline(self):
         SavepipelineInstance = []
         SavepipelineInstance.extend(
-            [self.RoundQueueDict, self.RoundCoordsDict, self.GeneralSettingDict]
+            [
+                self.RoundQueueDict,
+                self.RoundCoordsDict,
+                self.GeneralSettingDict,
+            ]
         )
 
         np.save(
@@ -1298,7 +1452,7 @@ class Mainbody(QtWidgets.QWidget):
 
         return thread
 
-    #%%
+    # %%
     """
     # =============================================================================
     #     For save and load file.
@@ -1316,7 +1470,9 @@ class Mainbody(QtWidgets.QWidget):
         self.LoadPipelineFile()
 
     def LoadPipelineFile(self):
-        temp_loaded_container = np.load(self.pipelinenpfileName, allow_pickle=True)
+        temp_loaded_container = np.load(
+            self.pipelinenpfileName, allow_pickle=True
+        )
         self.RoundQueueDict = temp_loaded_container[0]
         self.RoundCoordsDict = temp_loaded_container[1]
         self.GeneralSettingDict = temp_loaded_container[2]
@@ -1325,7 +1481,9 @@ class Mainbody(QtWidgets.QWidget):
         FocusCorrectionMatrixDict = {}  # self.upsize_focus_matrix()
 
         # Refresh the focus correction
-        self.GeneralSettingDict["FocusCorrectionMatrixDict"] = FocusCorrectionMatrixDict
+        self.GeneralSettingDict[
+            "FocusCorrectionMatrixDict"
+        ] = FocusCorrectionMatrixDict
 
         # if saving directory is re-configured, refresh it, otherwise keep as it is.
         self.auto_saving_directory()
@@ -1346,19 +1504,17 @@ class Mainbody(QtWidgets.QWidget):
         """
         self.normalOutputWritten("--------Pipeline general info--------\n")
         for eachround in range(int(len(self.RoundQueueDict) / 2 - 1)):
-
             # --------------------------------------------------------------
             # show waveform settings
-            waveformPackage = self.RoundQueueDict["RoundPackage_" + str(eachround + 1)][
-                0
-            ]
+            waveformPackage = self.RoundQueueDict[
+                "RoundPackage_" + str(eachround + 1)
+            ][0]
             camOperationPackage = self.RoundQueueDict[
                 "RoundPackage_" + str(eachround + 1)
             ][1]
             waveform_sequence = 1
 
             for eachwaveform in waveformPackage:
-
                 try:
                     if len(waveformPackage[eachwaveform][3]) != 0:
                         self.normalOutputWritten(
@@ -1395,30 +1551,45 @@ class Mainbody(QtWidgets.QWidget):
                     self.normalOutputWritten("No Analog signals.\n")
                     print("No Analog signals.")
                 try:
-                    if len(waveformPackage[eachwaveform][2]["Specification"]) != 0:
+                    if (
+                        len(waveformPackage[eachwaveform][2]["Specification"])
+                        != 0
+                    ):
                         self.normalOutputWritten(
                             "Round {}, Digital signals:{}.\n".format(
                                 eachround + 1,
-                                waveformPackage[eachwaveform][2]["Specification"],
+                                waveformPackage[eachwaveform][2][
+                                    "Specification"
+                                ],
                             )
                         )
                         self.normalOutputWritten(
                             "Lasting time:{} s.\n".format(
-                                len(waveformPackage[eachwaveform][2]["Waveform"][0])
+                                len(
+                                    waveformPackage[eachwaveform][2][
+                                        "Waveform"
+                                    ][0]
+                                )
                                 / waveformPackage[eachwaveform][0]
                             )
                         )
 
                         print(
                             "Lasting time:{} s.\n".format(
-                                len(waveformPackage[eachwaveform][2]["Waveform"][0])
+                                len(
+                                    waveformPackage[eachwaveform][2][
+                                        "Waveform"
+                                    ][0]
+                                )
                                 / waveformPackage[eachwaveform][0]
                             )
                         )
                         print(
                             "Round {}, Digital signals:{}.".format(
                                 eachround + 1,
-                                waveformPackage[eachwaveform][2]["Specification"],
+                                waveformPackage[eachwaveform][2][
+                                    "Specification"
+                                ],
                             )
                         )  #
                 #                    else:
@@ -1438,13 +1609,17 @@ class Mainbody(QtWidgets.QWidget):
                         self.normalOutputWritten(
                             "Round {}, cam Buffer_number:{}.\n".format(
                                 eachround + 1,
-                                camOperationPackage[eachcamoperation]["Buffer_number"],
+                                camOperationPackage[eachcamoperation][
+                                    "Buffer_number"
+                                ],
                             )
                         )
                         print(
                             "Round {}, cam Buffer_number:{}.\n".format(
                                 eachround + 1,
-                                camOperationPackage[eachcamoperation]["Buffer_number"],
+                                camOperationPackage[eachcamoperation][
+                                    "Buffer_number"
+                                ],
                             )
                         )  #
                 #                    else:
@@ -1456,7 +1631,7 @@ class Mainbody(QtWidgets.QWidget):
             self.normalOutputWritten("-----------end of round-----------\n")
         self.normalOutputWritten("----------------------------------------\n")
 
-    #%%
+    # %%
     """
     # =============================================================================
     #     FUNCTIONS FOR QUICK START
@@ -1464,10 +1639,11 @@ class Mainbody(QtWidgets.QWidget):
     """
 
     def quick_start(self, config_number):
-
         # Load pre-saved pipeline
         self.pipelinenpfileName = self.quick_start_location[config_number]
-        temp_loaded_container = np.load(self.pipelinenpfileName, allow_pickle=True)
+        temp_loaded_container = np.load(
+            self.pipelinenpfileName, allow_pickle=True
+        )
         self.RoundQueueDict = temp_loaded_container[0]
         self.RoundCoordsDict = temp_loaded_container[1]
         self.GeneralSettingDict = temp_loaded_container[2]
@@ -1498,14 +1674,16 @@ class Mainbody(QtWidgets.QWidget):
         self.ScreenAnalysisMLWindow = EvolutionAnalysisWidget.MainGUI()
         self.ScreenAnalysisMLWindow.show()
 
-    #%%
+    # %%
 
 
 if __name__ == "__main__":
 
     def run_app():
         app = QtWidgets.QApplication(sys.argv)
-        QtWidgets.QApplication.setStyle(QtWidgets.QStyleFactory.create("Fusion"))
+        QtWidgets.QApplication.setStyle(
+            QtWidgets.QStyleFactory.create("Fusion")
+        )
         mainwin = Mainbody()
         mainwin.show()
         app.exec_()

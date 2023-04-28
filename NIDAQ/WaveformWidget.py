@@ -56,7 +56,6 @@ from .wavegenerator import (
 
 
 class WaveformGenerator(QWidget):
-
     WaveformPackage = pyqtSignal(object)
     GalvoScanInfor = pyqtSignal(object)
 
@@ -86,7 +85,9 @@ class WaveformGenerator(QWidget):
         self.Auto_padding_flag = True
 
         # These contour scanning signals will be set from main panel.
-        self.handle_viewbox_coordinate_position_array_expanded_forDaq_waveform = None
+        self.handle_viewbox_coordinate_position_array_expanded_forDaq_waveform = (
+            None
+        )
         self.time_per_contour = None
         self.handle_viewbox_coordinate_position_array_expanded_x = None
         self.handle_viewbox_coordinate_position_array_expanded_y = None
@@ -177,7 +178,6 @@ class WaveformGenerator(QWidget):
             self.finalwave_Perfusion_2
         ) = self.finalwave_2Pshutter = self.finalwave_DMD_trigger = None
 
-
         # self.current_Analog_channel.currentIndexChanged.connect(self.chosen_wave)
         self.wavetablayout = QGridLayout()
 
@@ -214,8 +214,12 @@ class WaveformGenerator(QWidget):
         #        self.transform_for_laser_menu.setFixedWidth(82)
         self.ReferenceWaveform_menu.setCurrentRow(0)
 
-        ReferenceWaveform_container_layout.addWidget(self.ReferenceWaveform_menu, 0, 0)
-        ReferenceWaveform_container.setLayout(ReferenceWaveform_container_layout)
+        ReferenceWaveform_container_layout.addWidget(
+            self.ReferenceWaveform_menu, 0, 0
+        )
+        ReferenceWaveform_container.setLayout(
+            ReferenceWaveform_container_layout
+        )
         self.ReadLayout.addWidget(ReferenceWaveform_container, 0, 0, 3, 1)
 
         self.SamplingRateTextbox = QSpinBox(self)
@@ -226,7 +230,7 @@ class WaveformGenerator(QWidget):
         self.ReadLayout.addWidget(self.SamplingRateTextbox, 0, 5)
         self.ReadLayout.addWidget(QLabel("Sampling rate:"), 0, 4)
 
-        #====================== Read-in channels =============================
+        # ====================== Read-in channels =============================
         record_channel_container = StylishQT.roundQGroupBox(title="Recording")
         record_channel_container_layout = QGridLayout()
 
@@ -234,13 +238,17 @@ class WaveformGenerator(QWidget):
         self.ReadChanPMTTextbox.setStyleSheet(
             'color:CadetBlue;font:bold "Times New Roman"'
         )
-        record_channel_container_layout.addWidget(self.ReadChanPMTTextbox, 0, 3)
+        record_channel_container_layout.addWidget(
+            self.ReadChanPMTTextbox, 0, 3
+        )
 
         # Without self. the QbuttonGroup won't work
         self.patchRecordingGroup = QButtonGroup()
 
         self.ReadChanVpTextbox = QCheckBox("Vm in I-clamp")
-        self.ReadChanVpTextbox.setStyleSheet('color:Indigo;font:bold "Times New Roman"')
+        self.ReadChanVpTextbox.setStyleSheet(
+            'color:Indigo;font:bold "Times New Roman"'
+        )
         self.ReadChanVpTextbox.setToolTip(
             "In current-clamp mode, record voltage from the amplifier."
         )
@@ -286,25 +294,33 @@ class WaveformGenerator(QWidget):
         executionContainerLayout.addWidget(self.checkbox_saveWaveforms, 0, 0)
 
         # ===================== Emission filter ==============================
-        emission_channel_container = StylishQT.roundQGroupBox(title="Emission filter")
+        emission_channel_container = StylishQT.roundQGroupBox(
+            title="Emission filter"
+        )
         emission_channel_container_layout = QGridLayout()
 
         self.FilterButtongroup = QButtonGroup()
 
         self.ArchEmissionbox = QCheckBox("Arch")
-        self.ArchEmissionbox.setStyleSheet('color:red;font:bold "Times New Roman"')
+        self.ArchEmissionbox.setStyleSheet(
+            'color:red;font:bold "Times New Roman"'
+        )
         emission_channel_container_layout.addWidget(self.ArchEmissionbox, 0, 0)
         self.FilterButtongroup.addButton(self.ArchEmissionbox)
 
         self.GFPEmissionbox = QCheckBox("GFP/Citrine")
-        self.GFPEmissionbox.setStyleSheet('color:green;font:bold "Times New Roman"')
+        self.GFPEmissionbox.setStyleSheet(
+            'color:green;font:bold "Times New Roman"'
+        )
         emission_channel_container_layout.addWidget(self.GFPEmissionbox, 1, 0)
         self.FilterButtongroup.addButton(self.GFPEmissionbox)
         self.FilterButtongroup.setExclusive(True)
 
         emission_channel_container.setLayout(emission_channel_container_layout)
 
-        executionContainerLayout.addWidget(emission_channel_container, 1, 0, 2, 1)
+        executionContainerLayout.addWidget(
+            emission_channel_container, 1, 0, 2, 1
+        )
 
         executionContainerLayout.addWidget(QLabel("Progress:"), 0, 2)
         self.waveform_progressbar = QProgressBar(self)
@@ -364,7 +380,9 @@ class WaveformGenerator(QWidget):
         self.switchAppendModeSwitch.clicked.connect(
             lambda: self.setAppendModeFlag()
         )
-        self.switchAppendModeSwitch.setToolTip("In append mode, new waveforms will append at the end of the existing one.")
+        self.switchAppendModeSwitch.setToolTip(
+            "In append mode, new waveforms will append at the end of the existing one."
+        )
 
         self.AnalogLayout.addWidget(self.switchAppendModeSwitch, 3, 3)
 
@@ -402,7 +420,9 @@ class WaveformGenerator(QWidget):
         self.AnalogGapTextbox = QLineEdit(self)
         self.AnalogGapTextbox.setPlaceholderText("0")
         self.wavetablayout.addWidget(self.AnalogGapTextbox, 1, 5)
-        self.wavetablayout.addWidget(QLabel("Gap between cycles (samples):"), 1, 4)
+        self.wavetablayout.addWidget(
+            QLabel("Gap between cycles (samples):"), 1, 4
+        )
 
         self.wavetablayout.addWidget(QLabel("Starting amplitude (V):"), 2, 0)
         self.AnalogStartingAmpTextbox = QDoubleSpinBox(self)
@@ -449,8 +469,12 @@ class WaveformGenerator(QWidget):
         self.wavetablayout_ramp.addWidget(QLabel("Offset (ms):"), 1, 0)
 
         self.AnalogDurationTextbox_ramp = QLineEdit(self)
-        self.wavetablayout_ramp.addWidget(self.AnalogDurationTextbox_ramp, 0, 3)
-        self.wavetablayout_ramp.addWidget(QLabel("Duration (ms, 1 cycle):"), 0, 2)
+        self.wavetablayout_ramp.addWidget(
+            self.AnalogDurationTextbox_ramp, 0, 3
+        )
+        self.wavetablayout_ramp.addWidget(
+            QLabel("Duration (ms, 1 cycle):"), 0, 2
+        )
 
         self.AnalogDCTextbox_ramp = QLineEdit(self)
         self.AnalogDCTextbox_ramp.setPlaceholderText("0.5")
@@ -465,7 +489,9 @@ class WaveformGenerator(QWidget):
         self.AnalogGapTextbox_ramp = QLineEdit(self)
         self.AnalogGapTextbox_ramp.setPlaceholderText("0")
         self.wavetablayout_ramp.addWidget(self.AnalogGapTextbox_ramp, 1, 5)
-        self.wavetablayout_ramp.addWidget(QLabel("Gap between repeat (samples):"), 1, 4)
+        self.wavetablayout_ramp.addWidget(
+            QLabel("Gap between repeat (samples):"), 1, 4
+        )
 
         self.wavetablayout_ramp.addWidget(QLabel("Height (V):"), 2, 0)
         self.AnalogStartingAmpTextbox_ramp = QDoubleSpinBox(self)
@@ -473,11 +499,15 @@ class WaveformGenerator(QWidget):
         self.AnalogStartingAmpTextbox_ramp.setMaximum(10)
         self.AnalogStartingAmpTextbox_ramp.setValue(2)
         self.AnalogStartingAmpTextbox_ramp.setSingleStep(0.5)
-        self.wavetablayout_ramp.addWidget(self.AnalogStartingAmpTextbox_ramp, 2, 1)
+        self.wavetablayout_ramp.addWidget(
+            self.AnalogStartingAmpTextbox_ramp, 2, 1
+        )
 
         self.AnalogBaselineTextbox_ramp = QLineEdit(self)
         self.AnalogBaselineTextbox_ramp.setPlaceholderText("0")
-        self.wavetablayout_ramp.addWidget(self.AnalogBaselineTextbox_ramp, 3, 1)
+        self.wavetablayout_ramp.addWidget(
+            self.AnalogBaselineTextbox_ramp, 3, 1
+        )
         self.wavetablayout_ramp.addWidget(QLabel("Baseline (V):"), 3, 0)
 
         self.wavetablayout_ramp.addWidget(QLabel("Step (V):"), 2, 2)
@@ -513,7 +543,9 @@ class WaveformGenerator(QWidget):
 
         self.textbox_photocycleC = QLineEdit(self)
         self.photocycletablayout.addWidget(self.textbox_photocycleC, 0, 3)
-        self.photocycletablayout.addWidget(QLabel("Duration (ms, 1 cycle):"), 0, 2)
+        self.photocycletablayout.addWidget(
+            QLabel("Duration (ms, 1 cycle):"), 0, 2
+        )
 
         self.textbox_photocycleD = QLineEdit(self)
         self.textbox_photocycleD.setPlaceholderText("10")
@@ -532,7 +564,9 @@ class WaveformGenerator(QWidget):
             QLabel("Gap between repeat (samples):"), 1, 4
         )
 
-        self.photocycletablayout.addWidget(QLabel("Starting amplitude (V):"), 2, 0)
+        self.photocycletablayout.addWidget(
+            QLabel("Starting amplitude (V):"), 2, 0
+        )
         self.textbox_photocycleG = QDoubleSpinBox(self)
         self.textbox_photocycleG.setMinimum(-10)
         self.textbox_photocycleG.setMaximum(10)
@@ -649,7 +683,9 @@ class WaveformGenerator(QWidget):
         self.GalvoGapTextbox = QLineEdit(self)
         self.GalvoGapTextbox.setPlaceholderText("0")
         self.galvo_raster_tablayout.addWidget(self.GalvoGapTextbox, 2, 3)
-        self.galvo_raster_tablayout.addWidget(QLabel("Gap between scans(ms):"), 2, 2)
+        self.galvo_raster_tablayout.addWidget(
+            QLabel("Gap between scans(ms):"), 2, 2
+        )
 
         self.GalvoAvgNumTextbox = QSpinBox(self)
         self.GalvoAvgNumTextbox.setMinimum(1)
@@ -668,17 +704,23 @@ class WaveformGenerator(QWidget):
         self.galvo_raster_tablayout.addWidget(QLabel("Repeat:"), 0, 6)
 
         self.galvo_contour_label_1 = QLabel("Points in contour:")
-        self.galvo_contour_tablayout.addWidget(self.galvo_contour_label_1, 0, 0)
+        self.galvo_contour_tablayout.addWidget(
+            self.galvo_contour_label_1, 0, 0
+        )
 
         self.galvo_contour_label_2 = QLabel("Sampling rate: ")
-        self.galvo_contour_tablayout.addWidget(self.galvo_contour_label_2, 0, 1)
+        self.galvo_contour_tablayout.addWidget(
+            self.galvo_contour_label_2, 0, 1
+        )
 
         self.GalvoContourLastTextbox = QSpinBox(self)
         self.GalvoContourLastTextbox.setMinimum(000000)
         self.GalvoContourLastTextbox.setMaximum(20000000)
         self.GalvoContourLastTextbox.setValue(1000)
         self.GalvoContourLastTextbox.setSingleStep(500)
-        self.galvo_contour_tablayout.addWidget(self.GalvoContourLastTextbox, 0, 3)
+        self.galvo_contour_tablayout.addWidget(
+            self.GalvoContourLastTextbox, 0, 3
+        )
         self.galvo_contour_tablayout.addWidget(QLabel("Duration(ms):"), 0, 2)
 
         self.normal_galvo_tab.setLayout(self.galvo_raster_tablayout)
@@ -714,24 +756,34 @@ class WaveformGenerator(QWidget):
         self.button_del_digital.clicked.connect(self.del_waveform_digital)
 
         self.switchAutoPadding = StylishQT.MySwitch(
-            "Auto padding Off", "indian red", "Auto padding", "spring green", width=92
+            "Auto padding Off",
+            "indian red",
+            "Auto padding",
+            "spring green",
+            width=92,
         )
-        self.switchAutoPadding.clicked.connect(
-            lambda: self.setAutoPadding()
+        self.switchAutoPadding.clicked.connect(lambda: self.setAutoPadding())
+        self.switchAutoPadding.setToolTip(
+            "Add one extra camera trigger at the start or not--Camera lossing first frame"
         )
-        self.switchAutoPadding.setToolTip("Add one extra camera trigger at the start or not--Camera lossing first frame")
 
         self.switchAutoPadding.setChecked(False)
 
         self.DigitalLayout.addWidget(self.switchAutoPadding, 0, 3)
 
         self.switchExtraTrigger = StylishQT.MySwitch(
-            "Extra camTrigger", "indian red", "Extra camTrigger", "spring green", width=92
+            "Extra camTrigger",
+            "indian red",
+            "Extra camTrigger",
+            "spring green",
+            width=92,
         )
         self.switchExtraTrigger.clicked.connect(
             lambda: self.setExtraTriggerFlag()
         )
-        self.switchExtraTrigger.setToolTip("Add one extra camera trigger at the start or not--Camera lossing first frame")
+        self.switchExtraTrigger.setToolTip(
+            "Add one extra camera trigger at the start or not--Camera lossing first frame"
+        )
 
         self.switchExtraTrigger.setChecked(True)
 
@@ -828,8 +880,7 @@ class WaveformGenerator(QWidget):
             print(1112132)
             self.wavetabs.setCurrentIndex(2)
 
-
-#%%
+    # %%
     # =============================================================================
     # Functions for Waveform Tab
     # =============================================================================
@@ -867,14 +918,22 @@ class WaveformGenerator(QWidget):
         )
 
         try:
-            temp_loaded_container = np.load(self.wavenpfileName, allow_pickle=True)
+            temp_loaded_container = np.load(
+                self.wavenpfileName, allow_pickle=True
+            )
 
             try:
-                self.uiDaq_sample_rate = int(os.path.split(self.wavenpfileName)[1][20:-4])
+                self.uiDaq_sample_rate = int(
+                    os.path.split(self.wavenpfileName)[1][20:-4]
+                )
             except:
                 try:
                     self.uiDaq_sample_rate = int(
-                        float(self.wavenpfileName[self.wavenpfileName.find("sr_") + 3 : -4])
+                        float(
+                            self.wavenpfileName[
+                                self.wavenpfileName.find("sr_") + 3 : -4
+                            ]
+                        )
                     )  # Locate sr_ in the file name to get sampling rate.
                 except:
                     self.uiDaq_sample_rate = 50000
@@ -886,19 +945,18 @@ class WaveformGenerator(QWidget):
             self.waveform_data_dict = {}
 
             for i in range(len(temp_loaded_container)):
-
                 channel_keyword = temp_loaded_container[i]["Specification"]
 
-                self.waveform_data_dict[channel_keyword] = temp_loaded_container[i][
-                    "Waveform"
-                ]
+                self.waveform_data_dict[
+                    channel_keyword
+                ] = temp_loaded_container[i]["Waveform"]
                 self.generate_graphy(
                     channel_keyword, self.waveform_data_dict[channel_keyword]
                 )
         except:
             print("File not valid.")
 
-    #%%
+    # %%
     def setAppendModeFlag(self):
         # Add extra 4 samples of one camera trigger or not
         if self.switchAppendModeSwitch.isChecked():
@@ -906,7 +964,6 @@ class WaveformGenerator(QWidget):
 
         else:
             self.Append_Mode = False
-
 
     def add_waveform_analog(self):
         """
@@ -922,26 +979,17 @@ class WaveformGenerator(QWidget):
         channel_keyword = self.current_Analog_channel.currentText()
 
         if self.wavetabs.currentIndex() != 2:
-
             if self.wavetabs.currentIndex() == 0:
-
                 # ----------------------Square waves--------------------------
-                waveform_to_add = self.generate_analog(
-                    channel_keyword
-                )
+                waveform_to_add = self.generate_analog(channel_keyword)
 
             elif self.wavetabs.currentIndex() == 1:
                 # -------------------------Ramp waves-------------------------
-                waveform_to_add = self.generate_ramp(
-                    channel_keyword
-                )
+                waveform_to_add = self.generate_ramp(channel_keyword)
 
             if self.wavetabs.currentIndex() == 4:
                 # ------------------------Photo cycle-------------------------
-                waveform_to_add = self.generate_photocycle(
-                    channel_keyword
-                )
-
+                waveform_to_add = self.generate_photocycle(channel_keyword)
 
             if self.Append_Mode == False:
                 self.waveform_data_dict[channel_keyword] = waveform_to_add
@@ -949,60 +997,65 @@ class WaveformGenerator(QWidget):
                 # === In Append mode ===
                 # If the waveform exists already
                 if channel_keyword in self.waveform_data_dict.keys():
-                    self.waveform_data_dict[channel_keyword] = \
-                        np.append(self.waveform_data_dict[channel_keyword],
-                              waveform_to_add)
+                    self.waveform_data_dict[channel_keyword] = np.append(
+                        self.waveform_data_dict[channel_keyword],
+                        waveform_to_add,
+                    )
                 # The first to append
                 else:
-                    self.waveform_data_dict[channel_keyword] = \
-                    waveform_to_add
+                    self.waveform_data_dict[channel_keyword] = waveform_to_add
 
             self.generate_graphy(
                 channel_keyword, self.waveform_data_dict[channel_keyword]
             )
 
-
         # ----------------------------Galvo scanning---------------------------
         elif self.wavetabs.currentIndex() == 2:
-
             if self.galvos_tabs.currentIndex() == 0:
-
-                self.waveform_data_dict[channel_keyword] = self.generate_galvos()
+                self.waveform_data_dict[
+                    channel_keyword
+                ] = self.generate_galvos()
                 self.generate_graphy(
-                    channel_keyword, self.waveform_data_dict[channel_keyword][1, :]
+                    channel_keyword,
+                    self.waveform_data_dict[channel_keyword][1, :],
                 )
 
             elif self.galvos_tabs.currentIndex() == 1:  # For contour
-
                 self.waveform_data_dict[
                     "galvos_contour"
                 ] = self.generate_contour_for_waveform()
                 self.generate_graphy(
-                    "galvos_contour", self.waveform_data_dict["galvos_contour"][1, :]
+                    "galvos_contour",
+                    self.waveform_data_dict["galvos_contour"][1, :],
                 )
 
-
     def del_waveform_analog(self):
-
         channel_keyword = self.current_Analog_channel.currentText()
 
         if channel_keyword == "galvos_contour":
             try:
                 # In case of just generated contour scanning signals
-                self.pw_PlotItem.removeItem(self.PlotDataItem_dict[channel_keyword])
+                self.pw_PlotItem.removeItem(
+                    self.PlotDataItem_dict[channel_keyword]
+                )
 
                 del self.PlotDataItem_dict[channel_keyword]
 
             except:
                 # In case of delete loaded contour scanning signals
-                self.pw_PlotItem.removeItem(self.PlotDataItem_dict["galvos_X_contour"])
-                self.pw_PlotItem.removeItem(self.PlotDataItem_dict["galvos_Y_contour"])
+                self.pw_PlotItem.removeItem(
+                    self.PlotDataItem_dict["galvos_X_contour"]
+                )
+                self.pw_PlotItem.removeItem(
+                    self.PlotDataItem_dict["galvos_Y_contour"]
+                )
 
                 del self.PlotDataItem_dict["galvos_X_contour"]
                 del self.PlotDataItem_dict["galvos_Y_contour"]
         else:
-
-            self.pw_PlotItem.removeItem(self.PlotDataItem_dict[channel_keyword])
+            self.pw_PlotItem.removeItem(
+                self.PlotDataItem_dict[channel_keyword]
+            )
 
             del self.PlotDataItem_dict[channel_keyword]
 
@@ -1017,7 +1070,7 @@ class WaveformGenerator(QWidget):
         else:
             del self.waveform_data_dict[channel_keyword]
 
-    #%%
+    # %%
 
     def add_waveform_digital(self):
         """
@@ -1031,9 +1084,7 @@ class WaveformGenerator(QWidget):
         channel_keyword = self.Digital_channel_combox.currentText()
 
         if channel_keyword != "galvotrigger":
-            waveform_to_add = self.generate_digital(
-                channel_keyword
-            )
+            waveform_to_add = self.generate_digital(channel_keyword)
         else:
             waveform_to_add = self.generate_galvotrigger()
 
@@ -1043,13 +1094,12 @@ class WaveformGenerator(QWidget):
             # === In Append mode ===
             # If the waveform exists already
             if channel_keyword in self.waveform_data_dict.keys():
-                self.waveform_data_dict[channel_keyword] = \
-                    np.append(self.waveform_data_dict[channel_keyword],
-                          waveform_to_add)
+                self.waveform_data_dict[channel_keyword] = np.append(
+                    self.waveform_data_dict[channel_keyword], waveform_to_add
+                )
             # The first to append
             else:
-                self.waveform_data_dict[channel_keyword] = \
-                waveform_to_add
+                self.waveform_data_dict[channel_keyword] = waveform_to_add
 
         if channel_keyword == "cameratrigger":
             # For camera triggers, set to zeros so that it does not block canvas.
@@ -1063,7 +1113,6 @@ class WaveformGenerator(QWidget):
             )
 
     def del_waveform_digital(self):
-
         channel_keyword = self.Digital_channel_combox.currentText()
 
         self.pw_PlotItem.removeItem(self.PlotDataItem_dict[channel_keyword])
@@ -1091,7 +1140,7 @@ class WaveformGenerator(QWidget):
             self.Auto_padding_flag = True
             print("Pad 0 to reset channels.")
 
-    #%%
+    # %%
     def generate_contour_for_waveform(self):
         """
         Variables related to contour scanning are set from main GUI, which comes
@@ -1103,21 +1152,29 @@ class WaveformGenerator(QWidget):
             DESCRIPTION.
 
         """
-        self.total_contour_scanning_time = int(self.GalvoContourLastTextbox.value())
+        self.total_contour_scanning_time = int(
+            self.GalvoContourLastTextbox.value()
+        )
 
-        repeatnum_contour = int(self.total_contour_scanning_time / self.time_per_contour)
+        repeatnum_contour = int(
+            self.total_contour_scanning_time / self.time_per_contour
+        )
         repeated_contoursamples_1 = np.tile(
-            self.handle_viewbox_coordinate_position_array_expanded_x, repeatnum_contour
+            self.handle_viewbox_coordinate_position_array_expanded_x,
+            repeatnum_contour,
         )
         repeated_contoursamples_2 = np.tile(
-            self.handle_viewbox_coordinate_position_array_expanded_y, repeatnum_contour
+            self.handle_viewbox_coordinate_position_array_expanded_y,
+            repeatnum_contour,
         )
 
         # Append one extra values in the beginning like all others
-        repeated_contoursamples_1 = np.insert(repeated_contoursamples_1, 0,
-                                                   repeated_contoursamples_1[0], axis = 0)
-        repeated_contoursamples_2 = np.insert(repeated_contoursamples_2, 0,
-                                                   repeated_contoursamples_2[0], axis = 0)
+        repeated_contoursamples_1 = np.insert(
+            repeated_contoursamples_1, 0, repeated_contoursamples_1[0], axis=0
+        )
+        repeated_contoursamples_2 = np.insert(
+            repeated_contoursamples_2, 0, repeated_contoursamples_2[0], axis=0
+        )
 
         # Adding 0 to the end
         # repeated_contoursamples_1 = np.append(repeated_contoursamples_1,
@@ -1129,10 +1186,11 @@ class WaveformGenerator(QWidget):
             np.vstack((repeated_contoursamples_1, repeated_contoursamples_2))
         )
 
-        return handle_viewbox_coordinate_position_array_expanded_forDaq_waveform
+        return (
+            handle_viewbox_coordinate_position_array_expanded_forDaq_waveform
+        )
 
     def generate_galvos(self):
-
         self.uiDaq_sample_rate = int(self.SamplingRateTextbox.value())
 
         # Scanning settings
@@ -1187,7 +1245,9 @@ class WaveformGenerator(QWidget):
         # print(self.Digital_container_feeder[:, 0])
 
         self.repeated_samples_1 = np.tile(self.samples_1, self.averagenum)
-        self.repeated_samples_2_yaxis = np.tile(self.samples_2, self.averagenum)
+        self.repeated_samples_2_yaxis = np.tile(
+            self.samples_2, self.averagenum
+        )
 
         self.PMT_data_index_array = np.ones(
             len(self.repeated_samples_1)
@@ -1196,7 +1256,9 @@ class WaveformGenerator(QWidget):
         self.gap_samples_1 = self.repeated_samples_1[-1] * np.ones(
             self.gapsamples_number_galvo
         )
-        self.repeated_samples_1 = np.append(self.repeated_samples_1, self.gap_samples_1)
+        self.repeated_samples_1 = np.append(
+            self.repeated_samples_1, self.gap_samples_1
+        )
         self.gap_samples_2 = self.repeated_samples_2_yaxis[-1] * np.ones(
             self.gapsamples_number_galvo
         )
@@ -1208,7 +1270,9 @@ class WaveformGenerator(QWidget):
             self.PMT_data_index_array, np.zeros(self.gapsamples_number_galvo)
         )
 
-        self.repeated_samples_1 = np.tile(self.repeated_samples_1, self.repeatnum)
+        self.repeated_samples_1 = np.tile(
+            self.repeated_samples_1, self.repeatnum
+        )
         self.repeated_samples_2_yaxis = np.tile(
             self.repeated_samples_2_yaxis, self.repeatnum
         )
@@ -1234,7 +1298,9 @@ class WaveformGenerator(QWidget):
         self.repeated_samples_2_yaxis = np.append(
             self.offsetsamples_galvo, self.repeated_samples_2_yaxis
         )
-        self.repeated_samples_2_yaxis = np.append(self.repeated_samples_2_yaxis, 0)
+        self.repeated_samples_2_yaxis = np.append(
+            self.repeated_samples_2_yaxis, 0
+        )
 
         self.PMT_data_index_array_repeated = np.append(
             self.offsetsamples_galvo, self.PMT_data_index_array_repeated
@@ -1300,13 +1366,17 @@ class WaveformGenerator(QWidget):
         # print(self.Digital_container_feeder[:, 0])
 
         self.repeated_samples_1 = np.tile(self.samples_1, self.averagenum)
-        self.repeated_samples_2_yaxis = np.tile(self.samples_2, self.averagenum)
+        self.repeated_samples_2_yaxis = np.tile(
+            self.samples_2, self.averagenum
+        )
 
         # Adding gap between scans
         self.gap_samples_1 = self.repeated_samples_1[-1] * np.ones(
             self.gapsamples_number_galvo
         )
-        self.repeated_samples_1 = np.append(self.repeated_samples_1, self.gap_samples_1)
+        self.repeated_samples_1 = np.append(
+            self.repeated_samples_1, self.gap_samples_1
+        )
         self.gap_samples_2 = self.repeated_samples_2_yaxis[-1] * np.ones(
             self.gapsamples_number_galvo
         )
@@ -1332,7 +1402,8 @@ class WaveformGenerator(QWidget):
             (20 / 1000) * self.uiDaq_sample_rate
         )  # Default the trigger lasts for 20 ms.
         self.false_sample_num_singleperiod_galvotrigger = (
-            samplenumber_oneframe - self.true_sample_num_singleperiod_galvotrigger
+            samplenumber_oneframe
+            - self.true_sample_num_singleperiod_galvotrigger
         )
 
         self.true_sample_singleperiod_galvotrigger = np.ones(
@@ -1344,7 +1415,9 @@ class WaveformGenerator(QWidget):
 
         self.sample_singleperiod_galvotrigger = np.append(
             self.true_sample_singleperiod_galvotrigger,
-            np.zeros(self.false_sample_num_singleperiod_galvotrigger, dtype=bool),
+            np.zeros(
+                self.false_sample_num_singleperiod_galvotrigger, dtype=bool
+            ),
         )
 
         self.sample_repeatedperiod_galvotrigger = np.tile(
@@ -1355,12 +1428,15 @@ class WaveformGenerator(QWidget):
             self.gapsamples_number_galvo, dtype=bool
         )
         self.gap_samples_galvotrigger = np.append(
-            self.sample_repeatedperiod_galvotrigger, self.gap_samples_galvotrigger
+            self.sample_repeatedperiod_galvotrigger,
+            self.gap_samples_galvotrigger,
         )
         self.repeated_gap_samples_galvotrigger = np.tile(
             self.gap_samples_galvotrigger, repeatnum
         )
-        self.offset_galvotrigger = np.array(self.offsetsamples_galvo, dtype=bool)
+        self.offset_galvotrigger = np.array(
+            self.offsetsamples_galvo, dtype=bool
+        )
 
         final_galvotrigger = np.append(
             self.offset_galvotrigger, self.repeated_gap_samples_galvotrigger
@@ -1371,7 +1447,7 @@ class WaveformGenerator(QWidget):
 
         return final_galvotrigger
 
-    #%%
+    # %%
     def generate_analog(self, channel):
         """
         Generate analog signals.
@@ -1428,17 +1504,22 @@ class WaveformGenerator(QWidget):
 
         return finalwave
 
-    #%%
+    # %%
     # --------------------for generating digital signals-----------------------
     def generate_digital(self, channel):
-
         self.uiDaq_sample_rate = int(self.SamplingRateTextbox.value())
-        self.uiwavefrequency_digital_waveform = float(self.DigFreqTextbox.text())
+        self.uiwavefrequency_digital_waveform = float(
+            self.DigFreqTextbox.text()
+        )
         if not self.DigOffsetTextbox.text():
             self.uiwaveoffset_digital_waveform = 0
         else:
-            self.uiwaveoffset_digital_waveform = float(self.DigOffsetTextbox.text())
-        self.uiwaveperiod_digital_waveform = int(self.DigDurationTextbox.text())
+            self.uiwaveoffset_digital_waveform = float(
+                self.DigOffsetTextbox.text()
+            )
+        self.uiwaveperiod_digital_waveform = int(
+            self.DigDurationTextbox.text()
+        )
         self.uiwaveDC_digital_waveform = int(self.digital_DC_spinbox.value())
         if not self.DigRepeatTextbox.text():
             self.uiwaverepeat_digital_waveform_number = 1
@@ -1463,7 +1544,7 @@ class WaveformGenerator(QWidget):
 
         return digital_waveform.generate()
 
-    #%%
+    # %%
     # -------------- for generating ramp voltage signals----------------------
     def generate_ramp(self, channel):
         self.uiDaq_sample_rate = int(self.SamplingRateTextbox.value())
@@ -1471,7 +1552,9 @@ class WaveformGenerator(QWidget):
         if not self.AnalogOffsetTextbox_ramp.text():
             self.uiwaveoffset_ramp = 0
         else:
-            self.uiwaveoffset_ramp = int(self.AnalogOffsetTextbox_ramp.text())  # in ms
+            self.uiwaveoffset_ramp = int(
+                self.AnalogOffsetTextbox_ramp.text()
+            )  # in ms
         self.uiwaveperiod_ramp = int(self.AnalogDurationTextbox_ramp.text())
         if not self.AnalogDCTextbox_ramp.text():
             self.uiwavesymmetry_ramp = 0.5
@@ -1491,7 +1574,9 @@ class WaveformGenerator(QWidget):
         if not self.AnalogBaselineTextbox_ramp.text():
             self.uiwavebaseline_ramp = 0
         else:
-            self.uiwavebaseline_ramp = float(self.AnalogBaselineTextbox_ramp.text())
+            self.uiwavebaseline_ramp = float(
+                self.AnalogBaselineTextbox_ramp.text()
+            )
         self.uiwavestep_ramp = float(self.AnalogStepTextbox_ramp.value())
         self.uiwavecycles_ramp = int(self.AnalogCyclesTextbox_ramp.value())
 
@@ -1511,11 +1596,12 @@ class WaveformGenerator(QWidget):
 
         return ramp_instance.generate()
 
-    #%%
+    # %%
     def generate_photocycle(self, channel):
-
         self.uiDaq_sample_rate = int(self.SamplingRateTextbox.value())
-        self.uiwavefrequency_photocycle_488 = float(self.textbox_photocycleA.text())
+        self.uiwavefrequency_photocycle_488 = float(
+            self.textbox_photocycleA.text()
+        )
         if not self.textbox_photocycleB.text():
             self.uiwavefrequency_offset_photocycle_488 = 100
         else:
@@ -1523,25 +1609,39 @@ class WaveformGenerator(QWidget):
                 self.textbox_photocycleB.text()
             )
         self.uiwaveperiod_photocycle_488 = int(self.textbox_photocycleC.text())
-        self.uiwaveDC_photocycle_488 = int(self.textbox_photocycleE.currentText())
+        self.uiwaveDC_photocycle_488 = int(
+            self.textbox_photocycleE.currentText()
+        )
         if not self.textbox_photocycleD.text():
             self.uiwaverepeat_photocycle_488 = 10
         else:
-            self.uiwaverepeat_photocycle_488 = int(self.textbox_photocycleD.text())
+            self.uiwaverepeat_photocycle_488 = int(
+                self.textbox_photocycleD.text()
+            )
         if not self.textbox_photocycleF.text():
             self.uiwavegap_photocycle_488 = 100000
         else:
-            self.uiwavegap_photocycle_488 = int(self.textbox_photocycleF.text())
+            self.uiwavegap_photocycle_488 = int(
+                self.textbox_photocycleF.text()
+            )
         self.uiwavestartamplitude_photocycle_488 = float(
             self.textbox_photocycleG.value()
         )
         if not self.textbox_photocycleH.text():
             self.uiwavebaseline_photocycle_488 = 0
         else:
-            self.uiwavebaseline_photocycle_488 = float(self.textbox_photocycleH.text())
-        self.uiwavestep_photocycle_488 = float(self.textbox_photocycleI.value())
-        self.uiwavecycles_photocycle_488 = float(self.textbox_photocycleJ.value())
-        self.uiwavestart_time_photocycle_488 = float(self.textbox_photocycleL.value())
+            self.uiwavebaseline_photocycle_488 = float(
+                self.textbox_photocycleH.text()
+            )
+        self.uiwavestep_photocycle_488 = float(
+            self.textbox_photocycleI.value()
+        )
+        self.uiwavecycles_photocycle_488 = float(
+            self.textbox_photocycleJ.value()
+        )
+        self.uiwavestart_time_photocycle_488 = float(
+            self.textbox_photocycleL.value()
+        )
 
         self.uiwavecontrol_amplitude_photocycle_488 = float(
             self.textbox_photocycleM.value()
@@ -1566,9 +1666,8 @@ class WaveformGenerator(QWidget):
 
         return finalwave
 
-    #%%
+    # %%
     def generate_graphy(self, channel, waveform):
-
         self.uiDaq_sample_rate = int(self.SamplingRateTextbox.value())
         if waveform.dtype == "bool":
             waveform = waveform.astype(int)
@@ -1586,7 +1685,7 @@ class WaveformGenerator(QWidget):
 
         self.PlotDataItem_dict[channel] = current_PlotDataItem
 
-    #%%
+    # %%
 
     def clear_canvas(self):
         # Back to initial state
@@ -1617,16 +1716,18 @@ class WaveformGenerator(QWidget):
 
         """
         # -----------------Find the reference waveform length.------------------
-        ReferenceWaveform_menu_text = self.ReferenceWaveform_menu.selectedItems()[
-            0
-        ].text()
+        ReferenceWaveform_menu_text = (
+            self.ReferenceWaveform_menu.selectedItems()[0].text()
+        )
 
         try:
             if "galvos_X_contour" in self.waveform_data_dict.keys():
                 # In case of loading contour waveforms when keys are not "galvos_contour"
-                reference_wave = self.waveform_data_dict['galvos_X_contour']
+                reference_wave = self.waveform_data_dict["galvos_X_contour"]
             else:
-                reference_wave = self.waveform_data_dict[ReferenceWaveform_menu_text]
+                reference_wave = self.waveform_data_dict[
+                    ReferenceWaveform_menu_text
+                ]
         except KeyError:
             QMessageBox.warning(
                 self,
@@ -1635,7 +1736,7 @@ class WaveformGenerator(QWidget):
                 QMessageBox.Ok,
             )
 
-        #=====================================================================
+        # =====================================================================
         # Adding 4 values at the front, same for all waveforms except the
         # Camera trigger, which adds one extra trigger to solve the missing
         # trigger in the beginning issue.
@@ -1646,111 +1747,234 @@ class WaveformGenerator(QWidget):
 
             if self.Adding_extra_camera_trigger_flag == True:
                 for waveform_key in self.waveform_data_dict:
-
-                    if waveform_key != 'cameratrigger':
+                    if waveform_key != "cameratrigger":
                         if waveform_key in self.AnalogChannelList:
-
                             # ==== Padding at the end ====
                             if waveform_key != "patchAO":
                                 # For analog channels,
                                 insert_array = np.zeros(self.padding_number)
 
                                 # Add 0 in the end
-                                self.waveform_data_dict[waveform_key] = np.append\
-                                (self.waveform_data_dict[waveform_key], 0)
+                                self.waveform_data_dict[
+                                    waveform_key
+                                ] = np.append(
+                                    self.waveform_data_dict[waveform_key], 0
+                                )
 
                             else:
-                                if np.amax(self.waveform_data_dict[waveform_key]) ==\
-                                    np.amin(self.waveform_data_dict[waveform_key]):
+                                if np.amax(
+                                    self.waveform_data_dict[waveform_key]
+                                ) == np.amin(
+                                    self.waveform_data_dict[waveform_key]
+                                ):
                                     # In case of holding potential
                                     # For patch channels, add 4 same float values
-                                    insert_array = np.ones([self.padding_number]) * \
-                                               self.waveform_data_dict[waveform_key][0]
+                                    insert_array = (
+                                        np.ones([self.padding_number])
+                                        * self.waveform_data_dict[
+                                            waveform_key
+                                        ][0]
+                                    )
                                 else:
                                     # In case of step waves,
                                     # append baseline values
-                                    insert_array = np.ones([self.padding_number]) * \
-                                               np.amin(self.waveform_data_dict[waveform_key])
+                                    insert_array = np.ones(
+                                        [self.padding_number]
+                                    ) * np.amin(
+                                        self.waveform_data_dict[waveform_key]
+                                    )
 
                                 # In case of patch clamp, append same last value
-                                self.waveform_data_dict[waveform_key] = np.append\
-                                (self.waveform_data_dict[waveform_key], self.waveform_data_dict[waveform_key][-1])
+                                self.waveform_data_dict[
+                                    waveform_key
+                                ] = np.append(
+                                    self.waveform_data_dict[waveform_key],
+                                    self.waveform_data_dict[waveform_key][-1],
+                                )
 
                         else:
                             # For digital boolen signals
-                            insert_array = np.zeros([self.padding_number], dtype = bool)
+                            insert_array = np.zeros(
+                                [self.padding_number], dtype=bool
+                            )
 
                             # Add False in the end
-                            self.waveform_data_dict[waveform_key] = np.append\
-                            (self.waveform_data_dict[waveform_key], False)
+                            self.waveform_data_dict[waveform_key] = np.append(
+                                self.waveform_data_dict[waveform_key], False
+                            )
                     else:
                         # In case of cameratrigger, add a trigger composed of 4 values
-                        insert_array = np.array([False, False, False, False, False,  # TODO magic number
-                                                 False, False, False, False, False, \
-                                                 False, False, False, False, False, \
-                                                 False, False, False, False, False, \
-                                                 False, False, False, False, False, \
-                                                True, True, True, True, True, \
-                                                True, True, True, True, True, \
-                                                True, True, True, True, True, \
-                                                True, True, True, True, True, \
-                                                True, True, True, True, True, \
-                                                 False, False, False, False, False, \
-                                                 False, False, False, False, False, \
-                                                 False, False, False, False, False, \
-                                                 False, False, False, False, False, \
-                                                 False, False, False, False, False, \
-                                                True, True, True, True, True, \
-                                                True, True, True, True, True, \
-                                                True, True, True, True, True, \
-                                                True, True, True, True, True, \
-                                                True, True, True, True, True, \
-                                                 False, False, False, False, False, \
-                                                 False, False, False, False, False, \
-                                                 False, False, False, False, False])
+                        insert_array = np.array(
+                            [
+                                False,
+                                False,
+                                False,
+                                False,
+                                False,  # TODO magic number
+                                False,
+                                False,
+                                False,
+                                False,
+                                False,
+                                False,
+                                False,
+                                False,
+                                False,
+                                False,
+                                False,
+                                False,
+                                False,
+                                False,
+                                False,
+                                False,
+                                False,
+                                False,
+                                False,
+                                False,
+                                True,
+                                True,
+                                True,
+                                True,
+                                True,
+                                True,
+                                True,
+                                True,
+                                True,
+                                True,
+                                True,
+                                True,
+                                True,
+                                True,
+                                True,
+                                True,
+                                True,
+                                True,
+                                True,
+                                True,
+                                True,
+                                True,
+                                True,
+                                True,
+                                True,
+                                False,
+                                False,
+                                False,
+                                False,
+                                False,
+                                False,
+                                False,
+                                False,
+                                False,
+                                False,
+                                False,
+                                False,
+                                False,
+                                False,
+                                False,
+                                False,
+                                False,
+                                False,
+                                False,
+                                False,
+                                False,
+                                False,
+                                False,
+                                False,
+                                False,
+                                True,
+                                True,
+                                True,
+                                True,
+                                True,
+                                True,
+                                True,
+                                True,
+                                True,
+                                True,
+                                True,
+                                True,
+                                True,
+                                True,
+                                True,
+                                True,
+                                True,
+                                True,
+                                True,
+                                True,
+                                True,
+                                True,
+                                True,
+                                True,
+                                True,
+                                False,
+                                False,
+                                False,
+                                False,
+                                False,
+                                False,
+                                False,
+                                False,
+                                False,
+                                False,
+                                False,
+                                False,
+                                False,
+                                False,
+                                False,
+                            ]
+                        )
 
                         # Add False in the end
-                        self.waveform_data_dict[waveform_key] = np.append\
-                        (self.waveform_data_dict[waveform_key], False)
+                        self.waveform_data_dict[waveform_key] = np.append(
+                            self.waveform_data_dict[waveform_key], False
+                        )
 
                     # Insert the appendix
-                    self.waveform_data_dict[waveform_key] = np.insert\
-                    (self.waveform_data_dict[waveform_key], 0, insert_array)
+                    self.waveform_data_dict[waveform_key] = np.insert(
+                        self.waveform_data_dict[waveform_key], 0, insert_array
+                    )
 
                     # print(self.waveform_data_dict[waveform_key])
             else:
                 for waveform_key in self.waveform_data_dict:
-
                     if waveform_key in self.AnalogChannelList:
-
                         # ==== Padding at the end ====
                         if waveform_key != "patchAO":
                             # For analog channels,
                             insert_array = np.zeros(self.padding_number)
                             # Add 0 in the end
-                            self.waveform_data_dict[waveform_key] = np.append\
-                            (self.waveform_data_dict[waveform_key], 0)
+                            self.waveform_data_dict[waveform_key] = np.append(
+                                self.waveform_data_dict[waveform_key], 0
+                            )
                         else:
                             # For patch channels, add 4 same float values
-                            insert_array = np.ones([self.padding_number]) * \
-                                       self.waveform_data_dict[waveform_key][0]
+                            insert_array = (
+                                np.ones([self.padding_number])
+                                * self.waveform_data_dict[waveform_key][0]
+                            )
                             # In case of patch clamp, append same last value
-                            self.waveform_data_dict[waveform_key] = np.append\
-                            (self.waveform_data_dict[waveform_key], self.waveform_data_dict[waveform_key][-1])
+                            self.waveform_data_dict[waveform_key] = np.append(
+                                self.waveform_data_dict[waveform_key],
+                                self.waveform_data_dict[waveform_key][-1],
+                            )
                     else:
-                        insert_array = np.zeros(self.padding_number, dtype = bool)
+                        insert_array = np.zeros(
+                            self.padding_number, dtype=bool
+                        )
                         # Add False in the end
-                        self.waveform_data_dict[waveform_key] = np.append\
-                        (self.waveform_data_dict[waveform_key], False)
+                        self.waveform_data_dict[waveform_key] = np.append(
+                            self.waveform_data_dict[waveform_key], False
+                        )
 
                     # Insert the appendix
-                    self.waveform_data_dict[waveform_key] = np.insert\
-                    (self.waveform_data_dict[waveform_key], 0, insert_array)
+                    self.waveform_data_dict[waveform_key] = np.insert(
+                        self.waveform_data_dict[waveform_key], 0, insert_array
+                    )
 
                     # print(self.waveform_data_dict[waveform_key])
         else:
             print("No Auto-padding to reset channels.")
-        #====================================================================
+        # ====================================================================
 
         if ReferenceWaveform_menu_text == "galvos":
             # in case of using galvos as reference wave
@@ -1777,20 +2001,26 @@ class WaveformGenerator(QWidget):
             # Without auto padding, reference length is the same as original waveform.
             print("reference_length: " + str(self.reference_length))
 
-
         # ---------------Get all waveforms the same length.---------------------
 
         for waveform_key in self.waveform_data_dict:
-
             if self.waveform_data_dict[waveform_key].ndim == 1:
                 # Cut or append 0 to the data for non-reference waveforms.
-                if len(self.waveform_data_dict[waveform_key]) >= self.reference_length:
-                    self.waveform_data_dict[waveform_key] = self.waveform_data_dict[
+                if (
+                    len(self.waveform_data_dict[waveform_key])
+                    >= self.reference_length
+                ):
+                    self.waveform_data_dict[
                         waveform_key
-                    ][0 : self.reference_length]
+                    ] = self.waveform_data_dict[waveform_key][
+                        0 : self.reference_length
+                    ]
 
                 else:
-                    if self.waveform_data_dict[waveform_key].dtype == "float64":
+                    if (
+                        self.waveform_data_dict[waveform_key].dtype
+                        == "float64"
+                    ):
                         append_waveforms = np.zeros(
                             self.reference_length
                             - len(self.waveform_data_dict[waveform_key])
@@ -1806,9 +2036,7 @@ class WaveformGenerator(QWidget):
                         self.waveform_data_dict[waveform_key], append_waveforms
                     )
 
-
             else:  # In case of galvos which has dimention 2.
-
                 # Cut or append 0 to the data for non-reference waveforms.
                 if (
                     len(self.waveform_data_dict[waveform_key][0, :])
@@ -1857,7 +2085,9 @@ class WaveformGenerator(QWidget):
             and "galvos_contour" not in self.waveform_data_dict
         ):
             self.waveform_data_dict[
-                "galvosx" + "avgnum_" + str(int(self.GalvoAvgNumTextbox.value()))
+                "galvosx"
+                + "avgnum_"
+                + str(int(self.GalvoAvgNumTextbox.value()))
             ] = self.waveform_data_dict["galvos"][0, :]
             self.waveform_data_dict[
                 "galvosy"
@@ -1867,85 +2097,89 @@ class WaveformGenerator(QWidget):
             del self.waveform_data_dict["galvos"]
 
         if "galvos_contour" in self.waveform_data_dict:
-            self.waveform_data_dict["galvos_X" + "_contour"] = self.waveform_data_dict[
-                "galvos_contour"
-            ][0, :]
-            self.waveform_data_dict["galvos_Y" + "_contour"] = self.waveform_data_dict[
-                "galvos_contour"
-            ][1, :]
+            self.waveform_data_dict[
+                "galvos_X" + "_contour"
+            ] = self.waveform_data_dict["galvos_contour"][0, :]
+            self.waveform_data_dict[
+                "galvos_Y" + "_contour"
+            ] = self.waveform_data_dict["galvos_contour"][1, :]
             del self.waveform_data_dict["galvos_contour"]
 
         # Structured array to contain
         # https://stackoverflow.com/questions/39622533/numpy-array-as-datatype-in-a-structured-array
 
-
-
         dataType_analog = np.dtype(
-            [("Waveform", float, (self.reference_length,)), ("Specification", "U20")]
+            [
+                ("Waveform", float, (self.reference_length,)),
+                ("Specification", "U20"),
+            ]
         )
         dataType_digital = np.dtype(
-            [("Waveform", bool, (self.reference_length,)), ("Specification", "U20")]
+            [
+                ("Waveform", bool, (self.reference_length,)),
+                ("Specification", "U20"),
+            ]
         )
-
-
 
         # ================Reset the PlotDataItem===================
         x_label = np.arange(self.reference_length) / self.uiDaq_sample_rate
 
         for waveform_key in self.waveform_data_dict:
-                #
-                if self.waveform_data_dict[waveform_key].dtype == "float64":
-                    # In case of galvos re-drawing
-                    if "galvos_contour" in waveform_key:
-                        self.PlotDataItem_dict["galvos_contour"].setData(
-                            x_label,
-                            self.waveform_data_dict[waveform_key],
-                            name=waveform_key,
-                        )
-                    elif "galvosx" in waveform_key or "galvosy" in waveform_key:
-                        self.PlotDataItem_dict["galvos"].setData(
-                            x_label,
-                            self.waveform_data_dict[waveform_key],
-                            name=waveform_key,
-                        )
-                    elif "galvos_X" in waveform_key or "galvos_Y" in waveform_key:
-                        self.PlotDataItem_dict["galvos_contour"].setData(
-                            x_label,
-                            self.waveform_data_dict[waveform_key],
-                            name=waveform_key,
-                        )
-                    else:
-                        self.PlotDataItem_dict[waveform_key].setData(
-                            x_label,
-                            self.waveform_data_dict[waveform_key],
-                            name=waveform_key,
-                        )
+            #
+            if self.waveform_data_dict[waveform_key].dtype == "float64":
+                # In case of galvos re-drawing
+                if "galvos_contour" in waveform_key:
+                    self.PlotDataItem_dict["galvos_contour"].setData(
+                        x_label,
+                        self.waveform_data_dict[waveform_key],
+                        name=waveform_key,
+                    )
+                elif "galvosx" in waveform_key or "galvosy" in waveform_key:
+                    self.PlotDataItem_dict["galvos"].setData(
+                        x_label,
+                        self.waveform_data_dict[waveform_key],
+                        name=waveform_key,
+                    )
+                elif "galvos_X" in waveform_key or "galvos_Y" in waveform_key:
+                    self.PlotDataItem_dict["galvos_contour"].setData(
+                        x_label,
+                        self.waveform_data_dict[waveform_key],
+                        name=waveform_key,
+                    )
                 else:
-                    if waveform_key != "cameratrigger":
-                        # In case of digital boolen signals, convert to int before ploting.
-                        self.PlotDataItem_dict[waveform_key].setData(
-                            x_label,
-                            self.waveform_data_dict[waveform_key].astype(int),
-                            name=waveform_key,
-                        )
-                    else:
-                        # For camera triggers, set to zeros so that it does not block canvas.
-                        rectified_waveform = np.zeros(
-                            len(self.waveform_data_dict[waveform_key]), dtype=bool
-                        )
+                    self.PlotDataItem_dict[waveform_key].setData(
+                        x_label,
+                        self.waveform_data_dict[waveform_key],
+                        name=waveform_key,
+                    )
+            else:
+                if waveform_key != "cameratrigger":
+                    # In case of digital boolen signals, convert to int before ploting.
+                    self.PlotDataItem_dict[waveform_key].setData(
+                        x_label,
+                        self.waveform_data_dict[waveform_key].astype(int),
+                        name=waveform_key,
+                    )
+                else:
+                    # For camera triggers, set to zeros so that it does not block canvas.
+                    rectified_waveform = np.zeros(
+                        len(self.waveform_data_dict[waveform_key]), dtype=bool
+                    )
 
-                        self.PlotDataItem_dict[waveform_key].setData(
-                            x_label,
-                            rectified_waveform.astype(int),
-                            name=waveform_key,
-                        )
+                    self.PlotDataItem_dict[waveform_key].setData(
+                        x_label,
+                        rectified_waveform.astype(int),
+                        name=waveform_key,
+                    )
 
         # ========= Making containers =========
         digital_line_num = 0
         for waveform_key in self.waveform_data_dict:
             if waveform_key in self.DigitalChannelList:
                 digital_line_num += 1
-        analog_line_num = len(self.waveform_data_dict.keys()) - digital_line_num
+        analog_line_num = (
+            len(self.waveform_data_dict.keys()) - digital_line_num
+        )
 
         self.analog_array = np.zeros(analog_line_num, dtype=dataType_analog)
         self.digital_array = np.zeros(digital_line_num, dtype=dataType_digital)
@@ -1953,18 +2187,19 @@ class WaveformGenerator(QWidget):
         digital_line_num = 0
         analog_line_num = 0
         for waveform_key in self.waveform_data_dict:
-
-            if waveform_key in self.AnalogChannelList or "galvos" in waveform_key:
+            if (
+                waveform_key in self.AnalogChannelList
+                or "galvos" in waveform_key
+            ):
                 print(len(self.waveform_data_dict[waveform_key]))
-                self.analog_array[analog_line_num] = np.array(\
+                self.analog_array[analog_line_num] = np.array(
                     [(self.waveform_data_dict[waveform_key], waveform_key)],
                     dtype=dataType_analog,
                 )
                 analog_line_num += 1
 
             elif waveform_key in self.DigitalChannelList:
-
-                self.digital_array[digital_line_num] = np.array(\
+                self.digital_array[digital_line_num] = np.array(
                     [(self.waveform_data_dict[waveform_key], waveform_key)],
                     dtype=dataType_digital,
                 )
@@ -1973,7 +2208,6 @@ class WaveformGenerator(QWidget):
 
         # -----------------Saving configed waveforms---------------------------
         if self.checkbox_saveWaveforms.isChecked():
-
             ciao = []  # Variable name 'ciao' was defined by Nicolo Ceffa.
 
             for i in range(len(self.analog_array["Specification"])):
@@ -2185,18 +2419,25 @@ class WaveformGenerator(QWidget):
                 # pmt data could come from raster scanning mode or from contour scanning mode.
                 try:
                     for i in range(self.repeatnum):
-                        self.PMT_image_reconstructed_array = self.data_collected_0[
-                            np.where(self.PMT_data_index_array_repeated == i + 1)
-                        ]
+                        self.PMT_image_reconstructed_array = (
+                            self.data_collected_0[
+                                np.where(
+                                    self.PMT_data_index_array_repeated == i + 1
+                                )
+                            ]
+                        )
                         Dataholder_average = np.mean(
                             self.PMT_image_reconstructed_array.reshape(
                                 self.averagenum, -1
                             ),
                             axis=0,
                         )
-                        Value_yPixels = int(len(self.samples_1) / self.ScanArrayXnum)
+                        Value_yPixels = int(
+                            len(self.samples_1) / self.ScanArrayXnum
+                        )
                         self.PMT_image_reconstructed = np.reshape(
-                            Dataholder_average, (Value_yPixels, self.ScanArrayXnum)
+                            Dataholder_average,
+                            (Value_yPixels, self.ScanArrayXnum),
                         )
 
                         # Stack the arrays into a 3d array
@@ -2205,12 +2446,14 @@ class WaveformGenerator(QWidget):
                                 self.PMT_image_reconstructed
                             )
                         else:
-                            self.PMT_image_reconstructed_stack = np.concatenate(
-                                (
-                                    self.PMT_image_reconstructed_stack,
-                                    self.PMT_image_reconstructed,
-                                ),
-                                axis=0,
+                            self.PMT_image_reconstructed_stack = (
+                                np.concatenate(
+                                    (
+                                        self.PMT_image_reconstructed_stack,
+                                        self.PMT_image_reconstructed,
+                                    ),
+                                    axis=0,
+                                )
                             )
 
                         Localimg = Image.fromarray(
@@ -2229,7 +2472,9 @@ class WaveformGenerator(QWidget):
                         )  # save as tif
 
                         plt.figure()
-                        plt.imshow(self.PMT_image_reconstructed, cmap=plt.cm.gray)
+                        plt.imshow(
+                            self.PMT_image_reconstructed, cmap=plt.cm.gray
+                        )
                         plt.show()
                 except:
                     np.save(
@@ -2283,18 +2528,25 @@ class WaveformGenerator(QWidget):
 
                 try:
                     for i in range(self.repeatnum):
-                        self.PMT_image_reconstructed_array = self.data_collected_0[
-                            np.where(self.PMT_data_index_array_repeated == i + 1)
-                        ]
+                        self.PMT_image_reconstructed_array = (
+                            self.data_collected_0[
+                                np.where(
+                                    self.PMT_data_index_array_repeated == i + 1
+                                )
+                            ]
+                        )
                         Dataholder_average = np.mean(
                             self.PMT_image_reconstructed_array.reshape(
                                 self.averagenum, -1
                             ),
                             axis=0,
                         )
-                        Value_yPixels = int(len(self.samples_1) / self.ScanArrayXnum)
+                        Value_yPixels = int(
+                            len(self.samples_1) / self.ScanArrayXnum
+                        )
                         self.PMT_image_reconstructed = np.reshape(
-                            Dataholder_average, (Value_yPixels, self.ScanArrayXnum)
+                            Dataholder_average,
+                            (Value_yPixels, self.ScanArrayXnum),
                         )
 
                         # Stack the arrays into a 3d array
@@ -2303,12 +2555,14 @@ class WaveformGenerator(QWidget):
                                 self.PMT_image_reconstructed
                             )
                         else:
-                            self.PMT_image_reconstructed_stack = np.concatenate(
-                                (
-                                    self.PMT_image_reconstructed_stack,
-                                    self.PMT_image_reconstructed,
-                                ),
-                                axis=0,
+                            self.PMT_image_reconstructed_stack = (
+                                np.concatenate(
+                                    (
+                                        self.PMT_image_reconstructed_stack,
+                                        self.PMT_image_reconstructed,
+                                    ),
+                                    axis=0,
+                                )
                             )
 
                         Localimg = Image.fromarray(
@@ -2327,7 +2581,9 @@ class WaveformGenerator(QWidget):
                         )  # save as tif
 
                         plt.figure()
-                        plt.imshow(self.PMT_image_reconstructed, cmap=plt.cm.gray)
+                        plt.imshow(
+                            self.PMT_image_reconstructed, cmap=plt.cm.gray
+                        )
                         plt.show()
                 except:
                     np.save(
@@ -2396,7 +2652,7 @@ class WaveformGenerator(QWidget):
         self.savedirectorytextbox.setText(self.savedirectory)
 
     def stopMeasurement_daqer(self):
-        """Stop """
+        """Stop"""
         self.adcollector.aboutToQuitHandler()
 
     def closeEvent(self, event):
@@ -2409,7 +2665,9 @@ class DaqProgressBar(QThread):
     change_value = pyqtSignal(int)
 
     def setlength(self, TotalTimeProgressBar):
-        self.time_to_sleep_along_one_percent = round(TotalTimeProgressBar / 100, 6)
+        self.time_to_sleep_along_one_percent = round(
+            TotalTimeProgressBar / 100, 6
+        )
 
     def run(self):
         cnt = 0

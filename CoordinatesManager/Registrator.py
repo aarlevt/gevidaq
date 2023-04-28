@@ -54,7 +54,6 @@ class GalvoRegistrator:
         camera_coordinates = np.zeros((galvo_coordinates.shape))
 
         for i in range(galvo_coordinates.shape[0]):
-
             galvothread.sendSingleAnalog("galvosx", galvo_coordinates[i, 0])
             galvothread.sendSingleAnalog("galvosy", galvo_coordinates[i, 1])
             time.sleep(1)
@@ -68,7 +67,9 @@ class GalvoRegistrator:
                 image,
             )
 
-            camera_coordinates[i, :] = readRegistrationImages.gaussian_fitting(image)
+            camera_coordinates[i, :] = readRegistrationImages.gaussian_fitting(
+                image
+            )
 
         print("Galvo Coordinate")
         print(galvo_coordinates)
@@ -128,7 +129,11 @@ class DMDRegistator:
             y = int(dmd_coordinates[i, 1])
 
             if registration_pattern == "squares":
-                mask = DMDRegistator.create_registration_image_touching_squares(x, y)
+                mask = (
+                    DMDRegistator.create_registration_image_touching_squares(
+                        x, y
+                    )
+                )
             else:
                 mask = DMDRegistator.create_registration_image_circle(x, y)
 
@@ -143,7 +148,9 @@ class DMDRegistator:
                 + ".png",
                 image,
             )
-            camera_coordinates[i, :] = readRegistrationImages.touchingCoordinateFinder(
+            camera_coordinates[
+                i, :
+            ] = readRegistrationImages.touchingCoordinateFinder(
                 image, method="curvefit"
             )
 

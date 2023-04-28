@@ -88,7 +88,9 @@ class FancyPushButton(QtWidgets.QPushButton):
 
         #        self.setStyleSheet("QPushButton:disabled {color:white;background-color: grey; border-style: outset;border-radius: 8px;border-width: 2px;font: bold 12px;padding: 6px}")
         self.setGraphicsEffect(
-            QtWidgets.QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
+            QtWidgets.QGraphicsDropShadowEffect(
+                blurRadius=3, xOffset=2, yOffset=2
+            )
         )
 
     def _animate(self, value):
@@ -128,7 +130,14 @@ class MySwitch(QtWidgets.QPushButton):
     """
 
     def __init__(
-        self, label_1, color_1, label_2, color_2, width, font_size=8, parent=None
+        self,
+        label_1,
+        color_1,
+        label_2,
+        color_2,
+        width,
+        font_size=8,
+        parent=None,
     ):
         super().__init__(parent)
         self.setCheckable(True)
@@ -141,11 +150,15 @@ class MySwitch(QtWidgets.QPushButton):
         self.width = width
         self.font_size = font_size
         self.setGraphicsEffect(
-            QtWidgets.QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
+            QtWidgets.QGraphicsDropShadowEffect(
+                blurRadius=3, xOffset=2, yOffset=2
+            )
         )
 
     def paintEvent(self, event):
-        label = self.switch_label_1 if self.isChecked() else self.switch_label_2
+        label = (
+            self.switch_label_1 if self.isChecked() else self.switch_label_2
+        )
 
         if self.isChecked():
             bg_color = QColor(self.switch_color_1)
@@ -196,9 +209,12 @@ class GeneralFancyButton(QtWidgets.QPushButton):
         self.setFixedHeight(32)
         self.setIconSize(QSize(30, 30))
         self.setGraphicsEffect(
-            QtWidgets.QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
+            QtWidgets.QGraphicsDropShadowEffect(
+                blurRadius=3, xOffset=2, yOffset=2
+            )
         )
         # self.setToolTip("Execute")
+
 
 class runButton(QtWidgets.QPushButton):
     """
@@ -219,7 +235,9 @@ class runButton(QtWidgets.QPushButton):
         self.setFixedHeight(32)
         self.setIconSize(QSize(30, 30))
         self.setGraphicsEffect(
-            QtWidgets.QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
+            QtWidgets.QGraphicsDropShadowEffect(
+                blurRadius=3, xOffset=2, yOffset=2
+            )
         )
         self.setToolTip("Execute")
 
@@ -241,7 +259,9 @@ class stop_deleteButton(QtWidgets.QPushButton):
         self.setStyleSheet(StyleSheet)
         self.setFixedHeight(32)
         self.setGraphicsEffect(
-            QtWidgets.QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
+            QtWidgets.QGraphicsDropShadowEffect(
+                blurRadius=3, xOffset=2, yOffset=2
+            )
         )
         self.setToolTip("Stop/Delete")
 
@@ -264,7 +284,9 @@ class cleanButton(QtWidgets.QPushButton):
         self.setText(label)
         self.setFixedHeight(32)
         self.setGraphicsEffect(
-            QtWidgets.QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
+            QtWidgets.QGraphicsDropShadowEffect(
+                blurRadius=3, xOffset=2, yOffset=2
+            )
         )
         self.setToolTip("Clear")
 
@@ -274,7 +296,9 @@ class checkableButton(QtWidgets.QPushButton):
     .
     """
 
-    def __init__(self, Icon_path="", label="", background_color="#FFE5CC", parent=None):
+    def __init__(
+        self, Icon_path="", label="", background_color="#FFE5CC", parent=None
+    ):
         super().__init__(parent)
         self.setIcon(QIcon(Icon_path))
         StyleSheet = (
@@ -289,7 +313,9 @@ class checkableButton(QtWidgets.QPushButton):
         self.setStyleSheet(StyleSheet)
         self.setText(label)
         self.setGraphicsEffect(
-            QtWidgets.QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
+            QtWidgets.QGraphicsDropShadowEffect(
+                blurRadius=3, xOffset=2, yOffset=2
+            )
         )
 
 
@@ -310,7 +336,9 @@ class saveButton(QtWidgets.QPushButton):
         self.setStyleSheet(StyleSheet)
         self.setFixedHeight(32)
         self.setGraphicsEffect(
-            QtWidgets.QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
+            QtWidgets.QGraphicsDropShadowEffect(
+                blurRadius=3, xOffset=2, yOffset=2
+            )
         )
         self.setToolTip("Save")
 
@@ -332,7 +360,9 @@ class addButton(QtWidgets.QPushButton):
         self.setStyleSheet(StyleSheet)
         self.setFixedHeight(32)
         self.setGraphicsEffect(
-            QtWidgets.QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
+            QtWidgets.QGraphicsDropShadowEffect(
+                blurRadius=3, xOffset=2, yOffset=2
+            )
         )
         self.setToolTip("Add")
 
@@ -354,7 +384,9 @@ class generateButton(QtWidgets.QPushButton):
         self.setStyleSheet(StyleSheet)
         self.setFixedHeight(32)
         self.setGraphicsEffect(
-            QtWidgets.QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
+            QtWidgets.QGraphicsDropShadowEffect(
+                blurRadius=3, xOffset=2, yOffset=2
+            )
         )
         self.setToolTip("Generate/Configure")
 
@@ -377,7 +409,9 @@ class connectButton(QtWidgets.QPushButton):
 
         self.setFixedHeight(30)
         self.setGraphicsEffect(
-            QtWidgets.QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
+            QtWidgets.QGraphicsDropShadowEffect(
+                blurRadius=3, xOffset=2, yOffset=2
+            )
         )
 
         icon = QIcon()
@@ -407,7 +441,9 @@ class loadButton(QtWidgets.QPushButton):
         self.setFixedHeight(32)
         self.setIconSize(QSize(30, 30))
         self.setGraphicsEffect(
-            QtWidgets.QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
+            QtWidgets.QGraphicsDropShadowEffect(
+                blurRadius=3, xOffset=2, yOffset=2
+            )
         )
         self.setToolTip("Load from file")
 
@@ -429,7 +465,9 @@ class disconnectButton(QtWidgets.QPushButton):
 
         self.setFixedHeight(30)
         self.setGraphicsEffect(
-            QtWidgets.QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
+            QtWidgets.QGraphicsDropShadowEffect(
+                blurRadius=3, xOffset=2, yOffset=2
+            )
         )
         self.setToolTip("Disconnect")
 
@@ -451,7 +489,6 @@ class SquareImageView(pg.ImageView):
 
 
 class _Bar(QtWidgets.QWidget):
-
     clickedValue = QtCore.pyqtSignal(int)
 
     def __init__(self, steps, *args, **kwargs):
@@ -485,7 +522,9 @@ class _Bar(QtWidgets.QWidget):
         brush = QtGui.QBrush()
         brush.setColor(self._background_color)
         brush.setStyle(Qt.SolidPattern)
-        rect = QtCore.QRect(0, 0, painter.device().width(), painter.device().height())
+        rect = QtCore.QRect(
+            0, 0, painter.device().width(), painter.device().height()
+        )
         painter.fillRect(rect, brush)
 
         # Get current state.
@@ -578,7 +617,10 @@ class LabeledSlider(QtWidgets.QWidget):
         self.bottom_margin = 10
 
         self.layout.setContentsMargins(
-            self.left_margin, self.top_margin, self.right_margin, self.bottom_margin
+            self.left_margin,
+            self.top_margin,
+            self.right_margin,
+            self.bottom_margin,
         )
 
         self.sl = QtWidgets.QSlider(orientation, self)
@@ -597,7 +639,6 @@ class LabeledSlider(QtWidgets.QWidget):
         self.layout.addWidget(self.sl)
 
     def paintEvent(self, e):
-
         super(LabeledSlider, self).paintEvent(e)
 
         style = self.sl.style()
@@ -606,13 +647,14 @@ class LabeledSlider(QtWidgets.QWidget):
         st_slider.initFrom(self.sl)
         st_slider.orientation = self.sl.orientation()
 
-        length = style.pixelMetric(QtWidgets.QStyle.PM_SliderLength, st_slider, self.sl)
+        length = style.pixelMetric(
+            QtWidgets.QStyle.PM_SliderLength, st_slider, self.sl
+        )
         available = style.pixelMetric(
             QtWidgets.QStyle.PM_SliderSpaceAvailable, st_slider, self.sl
         )
 
         for v, v_str in self.levels:
-
             # get the size of the label
             rect = painter.drawText(QRect(), Qt.TextDontPrint, v_str)
 
@@ -644,7 +686,10 @@ class LabeledSlider(QtWidgets.QWidget):
                         self.bottom_margin,
                     )
 
-                if v == self.sl.maximum() and rect.width() // 2 >= self.right_margin:
+                if (
+                    v == self.sl.maximum()
+                    and rect.width() // 2 >= self.right_margin
+                ):
                     self.right_margin = rect.width() // 2
                     self.layout.setContentsMargins(
                         self.left_margin,
@@ -655,10 +700,20 @@ class LabeledSlider(QtWidgets.QWidget):
 
             else:
                 y_loc = QtWidgets.QStyle.sliderPositionFromValue(
-                    self.sl.minimum(), self.sl.maximum(), v, available, upsideDown=True
+                    self.sl.minimum(),
+                    self.sl.maximum(),
+                    v,
+                    available,
+                    upsideDown=True,
                 )
 
-                bottom = y_loc + length // 2 + rect.height() // 2 + self.top_margin - 3
+                bottom = (
+                    y_loc
+                    + length // 2
+                    + rect.height() // 2
+                    + self.top_margin
+                    - 3
+                )
                 # there is a 3 px offset that I can't attribute to any metric
 
                 left = self.left_margin - rect.width()

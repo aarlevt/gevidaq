@@ -52,7 +52,6 @@ from .ui_widgets.DrawingWidget import DrawingWidget
 
 
 class CoordinatesWidgetUI(QWidget):
-
     sig_cast_mask_coordinates_to_dmd = pyqtSignal(dict)
     sig_cast_mask_coordinates_to_galvo = pyqtSignal(list)
     sig_start_registration = pyqtSignal()
@@ -81,7 +80,7 @@ class CoordinatesWidgetUI(QWidget):
         QtWidgets.QApplication.quit()
         event.accept()
 
-    #%%
+    # %%
     def init_gui(self):
         self.setWindowTitle("Coordinate control")
 
@@ -131,7 +130,9 @@ class CoordinatesWidgetUI(QWidget):
         # self.Matdisplay_Canvas.setFixedHeight(900)
         self.Matdisplay_Canvas.mpl_connect("button_press_event", self._onclick)
 
-        self.Matdisplay_toolbar = NavigationToolbar(self.Matdisplay_Canvas, self)
+        self.Matdisplay_toolbar = NavigationToolbar(
+            self.Matdisplay_Canvas, self
+        )
 
         MLmaskviewBoxLayout.addWidget(self.Matdisplay_toolbar, 0, 0)
         MLmaskviewBoxLayout.addWidget(self.Matdisplay_Canvas, 1, 0)
@@ -152,7 +153,9 @@ class CoordinatesWidgetUI(QWidget):
         self.maskGeneratorContainerLayout = QGridLayout()
 
         self.maskGeneratorLayout = QGridLayout()
-        self.maskGeneratorContainer.setLayout(self.maskGeneratorContainerLayout)
+        self.maskGeneratorContainer.setLayout(
+            self.maskGeneratorContainerLayout
+        )
 
         # self.loadMaskFromFileButton = QPushButton('Load mask')
         # self.loadMaskFromFileButton.clicked.connect(self.load_mask_from_file)
@@ -174,20 +177,32 @@ class CoordinatesWidgetUI(QWidget):
 
         self.maskGeneratorContainerLayout.addWidget(self.addRoiButton, 0, 0)
         self.maskGeneratorContainerLayout.addWidget(self.LoadImageButton, 2, 0)
-        self.maskGeneratorContainerLayout.addWidget(self.createMaskButton, 2, 1)
-        self.maskGeneratorContainerLayout.addWidget(self.deleteMaskButton, 2, 2)
-        self.maskGeneratorContainerLayout.addWidget(self.removeSelectionButton, 2, 3)
+        self.maskGeneratorContainerLayout.addWidget(
+            self.createMaskButton, 2, 1
+        )
+        self.maskGeneratorContainerLayout.addWidget(
+            self.deleteMaskButton, 2, 2
+        )
+        self.maskGeneratorContainerLayout.addWidget(
+            self.removeSelectionButton, 2, 3
+        )
         # self.maskGeneratorContainerLayout.addWidget(self.loadMaskFromFileButton, 2, 1)
 
         self.clearRoiButton = QPushButton("Clear ROI")
-        self.clearRoiButton.clicked.connect(lambda: self.selection_view.clear_rois())
+        self.clearRoiButton.clicked.connect(
+            lambda: self.selection_view.clear_rois()
+        )
         self.maskGeneratorContainerLayout.addWidget(self.clearRoiButton, 0, 1)
 
-        self.maskGeneratorContainerLayout.addWidget(QLabel("Mask index:"), 1, 0)
+        self.maskGeneratorContainerLayout.addWidget(
+            QLabel("Mask index:"), 1, 0
+        )
         self.mask_index_spinbox = QSpinBox()
         self.mask_index_spinbox.setMinimum(1)
         self.mask_index_spinbox.setValue(1)
-        self.maskGeneratorContainerLayout.addWidget(self.mask_index_spinbox, 1, 1)
+        self.maskGeneratorContainerLayout.addWidget(
+            self.mask_index_spinbox, 1, 1
+        )
 
         self.previous_mask_button = QPushButton()
         self.previous_mask_button.setStyleSheet(
@@ -200,20 +215,30 @@ class CoordinatesWidgetUI(QWidget):
         self.previous_mask_button.setFixedWidth(60)
         with Icons.Path("LeftArrow.png") as path:
             self.previous_mask_button.setIcon(QIcon(path))
-        self.previous_mask_button.clicked.connect(lambda: self.show_mask_with_index(-1))
-        self.maskGeneratorContainerLayout.addWidget(self.previous_mask_button, 1, 2)
+        self.previous_mask_button.clicked.connect(
+            lambda: self.show_mask_with_index(-1)
+        )
+        self.maskGeneratorContainerLayout.addWidget(
+            self.previous_mask_button, 1, 2
+        )
 
         self.next_mask_button = QPushButton()
         self.next_mask_button.setStyleSheet(
             "QPushButton {color:white;background-color: #FFCCE5;}"
             "QPushButton:hover:!pressed {color:white;background-color: #CCFFFF;}"
         )
-        self.next_mask_button.setToolTip("Click arrow to enable WASD keyboard control")
+        self.next_mask_button.setToolTip(
+            "Click arrow to enable WASD keyboard control"
+        )
         self.next_mask_button.setFixedWidth(60)
         with Icons.Path("RightArrow.png") as path:
             self.next_mask_button.setIcon(QIcon(path))
-        self.next_mask_button.clicked.connect(lambda: self.show_mask_with_index(1))
-        self.maskGeneratorContainerLayout.addWidget(self.next_mask_button, 1, 3)
+        self.next_mask_button.clicked.connect(
+            lambda: self.show_mask_with_index(1)
+        )
+        self.maskGeneratorContainerLayout.addWidget(
+            self.next_mask_button, 1, 3
+        )
 
         self.selectionOptionsContainer = roundQGroupBox()
         self.selectionOptionsContainer.setTitle("Options")
@@ -236,8 +261,12 @@ class CoordinatesWidgetUI(QWidget):
         self.transform_for_laser_menu.setFixedWidth(65)
         self.transform_for_laser_menu.setCurrentRow(0)
 
-        self.selectionOptionsLayout.addWidget(QLabel("To be used with laser:"), 0, 2)
-        self.selectionOptionsLayout.addWidget(self.transform_for_laser_menu, 1, 2)
+        self.selectionOptionsLayout.addWidget(
+            QLabel("To be used with laser:"), 0, 2
+        )
+        self.selectionOptionsLayout.addWidget(
+            self.transform_for_laser_menu, 1, 2
+        )
 
         self.selectionOptionsContainer.setLayout(self.selectionOptionsLayout)
 
@@ -252,21 +281,27 @@ class CoordinatesWidgetUI(QWidget):
 
         self.init_ML_button = QPushButton("Init. ML", self)
         self.MLOptionsContainerLayout.addWidget(self.init_ML_button, 0, 0)
-        self.init_ML_button.clicked.connect(lambda: self.run_in_thread(self.init_ML))
+        self.init_ML_button.clicked.connect(
+            lambda: self.run_in_thread(self.init_ML)
+        )
 
         self.run_ML_button = QPushButton("Analysis", self)
         self.MLOptionsContainerLayout.addWidget(self.run_ML_button, 1, 0)
         self.run_ML_button.clicked.connect(self.run_ML_onImg_and_display)
 
         self.generate_MLmask_button = QPushButton("To ROIs", self)
-        self.MLOptionsContainerLayout.addWidget(self.generate_MLmask_button, 2, 0)
+        self.MLOptionsContainerLayout.addWidget(
+            self.generate_MLmask_button, 2, 0
+        )
         self.generate_MLmask_button.clicked.connect(
             lambda: self.run_in_thread(self.generate_MLmask)
         )
 
         self.MLOptionsContainer.setLayout(self.MLOptionsContainerLayout)
 
-        self.maskGeneratorContainerLayout.addWidget(self.MLOptionsContainer, 3, 3, 2, 1)
+        self.maskGeneratorContainerLayout.addWidget(
+            self.MLOptionsContainer, 3, 3, 2, 1
+        )
 
         self.layout.addWidget(self.maskGeneratorContainer, 0, 8, 1, 3)
 
@@ -312,7 +347,9 @@ class CoordinatesWidgetUI(QWidget):
         )
 
         # -------------------------Manual registration-------------------------
-        self.ManualRegistrationWidget = ManualRegistration.ManualRegistrationWidget()
+        self.ManualRegistrationWidget = (
+            ManualRegistration.ManualRegistrationWidget()
+        )
         self.ManualRegistrationWidget.setFixedWidth(100)
         self.ManualRegistrationWidget.sig_request_camera_image.connect(
             self.cast_camera_image
@@ -330,7 +367,7 @@ class CoordinatesWidgetUI(QWidget):
 
         # =====================================================================
 
-    #%%
+    # %%
 
     def cast_transformation_to_DMD(self, transformation, laser):
         self.DMDWidget.transform[laser] = transformation
@@ -341,7 +378,7 @@ class CoordinatesWidgetUI(QWidget):
         self.GalvoWidget.save_transformation()
 
     def cast_camera_image(self):
-        """ Send out the image in the image view to ManualRegistration """
+        """Send out the image in the image view to ManualRegistration"""
         image = self.selection_view.image
         if type(image) == np.ndarray:
             self.sig_cast_camera_image.emit(image)
@@ -385,9 +422,13 @@ class CoordinatesWidgetUI(QWidget):
 
         """
         if receiver == "dmd":
-            self.sig_cast_mask_coordinates_to_dmd.emit(self.sig_to_calling_widget)
+            self.sig_cast_mask_coordinates_to_dmd.emit(
+                self.sig_to_calling_widget
+            )
         else:
-            self.sig_cast_mask_coordinates_to_galvo.emit(self.sig_to_calling_widget)
+            self.sig_cast_mask_coordinates_to_galvo.emit(
+                self.sig_to_calling_widget
+            )
 
     def get_list_of_rois(self):
         """
@@ -397,7 +438,6 @@ class CoordinatesWidgetUI(QWidget):
         list_of_rois = []
 
         for roi in view.roilist:
-
             roi_handle_positions = roi.getLocalHandlePositions()
             roi_origin = roi.pos()
 
@@ -554,7 +594,8 @@ class CoordinatesWidgetUI(QWidget):
     def init_ML(self):
         # Initialize the detector instance and load the model.
         self.ProcessML = ProcessImageML(
-            WeigthPath=r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Martijn\SpikingHek.h5")  # TODO hardcoded path
+            WeigthPath=r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Martijn\SpikingHek.h5"
+        )  # TODO hardcoded path
         self.MessageBack.emit("Mask-RCNN environment configured.")
 
     def run_ML_onImg_and_display(self):
@@ -575,7 +616,7 @@ class CoordinatesWidgetUI(QWidget):
         self.MLresults = self.ProcessML.DetectionOnImage(
             self.MLtargetedImg,
             axis=self.Matdisplay_Figure_axis,
-            show_result=True
+            show_result=True,
         )
         self.Mask = self.MLresults["masks"]
         self.Label = self.MLresults["class_ids"]
@@ -592,7 +633,7 @@ class CoordinatesWidgetUI(QWidget):
         self.Matdisplay_Figure.tight_layout()
         self.Matdisplay_Canvas.draw()
 
-    #%%
+    # %%
     # =============================================================================
     #     Configure click event to add clicked cell mask
     # =============================================================================
@@ -639,7 +680,9 @@ class CoordinatesWidgetUI(QWidget):
     def get_cell_polygon(self, mask):
         # Mask Polygon
         # Pad to ensure proper polygons for masks that touch image edges.
-        padded_mask = np.zeros((mask.shape[0] + 2, mask.shape[1] + 2), dtype=np.uint8)
+        padded_mask = np.zeros(
+            (mask.shape[0] + 2, mask.shape[1] + 2), dtype=np.uint8
+        )
         padded_mask[1:-1, 1:-1] = mask
         contours = find_contours(padded_mask, 0.5)
         for verts in contours:
@@ -663,20 +706,22 @@ class CoordinatesWidgetUI(QWidget):
         random.shuffle(colors)
         return colors
 
-    #%%
+    # %%
     # =============================================================================
     #     For mask generation
     # =============================================================================
 
     def generate_MLmask(self):
-        """ Generate binary mask with all selected cells"""
+        """Generate binary mask with all selected cells"""
         self.MLmask = np.zeros(
             (self.MLtargetedImg.shape[0], self.MLtargetedImg.shape[1])
         )
 
         if len(self.selected_ML_Index) > 0:
             for selected_index in self.selected_ML_Index:
-                self.MLmask = np.add(self.MLmask, self.Mask[:, :, selected_index])
+                self.MLmask = np.add(
+                    self.MLmask, self.Mask[:, :, selected_index]
+                )
 
             self.add_rois_of_selected()
 
@@ -688,7 +733,6 @@ class CoordinatesWidgetUI(QWidget):
         handle_downsample_step = 2
 
         for selected_index in self.selected_ML_Index:
-
             contours = self.selected_cells_infor_dict[
                 "cell{}_verts".format(str(selected_index))
             ]
@@ -706,7 +750,9 @@ class CoordinatesWidgetUI(QWidget):
                 contour_coord_array_del = np.delete(
                     contour_coord_array,
                     np.arange(
-                        2, contour_coord_array.shape[0] - 3, handle_downsample_step
+                        2,
+                        contour_coord_array.shape[0] - 3,
+                        handle_downsample_step,
                     ),
                     0,
                 )
@@ -723,7 +769,9 @@ class CoordinatesWidgetUI(QWidget):
 
                 self.selected_cells_infor_dict[
                     "cell{}_ROIitem".format(str(selected_index))
-                ] = pg.PolyLineROI(positions=contour_coord_array_del, closed=True)
+                ] = pg.PolyLineROI(
+                    positions=contour_coord_array_del, closed=True
+                )
 
                 # Add ROI item, and append_to_roilist
                 self.selection_view.getView().addItem(

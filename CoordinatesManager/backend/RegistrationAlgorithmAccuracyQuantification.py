@@ -54,21 +54,24 @@ def open_coordinate_files(method):
     global coordinates
     coordinates = np.reshape(
         np.loadtxt(
-            "CoordinatesManager/Results/10-7/" + method + "_positions_automatic.txt"
+            "CoordinatesManager/Results/10-7/"
+            + method
+            + "_positions_automatic.txt"
         ),
         (6, 2, 6),
     )
     global man_coordinates
     man_coordinates = np.reshape(
         np.loadtxt(
-            "CoordinatesManager/Results/10-7/" + method + "_positions_manual.txt"
+            "CoordinatesManager/Results/10-7/"
+            + method
+            + "_positions_manual.txt"
         ),
         (6, 2, 6),
     )
 
 
 if __name__ == "__main__":
-
     method = "squares"  # 'circle' or 'squares'
 
     # Use to open previously found coordinates from file
@@ -96,7 +99,9 @@ if __name__ == "__main__":
         axs[0].set_ylim([0, 2048])
         axs[0].set_xlim([0, 2048])
         axs[0].set_title(
-            "Located registration grid points \n (" + method + ", n=36 per sample)"
+            "Located registration grid points \n ("
+            + method
+            + ", n=36 per sample)"
         )
 
     if True:
@@ -104,9 +109,9 @@ if __name__ == "__main__":
         zero_mean_man_coordinates = np.zeros(coordinates.shape)
         for i in range(coordinates.shape[0]):
             for j in range(coordinates.shape[1]):
-                zero_mean_coordinates[i, j, :] = coordinates[i, j, :] - np.average(
-                    coordinates[i, j, :]
-                )
+                zero_mean_coordinates[i, j, :] = coordinates[
+                    i, j, :
+                ] - np.average(coordinates[i, j, :])
                 zero_mean_man_coordinates[i, j, :] = man_coordinates[
                     i, j, :
                 ] - np.average(man_coordinates[i, j, :])
@@ -164,10 +169,13 @@ if __name__ == "__main__":
             + zero_mean_man_coordinates[:, 1, :] ** 2
         ).ravel()
         distance_to_origin = np.sqrt(
-            zero_mean_coordinates[:, 0, :] ** 2 + zero_mean_coordinates[:, 1, :] ** 2
+            zero_mean_coordinates[:, 0, :] ** 2
+            + zero_mean_coordinates[:, 1, :] ** 2
         ).ravel()
 
-        max_distance = max(np.max(man_distance_to_origin), np.max(distance_to_origin))
+        max_distance = max(
+            np.max(man_distance_to_origin), np.max(distance_to_origin)
+        )
         fig, axs = plt.subplots(2, 1)
         axs[0].hist(man_distance_to_origin, bins=8)
         axs[0].set_title(
@@ -211,7 +219,6 @@ if __name__ == "__main__":
         coordinates = np.zeros((num_points, 2, 6))
 
         for n in range(5, 6):
-
             fig, axs = plt.subplots(grid_points_x, grid_points_y)
             axs = axs.ravel()
 
@@ -296,7 +303,9 @@ if __name__ == "__main__":
                 )
                 # coordinates[i,:,n] = circleCoordinateFinder(image)
                 axs[i].imshow(image)
-                axs[i].scatter(coordinates[i, 0, n], coordinates[i, 1, n], color="r")
+                axs[i].scatter(
+                    coordinates[i, 0, n], coordinates[i, 1, n], color="r"
+                )
                 axs[i].set_axis_off()
 
         # Compensate for downsampling by factor of 2 in each direction

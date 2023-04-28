@@ -28,7 +28,6 @@ from .focuser import PIMotor
 
 
 class ObjMotorWidgetUI(QWidget):
-
     #    waveforms_generated = pyqtSignal(object, object, list, int)
     #    SignalForContourScanning = pyqtSignal(int, int, int, np.ndarray, np.ndarray)
     #    MessageBack = pyqtSignal(str)
@@ -199,8 +198,8 @@ class ObjMotorWidgetUI(QWidget):
             self.ObjMotor_target.setValue(self.ObjCurrentPos["1"])
 
             decimal_places = len(str(self.ObjCurrentPos["1"]).split(".")[1])
-            print(int(self.ObjCurrentPos["1"] * (10 ** decimal_places)))
-            self.FocusSlider.setValue(int(self.ObjCurrentPos["1"] * (10 ** 6)))
+            print(int(self.ObjCurrentPos["1"] * (10**decimal_places)))
+            self.FocusSlider.setValue(int(self.ObjCurrentPos["1"] * (10**6)))
             self.ObjMotorcontrolContainer.setEnabled(True)
 
             self.ObjMotor_connect.setChecked(True)
@@ -213,29 +212,45 @@ class ObjMotorWidgetUI(QWidget):
 
     def MovingMotorThread(self, target):
         if target == "Motor_move_target":
-            MoveMotorThread = threading.Thread(target=self.MoveMotor, args=("Target",))
+            MoveMotorThread = threading.Thread(
+                target=self.MoveMotor, args=("Target",)
+            )
             MoveMotorThread.start()
         elif target == "Motor_move_upwards":
-            MoveMotorThread = threading.Thread(target=self.MoveMotor, args=("UP",))
+            MoveMotorThread = threading.Thread(
+                target=self.MoveMotor, args=("UP",)
+            )
             MoveMotorThread.start()
         elif target == "Motor_move_downwards":
-            MoveMotorThread = threading.Thread(target=self.MoveMotor, args=("DOWN",))
+            MoveMotorThread = threading.Thread(
+                target=self.MoveMotor, args=("DOWN",)
+            )
             MoveMotorThread.start()
         elif target == "Motor_move_slider":
-            MoveMotorThread = threading.Thread(target=self.MoveMotor, args=("Slider",))
+            MoveMotorThread = threading.Thread(
+                target=self.MoveMotor, args=("Slider",)
+            )
             MoveMotorThread.start()
 
     def MoveMotor(self, direction):
         if direction == "Target":
-            pos = self.pi_device_instance.move(self.ObjMotor_target.value())  # TODO unused
+            pos = self.pi_device_instance.move(
+                self.ObjMotor_target.value()
+            )  # TODO unused
         elif direction == "UP":
             self.MotorStep = self.ObjMotor_step.value()
-            pos = self.pi_device_instance.move(self.ObjCurrentPos["1"] + self.MotorStep)  # TODO unused
+            pos = self.pi_device_instance.move(
+                self.ObjCurrentPos["1"] + self.MotorStep
+            )  # TODO unused
         elif direction == "DOWN":
             self.MotorStep = self.ObjMotor_step.value()
-            pos = self.pi_device_instance.move(self.ObjCurrentPos["1"] - self.MotorStep)  # TODO unused
+            pos = self.pi_device_instance.move(
+                self.ObjCurrentPos["1"] - self.MotorStep
+            )  # TODO unused
         elif direction == "Slider":
-            pos = self.pi_device_instance.move(self.FocusSlider.value() / 1000000)  # TODO unused
+            pos = self.pi_device_instance.move(
+                self.FocusSlider.value() / 1000000
+            )  # TODO unused
 
         self.ObjCurrentPos = self.pi_device_instance.pidevice.qPOS(
             self.pi_device_instance.pidevice.axes
@@ -246,10 +261,9 @@ class ObjMotorWidgetUI(QWidget):
         self.ObjMotor_target.setValue(self.ObjCurrentPos["1"])
 
         # decimal_places = len(str(self.ObjCurrentPos['1']).split('.')[1])
-        self.FocusSlider.setValue(int(self.ObjCurrentPos["1"] * (10 ** 6)))
+        self.FocusSlider.setValue(int(self.ObjCurrentPos["1"] * (10**6)))
 
     def DisconnectMotor(self):
-
         self.pi_device_instance.CloseMotorConnection()
         print("Disconnected")
         self.connect_status = False

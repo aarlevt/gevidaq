@@ -72,8 +72,12 @@ def transform(coord, c):
         coord = np.array(coord)
 
     if coord.ndim == 1:
-        new_coord_x = np.polynomial.polynomial.polyval2d(coord[0], coord[1], c[:, :, 0])
-        new_coord_y = np.polynomial.polynomial.polyval2d(coord[0], coord[1], c[:, :, 1])
+        new_coord_x = np.polynomial.polynomial.polyval2d(
+            coord[0], coord[1], c[:, :, 0]
+        )
+        new_coord_y = np.polynomial.polynomial.polyval2d(
+            coord[0], coord[1], c[:, :, 1]
+        )
     else:
         new_coord_x = np.polynomial.polynomial.polyval2d(
             coord[:, 0], coord[:, 1], c[:, :, 0]
@@ -115,7 +119,9 @@ def general_coordinates_transformation(
         # Transform from camera pixel positions to galvo voltage values.
         # ===============================================================
         # Load transformation
-        transform_matrix_cam2galvo = load_transformation("galvo_transformation")
+        transform_matrix_cam2galvo = load_transformation(
+            "galvo_transformation"
+        )
 
         Transformed_coordinates = transform_coordinates(
             coordinates_list, transform_matrix_cam2galvo
@@ -126,7 +132,9 @@ def general_coordinates_transformation(
         # Transform from galvo voltage values to camera pixel positions.
         # ===============================================================
         # Load transformation
-        transform_matrix_cam2galvo = load_transformation("galvo_transformation")
+        transform_matrix_cam2galvo = load_transformation(
+            "galvo_transformation"
+        )
 
         # To reverse and get the transform matrix from galvo to camera,
         # first need to using existing transform to get coordinates of both sides,
@@ -149,7 +157,9 @@ def general_coordinates_transformation(
 
         # Fit to get the transformation
         transform_matrix_galvo2cam = polynomial2DFit(
-            galvo_coordinates_reverse_purpose, camera_array_reverse_purpose, order=1
+            galvo_coordinates_reverse_purpose,
+            camera_array_reverse_purpose,
+            order=1,
         )
 
         Transformed_coordinates = transform_coordinates(
@@ -161,14 +171,18 @@ def general_coordinates_transformation(
         # Transform from camera pixel positions to PMT image pixel positions.
         # ===============================================================
         # Load transformation
-        transform_matrix_cam2galvo = load_transformation("galvo_transformation")
+        transform_matrix_cam2galvo = load_transformation(
+            "galvo_transformation"
+        )
         # Transform to galvo voltages
         Transformed_coordinates_voltage = transform_coordinates(
             coordinates_list, transform_matrix_cam2galvo
         )
         # Transform voltages to PMT image pixel positions
         Transformed_coordinates = transform_between_PMT_Galvo(
-            Transformed_coordinates_voltage, "Galvo2PMT", kwargs["scanning_config"]
+            Transformed_coordinates_voltage,
+            "Galvo2PMT",
+            kwargs["scanning_config"],
         )
 
     elif direction == "PMT2Camera":
@@ -181,7 +195,9 @@ def general_coordinates_transformation(
             coordinates_list, "PMT2Galvo", kwargs["scanning_config"]
         )
         # Load transformation
-        transform_matrix_cam2galvo = load_transformation("galvo_transformation")
+        transform_matrix_cam2galvo = load_transformation(
+            "galvo_transformation"
+        )
 
         # To reverse and get the transform matrix from galvo to camera,
         # first need to using existing transform to get coordinates of both sides,
@@ -204,7 +220,9 @@ def general_coordinates_transformation(
 
         # Fit to get the transformation
         transform_matrix_galvo2cam = polynomial2DFit(
-            galvo_coordinates_reverse_purpose, camera_array_reverse_purpose, order=1
+            galvo_coordinates_reverse_purpose,
+            camera_array_reverse_purpose,
+            order=1,
         )
 
         Transformed_coordinates = transform_coordinates(
@@ -321,6 +339,8 @@ def transform_between_PMT_Galvo(coordinates_list, direction, scanning_config):
 
 if __name__ == "__main__":
     new_list_of_coordinates = general_coordinates_transformation(
-        np.array([[251, 249], [100, 100]]), "PMT2Camera", scanning_config=[5, 500]
+        np.array([[251, 249], [100, 100]]),
+        "PMT2Camera",
+        scanning_config=[5, 500],
     )
     print(new_list_of_coordinates[0])

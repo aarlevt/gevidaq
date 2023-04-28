@@ -42,7 +42,9 @@ class polynomialRegression:
             if Q is None:
                 return
 
-            return np.squeeze(np.reshape(np.dot(Q, self.A), (-1, 2), order="F"))
+            return np.squeeze(
+                np.reshape(np.dot(Q, self.A), (-1, 2), order="F")
+            )
 
         else:
             num_points = r.shape[0]
@@ -50,7 +52,6 @@ class polynomialRegression:
         transformed_points = np.zeros([num_points, 2])
 
         for i in range(num_points):
-
             Q = self._createTransformationMatrix(r[i, :])
 
             if Q is None:
@@ -79,7 +80,9 @@ class polynomialRegression:
 
     def _createRegressionMatrix(self, q):
         self.size = 2 + 4 * self.order
-        self.hsize = 1 + 2 * self.order  ## Define half size, just for convenience
+        self.hsize = (
+            1 + 2 * self.order
+        )  ## Define half size, just for convenience
 
         if len(self.q.shape) != 1 and self.order == 0:
             num_input_points = self.q.shape[0]
@@ -110,8 +113,8 @@ class polynomialRegression:
             Qy = np.vstack((col5, col6))
 
         for i in range(2, self.order + 1):
-            Qx = np.vstack((Qx, col3 ** i, col4 ** i))
-            Qy = np.vstack((Qy, col5 ** i, col6 ** i))
+            Qx = np.vstack((Qx, col3**i, col4**i))
+            Qy = np.vstack((Qy, col5**i, col6**i))
 
         self.Q = np.vstack((Qx, Qy)).transpose()
 

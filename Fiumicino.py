@@ -72,11 +72,15 @@ class Mainbody(QtWidgets.QWidget):
         self.tabs = QtWidgets.QTabWidget()
         self.Camera_WidgetInstance = HamamatsuCam.HamamatsuUI.CameraUI()
         self.Galvo_WidgetInstance = GalvoWidget.PMTWidget.PMTWidgetUI()
-        self.Waveformer_WidgetInstance = NIDAQ.WaveformWidget.WaveformGenerator()
+        self.Waveformer_WidgetInstance = (
+            NIDAQ.WaveformWidget.WaveformGenerator()
+        )
         self.PatchClamp_WidgetInstance = (
             PatchClamp.ui_patchclamp_sealtest.PatchclampSealTestUI()
         )
-        self.Analysis_WidgetInstance = ImageAnalysis.AnalysisWidget.AnalysisWidgetUI()
+        self.Analysis_WidgetInstance = (
+            ImageAnalysis.AnalysisWidget.AnalysisWidgetUI()
+        )
         self.Coordinate_WidgetInstance = (
             CoordinatesManager.CoordinateWidget.CoordinatesWidgetUI()
         )
@@ -106,8 +110,12 @@ class Mainbody(QtWidgets.QWidget):
         self.saving_prefix = ""
         self.savedirectorytextbox = QtWidgets.QLineEdit(self)
         self.savedirectorytextbox.setPlaceholderText("Saving directory")
-        self.savedirectorytextbox.returnPressed.connect(self.update_saving_directory)
-        self.setdirectorycontrolLayout.addWidget(self.savedirectorytextbox, 0, 1, 1, 2)
+        self.savedirectorytextbox.returnPressed.connect(
+            self.update_saving_directory
+        )
+        self.setdirectorycontrolLayout.addWidget(
+            self.savedirectorytextbox, 0, 1, 1, 2
+        )
 
         self.prefixtextbox = QtWidgets.QLineEdit(self)
         self.prefixtextbox.setPlaceholderText("Prefix")
@@ -122,7 +130,9 @@ class Mainbody(QtWidgets.QWidget):
         self.toolButtonOpenDialog.setObjectName("toolButtonOpenDialog")
         self.toolButtonOpenDialog.clicked.connect(self.set_saving_directory)
 
-        self.setdirectorycontrolLayout.addWidget(self.toolButtonOpenDialog, 0, 3)
+        self.setdirectorycontrolLayout.addWidget(
+            self.toolButtonOpenDialog, 0, 3
+        )
 
         # =============================================================================
         #         Console massage
@@ -131,20 +141,26 @@ class Mainbody(QtWidgets.QWidget):
         # self.console_text_edit.setFontItalic(True)
         self.console_text_edit.setPlaceholderText("Notice board from console.")
         self.console_text_edit.setFixedHeight(150)
-        self.setdirectorycontrolLayout.addWidget(self.console_text_edit, 1, 0, 5, 3)
+        self.setdirectorycontrolLayout.addWidget(
+            self.console_text_edit, 1, 0, 5, 3
+        )
 
         self.setMetaTextButton = QtWidgets.QPushButton()
         with Icons.Path("write.png") as path:
             self.setMetaTextButton.setIcon(QIcon(path))
         self.setMetaTextButton.setObjectName("Init. Meta Text")
-        self.setdirectorycontrolLayout.addWidget(self.setMetaTextButton, 1, 3, 1, 1)
+        self.setdirectorycontrolLayout.addWidget(
+            self.setMetaTextButton, 1, 3, 1, 1
+        )
         self.setMetaTextButton.clicked.connect(self.Init_Meta_Text)
 
         self.saveMetaTextButton = QtWidgets.QPushButton()
         with Icons.Path("save.png") as path:
             self.saveMetaTextButton.setIcon(QIcon(path))
         self.saveMetaTextButton.setObjectName("Save Meta Text")
-        self.setdirectorycontrolLayout.addWidget(self.saveMetaTextButton, 2, 3, 1, 1)
+        self.setdirectorycontrolLayout.addWidget(
+            self.saveMetaTextButton, 2, 3, 1, 1
+        )
         self.saveMetaTextButton.clicked.connect(self.Save_Meta_Text)
 
         setdirectoryContainer.setLayout(self.setdirectorycontrolLayout)
@@ -170,10 +186,14 @@ class Mainbody(QtWidgets.QWidget):
         self.LEDButton.setToolTip("Turn on/off LED")
 
         self.shutter2PButton.setGraphicsEffect(
-            QtWidgets.QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
+            QtWidgets.QGraphicsDropShadowEffect(
+                blurRadius=3, xOffset=2, yOffset=2
+            )
         )
         self.LEDButton.setGraphicsEffect(
-            QtWidgets.QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
+            QtWidgets.QGraphicsDropShadowEffect(
+                blurRadius=3, xOffset=2, yOffset=2
+            )
         )
 
         self.layout.addWidget(self.shutter2PButton, 5, 0)
@@ -187,13 +207,17 @@ class Mainbody(QtWidgets.QWidget):
         # =============================================================================
         #         GUI for Thorlabs motor
         # =============================================================================
-        self.KCubeWidgetInstance = SampleStageControl.StageMoveWidget.StageWidgetUI()
+        self.KCubeWidgetInstance = (
+            SampleStageControl.StageMoveWidget.StageWidgetUI()
+        )
         self.layout.addWidget(self.KCubeWidgetInstance, 9, 0, 1, 4)
 
         # =============================================================================
         #         GUI for sample stage
         # =============================================================================
-        self.StageMoveWidgetInstance = ThorlabsKCube.KCubeWidget.KCubeWidgetUI()
+        self.StageMoveWidgetInstance = (
+            ThorlabsKCube.KCubeWidget.KCubeWidgetUI()
+        )
         self.layout.addWidget(self.StageMoveWidgetInstance, 10, 0, 1, 4)
 
         # =============================================================================
@@ -205,7 +229,9 @@ class Mainbody(QtWidgets.QWidget):
         # =============================================================================
         #         GUI for DMD-mini
         # =============================================================================
-        self.DMDminiWidgetInstance = CoordinatesManager.DMDminiWidget.DMDminiWidgetUI()
+        self.DMDminiWidgetInstance = (
+            CoordinatesManager.DMDminiWidget.DMDminiWidgetUI()
+        )
         self.layout.addWidget(self.DMDminiWidgetInstance, 6, 3, 1, 1)
 
         # =============================================================================
@@ -247,7 +273,9 @@ class Mainbody(QtWidgets.QWidget):
         self.open_Insight.clicked.connect(self.open_Insight_UI)
         self.layout.addWidget(self.open_Insight, 3, 1, 2, 1)
         self.open_Insight.setGraphicsEffect(
-            QtWidgets.QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
+            QtWidgets.QGraphicsDropShadowEffect(
+                blurRadius=3, xOffset=2, yOffset=2
+            )
         )
         # =============================================================================
         #         GUI for evolution screening
@@ -263,7 +291,9 @@ class Mainbody(QtWidgets.QWidget):
         self.open_screening_button.clicked.connect(self.open_screening)
         self.layout.addWidget(self.open_screening_button, 3, 0, 2, 1)
         self.open_screening_button.setGraphicsEffect(
-            QtWidgets.QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
+            QtWidgets.QGraphicsDropShadowEffect(
+                blurRadius=3, xOffset=2, yOffset=2
+            )
         )
         # =============================================================================
         #         GUI for open_sealtest
@@ -280,7 +310,9 @@ class Mainbody(QtWidgets.QWidget):
         self.open_sealtest_button.clicked.connect(self.open_sealtest)
         self.layout.addWidget(self.open_sealtest_button, 3, 2, 2, 1)
         self.open_sealtest_button.setGraphicsEffect(
-            QtWidgets.QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
+            QtWidgets.QGraphicsDropShadowEffect(
+                blurRadius=3, xOffset=2, yOffset=2
+            )
         )
 
         # =============================================================================
@@ -298,7 +330,9 @@ class Mainbody(QtWidgets.QWidget):
         self.open_AutoPatcher_button.clicked.connect(self.open_AutoPatcher)
         self.layout.addWidget(self.open_AutoPatcher_button, 3, 3, 2, 1)
         self.open_sealtest_button.setGraphicsEffect(
-            QtWidgets.QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2)
+            QtWidgets.QGraphicsDropShadowEffect(
+                blurRadius=3, xOffset=2, yOffset=2
+            )
         )
 
         # **************************************************************************************************************************************
@@ -321,9 +355,13 @@ class Mainbody(QtWidgets.QWidget):
         self.Coordinate_WidgetInstance.sig_finished_registration.connect(
             lambda: self.AOTFWidgetInstance.set_registration_mode(False)
         )
-        self.Coordinate_WidgetInstance.MessageBack.connect(self.normalOutputWritten)
+        self.Coordinate_WidgetInstance.MessageBack.connect(
+            self.normalOutputWritten
+        )
 
-        self.Analysis_WidgetInstance.MessageBack.connect(self.normalOutputWritten)
+        self.Analysis_WidgetInstance.MessageBack.connect(
+            self.normalOutputWritten
+        )
         self.Analysis_WidgetInstance.Cellselection_DMD_mask_contour.connect(
             self.Coordinate_WidgetInstance.DMDWidget.receive_mask_coordinates
         )
@@ -341,7 +379,7 @@ class Mainbody(QtWidgets.QWidget):
 
         self.Init_Meta_Text()
 
-    #%%
+    # %%
     def __del__(self):
         # Restore sys.stdout
         sys.stdout = sys.__stdout__
@@ -359,7 +397,6 @@ class Mainbody(QtWidgets.QWidget):
         handle_viewbox_coordinate_x,
         handle_viewbox_coordinate_y,
     ):
-
         # Number of points in single round of contour scan
         self.Waveformer_WidgetInstance.galvo_contour_label_1.setText(
             "Points in contour: %.d" % contour_point_number
@@ -367,7 +404,9 @@ class Mainbody(QtWidgets.QWidget):
         self.Waveformer_WidgetInstance.galvo_contour_label_2.setText(
             "Sampling rate: %.d" % Daq_sample_rate_pmt
         )
-        self.Waveformer_WidgetInstance.Daq_sample_rate_pmt = Daq_sample_rate_pmt
+        self.Waveformer_WidgetInstance.Daq_sample_rate_pmt = (
+            Daq_sample_rate_pmt
+        )
         self.Waveformer_WidgetInstance.handle_viewbox_coordinate_position_array_expanded_x = (
             handle_viewbox_coordinate_x
         )
@@ -427,19 +466,26 @@ class Mainbody(QtWidgets.QWidget):
             daq.sendSingleDigital("LED", False)
 
     def open_Insight_UI(self):
-        self.open_Insight_UIWindow = InsightX3.TwoPhotonLaserUI.InsightWidgetUI()
+        self.open_Insight_UIWindow = (
+            InsightX3.TwoPhotonLaserUI.InsightWidgetUI()
+        )
         self.open_Insight_UIWindow.show()
 
     def open_screening(self):
-        self.open_screening_UIWindow = ScreeningWidget.Evolution_GUI_v7.Mainbody()
+        self.open_screening_UIWindow = (
+            ScreeningWidget.Evolution_GUI_v7.Mainbody()
+        )
         self.open_screening_UIWindow.show()
 
     def open_sealtest(self):
         self.PatchClamp_WidgetInstance.show()
 
     def open_AutoPatcher(self):
-        self.open_AutoPatcher_UIWindow = PatchClamp.smartpatcher_frontend.PatchClampUI()
+        self.open_AutoPatcher_UIWindow = (
+            PatchClamp.smartpatcher_frontend.PatchClampUI()
+        )
         self.open_AutoPatcher_UIWindow.show()
+
     # =============================================================================
     #     Fucs for console display
     # =============================================================================
@@ -460,7 +506,6 @@ class Mainbody(QtWidgets.QWidget):
         self.console_text_edit.setPlainText(Init_Meta_Text)
 
     def Save_Meta_Text(self):
-
         meta_text = self.console_text_edit.toPlainText()
         with open(
             os.path.join(self.savedirectory, "meta_text.txt"), "w"

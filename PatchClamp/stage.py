@@ -16,6 +16,7 @@ class LudlStage:
     this only works using a serial to usb connection and having the converting
     piece provided by Teun and Greta in between.
     """
+
     def __init__(self, address):
         """
         Initializing the stage, Ludl recommends that the user refrain from use
@@ -26,29 +27,31 @@ class LudlStage:
         """
         self.address = address
         self.baudrate = 9600
-        self.endOfLine = '\r'
+        self.endOfLine = "\r"
 
     def Try_until_Success(func):
-        """ This is the decorator to try to execute the function until succeed.
-        """
-        def wrapper(*args, **kwargs):
+        """This is the decorator to try to execute the function until succeed."""
 
+        def wrapper(*args, **kwargs):
             success = None
             failnumber = 0
 
             while success is None:
-                if failnumber <8:
+                if failnumber < 8:
                     try:
                         returnValue = func(*args, **kwargs)
                         success = True
 
                     except:
-
                         failnumber += 1
-                        print('Stage move failed, failnumber: {}'.format(failnumber))
+                        print(
+                            "Stage move failed, failnumber: {}".format(
+                                failnumber
+                            )
+                        )
                         time.sleep(0.2)
                 else:
-                    print('Fail for 8 times, give up - -')
+                    print("Fail for 8 times, give up - -")
                     success = False
 
             return returnValue
@@ -65,12 +68,19 @@ class LudlStage:
         See the documentation to find which code corresponds to which error.
         Returns the x and y position
         """
-        command = 'Where X Y' + self.endOfLine
+        command = "Where X Y" + self.endOfLine
 
-        with serial.Serial(self.address, self.baudrate, stopbits = serial.STOPBITS_TWO, timeout = 1) as stage:
+        with serial.Serial(
+            self.address,
+            self.baudrate,
+            stopbits=serial.STOPBITS_TWO,
+            timeout=1,
+        ) as stage:
             stage.write(command.encode())
-            position = stage.readline() #Reads an '\n' terminated line
-            position = position.decode().split(' ') #Go from bytes to string and split
+            position = stage.readline()  # Reads an '\n' terminated line
+            position = position.decode().split(
+                " "
+            )  # Go from bytes to string and split
 
             if len(position) > 2:
                 xPosition = position[1]
@@ -90,9 +100,11 @@ class LudlStage:
 
         Note: After sending the command, the execution seems to be running in backend then.
         """
-        command = 'Move X = %d Y = %d' % (x, y) + self.endOfLine
+        command = "Move X = %d Y = %d" % (x, y) + self.endOfLine
 
-        with serial.Serial(self.address, self.baudrate, stopbits = serial.STOPBITS_TWO) as stage:
+        with serial.Serial(
+            self.address, self.baudrate, stopbits=serial.STOPBITS_TWO
+        ) as stage:
             stage.write(command.encode())
             # stage.flush()
             stage.close()
@@ -106,11 +118,13 @@ class LudlStage:
         adjusts the speeds to plot a straight line.
         """
         command = "Vmove X = %d Y = %d" % (x, y) + self.endOfLine
-        with serial.Serial(self.address, self.baudrate, stopbits = serial.STOPBITS_TWO) as stage:
+        with serial.Serial(
+            self.address, self.baudrate, stopbits=serial.STOPBITS_TWO
+        ) as stage:
             stage.write(command.encode())
 
     @Try_until_Success
-    def moveRel(self, xRel = None, yRel= None):
+    def moveRel(self, xRel=None, yRel=None):
         """
         Moves the motor to a relative position.
         Set position to None if this axis is not used.
@@ -122,7 +136,9 @@ class LudlStage:
         else:
             command = "Movrel X = %d Y = %d" % (xRel, yRel) + self.endOfLine
 
-        with serial.Serial(self.address, self.baudrate, stopbits = serial.STOPBITS_TWO) as stage:
+        with serial.Serial(
+            self.address, self.baudrate, stopbits=serial.STOPBITS_TWO
+        ) as stage:
             stage.write(command.encode())
             stage.flush()
             stage.close()
@@ -137,7 +153,9 @@ class LudlStage:
         If there are no errors a positive reply is sent back.
         """
         command = "Home" + self.endOfLine
-        with serial.Serial(self.address, self.baudrate, stopbits = serial.STOPBITS_TWO) as stage:
+        with serial.Serial(
+            self.address, self.baudrate, stopbits=serial.STOPBITS_TWO
+        ) as stage:
             stage.write(command.encode())
 
     @Try_until_Success
@@ -146,11 +164,13 @@ class LudlStage:
         Sets the current position as zero position.
         """
         command = "Here X = 0 Y = 0" + self.endOfLine
-        with serial.Serial(self.address, self.baudrate, stopbits = serial.STOPBITS_TWO) as stage:
+        with serial.Serial(
+            self.address, self.baudrate, stopbits=serial.STOPBITS_TWO
+        ) as stage:
             stage.write(command.encode())
 
     @Try_until_Success
-    def joystick(self, on = True):
+    def joystick(self, on=True):
         """
         Enable or disable the joystick.
         """
@@ -159,7 +179,9 @@ class LudlStage:
             switch = "-"
 
         command = "Joystick X%s Y%s" % (switch, switch) + self.endOfLine
-        with serial.Serial(self.address, self.baudrate, stopbits = serial.STOPBITS_TWO) as stage:
+        with serial.Serial(
+            self.address, self.baudrate, stopbits=serial.STOPBITS_TWO
+        ) as stage:
             stage.write(command.encode())
 
     @Try_until_Success
@@ -171,10 +193,15 @@ class LudlStage:
             "B" if one or more motors are is still running. Returns False
         """
         command = "Status" + self.endOfLine
-        with serial.Serial(self.address, self.baudrate, stopbits = serial.STOPBITS_TWO, timeout = 1) as stage:
+        with serial.Serial(
+            self.address,
+            self.baudrate,
+            stopbits=serial.STOPBITS_TWO,
+            timeout=1,
+        ) as stage:
             stage.write(command.encode())
             status = stage.readline()
-            status = status.decode() #Go from bytes to string
+            status = status.decode()  # Go from bytes to string
             if status == "N":
                 return True
             return False
@@ -186,17 +213,19 @@ class LudlStage:
         reply is provided.
         """
         command = "REMRES" + self.endOfLine
-        with serial.Serial(self.address, self.baudrate, stopbits = serial.STOPBITS_TWO) as stage:
+        with serial.Serial(
+            self.address, self.baudrate, stopbits=serial.STOPBITS_TWO
+        ) as stage:
             stage.write(command.encode())
-            time.sleep(5) #Sleep for 5 seconds to initialize.
+            time.sleep(5)  # Sleep for 5 seconds to initialize.
+
 
 if __name__ == "__main__":
-
     ludlStage = LudlStage("COM12")
 
     step = 1500
-    for i in range(10): # Repeat twice
-        print('start moving..')
-        ludlStage.moveAbs(i * step,i * step)
+    for i in range(10):  # Repeat twice
+        print("start moving..")
+        ludlStage.moveAbs(i * step, i * step)
 
         time.sleep(1)

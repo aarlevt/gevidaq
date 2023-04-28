@@ -31,7 +31,8 @@ class StageWidget(QWidget):
         self.main_application = parent
 
         self.set_image_saving_location(
-            os.getcwd() + "./CoordinatesManager/Registration_Images/StageRegistration/"  # TODO fix path
+            os.getcwd()
+            + "./CoordinatesManager/Registration_Images/StageRegistration/"  # TODO fix path
         )
 
         self.init_gui()
@@ -69,7 +70,9 @@ class StageWidget(QWidget):
         delta = 200
         local_pos = np.transpose(
             np.reshape(
-                np.meshgrid(np.array((-delta, 0, delta)), np.array((-delta, 0, delta))),
+                np.meshgrid(
+                    np.array((-delta, 0, delta)), np.array((-delta, 0, delta))
+                ),
                 (2, -1),
             )
         )
@@ -100,7 +103,11 @@ class StageWidget(QWidget):
                 self.save_image(filename, image)
 
                 cnt += 1
-                print(str(cnt) + "/" + str(len(local_pos_name) * len(global_pos_name)))
+                print(
+                    str(cnt)
+                    + "/"
+                    + str(len(local_pos_name) * len(global_pos_name))
+                )
 
         self.cam.Exit()
 

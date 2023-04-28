@@ -29,7 +29,6 @@ from . import CoordinateTransformations, Registration, Registrator
 
 
 class GalvoWidget(QWidget):
-
     sig_request_mask_coordinates = pyqtSignal()
     sig_start_registration = pyqtSignal()
     sig_finished_registration = pyqtSignal()
@@ -73,7 +72,9 @@ class GalvoWidget(QWidget):
         self.scan_button.clicked.connect(self.scan)
 
         self.register_button.clicked.connect(self.register)
-        self.create_voltage_button.clicked.connect(self.request_mask_coordinates)
+        self.create_voltage_button.clicked.connect(
+            self.request_mask_coordinates
+        )
 
         box_layout.addWidget(self.register_button, 1, 0)
         box_layout.addWidget(QLabel("Points per contour:"))
@@ -106,7 +107,6 @@ class GalvoWidget(QWidget):
         """
         #!!! need to adapt to multiple frames!
         for each_roi_index in range(len(sig_from_CoordinateWidget)):
-
             list_of_rois = sig_from_CoordinateWidget[each_roi_index][0]
             list_of_rois = self.transform_coordinates(list_of_rois)
 
@@ -132,7 +132,9 @@ class GalvoWidget(QWidget):
         for roi in list_of_rois:
             new_list_of_rois.append(
                 np.flip(
-                    CoordinateTransformations.transform(np.flip(roi), self.transform)
+                    CoordinateTransformations.transform(
+                        np.flip(roi), self.transform
+                    )
                 )
             )
 
@@ -152,13 +154,15 @@ class GalvoWidget(QWidget):
         points_per_contour = int(self.points_per_contour_textbox.text())
         sampling_rate = int(self.sampling_rate_textbox.text())
 
-        contourScanningSignal = ProcessImage.mask_to_contourScanning_DAQsignals(
-            filled_mask,
-            OriginalImage,
-            scanning_voltage,
-            points_per_contour,
-            sampling_rate,
-            repeats=1,
+        contourScanningSignal = (
+            ProcessImage.mask_to_contourScanning_DAQsignals(
+                filled_mask,
+                OriginalImage,
+                scanning_voltage,
+                points_per_contour,
+                sampling_rate,
+                repeats=1,
+            )
         )
 
         contourScanningSignal = np.vstack(
@@ -187,9 +191,7 @@ class GalvoWidget(QWidget):
             "galvo_transformation"
         )
         with importlib.resources.as_file(traversable) as path:
-            np.savetxt(
-                path.as_posix(), np.reshape(self.transform, (-1, size))
-            )
+            np.savetxt(path.as_posix(), np.reshape(self.transform, (-1, size)))
 
     def open_latest_transformation(self):
         traversable = self.transformation_location.joinpath(

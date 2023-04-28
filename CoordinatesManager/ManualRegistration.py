@@ -28,7 +28,6 @@ from .ui_widgets.SelectPointImageView import SelectPointImageView
 
 
 class ManualRegistrationWindow(QWidget):
-
     sig_request_camera_image = pyqtSignal()
     sig_cast_transformation_to_DMD = pyqtSignal(np.ndarray, str)
     sig_cast_transformation_to_galvos = pyqtSignal(np.ndarray)
@@ -65,7 +64,9 @@ class ManualRegistrationWindow(QWidget):
 
         self.transformation_order_spinbox = QSpinBox()
         transformation_box_layout.addWidget(QLabel("Polynomial order:"), 0, 0)
-        transformation_box_layout.addWidget(self.transformation_order_spinbox, 0, 1)
+        transformation_box_layout.addWidget(
+            self.transformation_order_spinbox, 0, 1
+        )
 
         find_transform_button = QPushButton("Find transform")
         find_transform_button.clicked.connect(self.get_transformation)
@@ -95,23 +96,31 @@ class ManualRegistrationWindow(QWidget):
         self.img_coordinate_textbox_y.setValidator(QtGui.QDoubleValidator())
 
         get_crosshair_coords_button = QPushButton("Pick coordinate")
-        get_crosshair_coords_button.clicked.connect(self.get_crosshair_coordinates)
+        get_crosshair_coords_button.clicked.connect(
+            self.get_crosshair_coordinates
+        )
 
         save_coords_button = QPushButton("Save coordinates")
         save_coords_button.clicked.connect(self.save_coords)
 
-        coords_container_layout.addWidget(QLabel("Absolute coordinates"), 0, 1, 1, 2)
+        coords_container_layout.addWidget(
+            QLabel("Absolute coordinates"), 0, 1, 1, 2
+        )
         coords_container_layout.addWidget(abs_coordinate_label_x, 1, 0)
         coords_container_layout.addWidget(self.abs_coordinate_textbox_x, 1, 1)
         coords_container_layout.addWidget(abs_coordinate_label_y, 2, 0)
         coords_container_layout.addWidget(self.abs_coordinate_textbox_y, 2, 1)
 
-        coords_container_layout.addWidget(QLabel("Image coordinates"), 0, 4, 1, 1)
+        coords_container_layout.addWidget(
+            QLabel("Image coordinates"), 0, 4, 1, 1
+        )
         coords_container_layout.addWidget(img_coordinate_label_x, 1, 3)
         coords_container_layout.addWidget(self.img_coordinate_textbox_x, 1, 4)
         coords_container_layout.addWidget(img_coordinate_label_y, 2, 3)
         coords_container_layout.addWidget(self.img_coordinate_textbox_y, 2, 4)
-        coords_container_layout.addWidget(get_crosshair_coords_button, 3, 4, 1, 1)
+        coords_container_layout.addWidget(
+            get_crosshair_coords_button, 3, 4, 1, 1
+        )
         coords_container_layout.addWidget(save_coords_button, 4, 0, 1, 5)
 
         layout.addWidget(coords_container, 3, 0, 3, 2)
@@ -131,10 +140,16 @@ class ManualRegistrationWindow(QWidget):
         devices = ["DMD: 640", "DMD: 532", "DMD: 488", "Galvos"]
         self.devices_dropdown.addItems(devices)
         self.cast_transformation_button = QPushButton("Cast")
-        self.cast_transformation_button.clicked.connect(self.cast_transformation)
+        self.cast_transformation_button.clicked.connect(
+            self.cast_transformation
+        )
 
-        found_transformation_container_layout.addWidget(QLabel("Cast to:"), 1, 0)
-        found_transformation_container_layout.addWidget(self.devices_dropdown, 1, 1)
+        found_transformation_container_layout.addWidget(
+            QLabel("Cast to:"), 1, 0
+        )
+        found_transformation_container_layout.addWidget(
+            self.devices_dropdown, 1, 1
+        )
         found_transformation_container_layout.addWidget(
             self.cast_transformation_button, 2, 0, 1, 2
         )
@@ -145,11 +160,17 @@ class ManualRegistrationWindow(QWidget):
 
     def cast_transformation(self):
         if self.devices_dropdown.currentText() == "DMD: 640":
-            self.sig_cast_transformation_to_DMD.emit(self.transformation, "640")
+            self.sig_cast_transformation_to_DMD.emit(
+                self.transformation, "640"
+            )
         elif self.devices_dropdown.currentText() == "DMD: 532":
-            self.sig_cast_transformation_to_DMD.emit(self.transformation, "532")
+            self.sig_cast_transformation_to_DMD.emit(
+                self.transformation, "532"
+            )
         elif self.devices_dropdown.currentText() == "DMD: 488":
-            self.sig_cast_transformation_to_DMD.emit(self.transformation, "488")
+            self.sig_cast_transformation_to_DMD.emit(
+                self.transformation, "488"
+            )
         elif self.devices_dropdown.currentText() == "Galvos":
             self.sig_cast_transformation_to_galvos.emit(self.transformation)
 
@@ -160,7 +181,10 @@ class ManualRegistrationWindow(QWidget):
             print("Press in image to set crosshair")
             return
 
-        coords = [self.image_viewer.roi1.pos().x(), self.image_viewer.roi1.pos().y()]
+        coords = [
+            self.image_viewer.roi1.pos().x(),
+            self.image_viewer.roi1.pos().y(),
+        ]
         self.img_coordinate_textbox_x.setText("{:.1f}".format(coords[0]))
         self.img_coordinate_textbox_y.setText("{:.1f}".format(coords[1]))
 
@@ -265,7 +289,6 @@ class ManualRegistrationWindow(QWidget):
 
 
 class ManualRegistrationWidget(QWidget):
-
     sig_request_camera_image = pyqtSignal()
 
     def __init__(self, parent=None, *args, **kwargs):

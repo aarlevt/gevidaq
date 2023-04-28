@@ -51,7 +51,9 @@ class PIMotor:
             print(serialstring[0])
             # pidevice.InterfaceSetupDlg(key='sample')
             # pidevice.ConnectRS232(comport=1, baudrate=115200)
-            self.pidevice.ConnectUSB(serialnum="PI C-863 Mercury SN 0185500828")
+            self.pidevice.ConnectUSB(
+                serialnum="PI C-863 Mercury SN 0185500828"
+            )
             # pidevice.ConnectTCPIP(ipaddress='192.168.178.42')
 
             # Each PI controller supports the qIDN() command which returns an

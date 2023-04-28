@@ -60,7 +60,8 @@ pg.setConfigOption("leftButtonPan", False)
 class SlidingWindow(pg.PlotWidget):
     """SlidingWindow gives access to the windowSize most recent values that were appended to it.
     Since the class inherits the pg.PlotWidget it can be added to the UI as a plot widget with a
-    sliding window. It is not yet verified that this will work. However it is worth a try ;)."""
+    sliding window. It is not yet verified that this will work. However it is worth a try ;).
+    """
 
     def __init__(self, windowSize, title, unit, *args, **kwargs):
         super().__init__(
@@ -173,7 +174,9 @@ class PatchclampSealTestUI(QWidget):
         self.DiffVoltagebox.setSingleStep(10)
         WavesettingsContainerLayout.addWidget(self.DiffVoltagebox, 0, 1)
 
-        WavesettingsContainerLayout.addWidget(QLabel("Voltage baseline(mV)"), 0, 2)
+        WavesettingsContainerLayout.addWidget(
+            QLabel("Voltage baseline(mV)"), 0, 2
+        )
         self.LowerVoltagebox = QSpinBox(self)
         self.LowerVoltagebox.setMaximum(2000)
         self.LowerVoltagebox.setMinimum(-2000)
@@ -188,7 +191,9 @@ class PatchclampSealTestUI(QWidget):
         # Vm_measureContainer.setFixedWidth(320)
         Vm_measureContainerLayout = QGridLayout()
 
-        Vm_measureContainerLayout.addWidget(QLabel("Clamping current(pA)"), 0, 0)
+        Vm_measureContainerLayout.addWidget(
+            QLabel("Clamping current(pA)"), 0, 0
+        )
         self.clampingcurrentbox = QSpinBox(self)
         self.clampingcurrentbox.setMaximum(2000)
         self.clampingcurrentbox.setMinimum(-2000)
@@ -205,7 +210,9 @@ class PatchclampSealTestUI(QWidget):
 
         self.VmstopButton = StylishQT.stop_deleteButton()
         self.VmstopButton.setEnabled(False)
-        self.VmstopButton.clicked.connect(lambda: self.stopMeasurement_currentclamp())
+        self.VmstopButton.clicked.connect(
+            lambda: self.stopMeasurement_currentclamp()
+        )
         Vm_measureContainerLayout.addWidget(self.VmstopButton, 0, 4)
 
         Vm_measureContainer.setLayout(Vm_measureContainerLayout)
@@ -266,7 +273,7 @@ class PatchclampSealTestUI(QWidget):
 
         self.holdingbutton = QPushButton("Hold")
         # self.holdingbutton.setCheckable(True)
-        #self.holdingbutton.toggle()
+        # self.holdingbutton.toggle()
 
         # self.holdingbutton.clicked.connect(lambda: self.btnstate())
         self.holdingbutton.clicked.connect(lambda: self.hold())
@@ -414,7 +421,9 @@ class PatchclampSealTestUI(QWidget):
 
         self.diffvoltage = self.DiffVoltagebox.value() / 1000
         self.lowervoltage = self.LowerVoltagebox.value() / 1000
-        self.sealTest.setWave(self.inVolGain, self.diffvoltage, self.lowervoltage)
+        self.sealTest.setWave(
+            self.inVolGain, self.diffvoltage, self.lowervoltage
+        )
         self.sealTest.start()
         self.is_sealtesting = True
         self.startUpdatingGUIThread()
@@ -426,9 +435,7 @@ class PatchclampSealTestUI(QWidget):
         and
         False if not.
         """
-        self.holdTest.setWave(
-            self.inVolGain, self.HoldingList.value()
-        )
+        self.holdTest.setWave(self.inVolGain, self.HoldingList.value())
         self.holdTest.start()
         self.is_sealtesting = True
 
@@ -508,12 +515,15 @@ class PatchclampSealTestUI(QWidget):
     def updateLabels(self, curOut, voltOut):
         """Update the resistance and capacitance labels.
         http://scipy-lectures.org/intro/scipy/auto_examples/plot_curve_fit.html
-        https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.curve_fit.html"""
+        https://docs.scipy.org/doc/scipy/reference/generated/scipy.optimize.curve_fit.html
+        """
         constants = MeasurementConstants()
         sampPerCyc = int(constants.patchSealSampRate / constants.patchSealFreq)
 
         try:
-            curOutCyc = curOut.reshape(int(curOut.size / sampPerCyc), sampPerCyc)
+            curOutCyc = curOut.reshape(
+                int(curOut.size / sampPerCyc), sampPerCyc
+            )
             curData = np.mean(curOutCyc, axis=0)
         except:
             curData = curOut
@@ -526,7 +536,10 @@ class PatchclampSealTestUI(QWidget):
                 voltData[voltData < tres]
             )  # Computing the voltage difference
             dIss = np.mean(
-                curData[math.floor(0.15 * sampPerCyc) : math.floor(sampPerCyc / 2) - 2]
+                curData[
+                    math.floor(0.15 * sampPerCyc) : math.floor(sampPerCyc / 2)
+                    - 2
+                ]
             ) - np.mean(
                 curData[math.floor(0.65 * sampPerCyc) : sampPerCyc - 2]
             )  # Computing the current distance
@@ -557,13 +570,20 @@ class PatchclampSealTestUI(QWidget):
             ] - 0.5 * (
                 np.mean(
                     curData[
-                        math.floor(0.15 * sampPerCyc) : math.floor(sampPerCyc / 2) - 2
+                        math.floor(0.15 * sampPerCyc) : math.floor(
+                            sampPerCyc / 2
+                        )
+                        - 2
                     ]
                 )
-                + np.mean(curData[math.floor(0.65 * sampPerCyc) : sampPerCyc - 2])
+                + np.mean(
+                    curData[math.floor(0.65 * sampPerCyc) : sampPerCyc - 2]
+                )
             )
             timepoints = (
-                1000 * np.arange(3, points - 1 + 3) / constants.patchSealSampRate
+                1000
+                * np.arange(3, points - 1 + 3)
+                / constants.patchSealSampRate
             )
             # Fitting the data to an exponential of the form y=a*exp(-b*x) where b = 1/tau and tau = RC
             # I(t)=I0*e^−t/τ, y=a*exp(-b*x), get log of both sides:log y = -bx + log a
@@ -577,15 +597,22 @@ class PatchclampSealTestUI(QWidget):
             capacitance = 1000 * tau / resistance
             self.capacitanceLabel.setText("Capacitance:  %.4f" % capacitance)
 
-            self.estimated_size_capacitance = capacitance * (10 ** -12) * (10 ** 6)
+            self.estimated_size_capacitance = (
+                capacitance * (10**-12) * (10**6)
+            )
 
-            if self.estimated_size_capacitance > self.estimated_size_resistance:
+            if (
+                self.estimated_size_capacitance
+                > self.estimated_size_resistance
+            ):
                 self.estimated_ratio = (
-                    self.estimated_size_capacitance / self.estimated_size_resistance
+                    self.estimated_size_capacitance
+                    / self.estimated_size_resistance
                 )
             else:
                 self.estimated_ratio = (
-                    self.estimated_size_resistance / self.estimated_size_capacitance
+                    self.estimated_size_resistance
+                    / self.estimated_size_capacitance
                 )
 
             self.ratioLabel.setText(
@@ -652,9 +679,9 @@ class PatchclampSealTestUI(QWidget):
 
     def changeProbeGain(self, gain):
         if gain == "100M\u03A9":
-            self.probeGain = 100 * 10 ** 6
+            self.probeGain = 100 * 10**6
         elif gain == "10G\u03A9":
-            self.probeGain = 10 * 10 ** 9
+            self.probeGain = 10 * 10**9
 
     def zap(self):
         self.zap_v = self.zapVbox.value()
@@ -667,13 +694,17 @@ class PatchclampSealTestUI(QWidget):
         """Start the patchclamp measurement"""
         self.diffvoltage = self.DiffVoltagebox.value() / 1000
         self.lowervoltage = self.LowerVoltagebox.value() / 1000
-        self.sealTest.setWave(self.inVolGain, self.diffvoltage, self.lowervoltage)
+        self.sealTest.setWave(
+            self.inVolGain, self.diffvoltage, self.lowervoltage
+        )
         self.sealTest.start()
 
     def savePatchfigure(self):
         # create an exporter instance, as an argument give it
         # the item you wish to export
-        exporter = pg.exporters.ImageExporter(self.outCurPlotWidget.getPlotItem())
+        exporter = pg.exporters.ImageExporter(
+            self.outCurPlotWidget.getPlotItem()
+        )
 
         # set export parameters if needed
         exporter.parameters()[

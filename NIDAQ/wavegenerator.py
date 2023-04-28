@@ -22,9 +22,13 @@ def xValuesSingleSawtooth(
     constants = HardwareConstants()
     speedGalvo = constants.maxGalvoSpeed  # Volt/s
     aGalvo = constants.maxGalvoAccel  # Acceleration galvo in volt/s^2
-    aGalvoPix = aGalvo / (sampleRate ** 2)  # Acceleration galvo in volt/pixel^2
+    aGalvoPix = aGalvo / (
+        sampleRate**2
+    )  # Acceleration galvo in volt/pixel^2
     xArray = np.array([])  # Array for x voltages
-    rampUpSpeed = (voltXMax - voltXMin) / xPixels  # Ramp up speed in volt/pixel
+    rampUpSpeed = (
+        voltXMax - voltXMin
+    ) / xPixels  # Ramp up speed in volt/pixel
     rampDownSpeed = (
         -speedGalvo / sampleRate
     )  # Ramp down speed in volt/pixel (Default sawtooth)
@@ -39,7 +43,9 @@ def xValuesSingleSawtooth(
 
     # -----------Defining the ramp up (x)------------
     rampUp = np.linspace(voltXMin, voltXMax, xPixels)
-    xArray = np.append(xArray, rampUp)  # Adding the voltage values for the ramp up
+    xArray = np.append(
+        xArray, rampUp
+    )  # Adding the voltage values for the ramp up
 
     # -----------Defining the inertial part-------------
     inertialPart = np.array(
@@ -55,7 +61,9 @@ def xValuesSingleSawtooth(
     inertialPart = (
         0.5 * a * t[1::] ** 2 + vIn * t[1::] + xArray[-1]
     )  # Making the array with the voltage values, we are not taking into acount the first value as this is the value of the previous sample
-    xArray = np.append(xArray, inertialPart)  # Adding the array to the total path
+    xArray = np.append(
+        xArray, inertialPart
+    )  # Adding the array to the total path
 
     if sawtooth == False:
         lineSizeStepFunction = (
@@ -68,11 +76,15 @@ def xValuesSingleSawtooth(
     # We calculate the endvoltage by using the timespan for the intertial part and
     # the starting voltage
     endVoltage = (
-        0.5 * a * timespanInertial ** 2 - rampUpSpeed * timespanInertial + voltXMin
+        0.5 * a * timespanInertial**2
+        - rampUpSpeed * timespanInertial
+        + voltXMin
     )
 
     if sawtooth == True:
-        timespanRampDown = abs(math.ceil((endVoltage - startVoltage) / rampDownSpeed))
+        timespanRampDown = abs(
+            math.ceil((endVoltage - startVoltage) / rampDownSpeed)
+        )
         rampDownSpeed = (
             endVoltage - startVoltage
         ) / timespanRampDown  # Above line changed the rampDownSpeed so we have to recalculate
@@ -101,7 +113,9 @@ def xValuesSingleSawtooth(
     return xArray, lineSizeStepFunction
 
 
-def yValuesFullSawtooth(sampleRate, voltYMin, voltYMax, xPixels, yPixels, lineSize):
+def yValuesFullSawtooth(
+    sampleRate, voltYMin, voltYMax, xPixels, yPixels, lineSize
+):
     """
     This functiong generates the !!!FULL!!! yArray (stepfunction) for the sawtooth or triangle wave.
 
@@ -129,7 +143,9 @@ def yValuesFullSawtooth(sampleRate, voltYMin, voltYMax, xPixels, yPixels, lineSi
     return extendedYArray
 
 
-def rotateXandY(xArray, yArray, voltXMin, voltXMax, voltYMin, voltYMax, imAngle):
+def rotateXandY(
+    xArray, yArray, voltXMin, voltXMax, voltYMin, voltYMax, imAngle
+):
     """
     Rotates x and corresponding y array for galvos around its center point.
     """
@@ -236,7 +252,7 @@ def testSawtooth():
     plt.plot(np.arange(yValues.size), yValues)
     plt.show()
 
-    #%%
+    # %%
 
 
 class generate_AO_for640:
@@ -283,12 +299,15 @@ class generate_AO_for640:
             (self.waveDC_2 / 100) * self.sample_num_singleperiod_2
         )
         self.false_sample_num_singleperiod_2 = (
-            self.sample_num_singleperiod_2 - self.true_sample_num_singleperiod_2
+            self.sample_num_singleperiod_2
+            - self.true_sample_num_singleperiod_2
         )
 
         self.sample_singleperiod_2 = np.append(
-            self.wavestartamplitude_2 * np.ones(self.true_sample_num_singleperiod_2),
-            self.wavebaseline_2 * np.ones(self.false_sample_num_singleperiod_2),
+            self.wavestartamplitude_2
+            * np.ones(self.true_sample_num_singleperiod_2),
+            self.wavebaseline_2
+            * np.ones(self.false_sample_num_singleperiod_2),
         )
         self.repeatnumberintotal_2 = int(
             self.wavefrequency_2 * (self.waveperiod_2 / 1000)
@@ -307,15 +326,21 @@ class generate_AO_for640:
                 self.wavebaseline_2,
                 self.wavestartamplitude_2 + cycle_roof_value,
             )
-            self.waveallcycle_2 = np.append(self.waveallcycle_2, self.cycleappend)
+            self.waveallcycle_2 = np.append(
+                self.waveallcycle_2, self.cycleappend
+            )
 
         if self.wavegap_2 != 0:
             self.gapsample = self.wavebaseline_2 * np.ones(self.wavegap_2)
-            self.waveallcyclewithgap_2 = np.append(self.waveallcycle_2, self.gapsample)
+            self.waveallcyclewithgap_2 = np.append(
+                self.waveallcycle_2, self.gapsample
+            )
         else:
             self.waveallcyclewithgap_2 = self.waveallcycle_2
 
-        self.waverepeated = np.tile(self.waveallcyclewithgap_2, self.waverepeat_2)
+        self.waverepeated = np.tile(
+            self.waveallcyclewithgap_2, self.waverepeat_2
+        )
 
         AO_output = np.append(self.offsetsamples_2, self.waverepeated)
 
@@ -333,7 +358,6 @@ class generate_digital_waveform:
         self.wavegap = value7
 
     def generate(self):
-
         self.offsetsamples_number = int(
             (self.waveoffset / 1000) * self.Daq_sample_rate
         )  # By default one 0 is added so that we have a rising edge at the beginning.
@@ -341,7 +365,9 @@ class generate_digital_waveform:
             self.offsetsamples_number, dtype=bool
         )  # Be default offsetsamples_number is an integer.
 
-        self.sample_num_singleperiod = round(self.Daq_sample_rate / self.wavefrequency)
+        self.sample_num_singleperiod = round(
+            self.Daq_sample_rate / self.wavefrequency
+        )
         self.true_sample_num_singleperiod = round(
             (self.waveDC / 100) * self.sample_num_singleperiod
         )
@@ -353,7 +379,9 @@ class generate_digital_waveform:
             np.ones(self.true_sample_num_singleperiod, dtype=bool),
             np.zeros(self.false_sample_num_singleperiod, dtype=bool),
         )
-        self.repeatnumberintotal = int(self.wavefrequency * (self.waveperiod / 1000))
+        self.repeatnumberintotal = int(
+            self.wavefrequency * (self.waveperiod / 1000)
+        )
         # In default, pulses * sample_singleperiod_2 = period
         self.sample_singlecycle = np.tile(
             self.sample_singleperiod, int(self.repeatnumberintotal)
@@ -419,7 +447,11 @@ class generate_ramp:
         triangle_in_1s = (
             self.waveheight
             / 2
-            * (signal.sawtooth(2 * np.pi * self.wavefrequency * t, self.wavesymmetry))
+            * (
+                signal.sawtooth(
+                    2 * np.pi * self.wavefrequency * t, self.wavesymmetry
+                )
+            )
         )
         self.sample_singlecycle_ramp = (
             triangle_in_1s + self.waveheight / 2 + self.wavebaseline
@@ -433,13 +465,17 @@ class generate_ramp:
         else:
             self.waveallcyclewithgap_ramp = self.sample_singlecycle_ramp
 
-        self.waverepeated = np.tile(self.waveallcyclewithgap_ramp, self.waverepeat)
+        self.waverepeated = np.tile(
+            self.waveallcyclewithgap_ramp, self.waverepeat
+        )
 
-        self.finalwave_ramp = np.append(self.offsetsamples_ramp, self.waverepeated)
+        self.finalwave_ramp = np.append(
+            self.offsetsamples_ramp, self.waverepeated
+        )
         self.finalwave_ramp = np.append(self.finalwave_ramp, 0)
         return self.finalwave_ramp
 
-    #%%
+    # %%
 
 
 class generate_AO:
@@ -501,7 +537,10 @@ class generate_AO:
             number = number + 1
             # print(number)
             sigdouble = (
-                number * sig[0 : (int(self.waveperiod_2 / 1000) * self.Daq_sample_rate)]
+                number
+                * sig[
+                    0 : (int(self.waveperiod_2 / 1000) * self.Daq_sample_rate)
+                ]
             )
             sig = np.append(sig, sigdouble)
             # print(sig)
@@ -509,7 +548,9 @@ class generate_AO:
         # define the control signal
         self.time_control = self.waveperiod_2 / 1000
         at_control = []
-        while self.time_control < ((self.waveperiod_2 / 1000) * self.waverepeat_2):
+        while self.time_control < (
+            (self.waveperiod_2 / 1000) * self.waverepeat_2
+        ):
             self.time_control = self.time_control + (self.waveperiod_2 / 1000)
             self.time_control_2 = self.time_control * self.Daq_sample_rate
             at_control.append(self.time_control_2)

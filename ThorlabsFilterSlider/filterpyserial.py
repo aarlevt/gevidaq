@@ -26,7 +26,6 @@ class ELL9Filter:
         """This is the decorator to try to execute the function until succeed."""
 
         def wrapper(*args, **kwargs):
-
             success = None
             failnumber = 0
 
@@ -37,9 +36,12 @@ class ELL9Filter:
                         success = True
 
                     except:
-
                         failnumber += 1
-                        print("filter move failed, failnumber: {}".format(failnumber))
+                        print(
+                            "filter move failed, failnumber: {}".format(
+                                failnumber
+                            )
+                        )
                         time.sleep(0.2)
                 else:
                     print("Fail for 8 times, give up - -")
@@ -58,7 +60,9 @@ class ELL9Filter:
             self.address, self.baudrate
         ) as motor:  # You can find the COM# using ELLO
             command = "0ho0"
-            motor.write(command.encode())  # Moves the stage of channel 0 to home
+            motor.write(
+                command.encode()
+            )  # Moves the stage of channel 0 to home
 
     @Try_until_Success
     def forward(self):

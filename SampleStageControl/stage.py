@@ -33,7 +33,6 @@ class LudlStage:
         """This is the decorator to try to execute the function until succeed."""
 
         def wrapper(*args, **kwargs):
-
             success = None
             failnumber = 0
 
@@ -44,9 +43,12 @@ class LudlStage:
                         success = True
 
                     except:
-
                         failnumber += 1
-                        print("Stage move failed, failnumber: {}".format(failnumber))
+                        print(
+                            "Stage move failed, failnumber: {}".format(
+                                failnumber
+                            )
+                        )
                         time.sleep(0.2)
                 else:
                     print("Fail for 8 times, give up - -")
@@ -69,11 +71,16 @@ class LudlStage:
         command = "Where X Y" + self.endOfLine
 
         with serial.Serial(
-            self.address, self.baudrate, stopbits=serial.STOPBITS_TWO, timeout=1
+            self.address,
+            self.baudrate,
+            stopbits=serial.STOPBITS_TWO,
+            timeout=1,
         ) as stage:
             stage.write(command.encode())
             position = stage.readline()  # Reads an '\n' terminated line
-            position = position.decode().split(" ")  # Go from bytes to string and split
+            position = position.decode().split(
+                " "
+            )  # Go from bytes to string and split
 
             if len(position) > 2:
                 xPosition = position[1]
@@ -187,7 +194,10 @@ class LudlStage:
         """
         command = "Status" + self.endOfLine
         with serial.Serial(
-            self.address, self.baudrate, stopbits=serial.STOPBITS_TWO, timeout=1
+            self.address,
+            self.baudrate,
+            stopbits=serial.STOPBITS_TWO,
+            timeout=1,
         ) as stage:
             stage.write(command.encode())
             status = stage.readline()
@@ -211,6 +221,5 @@ class LudlStage:
 
 
 if __name__ == "__main__":
-
     ludlStage = LudlStage("COM12")
     ludlStage.moveAbs(1000, 1000)

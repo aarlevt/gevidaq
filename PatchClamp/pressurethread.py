@@ -15,9 +15,10 @@ from .pressurecontroller import PressureController
 
 
 class PressureThread(QThread):
-    """ Pressure control through serial communication
+    """Pressure control through serial communication
     This class is for controlling the Pressure Controller.
     """
+
     measurement = pyqtSignal(np.ndarray)
 
     def __init__(self, pressurecontroller_handle=None):
@@ -26,7 +27,9 @@ class PressureThread(QThread):
 
         # Pressure controller attributes
         if pressurecontroller_handle == None:
-            self.pressurecontroller = PressureController(address='COM21', baud=9600)
+            self.pressurecontroller = PressureController(
+                address="COM21", baud=9600
+            )
         else:
             self.pressurecontroller = pressurecontroller_handle
 
@@ -57,7 +60,6 @@ class PressureThread(QThread):
     def waveform(self):
         self._waveform = None
 
-
     def stop(self):
         self.isrecording = False
         self.isrunning = False
@@ -85,21 +87,24 @@ class PressureThread(QThread):
         controller has its high-, low-, and cooldown limit.
         """
         # TODO use function
-        P = lambda t: high*(np.heaviside(t%(high_T+low_T),1) - np.heaviside(t%(high_T+low_T)-high_T,1)) + \
-            low*(np.heaviside(t%(high_T+low_T)-high_T,1) - np.heaviside(t%(high_T+low_T)-high_T-low_T,1))
+        P = lambda t: high * (
+            np.heaviside(t % (high_T + low_T), 1)
+            - np.heaviside(t % (high_T + low_T) - high_T, 1)
+        ) + low * (
+            np.heaviside(t % (high_T + low_T) - high_T, 1)
+            - np.heaviside(t % (high_T + low_T) - high_T - low_T, 1)
+        )
 
         self.waveform = P
 
-
     @pyqtSlot()
     def measure(self):
-        print('pressure thread started')
+        print("pressure thread started")
 
         self.isrunning = True
         start = time.time()
         old_pressure = 0
         while self.isrunning:
-
             # get time into the measurement
             timestamp = time.time() - start
 
@@ -134,8 +139,7 @@ class PressureThread(QThread):
         time.sleep(0.1)
         self.pressurecontroller.close()
 
-        print('pressure thread stopped')
-
+        print("pressure thread stopped")
 
     def record(self, start):
         print("pressure recording started")
@@ -146,7 +150,6 @@ class PressureThread(QThread):
         timing = []
         start = time.time()
         while self.isrecording:
-
             # Read pressure controller and emit pressure measurements
             timestamp = time.time() - start
             response = self.pressurecontroller.readFlush()
@@ -164,7 +167,7 @@ class PressureThread(QThread):
             QThread.msleep(5)
 
         # Save measurements and close the serial port
-        np.save(save_directory+'pressure_recording_sensor1', PS1)
-        np.save(save_directory+'pressure_recording_timing', timing)
+        np.save(save_directory + "pressure_recording_sensor1", PS1)
+        np.save(save_directory + "pressure_recording_timing", timing)
 
-        print('pressure recording stopped')
+        print("pressure recording stopped")

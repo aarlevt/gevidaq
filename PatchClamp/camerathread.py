@@ -20,9 +20,9 @@ class CameraThread(QThread):
     livesignal = pyqtSignal(np.ndarray)
 
     def __init__(self, camerahandle=None):
-        self.exposuretime = 0.07    # seconds
-        self.GUIframerate = 25      # frames per second
-        self.sleeptime = np.max([1/self.GUIframerate, self.exposuretime])
+        self.exposuretime = 0.07  # seconds
+        self.GUIframerate = 25  # frames per second
+        self.sleeptime = np.max([1 / self.GUIframerate, self.exposuretime])
         self.frame = np.random.rand(2048, 2048)
         self.mutex = QMutex()
 
@@ -56,7 +56,7 @@ class CameraThread(QThread):
 
     @pyqtSlot()
     def live(self):
-        print('camera thread started')
+        print("camera thread started")
 
         self.camera.isLiving = True
         self.camera.hcam.acquisition_mode = "run_till_abort"
@@ -68,7 +68,7 @@ class CameraThread(QThread):
         # Emit and get frames from the camera at a rate of 1/sleeptime
         self.isrunning = True
         while self.isrunning:
-            QThread.msleep(int(self.sleeptime *1000))
+            QThread.msleep(int(self.sleeptime * 1000))
             try:
                 [frames, dims] = self.camera.hcam.getFrames()
                 self.mutex.lock()
@@ -82,4 +82,4 @@ class CameraThread(QThread):
         self.camera.isLiving = False
         self.camera.Exit()
 
-        print('camera thread stopped')
+        print("camera thread stopped")

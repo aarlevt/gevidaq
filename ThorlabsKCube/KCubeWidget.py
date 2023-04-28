@@ -93,10 +93,10 @@ class KCubeWidgetUI(QWidget):
 
     def PosSwitchEvent(self):
         if self.PosSwitchButton.isChecked():
-
-            self.run_in_thread(lambda: self.run_in_thread(self.KCube_instance.Move(32)))
+            self.run_in_thread(
+                lambda: self.run_in_thread(self.KCube_instance.Move(32))
+            )
         else:
-
             self.run_in_thread(lambda: self.KCube_instance.Home())
 
 
