@@ -7,27 +7,25 @@ Created on Thu Mar 26 11:23:13 2020
 Widely Tunable, Ultra-Fast, Solid-State Laser System.
 """
 
+import queue
 import sys
+import threading
+import time
 
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QFont
-
 from PyQt5.QtWidgets import (
-    QWidget,
-    QLabel,
-    QSpinBox,
     QGridLayout,
     QGroupBox,
+    QLabel,
     QMessageBox,
+    QSpinBox,
     QStyleFactory,
+    QWidget,
 )
 
-import time
-import threading
-import queue
-
-from .TwoPhotonLaser_backend import InsightX3
 from .. import StylishQT
+from .TwoPhotonLaser_backend import InsightX3
 
 
 class InsightWidgetUI(QWidget):

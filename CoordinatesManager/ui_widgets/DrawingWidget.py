@@ -6,9 +6,8 @@ Created on Wed May  6 11:26:55 2020
 @author: Izak de Heer
 """
 
-from PyQt5 import QtCore
-
 import pyqtgraph as pg
+from PyQt5 import QtCore
 from pyqtgraph import QtGui
 
 

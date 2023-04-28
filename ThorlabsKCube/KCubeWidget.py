@@ -6,15 +6,13 @@ Created on Mon Sep 28 11:42:01 2020
 """
 
 import sys
-from PyQt5 import QtWidgets
-from PyQt5.QtGui import QFont
-
-from PyQt5.QtWidgets import QWidget, QGridLayout
-
 import threading
 
-from .. import StylishQT
+from PyQt5 import QtWidgets
+from PyQt5.QtGui import QFont
+from PyQt5.QtWidgets import QGridLayout, QWidget
 
+from .. import StylishQT
 from .KCube_backend import KCube
 
 

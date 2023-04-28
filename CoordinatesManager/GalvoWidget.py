@@ -6,30 +6,26 @@ Created on Tue Jul  7 14:38:53 2020
 @author: Izak de Heer
 """
 
-from PyQt5 import QtWidgets
+import importlib.resources
+import sys
+
+import matplotlib.pyplot as plt
+import numpy as np
+from PyQt5 import QtGui, QtWidgets
+from PyQt5.QtCore import pyqtSignal
 from PyQt5.QtWidgets import (
-    QWidget,
-    QPushButton,
     QGridLayout,
     QLabel,
     QLineEdit,
+    QPushButton,
+    QWidget,
 )
-from PyQt5 import QtGui
-from PyQt5.QtCore import pyqtSignal
-from ..StylishQT import roundQGroupBox
-
-from . import Registrator, CoordinateTransformations
-from . import Registration
-from ..ImageAnalysis.ImageProcessing import ProcessImage
-from ..GalvoWidget.pmt_thread import pmtimagingTest_contour
-
 from skimage.draw import polygon2mask
 
-import sys
-import importlib.resources
-import numpy as np
-
-import matplotlib.pyplot as plt
+from ..GalvoWidget.pmt_thread import pmtimagingTest_contour
+from ..ImageAnalysis.ImageProcessing import ProcessImage
+from ..StylishQT import roundQGroupBox
+from . import CoordinateTransformations, Registration, Registrator
 
 
 class GalvoWidget(QWidget):

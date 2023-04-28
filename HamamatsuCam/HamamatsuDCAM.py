@@ -17,11 +17,11 @@ Xin Adapted for Brinks lab
 
 import ctypes
 import ctypes.util
-import numpy
-import sys
 import importlib.resources
-
+import sys
 import time
+
+import numpy
 
 # Hamamatsu constants.
 
@@ -1303,6 +1303,7 @@ class HamamatsuCameraRE(HamamatsuCamera):
 if __name__ == "__main__":
 
     import random
+
     import numpy as np
     import skimage.external.tifffile as skimtiff
 

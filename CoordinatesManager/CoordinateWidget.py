@@ -7,50 +7,48 @@ Created on Mon Jul  6 16:17:02 2020
 Modified by Xin, adding machine learning portal.
 """
 
-import sys
-
-from . import (
-    ManualRegistration,
-    DMDWidget,
-    GalvoWidget,
-    StageRegistrationWidget,
-)
-
-from ..ImageAnalysis.ImageProcessing import ProcessImage
-
-from .ui_widgets.DrawingWidget import DrawingWidget
-
-from PyQt5 import QtWidgets
-from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import (
-    QWidget,
-    QPushButton,
-    QCheckBox,
-    QGridLayout,
-    QTabWidget,
-    QListWidget,
-    QLabel,
-    QSpinBox,
-)
-
-from PyQt5.QtCore import pyqtSignal
-from ..StylishQT import cleanButton, roundQGroupBox, SquareImageView
-
-import pyqtgraph as pg
-
-import threading
 import colorsys
 import random
-import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
-from matplotlib.figure import Figure
+import sys
+import threading
+
 import matplotlib.patches as mpatches
+import matplotlib.pyplot as plt
+import numpy as np
+import pyqtgraph as pg
+from matplotlib.backends.backend_qt5agg import (
+    FigureCanvasQTAgg as FigureCanvas,
+)
+from matplotlib.backends.backend_qt5agg import (
+    NavigationToolbar2QT as NavigationToolbar,
+)
+from matplotlib.figure import Figure
+from PyQt5 import QtWidgets
+from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtGui import QIcon
+from PyQt5.QtWidgets import (
+    QCheckBox,
+    QGridLayout,
+    QLabel,
+    QListWidget,
+    QPushButton,
+    QSpinBox,
+    QTabWidget,
+    QWidget,
+)
 from skimage.io import imread
 from skimage.measure import find_contours
 
 from .. import Icons
+from ..ImageAnalysis.ImageProcessing import ProcessImage
+from ..StylishQT import SquareImageView, cleanButton, roundQGroupBox
+from . import (
+    DMDWidget,
+    GalvoWidget,
+    ManualRegistration,
+    StageRegistrationWidget,
+)
+from .ui_widgets.DrawingWidget import DrawingWidget
 
 
 class CoordinatesWidgetUI(QWidget):

@@ -8,10 +8,10 @@ Notes:
 
 """
 import nidaqmx
-from nidaqmx.stream_writers import AnalogMultiChannelWriter
-from nidaqmx.stream_readers import AnalogSingleChannelReader
-from PyQt5.QtCore import pyqtSignal, QThread
 import numpy as np
+from nidaqmx.stream_readers import AnalogSingleChannelReader
+from nidaqmx.stream_writers import AnalogMultiChannelWriter
+from PyQt5.QtCore import QThread, pyqtSignal
 
 from ..NIDAQ import wavegenerator
 

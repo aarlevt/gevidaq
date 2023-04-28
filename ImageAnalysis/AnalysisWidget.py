@@ -9,39 +9,39 @@ Created on Tue Feb 25 17:27:04 2020
 -------------------------------------------------------------------------------------------------------------------------------------
 """
 
-from PyQt5 import QtWidgets
-from PyQt5.QtCore import pyqtSignal, QRectF
-from PyQt5.QtGui import QFont
-
-from PyQt5.QtWidgets import (
-    QWidget,
-    QLabel,
-    QSpinBox,
-    QGridLayout,
-    QPushButton,
-    QGroupBox,
-    QLineEdit,
-    QComboBox,
-    QTabWidget,
-    QCheckBox,
-)
-import os
-from datetime import datetime
-import pyqtgraph as pg
-import sys
 import csv
-import numpy as np
-from PIL import Image
-import matplotlib.pyplot as plt
-from scipy import signal
-from skimage.io import imread
+import os
+import sys
 import threading
 import time
-from scipy.optimize import curve_fit
-import tifffile as skimtiff
+from datetime import datetime
 
-from .ImageProcessing import ProcessImage, PatchAnalysis
+import matplotlib.pyplot as plt
+import numpy as np
+import pyqtgraph as pg
+import tifffile as skimtiff
+from PIL import Image
+from PyQt5 import QtWidgets
+from PyQt5.QtCore import QRectF, pyqtSignal
+from PyQt5.QtGui import QFont
+from PyQt5.QtWidgets import (
+    QCheckBox,
+    QComboBox,
+    QGridLayout,
+    QGroupBox,
+    QLabel,
+    QLineEdit,
+    QPushButton,
+    QSpinBox,
+    QTabWidget,
+    QWidget,
+)
+from scipy import signal
+from scipy.optimize import curve_fit
+from skimage.io import imread
+
 from .. import StylishQT
+from .ImageProcessing import PatchAnalysis, ProcessImage
 
 
 class AnalysisWidgetUI(QWidget):

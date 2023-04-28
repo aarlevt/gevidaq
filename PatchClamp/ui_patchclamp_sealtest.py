@@ -8,43 +8,41 @@ Part of this code was derived from:
     https://github.com/sidneycadot/pyqt-and-graphing/blob/master/PyQtGraphing.py
 
 """
+import math
+import os
+import sys
+import threading
+import time
+
+import numpy as np
+import pyqtgraph as pg
+import pyqtgraph.exporters
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QColor, QPen, QPixmap
 from PyQt5.QtWidgets import (
-    QWidget,
-    QLabel,
-    QGridLayout,
-    QDoubleSpinBox,
-    QPushButton,
-    QGroupBox,
-    QLineEdit,
-    QVBoxLayout,
     QComboBox,
+    QDoubleSpinBox,
+    QGridLayout,
+    QGroupBox,
+    QLabel,
+    QLineEdit,
+    QPushButton,
     QSpinBox,
     QTabWidget,
+    QVBoxLayout,
+    QWidget,
 )
-import pyqtgraph.exporters
 
-import pyqtgraph as pg
-import time
-import os
-import sys
-
-import numpy as np
-import math
-
-from .patchclamp import (
-    PatchclampSealTest,
-    PatchclampSealTest_hold,
-    PatchclampSealTest_currentclamp,
-    PatchclampSealTest_zap,
-)
+from .. import Icons, StylishQT
 from ..NIDAQ.constants import MeasurementConstants
 from ..NIDAQ.DAQoperator import DAQmission
-import threading
-from .. import StylishQT
-from .. import Icons
+from .patchclamp import (
+    PatchclampSealTest,
+    PatchclampSealTest_currentclamp,
+    PatchclampSealTest_hold,
+    PatchclampSealTest_zap,
+)
 
 # Setting graph settings
 """

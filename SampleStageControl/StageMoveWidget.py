@@ -5,25 +5,24 @@ Created on Wed Mar  4 12:04:41 2020
 @author: xinmeng
 """
 import sys
-
-from PyQt5 import QtWidgets
-from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtGui import QIcon, QFont
-
-from PyQt5.QtWidgets import (
-    QWidget,
-    QLabel,
-    QSpinBox,
-    QGridLayout,
-    QPushButton,
-    QGroupBox,
-    QLineEdit,
-)
-import pyqtgraph as pg
 import threading
 
-from .stage import LudlStage
+import pyqtgraph as pg
+from PyQt5 import QtWidgets
+from PyQt5.QtCore import QSize, Qt
+from PyQt5.QtGui import QFont, QIcon
+from PyQt5.QtWidgets import (
+    QGridLayout,
+    QGroupBox,
+    QLabel,
+    QLineEdit,
+    QPushButton,
+    QSpinBox,
+    QWidget,
+)
+
 from .. import Icons
+from .stage import LudlStage
 
 
 class StageWidgetUI(QWidget):

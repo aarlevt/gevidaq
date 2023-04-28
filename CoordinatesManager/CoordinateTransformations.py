@@ -9,9 +9,10 @@ Created on Tue Jun 23 09:21:44 2020
 Modified based on Izak's code for higher level interface.
 """
 
-from scipy import optimize
-import numpy as np
 import importlib.resources
+
+import numpy as np
+from scipy import optimize
 
 from . import Registration
 

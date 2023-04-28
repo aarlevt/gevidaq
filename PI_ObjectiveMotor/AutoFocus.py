@@ -12,16 +12,17 @@ Created on Tue Aug 18 13:54:51 2020
 # =============================================================================
 
 import os
-
-from .focuser import PIMotor
-from ..ImageAnalysis.ImageProcessing import ProcessImage
-from ..GalvoWidget.GalvoScan_backend import RasterScan
-from ..HamamatsuCam.HamamatsuActuator import CamActuator
-from ..NIDAQ.DAQoperator import DAQmission
-import tifffile as skimtiff
 import time
+
 import matplotlib.pyplot as plt
 import numpy as np
+import tifffile as skimtiff
+
+from ..GalvoWidget.GalvoScan_backend import RasterScan
+from ..HamamatsuCam.HamamatsuActuator import CamActuator
+from ..ImageAnalysis.ImageProcessing import ProcessImage
+from ..NIDAQ.DAQoperator import DAQmission
+from .focuser import PIMotor
 
 
 class FocusFinder:

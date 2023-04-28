@@ -6,27 +6,18 @@ Created on Mon Apr 20 18:33:21 2020
 
                 For stylish looking
 """
-from PyQt5 import QtWidgets, QtCore, QtGui
+import pyqtgraph as pg
+from PyQt5 import QtCore, QtGui, QtWidgets
 from PyQt5.QtCore import (
-    Qt,
-    pyqtSignal,
+    QAbstractAnimation,
     QPoint,
     QRect,
     QSize,
-    QAbstractAnimation,
+    Qt,
     QVariantAnimation,
+    pyqtSignal,
 )
-from PyQt5.QtGui import (
-    QBrush,
-    QFont,
-    QPainter,
-    QColor,
-    QPen,
-    QIcon,
-    QPixmap,
-)
-
-import pyqtgraph as pg
+from PyQt5.QtGui import QBrush, QColor, QFont, QIcon, QPainter, QPen, QPixmap
 
 from . import Icons
 

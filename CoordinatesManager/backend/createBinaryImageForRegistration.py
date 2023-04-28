@@ -15,10 +15,10 @@ diffraction-limited spots.
 
 """
 
-import numpy as np
-from PIL import Image
 import matplotlib.pyplot as plt
+import numpy as np
 import skimage.draw as skd
+from PIL import Image
 
 
 def writePositionsToFile(file, *args):

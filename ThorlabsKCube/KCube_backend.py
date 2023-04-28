@@ -5,8 +5,8 @@ Created on Fri Sep 25 15:14:54 2020
 @author: xinmeng
 """
 
-import time
 import ctypes
+import time
 
 
 class KCube:

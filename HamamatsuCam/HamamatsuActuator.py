@@ -5,13 +5,14 @@ Created on Wed May 27 17:14:53 2020
 
 @author: xinmeng
 """
+import ctypes
+import importlib.resources
+import sys
+import threading
+import time
+
 import numpy as np
 import tifffile as skimtiff
-import ctypes
-import time
-import threading
-import sys
-import importlib.resources
 
 from . import HamamatsuDCAM
 

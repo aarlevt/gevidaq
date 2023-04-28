@@ -5,26 +5,24 @@ Created on Wed Mar  4 12:18:12 2020
 @author: xinmeng
 """
 
+import threading
+
+import pyqtgraph as pg
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtGui import QFont
-
 from PyQt5.QtWidgets import (
-    QWidget,
-    QLabel,
-    QSlider,
     QGridLayout,
+    QLabel,
     QLineEdit,
+    QSlider,
     QStackedLayout,
+    QWidget,
 )
 
-import pyqtgraph as pg
-import threading
-
-from .. import StylishQT
-from .ServoMotor import Servo
+from .. import Icons, StylishQT
 from .DAQoperator import DAQmission
-from .. import Icons
+from .ServoMotor import Servo
 
 
 class AOTFWidgetUI(QWidget):

@@ -5,23 +5,17 @@ Created on Thu Jul  9 23:23:58 2020
 @author: ideheer
 """
 
-from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import (
-    QWidget,
-    QPushButton,
-    QGridLayout,
-)
-
-from ..StylishQT import roundQGroupBox
-
-from ..SampleStageControl.stage import LudlStage
-from ..HamamatsuCam.HamamatsuActuator import CamActuator
-
-import sys
 import os
+import sys
 
 import matplotlib.pyplot as plt
 import numpy as np
+from PyQt5 import QtWidgets
+from PyQt5.QtWidgets import QGridLayout, QPushButton, QWidget
+
+from ..HamamatsuCam.HamamatsuActuator import CamActuator
+from ..SampleStageControl.stage import LudlStage
+from ..StylishQT import roundQGroupBox
 
 """
 The goal of this widget is to snap a lot of images that can be used for stage

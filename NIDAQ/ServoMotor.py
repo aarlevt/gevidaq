@@ -5,10 +5,11 @@ Created on Thu Jul 16 15:47:20 2020
 @author: xinmeng
 """
 
-from .DAQoperator import DAQmission
+import math
 
 import numpy as np
-import math
+
+from .DAQoperator import DAQmission
 
 
 class Servo:

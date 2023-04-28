@@ -14,33 +14,30 @@ Created on Tue Jul  7 10:44:31 2020
 
 Adding 'laser' to CoordinateWidget signal list.
 """
-from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import (
-    QWidget,
-    QPushButton,
-    QCheckBox,
-    QGridLayout,
-    QListWidget,
-    QLabel,
-    QComboBox,
-    QStackedWidget,
-    QLineEdit,
-)
-
-from PyQt5.QtCore import pyqtSignal
-from PyQt5 import QtGui
-
-import sys
-import os
 import importlib.resources
+import os
+import sys
 
-from . import DMDActuator, Registrator, CoordinateTransformations
+import matplotlib.pyplot as plt
+import numpy as np
+from PyQt5 import QtGui, QtWidgets
+from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtWidgets import (
+    QCheckBox,
+    QComboBox,
+    QGridLayout,
+    QLabel,
+    QLineEdit,
+    QListWidget,
+    QPushButton,
+    QStackedWidget,
+    QWidget,
+)
+from skimage.color import rgb2gray
+
 from ..ImageAnalysis.ImageProcessing import ProcessImage
 from ..StylishQT import roundQGroupBox
-from . import Registration
-import matplotlib.pyplot as plt
-from skimage.color import rgb2gray
-import numpy as np
+from . import CoordinateTransformations, DMDActuator, Registration, Registrator
 
 
 class DMDWidget(QWidget):

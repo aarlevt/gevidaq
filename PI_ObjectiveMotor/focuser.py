@@ -9,8 +9,7 @@ import sys
 import time
 
 try:
-    from pipython import GCSDevice
-    from pipython import pitools
+    from pipython import GCSDevice, pitools
 except ImportError:
     print("pipython not configured.")
 

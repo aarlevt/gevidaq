@@ -1,4 +1,3 @@
-from . import WaveformWidget
-from . import AOTFWidget
-from . import DAQoperator
+from . import AOTFWidget, DAQoperator, WaveformWidget
+
 __all__ = ["WaveformWidget", "AOTFWidget", "DAQoperator"]

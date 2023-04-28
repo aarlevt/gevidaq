@@ -4,21 +4,16 @@ Created on Sat Feb  6 18:34:44 2021
 
 @author: xinmeng
 """
-from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import (
-    QWidget,
-    QPushButton,
-    QGridLayout,
-)
-
-from PyQt5.QtGui import QFont
 import sys
 
-from . import DMDActuator
-from ..GeneralUsage.ThreadingFunc import run_in_thread
-
 import numpy as np
+from PyQt5 import QtWidgets
+from PyQt5.QtGui import QFont
+from PyQt5.QtWidgets import QGridLayout, QPushButton, QWidget
+
 from .. import StylishQT
+from ..GeneralUsage.ThreadingFunc import run_in_thread
+from . import DMDActuator
 
 
 class DMDminiWidgetUI(QWidget):

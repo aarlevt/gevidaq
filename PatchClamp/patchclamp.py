@@ -8,15 +8,13 @@ Notes:
 
 """
 import nidaqmx
+import numpy as np
 from nidaqmx.stream_readers import AnalogMultiChannelReader
 from nidaqmx.stream_writers import AnalogSingleChannelWriter
+from PyQt5.QtCore import QThread, pyqtSignal
 
-from PyQt5.QtCore import pyqtSignal, QThread
-
-import numpy as np
-
-from ..NIDAQ.wavegenerator import blockWave
 from ..NIDAQ.constants import MeasurementConstants, NiDaqChannels
+from ..NIDAQ.wavegenerator import blockWave
 
 
 class ContinuousPatchThread(QThread):

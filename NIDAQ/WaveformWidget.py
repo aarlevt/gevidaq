@@ -11,49 +11,48 @@ Created on Fri Dec 13 23:04:00 2019
 
 """
 
-import sys
-import numpy as np
-from matplotlib import pyplot as plt
-
-from PyQt5 import QtWidgets
-from PyQt5.QtCore import pyqtSignal, QThread
-from PyQt5.QtWidgets import (
-    QWidget,
-    QLineEdit,
-    QButtonGroup,
-    QLabel,
-    QGridLayout,
-    QPushButton,
-    QProgressBar,
-    QListWidget,
-    QComboBox,
-    QMessageBox,
-    QGroupBox,
-    QTabWidget,
-    QCheckBox,
-    QDoubleSpinBox,
-    QSpinBox,
-)
-import pyqtgraph as pg
-import pyqtgraph.exporters
-from pyqtgraph import PlotDataItem
 import os
-
-from .wavegenerator import (
-    waveRecPic,
-    generate_AO_for640,
-    generate_digital_waveform,
-    generate_ramp,
-    generate_AO,
-)
-from .DAQoperator import DAQmission
-from ..ThorlabsFilterSlider.filterpyserial import ELL9Filter
-from PIL import Image
-
+import sys
 import threading
 import time
 from datetime import datetime
+
+import numpy as np
+import pyqtgraph as pg
+import pyqtgraph.exporters
+from matplotlib import pyplot as plt
+from PIL import Image
+from PyQt5 import QtWidgets
+from PyQt5.QtCore import QThread, pyqtSignal
+from PyQt5.QtWidgets import (
+    QButtonGroup,
+    QCheckBox,
+    QComboBox,
+    QDoubleSpinBox,
+    QGridLayout,
+    QGroupBox,
+    QLabel,
+    QLineEdit,
+    QListWidget,
+    QMessageBox,
+    QProgressBar,
+    QPushButton,
+    QSpinBox,
+    QTabWidget,
+    QWidget,
+)
+from pyqtgraph import PlotDataItem
+
 from .. import StylishQT
+from ..ThorlabsFilterSlider.filterpyserial import ELL9Filter
+from .DAQoperator import DAQmission
+from .wavegenerator import (
+    generate_AO,
+    generate_AO_for640,
+    generate_digital_waveform,
+    generate_ramp,
+    waveRecPic,
+)
 
 
 class WaveformGenerator(QWidget):

@@ -8,8 +8,8 @@ Created on Wed Oct 05 15:48:53 2016
 
 import ctypes as ct
 import platform
-import numpy as np
 
+import numpy as np
 
 ## Standard parameter
 ALP_DEFAULT = 0

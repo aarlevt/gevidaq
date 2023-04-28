@@ -6,46 +6,46 @@ Created on Sat Mar  7 16:46:47 2020
 """
 
 import math
-import numpy as np
-import matplotlib.pyplot as plt
-import matplotlib.patches as mpatches
+import os
 import time
-from skimage import img_as_ubyte
-from skimage.filters import threshold_otsu, threshold_local
-from skimage.filters.rank import entropy
-from skimage.segmentation import clear_border
-from skimage.measure import label, find_contours
-from skimage.morphology import (
-    closing,
-    square,
-    opening,
-    reconstruction,
-    dilation,
-    disk,
-    binary_dilation,
-)
-from skimage.measure import regionprops
-from skimage.draw import polygon2mask, polygon_perimeter
-from skimage.color import gray2rgb
-from skimage.restoration import denoise_tv_chambolle
-from skimage.io import imread
-from skimage.transform import resize
-from scipy.signal import convolve2d
+
+import cv2
+import matplotlib.patches as mpatches
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+import pylab
+import scipy
+import scipy.interpolate as interpolate
+import scipy.stats as stats
+import seaborn as sns
 import tifffile as skimtiff
+from mpl_toolkits.mplot3d import Axes3D
 from PIL import Image
 from PIL.TiffTags import TAGS
-import scipy.interpolate as interpolate
-from scipy.ndimage import filters
 from scipy import fftpack
+from scipy.ndimage import filters
 from scipy.optimize import curve_fit
-import scipy
-import pylab
-from mpl_toolkits.mplot3d import Axes3D
-import os
-import pandas as pd
-import scipy.stats as stats
-import cv2
-import seaborn as sns
+from scipy.signal import convolve2d
+from skimage import img_as_ubyte
+from skimage.color import gray2rgb
+from skimage.draw import polygon2mask, polygon_perimeter
+from skimage.filters import threshold_local, threshold_otsu
+from skimage.filters.rank import entropy
+from skimage.io import imread
+from skimage.measure import find_contours, label, regionprops
+from skimage.morphology import (
+    binary_dilation,
+    closing,
+    dilation,
+    disk,
+    opening,
+    reconstruction,
+    square,
+)
+from skimage.restoration import denoise_tv_chambolle
+from skimage.segmentation import clear_border
+from skimage.transform import resize
 
 # import plotly.express as px
 

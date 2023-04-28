@@ -24,29 +24,28 @@ Created on Sat Aug 10 20:54:40 2019
 import os
 import sys
 
+import pyqtgraph as pg
+import pyqtgraph.console
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import QSize
-from PyQt5.QtGui import QIcon, QTextCursor, QFont
+from PyQt5.QtGui import QFont, QIcon, QTextCursor
 
-import pyqtgraph as pg
-from . import StylishQT
-
-from . import PatchClamp
-from . import NIDAQ
-from . import GalvoWidget
-from . import ImageAnalysis
-from . import SampleStageControl
-from . import ThorlabsFilterSlider
-from . import PI_ObjectiveMotor
-from . import ThorlabsKCube
-from . import InsightX3
-
-from . import ScreeningWidget
-
-import pyqtgraph.console
-from . import HamamatsuCam
-from . import CoordinatesManager
-from . import Icons
+from . import (
+    NIDAQ,
+    CoordinatesManager,
+    GalvoWidget,
+    HamamatsuCam,
+    Icons,
+    ImageAnalysis,
+    InsightX3,
+    PatchClamp,
+    PI_ObjectiveMotor,
+    SampleStageControl,
+    ScreeningWidget,
+    StylishQT,
+    ThorlabsFilterSlider,
+    ThorlabsKCube,
+)
 
 
 class Mainbody(QtWidgets.QWidget):

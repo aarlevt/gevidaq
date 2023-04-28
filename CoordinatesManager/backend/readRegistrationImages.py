@@ -6,16 +6,17 @@ Created on Mon Mar 30 11:29:16 2020
 @author: Izak de Heer
 """
 
-import numpy as np
+import math as m
+import os
+
 import matplotlib.pyplot as plt
+import numpy as np
+import scipy.optimize
+import scipy.signal
+import skimage.exposure
 import skimage.feature
 import skimage.filters
 import skimage.restoration
-import skimage.exposure
-import scipy.optimize
-import scipy.signal
-import math as m
-import os
 
 from .. import Registrator
 

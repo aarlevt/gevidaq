@@ -5,8 +5,10 @@ Created on Tue Nov 13 12:02:08 2018
 @author: lhuismans
 """
 
-import serial
 import time
+
+import serial
+
 
 class LudlStage:
     """

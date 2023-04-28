@@ -5,23 +5,24 @@ Created on Mon Dec 23 15:10:53 2019
 @author: xinmeng
 -----------------------------------------------------------Threading class for evolution screening--------------------------------------------------------------------------------
 """
-from PyQt5.QtCore import pyqtSignal, QThread
-import numpy as np
-import time
-from matplotlib import pyplot as plt
-import os
 import math
-from skimage.io import imread
-import tifffile as skimtiff
+import os
+import time
 
-from ..SampleStageControl.stage import LudlStage
-from ..NIDAQ.DAQoperator import DAQmission
-from ..PI_ObjectiveMotor.focuser import PIMotor
-from ..PI_ObjectiveMotor.AutoFocus import FocusFinder
-from ..ThorlabsFilterSlider.filterpyserial import ELL9Filter
-from ..InsightX3.TwoPhotonLaser_backend import InsightX3
+import numpy as np
+import tifffile as skimtiff
+from matplotlib import pyplot as plt
+from PyQt5.QtCore import QThread, pyqtSignal
+from skimage.io import imread
+
 from ..HamamatsuCam.HamamatsuActuator import CamActuator
 from ..ImageAnalysis.ImageProcessing import ProcessImage
+from ..InsightX3.TwoPhotonLaser_backend import InsightX3
+from ..NIDAQ.DAQoperator import DAQmission
+from ..PI_ObjectiveMotor.AutoFocus import FocusFinder
+from ..PI_ObjectiveMotor.focuser import PIMotor
+from ..SampleStageControl.stage import LudlStage
+from ..ThorlabsFilterSlider.filterpyserial import ELL9Filter
 
 
 class ScanningExecutionThread(QThread):

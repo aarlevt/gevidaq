@@ -9,10 +9,10 @@ Created on Thu Mar 12 11:31:53 2020
 # =============================================================================
 """
 
-import serial
-from PyQt5.QtCore import QThread
-from PyQt5.QtCore import pyqtSignal
 import time
+
+import serial
+from PyQt5.QtCore import QThread, pyqtSignal
 
 
 class InsightX3:

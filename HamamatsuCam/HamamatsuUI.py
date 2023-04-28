@@ -5,50 +5,43 @@ Created on Tue Apr 14 18:47:31 2020
 @author: xinmeng
 """
 
-from PyQt5 import QtWidgets
-from PyQt5.QtCore import Qt, pyqtSignal, QRectF, QTimer
-from PyQt5.QtGui import (
-    QFont,
-    QColor,
-    QPen,
-    QIcon,
-    QMovie,
-)
-
-from PyQt5.QtWidgets import (
-    QWidget,
-    QButtonGroup,
-    QLabel,
-    QSpinBox,
-    QDoubleSpinBox,
-    QGridLayout,
-    QPushButton,
-    QGroupBox,
-    QLineEdit,
-    QComboBox,
-    QTabWidget,
-    QProgressBar,
-    QStyleFactory,
-    QMainWindow,
-    QAction,
-    QStackedWidget,
-)
-import pyqtgraph as pg
-import sys
-import os
-import importlib.resources
-import time
-import threading
-import numpy as np
 import ctypes
 import ctypes.util
+import importlib.resources
+import os
+import sys
+import threading
+import time
 from datetime import datetime
+
+import numpy as np
+import pyqtgraph as pg
 import tifffile as skimtiff
+from PyQt5 import QtWidgets
+from PyQt5.QtCore import QRectF, Qt, QTimer, pyqtSignal
+from PyQt5.QtGui import QColor, QFont, QIcon, QMovie, QPen
+from PyQt5.QtWidgets import (
+    QAction,
+    QButtonGroup,
+    QComboBox,
+    QDoubleSpinBox,
+    QGridLayout,
+    QGroupBox,
+    QLabel,
+    QLineEdit,
+    QMainWindow,
+    QProgressBar,
+    QPushButton,
+    QSpinBox,
+    QStackedWidget,
+    QStyleFactory,
+    QTabWidget,
+    QWidget,
+)
 from skimage.measure import block_reduce
 
+from .. import Icons, StylishQT
 from ..HamamatsuCam import HamamatsuDCAM
-from .. import StylishQT
-from .. import Icons
 
 """
 Some general settings for pyqtgraph, these only have to do with appearance

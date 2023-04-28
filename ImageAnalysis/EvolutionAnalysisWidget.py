@@ -5,43 +5,44 @@ Created on Wed May 20 18:32:50 2020
 @author: xinmeng
 """
 
-from PyQt5 import QtWidgets
-from PyQt5.QtCore import pyqtSignal
-from PyQt5.QtGui import QTextCursor, QFont
+import os
+import sys
+import threading
+from datetime import datetime
 
-from PyQt5.QtWidgets import (
-    QWidget,
-    QLabel,
-    QSpinBox,
-    QDoubleSpinBox,
-    QGridLayout,
-    QPushButton,
-    QGroupBox,
-    QLineEdit,
-    QComboBox,
-    QTabWidget,
-    QTextEdit,
-)
-
+import numpy as np
+import pandas as pd
 import pyqtgraph as pg
 import pyqtgraph.exporters
-import sys
-import numpy as np
-from skimage.io import imread
-import threading
-import os
-
-from datetime import datetime
-from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
-from matplotlib.backends.backend_qt5agg import NavigationToolbar2QT as NavigationToolbar
+from matplotlib.backends.backend_qt5agg import (
+    FigureCanvasQTAgg as FigureCanvas,
+)
+from matplotlib.backends.backend_qt5agg import (
+    NavigationToolbar2QT as NavigationToolbar,
+)
 from matplotlib.figure import Figure
-import pandas as pd
-
-from ..SampleStageControl.stage import LudlStage
-from .ImageProcessing import ProcessImage
-from ..CoordinatesManager import CoordinateTransformations
+from PyQt5 import QtWidgets
+from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtGui import QFont, QTextCursor
+from PyQt5.QtWidgets import (
+    QComboBox,
+    QDoubleSpinBox,
+    QGridLayout,
+    QGroupBox,
+    QLabel,
+    QLineEdit,
+    QPushButton,
+    QSpinBox,
+    QTabWidget,
+    QTextEdit,
+    QWidget,
+)
+from skimage.io import imread
 
 from .. import StylishQT
+from ..CoordinatesManager import CoordinateTransformations
+from ..SampleStageControl.stage import LudlStage
+from .ImageProcessing import ProcessImage
 
 try:
     from .ImageProcessing_MaskRCNN import ProcessImageML

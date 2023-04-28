@@ -6,15 +6,14 @@ Created on Wed Mar  4 13:54:35 2020
 """
 
 
+import sys
+import threading
+
+import pyqtgraph as pg
 from PyQt5 import QtWidgets
 from PyQt5.QtGui import QFont
 
-import pyqtgraph as pg
-import threading
-import sys
-
 from .. import StylishQT
-
 from .filterpyserial import ELL9Filter
 
 

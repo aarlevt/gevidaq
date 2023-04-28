@@ -1,3 +1,3 @@
-from . import FilterSliderWidget
-from . import filterpyserial
+from . import FilterSliderWidget, filterpyserial
+
 __all__ = ["FilterSliderWidget", "filterpyserial"]

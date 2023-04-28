@@ -6,26 +6,34 @@ Created on Sat Feb  5 16:34:10 2022
 """
 
 import sys
-import numpy as np
 
+import numpy as np
+import pyqtgraph as pg
+import pyqtgraph.exporters
+from PyQt5 import QtWidgets
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QColor, QFont, QPalette, QPen
+from PyQt5.QtWidgets import (
+    QDoubleSpinBox,
+    QGridLayout,
+    QGroupBox,
+    QInputDialog,
+    QLabel,
+    QMessageBox,
+    QPushButton,
+    QTabWidget,
+    QWidget,
+)
 from skimage import io
 
-from PyQt5 import QtWidgets
-from PyQt5.QtGui import QPen, QColor, QFont, QPalette
-from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QWidget, QGridLayout, QPushButton, QDoubleSpinBox, QGroupBox, QLabel, QTabWidget, QInputDialog, QMessageBox
-import pyqtgraph.exporters
-import pyqtgraph as pg
-
 from ..NIDAQ.constants import MeasurementConstants
-from .smartpatcher_backend import SmartPatcher
 from .camerathread import CameraThread
-from .sealtestthread import SealTestThread
-from .pressurethread import PressureThread
-from .objective import PIMotor
 from .micromanipulator import ScientificaPatchStar
+from .objective import PIMotor
+from .pressurethread import PressureThread
+from .sealtestthread import SealTestThread
+from .smartpatcher_backend import SmartPatcher
 from .stage import LudlStage
-
 
 
 class PatchClampUI(QWidget):

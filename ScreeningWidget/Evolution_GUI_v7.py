@@ -5,21 +5,19 @@ Created on Tue Dec 17 23:40:26 2019
 @author: Meng
 """
 
+import copy
+import datetime
+import os
+import sys
+import threading
+
+import numpy as np
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QIcon, QTextCursor, QFont
+from PyQt5.QtGui import QFont, QIcon, QTextCursor
 
-import sys
-import numpy as np
-import threading
-import os
-
-import copy
-from .. import NIDAQ
+from .. import NIDAQ, Icons, StylishQT
 from .EvolutionScanningThread import ScanningExecutionThread
-from .. import StylishQT
-import datetime
-from .. import Icons
 
 
 class Mainbody(QtWidgets.QWidget):

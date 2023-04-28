@@ -5,17 +5,17 @@ Created on Wed Aug 19 11:35:22 2020
 @author: xinmeng
 """
 
-import nidaqmx
-from nidaqmx.constants import AcquisitionType
-from nidaqmx.stream_writers import AnalogMultiChannelWriter
-from nidaqmx.stream_readers import AnalogSingleChannelReader
-import tifffile as skimtiff
-import time
 import os
+import time
 
+import nidaqmx
 import numpy as np
-from ..NIDAQ import wavegenerator
+import tifffile as skimtiff
+from nidaqmx.constants import AcquisitionType
+from nidaqmx.stream_readers import AnalogSingleChannelReader
+from nidaqmx.stream_writers import AnalogMultiChannelWriter
 
+from ..NIDAQ import wavegenerator
 from ..PI_ObjectiveMotor.focuser import PIMotor
 
 

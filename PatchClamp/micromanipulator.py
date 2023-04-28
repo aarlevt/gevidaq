@@ -7,8 +7,9 @@ Created on Wed Aug 11 11:09:56 2021
 
 
 import time
-import serial
+
 import numpy as np
+import serial
 
 
 class ScientificaPatchStar:

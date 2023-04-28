@@ -4,8 +4,9 @@ Created on Thu Nov  8 12:55:22 2018
 
 @author: lhuismans
 """
-import serial
 import time
+
+import serial
 
 
 class ELL9Filter:

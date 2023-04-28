@@ -5,16 +5,16 @@ Created on Tue Mar 31 10:30:41 2020
 @author: Izak de Heer
 """
 import os
-
-import numpy as np
 import time
+
 import matplotlib.pyplot as plt
+import numpy as np
 import skimage.draw
-from .backend import readRegistrationImages
-from . import CoordinateTransformations
-from ..NIDAQ.DAQoperator import DAQmission
 
 from ..HamamatsuCam.HamamatsuActuator import CamActuator
+from ..NIDAQ.DAQoperator import DAQmission
+from . import CoordinateTransformations
+from .backend import readRegistrationImages
 
 
 class GalvoRegistrator:

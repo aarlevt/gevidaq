@@ -12,10 +12,11 @@ squares patterns.
 
 import os
 
-from .readRegistrationImages import touchingCoordinateFinder
-from skimage.measure import block_reduce
 import matplotlib.pyplot as plt
 import numpy as np
+from skimage.measure import block_reduce
+
+from .readRegistrationImages import touchingCoordinateFinder
 
 # -*- coding: utf-8 -*-
 

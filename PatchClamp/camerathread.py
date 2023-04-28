@@ -7,9 +7,10 @@ Created on Tue Aug 10 15:05:11 2021
 
 
 import time
-import numpy as np
 from copy import copy
-from PyQt5.QtCore import pyqtSignal, pyqtSlot, QThread, QMutex
+
+import numpy as np
+from PyQt5.QtCore import QMutex, QThread, pyqtSignal, pyqtSlot
 
 from ..HamamatsuCam.HamamatsuActuator import CamActuator
 

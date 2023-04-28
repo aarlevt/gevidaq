@@ -9,13 +9,14 @@ READIN TASK HAS TO START AHEAD OF READ MANY SAMPLES, OTHERWISE ITS NOT in SYN!!!
 """
 # The adaptive NI DAQ tool
 
+import os
+from datetime import datetime
+
 import nidaqmx
 import numpy as np
 from nidaqmx.constants import AcquisitionType, LineGrouping
 from nidaqmx.stream_readers import AnalogMultiChannelReader
-from datetime import datetime
-import os
-from PyQt5.QtCore import pyqtSignal, QThread
+from PyQt5.QtCore import QThread, pyqtSignal
 
 from .constants import NiDaqChannels
 

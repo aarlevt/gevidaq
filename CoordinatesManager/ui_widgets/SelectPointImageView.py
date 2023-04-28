@@ -6,10 +6,9 @@ Created on Wed May  6 11:26:55 2020
 @author: Izak de Heer
 """
 
+import pyqtgraph as pg
 from PyQt5 import QtCore
 from PyQt5.QtCore import QSize, Qt
-
-import pyqtgraph as pg
 from pyqtgraph import QtGui
 
 

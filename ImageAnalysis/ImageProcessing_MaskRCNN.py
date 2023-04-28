@@ -5,18 +5,20 @@ Created on Thu May  7 15:50:10 2020
 @author: xinmeng
 """
 
-import numpy as np
-import matplotlib.pyplot as plt
-import tifffile as skimtiff
-from datetime import datetime
-from skimage.io import imread
 import os
-import plotly.express as px
+from datetime import datetime
 
+import MaskRCNN.Miscellaneous.visualize as visualize
+import matplotlib.pyplot as plt
+import numpy as np
+import plotly.express as px
+import tifffile as skimtiff
 from MaskRCNN.Configurations.ConfigFileInferenceOld import cellConfig
 from MaskRCNN.Engine.MaskRCNN import MaskRCNN as modellib
-import MaskRCNN.Miscellaneous.visualize as visualize
+from skimage.io import imread
+
 from .ImageProcessing import ProcessImage
+
 
 # ================================================================ProcessImage===============================================
 class ProcessImageML:
@@ -737,6 +739,7 @@ def showPlotlyScatter(self, DataFrame, x_axis, y_axis, saving_directory):
 
 if __name__ == "__main__":
     import skimage
+
     # from skimage.io import imread
     # =============================================================================
 

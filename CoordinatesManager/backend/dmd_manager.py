@@ -7,10 +7,9 @@ Created on Tue Dec  4 14:12:40 2018
 """
 
 import os
+
 import numpy as np
-
 from DMDManager.backend import ALP4  # TODO import failure
-
 
 
 class DMD_manager:

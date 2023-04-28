@@ -6,28 +6,25 @@ Created on Wed Mar  4 14:03:52 2020
 """
 
 import sys
-
-from PyQt5 import QtWidgets
-from PyQt5.QtCore import Qt, QSize
-from PyQt5.QtGui import QIcon, QFont
-
-from PyQt5.QtWidgets import (
-    QWidget,
-    QLabel,
-    QDoubleSpinBox,
-    QGridLayout,
-    QPushButton,
-    QGroupBox,
-    QMessageBox,
-    QScrollBar,
-)
-from PyQt5.QtCore import QThread
-import pyqtgraph as pg
 import threading
 
-from .. import StylishQT
+import pyqtgraph as pg
+from PyQt5 import QtWidgets
+from PyQt5.QtCore import QSize, Qt, QThread
+from PyQt5.QtGui import QFont, QIcon
+from PyQt5.QtWidgets import (
+    QDoubleSpinBox,
+    QGridLayout,
+    QGroupBox,
+    QLabel,
+    QMessageBox,
+    QPushButton,
+    QScrollBar,
+    QWidget,
+)
+
+from .. import Icons, StylishQT
 from .focuser import PIMotor
-from .. import Icons
 
 
 class ObjMotorWidgetUI(QWidget):

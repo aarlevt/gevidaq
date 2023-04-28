@@ -4,34 +4,33 @@ Created on Tue Jan 21 13:34:56 2020
 
 @author: xinmeng
 """
-from PyQt5 import QtWidgets
-from PyQt5.QtCore import Qt, pyqtSignal, QPoint
-from PyQt5.QtGui import QColor, QPen, QFont
-
-from PyQt5.QtWidgets import (
-    QWidget,
-    QLabel,
-    QSpinBox,
-    QDoubleSpinBox,
-    QGridLayout,
-    QComboBox,
-    QMessageBox,
-    QTabWidget,
-)
-
-import pyqtgraph as pg
 import os
 import sys
-import numpy as np
-from PIL import Image
 from datetime import datetime
 
+import numpy as np
+import pyqtgraph as pg
+from PIL import Image
+from PyQt5 import QtWidgets
+from PyQt5.QtCore import QPoint, Qt, pyqtSignal
+from PyQt5.QtGui import QColor, QFont, QPen
+from PyQt5.QtWidgets import (
+    QComboBox,
+    QDoubleSpinBox,
+    QGridLayout,
+    QLabel,
+    QMessageBox,
+    QSpinBox,
+    QTabWidget,
+    QWidget,
+)
+
+from .. import StylishQT
 from ..GeneralUsage.ThreadingFunc import run_in_thread
 from ..NIDAQ.constants import HardwareConstants
-from .pmt_thread import pmtimagingTest, pmtimagingTest_contour
-from .GalvoScan_backend import PMT_zscan
 from ..NIDAQ.DAQoperator import DAQmission
-from .. import StylishQT
+from .GalvoScan_backend import PMT_zscan
+from .pmt_thread import pmtimagingTest, pmtimagingTest_contour
 
 
 class PMTWidgetUI(QWidget):

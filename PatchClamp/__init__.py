@@ -1,3 +1,3 @@
-from . import ui_patchclamp_sealtest
-from . import smartpatcher_frontend
+from . import smartpatcher_frontend, ui_patchclamp_sealtest
+
 __all__ = ["ui_patchclamp_sealtest", "smartpatcher_frontend"]

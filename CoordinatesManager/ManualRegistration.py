@@ -6,27 +6,25 @@ Created on Fri Jul  3 17:03:45 2020
 @author: Izak de Heer
 """
 
-from PyQt5 import QtWidgets
-from PyQt5.QtWidgets import (
-    QWidget,
-    QPushButton,
-    QGridLayout,
-    QLabel,
-    QComboBox,
-    QSpinBox,
-)
-
-from PyQt5.QtCore import pyqtSignal
-from ..StylishQT import roundQGroupBox
-
-from pyqtgraph import QtGui
-
-from .ui_widgets.SelectPointImageView import SelectPointImageView
-from . import CoordinateTransformations
-
 import sys
+
 import matplotlib.pyplot as plt
 import numpy as np
+from PyQt5 import QtWidgets
+from PyQt5.QtCore import pyqtSignal
+from PyQt5.QtWidgets import (
+    QComboBox,
+    QGridLayout,
+    QLabel,
+    QPushButton,
+    QSpinBox,
+    QWidget,
+)
+from pyqtgraph import QtGui
+
+from ..StylishQT import roundQGroupBox
+from . import CoordinateTransformations
+from .ui_widgets.SelectPointImageView import SelectPointImageView
 
 
 class ManualRegistrationWindow(QWidget):

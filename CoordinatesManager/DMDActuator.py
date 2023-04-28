@@ -6,10 +6,12 @@ Created on Mon Jul  6 09:38:26 2020
 @author: Izak de Heer
 """
 
-from .backend import ALP4
-import numpy as np
 import importlib.resources
 import sys
+
+import numpy as np
+
+from .backend import ALP4
 
 
 class DMDActuator:
