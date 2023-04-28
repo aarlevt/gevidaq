@@ -7,6 +7,7 @@ Created on Tue Dec 17 23:40:26 2019
 
 import copy
 import datetime
+import logging
 import os
 import sys
 import threading
@@ -1292,8 +1293,8 @@ class Mainbody(QtWidgets.QWidget):
         self.savedirectorytextbox.setText(self.savedirectory)
         try:
             self.GeneralSettingDict["savedirectory"] = self.savedirectory
-        except:
-            pass
+        except Exception as exc:
+            logging.critical("caught exception", exc_info=exc)
         self.set_prefix()
 
     def update_saving_directory(self):
@@ -1484,7 +1485,8 @@ class Mainbody(QtWidgets.QWidget):
                         )  # [1]['Specification']
                 # else:
                 # self.normalOutputWritten('Round {} No recording channel.\n'.format(eachround+1))
-                except:
+                except Exception as exc:
+                    logging.critical("caught exception", exc_info=exc)
                     self.normalOutputWritten("No recording channel.\n")
                     print("No recording channel.")
                 try:
@@ -1500,7 +1502,8 @@ class Mainbody(QtWidgets.QWidget):
                             waveformPackage[eachwaveform][1]["Specification"],
                         )
                     )  #
-                except:
+                except Exception as exc:
+                    logging.critical("caught exception", exc_info=exc)
                     self.normalOutputWritten("No Analog signals.\n")
                     print("No Analog signals.")
                 try:
@@ -1547,7 +1550,8 @@ class Mainbody(QtWidgets.QWidget):
                         )  #
                 # else:
                 # self.normalOutputWritten('Round {} No Digital signals.\n'.format(eachround+1))
-                except:
+                except Exception as exc:
+                    logging.critical("caught exception", exc_info=exc)
                     self.normalOutputWritten("No Digital signals.\n")
                     print("No Digital signals.")
                 waveform_sequence += 1
@@ -1576,7 +1580,8 @@ class Mainbody(QtWidgets.QWidget):
                         )  #
                 # else:
                 # self.normalOutputWritten('Round {} No Digital signals.\n'.format(eachround+1))
-                except:
+                except Exception as exc:
+                    logging.critical("caught exception", exc_info=exc)
                     self.normalOutputWritten("No camera operations.\n")
                     print("No camera operations.")
 

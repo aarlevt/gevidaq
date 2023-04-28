@@ -5,6 +5,8 @@ Created on Mon Dec  6 09:49:25 2021
 @author: TvdrBurgt
 """
 
+import logging
+
 import serial
 
 
@@ -25,7 +27,8 @@ class PressureController(serial.Serial):
                 response = self.read_until(self.ENDOFLINE.encode("ascii"))
             try:
                 response = response.decode("utf-8")
-            except:
+            except Exception as exc:
+                logging.critical("caught exception", exc_info=exc)
                 response = ""
         else:
             response = ""

@@ -8,6 +8,7 @@ Part of this code was derived from:
     https://github.com/sidneycadot/pyqt-and-graphing/blob/master/PyQtGraphing.py
 
 """
+import logging
 import math
 import os
 import sys
@@ -502,8 +503,8 @@ class PatchclampSealTestUI(QWidget):
                 self.updateGraphs()
                 self.updateLabels(self.curOut, self.voltOut)
                 time.sleep(0.05)
-            except:
-                pass
+            except Exception as exc:
+                logging.critical("caught exception", exc_info=exc)
 
     def updateGraphs(self):
         """Update graphs."""
@@ -523,7 +524,8 @@ class PatchclampSealTestUI(QWidget):
                 int(curOut.size / sampPerCyc), sampPerCyc
             )
             curData = np.mean(curOutCyc, axis=0)
-        except:
+        except Exception as exc:
+            logging.critical("caught exception", exc_info=exc)
             curData = curOut
 
         voltData = voltOut
@@ -549,14 +551,16 @@ class PatchclampSealTestUI(QWidget):
             self.estimated_size_resistance = 10000 / (
                 membraneResistance * 1000000
             )  # The resistance of a typical patch of membrane, RM is 10000 Omega/{cm}^2
-        except:
+        except Exception as exc:
+            logging.critical("caught exception", exc_info=exc)
             self.resistanceLabel.setText("Resistance:  %s" % "NaN")
 
         try:
             measured_vlotage = np.mean(voltData) * 1000
             self.membraneVoltLabel.setText("Vm:  %.2f mV" % measured_vlotage)
             self.membraneVoltLabel.setStyleSheet("color: red")
-        except:
+        except Exception as exc:
+            logging.critical("caught exception", exc_info=exc)
             self.membraneVoltLabel.setText("Vm:  %s" % "NaN")
         try:
             # Computing capacitance
@@ -617,7 +621,8 @@ class PatchclampSealTestUI(QWidget):
                 "Ratio:  %.4f" % self.estimated_ratio
             )  # http://www.cnbc.cmu.edu/~bard/passive2/node5.html
 
-        except:
+        except Exception as exc:
+            logging.critical("caught exception", exc_info=exc)
             self.capacitanceLabel.setText("Capacitance:  %s" % "NaN")
             self.ratioLabel.setText("Ratio:  %s" % "NaN")
 

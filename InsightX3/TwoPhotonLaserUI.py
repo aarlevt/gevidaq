@@ -7,6 +7,7 @@ Created on Thu Mar 26 11:23:13 2020
 Widely Tunable, Ultra-Fast, Solid-State Laser System.
 """
 
+import logging
 import queue
 import sys
 import threading
@@ -126,7 +127,8 @@ class InsightWidgetUI(QWidget):
             self.pill2kill = threading.Event()
             self.Status_list = self.Laserinstance.QueryStatus()
             self.LaserStatuslabel.setText(str(self.Status_list))
-        except:
+        except Exception as exc:
+            logging.critical("caught exception", exc_info=exc)
             self.LaserStatuslabel.setText("Laser not connected.")
 
     """
@@ -164,7 +166,8 @@ class InsightWidgetUI(QWidget):
                 try:
                     warmupstatus = self.Laserinstance.QueryWarmupTime()
                     time.sleep(0.6)
-                except:
+                except Exception as exc:
+                    logging.critical("caught exception", exc_info=exc)
                     time.sleep(0.6)
 
             if int(warmupstatus) == 100:
@@ -181,8 +184,8 @@ class InsightWidgetUI(QWidget):
 
                         try:
                             Status_list = self.Laserinstance.QueryStatus()
-                        except:
-                            pass
+                        except Exception as exc:
+                            logging.critical("caught exception", exc_info=exc)
 
                         if "Laser state:RUN" in Status_list:
                             self.laserRun = True
@@ -198,8 +201,8 @@ class InsightWidgetUI(QWidget):
         try:
             self.Laserinstance.Close_TunableBeamShutter()
             time.sleep(0.5)
-        except:
-            pass
+        except Exception as exc:
+            logging.critical("caught exception", exc_info=exc)
         self.Laserinstance.SaveVariables()
         self.Laserinstance.Turn_Off_PumpLaser()
 

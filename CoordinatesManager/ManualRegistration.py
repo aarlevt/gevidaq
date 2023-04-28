@@ -6,6 +6,7 @@ Created on Fri Jul  3 17:03:45 2020
 @author: Izak de Heer
 """
 
+import logging
 import sys
 
 import matplotlib.pyplot as plt
@@ -177,7 +178,8 @@ class ManualRegistrationWindow(QWidget):
     def get_crosshair_coordinates(self):
         try:
             self.image_viewer.roi1
-        except:
+        except Exception as exc:
+            logging.critical("caught exception", exc_info=exc)
             print("Press in image to set crosshair")
             return
 
@@ -191,7 +193,8 @@ class ManualRegistrationWindow(QWidget):
     def save_coords(self):
         try:
             self.abs_coords
-        except:
+        except Exception as exc:
+            logging.critical("caught exception", exc_info=exc)
             self.abs_coords = []
             self.img_coords = []
 
@@ -233,7 +236,8 @@ class ManualRegistrationWindow(QWidget):
 
         try:
             self.coordinate_counter_int
-        except:
+        except Exception as exc:
+            logging.critical("caught exception", exc_info=exc)
             self.coordinate_counter_int = 1
         else:
             self.coordinate_counter_int += 1

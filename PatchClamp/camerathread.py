@@ -6,6 +6,7 @@ Created on Tue Aug 10 15:05:11 2021
 """
 
 
+import logging
 import time
 from copy import copy
 
@@ -75,8 +76,8 @@ class CameraThread(QThread):
                 self.frame = np.resize(frames[-1].np_array, (dims[1], dims[0]))
                 self.livesignal.emit(self.frame)
                 self.mutex.unlock()
-            except:
-                pass
+            except Exception as exc:
+                logging.critical("caught exception", exc_info=exc)
 
         self.camera.hcam.stopAcquisition()
         self.camera.isLiving = False

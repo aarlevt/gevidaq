@@ -5,6 +5,7 @@ Created on Tue Nov 13 12:02:08 2018
 @author: lhuismans
 """
 
+import logging
 import time
 
 import serial
@@ -42,7 +43,8 @@ class LudlStage:
                         returnValue = func(*args, **kwargs)
                         success = True
 
-                    except:
+                    except Exception as exc:
+                        logging.critical("caught exception", exc_info=exc)
                         failnumber += 1
                         print(
                             "Stage move failed, failnumber: {}".format(

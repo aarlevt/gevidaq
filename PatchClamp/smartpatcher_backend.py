@@ -7,6 +7,7 @@ Created on Sun Feb  6 11:31:11 2022
 
 import importlib.resources
 import json
+import logging
 import sys
 
 import numpy as np
@@ -86,18 +87,18 @@ class SmartPatcher(QObject):
         """
         try:
             self.micromanipulator.stop()
-        except:
-            pass
+        except Exception as exc:
+            logging.critical("caught exception", exc_info=exc)
         try:
             x, y = self.XYstage.getPos()
             self.XYstage.moveAbs(x, y)
-        except:
-            pass
+        except Exception as exc:
+            logging.critical("caught exception", exc_info=exc)
         try:
             height = self.objectivemotor.getPos()
             self.objectivemotor.moveAbs(height)
-        except:
-            pass
+        except Exception as exc:
+            logging.critical("caught exception", exc_info=exc)
 
     def request(self, name, mode="Default"):
         """

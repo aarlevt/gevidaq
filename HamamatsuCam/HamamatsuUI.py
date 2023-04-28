@@ -8,6 +8,7 @@ Created on Tue Apr 14 18:47:31 2020
 import ctypes
 import ctypes.util
 import importlib.resources
+import logging
 import os
 import sys
 import threading
@@ -837,8 +838,8 @@ class CameraUI(QMainWindow):
         # === Once open GUI, try to connect the camera ===
         try:
             self.ConnectCamera()
-        except:
-            pass
+        except Exception as exc:
+            logging.critical("caught exception", exc_info=exc)
 
         """
         # === END of GUI ===
@@ -925,7 +926,8 @@ class CameraUI(QMainWindow):
         if self.cam_connect_button.isChecked():
             try:
                 self.ConnectCamera()
-            except:
+            except Exception as exc:
+                logging.critical("caught exception", exc_info=exc)
                 self.cam_connect_button.setChecked(False)
         else:
             self.DisconnectCamera()
@@ -1235,7 +1237,8 @@ class CameraUI(QMainWindow):
                         self.hcam.getPropertyValue("subarray_hpos")[0],
                         self.hcam.getPropertyValue("subarray_vpos")[0],
                     )
-            except:
+            except Exception as exc:
+                logging.critical("caught exception", exc_info=exc)
                 self.ROIitem = pg.RectROI(
                     [0, 0],
                     [200, 200],
@@ -1324,8 +1327,8 @@ class CameraUI(QMainWindow):
 
         try:
             self.Live_view.removeItem(self.ROIitemText)
-        except:
-            pass
+        except Exception as exc:
+            logging.critical("caught exception", exc_info=exc)
 
         # Create text object, use HTML tags to specify color/size
         self.ROIitemText = pg.TextItem(
@@ -1452,7 +1455,8 @@ class CameraUI(QMainWindow):
                 # self.LiveWidget.scene.clear()
                 # self.Live_view.addItem(self.Live_item)
                 self.ResetLiveImgView()
-            except:
+            except Exception as exc:
+                logging.critical("caught exception", exc_info=exc)
                 print("clear failed.")
 
             StartLiveThread = threading.Thread(target=self.LIVE)
@@ -1637,8 +1641,8 @@ class CameraUI(QMainWindow):
         try:
             self.hcam.shutdown()
             self.dcam.dcamapi_uninit()
-        except:
-            pass
+        except Exception as exc:
+            logging.critical("caught exception", exc_info=exc)
         self.close()
 
         """

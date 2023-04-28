@@ -5,6 +5,7 @@ Created on Thu May  7 15:50:10 2020
 @author: xinmeng
 """
 
+import logging
 import os
 from datetime import datetime
 
@@ -134,7 +135,8 @@ class ProcessImageML:
                         )
                     ]
                 )
-            except:
+            except Exception as exc:
+                logging.critical("caught exception", exc_info=exc)
                 RoundNumberList.append(
                     eachfilename[
                         eachfilename.index("Round") : eachfilename.index(
@@ -314,7 +316,10 @@ class ProcessImageML:
                                     ImgNameInfor = Eachfilename[1][
                                         0 : Eachfilename[1].index("_PMT")
                                     ]  # get rid of '_PMT_0Zmax.tif' in the name.
-                                except:
+                                except Exception as exc:
+                                    logging.critical(
+                                        "caught exception", exc_info=exc
+                                    )
                                     ImgNameInfor = Eachfilename[1][
                                         0 : Eachfilename[1].index("_Cam")
                                     ]  # get rid of '_Cam_Zmax.tif' in the name.

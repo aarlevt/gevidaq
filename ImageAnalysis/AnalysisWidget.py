@@ -8,6 +8,7 @@ Created on Tue Feb 25 17:27:04 2020
 """
 
 import csv
+import logging
 import os
 import sys
 import threading
@@ -330,7 +331,8 @@ class AnalysisWidgetUI(QWidget):
         # display electrical signals
         try:
             self.display_electrical_signals()
-        except:
+        except Exception as exc:
+            logging.critical("caught exception", exc_info=exc)
             print("No electrical recordings.")
 
         time.sleep(0.5)
@@ -869,7 +871,8 @@ class AnalysisWidgetUI(QWidget):
                 ).mean(axis=1)
 
                 # self.Vp_downsample = self.Vp_downsample[0 : len(self.videostack)]
-            except:
+            except Exception as exc:
+                logging.critical("caught exception", exc_info=exc)
                 print("Vp downsampling ratio is not an integer.")
                 small_ratio = int(
                     np.floor(
@@ -1098,8 +1101,8 @@ class AnalysisWidgetUI(QWidget):
                 plt.plot(self.single_waveform_fileName)
                 plt.show()
 
-        except:
-            pass
+        except Exception as exc:
+            logging.critical("caught exception", exc_info=exc)
 
 
 # %%

@@ -4,6 +4,7 @@ Created on Thu Nov  8 12:55:22 2018
 
 @author: lhuismans
 """
+import logging
 import time
 
 import serial
@@ -35,7 +36,8 @@ class ELL9Filter:
                         returnValue = func(*args, **kwargs)
                         success = True
 
-                    except:
+                    except Exception as exc:
+                        logging.critical("caught exception", exc_info=exc)
                         failnumber += 1
                         print(
                             "filter move failed, failnumber: {}".format(

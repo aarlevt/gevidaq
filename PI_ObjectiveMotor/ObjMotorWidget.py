@@ -5,6 +5,7 @@ Created on Wed Mar  4 14:03:52 2020
 @author: xinmeng
 """
 
+import logging
 import sys
 import threading
 
@@ -196,7 +197,8 @@ class ObjMotorWidgetUI(QWidget):
 
             self.ObjMotor_connect.setChecked(True)
 
-        except:
+        except Exception as exc:
+            logging.critical("caught exception", exc_info=exc)
             self.ObjMotor_connect.setChecked(False)
             QMessageBox.warning(
                 self, "Oops", "Failed to connect, try again.", QMessageBox.Ok

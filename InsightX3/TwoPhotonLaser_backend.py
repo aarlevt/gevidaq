@@ -7,6 +7,7 @@ Created on Thu Mar 12 11:31:53 2020
 # General control of Insight X3.
 """
 
+import logging
 import time
 
 import serial
@@ -56,7 +57,8 @@ class InsightX3:
                         returnValue = func(*args, **kwargs)
                         success = True
 
-                    except:
+                    except Exception as exc:
+                        logging.critical("caught exception", exc_info=exc)
                         failnumber += 1
                         print(
                             "Laser action failed, failnumber: {}".format(
@@ -346,7 +348,8 @@ class QueryLaserStatusThread(QThread):
                 self.Status_power = self.Laserinstance.QueryPower()
                 self.Status_list.append(self.Status_power)
                 self.Thread_Status_list.emit(self.Status_list)
-            except:
+            except Exception as exc:
+                logging.critical("caught exception", exc_info=exc)
                 print("Query status failed.")
             time.sleep(((1 / self.queryfreq)))
         if self.stopflag is True:

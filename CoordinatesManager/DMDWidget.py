@@ -14,6 +14,7 @@ Created on Tue Jul  7 10:44:31 2020
 Adding 'laser' to CoordinateWidget signal list.
 """
 import importlib.resources
+import logging
 import os
 import sys
 
@@ -317,7 +318,8 @@ class DMDWidget(QWidget):
                 self.DMD_actuator.send_data_to_DMD(image_gray)
                 print("Image loaded")
                 self.load_mask_container_stack.setCurrentIndex(0)
-        except:
+        except Exception as exc:
+            logging.critical("caught exception", exc_info=exc)
             print("Fail to load.")
 
     def load_mask_from_folder(self):
@@ -351,7 +353,8 @@ class DMDWidget(QWidget):
             self.DMD_actuator.send_data_to_DMD(image_sequence)
 
             self.load_mask_container_stack.setCurrentIndex(0)
-        except:
+        except Exception as exc:
+            logging.critical("caught exception", exc_info=exc)
             print("Fail to load.")
 
     def load_mask_from_widget(self):

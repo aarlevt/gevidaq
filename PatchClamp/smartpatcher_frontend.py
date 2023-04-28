@@ -5,6 +5,7 @@ Created on Sat Feb  5 16:34:10 2022
 @author: TvdrBurgt
 """
 
+import logging
 import sys
 
 import numpy as np
@@ -545,7 +546,8 @@ class PatchClampUI(QWidget):
                 self.signal_camera_live = camerathread.livesignal
                 self.signal_camera_live.connect(self.update_live)
                 self.backend.camerathread = camerathread
-            except:
+            except Exception as exc:
+                logging.critical("caught exception", exc_info=exc)
                 self.connect_camerathread_button.setChecked(False)
                 raise
         else:
@@ -564,7 +566,8 @@ class PatchClampUI(QWidget):
             try:
                 objectivemotor = PIMotor(objective_motor_handle=None)
                 self.backend.objectivemotor = objectivemotor
-            except:
+            except Exception as exc:
+                logging.critical("caught exception", exc_info=exc)
                 self.connect_objectivemotor_button.setChecked(False)
                 raise
         else:
@@ -583,7 +586,8 @@ class PatchClampUI(QWidget):
                     address="COM16", baud=38400
                 )
                 self.backend.micromanipulator = micromanipulator
-            except:
+            except Exception as exc:
+                logging.critical("caught exception", exc_info=exc)
                 self.connect_micromanipulator_button.setChecked(False)
                 raise
         else:
@@ -599,7 +603,8 @@ class PatchClampUI(QWidget):
             try:
                 ludlStage = LudlStage("COM12")
                 self.backend.XYstage = ludlStage
-            except:
+            except Exception as exc:
+                logging.critical("caught exception", exc_info=exc)
                 self.connect_XYstage_button.setChecked(False)
                 raise
         else:
@@ -618,7 +623,8 @@ class PatchClampUI(QWidget):
                 self.signal_sealtest = sealtestthread.measurement
                 self.signal_sealtest.connect(self.update_current_voltage)
                 self.backend.sealtestthread = sealtestthread
-            except:
+            except Exception as exc:
+                logging.critical("caught exception", exc_info=exc)
                 self.connect_sealtestthread_button.setChecked(False)
                 raise
         else:
@@ -638,7 +644,8 @@ class PatchClampUI(QWidget):
                 self.signal_pressure = pressurethread.measurement
                 self.signal_pressure.connect(self.update_pressure)
                 self.backend.pressurethread = pressurethread
-            except:
+            except Exception as exc:
+                logging.critical("caught exception", exc_info=exc)
                 self.connect_sealtestthread_button.setChecked(False)
                 raise
         else:
@@ -979,7 +986,8 @@ class PatchClampUI(QWidget):
                 int(curOut.size / sampPerCyc), sampPerCyc
             )
             curData = np.mean(curOutCyc, axis=0)
-        except:
+        except Exception as exc:
+            logging.critical("caught exception", exc_info=exc)
             curData = curOut
 
         voltData = voltOut
@@ -1008,7 +1016,8 @@ class PatchClampUI(QWidget):
             estimated_size_resistance = 10000 / (
                 membraneResistance * 1000000
             )  # The resistance of a typical patch of membrane, RM is 10000 Omega/{cm}^2
-        except:
+        except Exception as exc:
+            logging.critical("caught exception", exc_info=exc)
             self.resistance_value_label.setText("NaN")
             R_to_append = np.nan
 
@@ -1017,7 +1026,8 @@ class PatchClampUI(QWidget):
             self.membranevoltage_value_label.setText(
                 "{:.1f}".format(measured_vlotage)
             )
-        except:
+        except Exception as exc:
+            logging.critical("caught exception", exc_info=exc)
             self.membranevoltage_value_label.setText("NaN")
         try:
             # Computing capacitance
@@ -1074,7 +1084,8 @@ class PatchClampUI(QWidget):
                 "{:.1f}".format(estimated_ratio)
             )  # http://www.cnbc.cmu.edu/~bard/passive2/node5.html
 
-        except:
+        except Exception as exc:
+            logging.critical("caught exception", exc_info=exc)
             self.capacitance_value_label.setText("NaN")
             C_to_append = np.nan
             self.ratio_value_label.setText("NaN")

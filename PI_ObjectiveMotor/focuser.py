@@ -5,6 +5,7 @@ Created on Thu Mar 21 14:41:41 2019
 @author: xinmeng
 """
 import importlib.resources
+import logging
 import sys
 import time
 
@@ -66,7 +67,8 @@ class PIMotor:
 
             if self.pidevice.HasqVER():
                 print("version info: {}".format(self.pidevice.qVER().strip()))
-        except:
+        except Exception as exc:
+            logging.critical("caught exception", exc_info=exc)
             print("PI device not initilized.")
 
     def move(self, target_pos):

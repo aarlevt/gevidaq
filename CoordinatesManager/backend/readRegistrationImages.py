@@ -6,6 +6,7 @@ Created on Mon Mar 30 11:29:16 2020
 @author: Izak de Heer
 """
 
+import logging
 import math as m
 import os
 
@@ -220,7 +221,8 @@ def selectROI(image):
         contour = contour[0]
         try:
             np.amin(contour[:, 0])
-        except:
+        except Exception as exc:
+            logging.critical("caught exception", exc_info=exc)
             print("np.amin failed")
 
         bbox = np.array(

@@ -5,6 +5,7 @@ Created on Wed Mar  4 12:18:12 2020
 @author: xinmeng
 """
 
+import logging
 import threading
 
 import pyqtgraph as pg
@@ -189,7 +190,8 @@ class AOTFWidgetUI(QWidget):
             # servo= Servo()
             # close the blue shutter
             # servo.rotate(target_servo = 'servo_modulation_1', degree = 0)
-        except:
+        except Exception as exc:
+            logging.critical("caught exception", exc_info=exc)
             print("Fail to initialize servo position.")
 
     def updatelinevalue(self, wavelength):

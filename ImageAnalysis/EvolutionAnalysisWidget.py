@@ -5,6 +5,7 @@ Created on Wed May 20 18:32:50 2020
 @author: xinmeng
 """
 
+import logging
 import os
 import sys
 import threading
@@ -713,7 +714,8 @@ class MainGUI(QWidget):
         )
         try:
             self.Excelfile = pd.read_excel(self.ExcelfileName)
-        except:
+        except Exception as exc:
+            logging.critical("caught exception", exc_info=exc)
             self.Excelfile = pd.read_excel(
                 self.ExcelfileName, engine="openpyxl"
             )

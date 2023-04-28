@@ -6,6 +6,7 @@ Created on Tue Dec  4 14:12:40 2018
 
 """
 
+import logging
 import os
 
 import numpy as np
@@ -102,8 +103,8 @@ class DMD_manager:
         self.DMD.Halt()
         try:
             self.DMD.FreeSeq()
-        except:
-            pass
+        except Exception as exc:
+            logging.critical("caught exception", exc_info=exc)
 
     def deallocDevide(self):
         # De-allocate the device

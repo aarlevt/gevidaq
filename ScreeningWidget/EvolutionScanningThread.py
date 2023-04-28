@@ -5,6 +5,7 @@ Created on Mon Dec 23 15:10:53 2019
 @author: xinmeng
 -----------------------------------------------------------Threading class for evolution screening--------------------------------------------------------------------------------
 """
+import logging
 import math
 import os
 import time
@@ -121,7 +122,8 @@ class ScanningExecutionThread(QThread):
 
                 self.watchdog_flag = True
                 time.sleep(0.5)
-            except:
+            except Exception as exc:
+                logging.critical("caught exception", exc_info=exc)
                 print("Laser not connected.")
 
             # If turn on the laser shutter in the beginning
@@ -301,7 +303,8 @@ class ScanningExecutionThread(QThread):
                         )
                         # Typically it needs 1~ second to move across 15000 stage index.
                         time.sleep(0.3)
-                    except:
+                    except Exception as exc:
+                        logging.critical("caught exception", exc_info=exc)
                         self.error_massage = "Fail_MoveStage"
                         self.errornum += 1
                         print(
@@ -356,7 +359,10 @@ class ScanningExecutionThread(QThread):
                                         self.FocusDegree_img_reconstructed
                                     )
 
-                                except:
+                                except Exception as exc:
+                                    logging.critical(
+                                        "caught exception", exc_info=exc
+                                    )
                                     # FocusDegree_img_reconstructed is not generated with camera imaging.
                                     pass
                             print(
@@ -522,8 +528,8 @@ class ScanningExecutionThread(QThread):
         try:
             self.pi_device_instance.CloseMotorConnection()
             print("Objective motor disconnected.")
-        except:
-            pass
+        except Exception as exc:
+            logging.critical("caught exception", exc_info=exc)
 
         print("Error number: {}".format(self.errornum))
 
@@ -788,8 +794,8 @@ class ScanningExecutionThread(QThread):
 
         try:
             AutoFocusConfig = self.GeneralSettingDict["AutoFocusConfig"]
-        except:
-            pass
+        except Exception as exc:
+            logging.critical("caught exception", exc_info=exc)
 
         # If manual focus correction applies, unpact the target focus infor.
         if len(self.GeneralSettingDict["FocusCorrectionMatrixDict"]) > 0:
@@ -913,8 +919,10 @@ class ScanningExecutionThread(QThread):
                                         coordinate
                                     )
                                 )
-                    except:  # If it's already the last round, skip.
-                        pass
+                    except Exception as exc:
+                        logging.critical(
+                            "caught exception", exc_info=exc
+                        )  # If it's already the last round, skip.
 
                     # Generate position list.
                     ZStacklinspaceStart = (
@@ -1024,7 +1032,8 @@ class ScanningExecutionThread(QThread):
                             self.auto_focus_position = self.ZStackPosList[
                                 int(len(self.ZStackPosList) / 2)
                             ]
-                        except:
+                        except Exception as exc:
+                            logging.critical("caught exception", exc_info=exc)
                             self.auto_focus_position = self.init_focus_position
                         break
 
@@ -1058,8 +1067,10 @@ class ScanningExecutionThread(QThread):
                                 )
                             )
 
-                except:  # If it's already the last round, skip.
-                    pass
+                except Exception as exc:
+                    logging.critical(
+                        "caught exception", exc_info=exc
+                    )  # If it's already the last round, skip.
 
                 # Make sure it skip waveform execution
                 ZStackNum = 0
@@ -1393,7 +1404,8 @@ class ScanningExecutionThread(QThread):
                             metadata={"FocusPos: ": str(self.FocusPos)},
                         )
 
-            except:
+            except Exception as exc:
+                logging.critical("caught exception", exc_info=exc)
                 print("No.{} image failed to generate.".format(imageSequence))
 
     def generate_tif_name(self, extra_text="_"):

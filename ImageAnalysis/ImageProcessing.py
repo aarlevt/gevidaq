@@ -5,6 +5,7 @@ Created on Sat Mar  7 16:46:47 2020
 @author: xinmeng
 """
 
+import logging
 import math
 import os
 import time
@@ -155,7 +156,8 @@ class ProcessImage:
                         )
                     ]
                 )
-            except:
+            except Exception as exc:
+                logging.critical("caught exception", exc_info=exc)
                 RoundNumberList.append(
                     eachfilename[
                         eachfilename.index("Round") : eachfilename.index(
@@ -715,7 +717,8 @@ class ProcessImage:
                     return True
                 else:
                     return False
-        except:
+        except Exception as exc:
+            logging.critical("caught exception", exc_info=exc)
             return False
 
     # %%
@@ -902,8 +905,8 @@ class ProcessImage:
                 1,
                 0,
             )  # Here higher the threshold a bit to shrink the mask, make sure generated contour doesn't exceed.
-        except:
-            pass
+        except Exception as exc:
+            logging.critical("caught exception", exc_info=exc)
         # Get rid of little patches.
         # self.filled_mask_convolve2d = opening(self.filled_mask_convolve2d, square(int(1)))
 
@@ -2516,7 +2519,8 @@ class ProcessImage:
                     # For absolute intensity
                     bounding_box_str_Data_1 = row_Data_1["BoundingBox_EC"]
                     ImgNameInforString_Data1 = row_Data_1["ImgNameInfor_EC"]
-                except:
+                except Exception as exc:
+                    logging.critical("caught exception", exc_info=exc)
                     # For ratio registration
                     bounding_box_str_Data_1 = row_Data_1["BoundingBox_Tag_EC"]
                     ImgNameInforString_Data1 = row_Data_1[
@@ -2567,7 +2571,8 @@ class ProcessImage:
                             ]
                         )
                     ]
-                except:
+                except Exception as exc:
+                    logging.critical("caught exception", exc_info=exc)
                     DataFrame_of_same_coordinate_Data2 = cell_Data_2[
                         cell_Data_2["ImgNameInfor_Tag_KC"].str.contains(
                             ImgNameInforString_Data1[
@@ -2584,7 +2589,8 @@ class ProcessImage:
                     # ImgNameInforString_Data2 = row_Data_2['ImgNameInfor_KC']
                     try:
                         bounding_box_str_Data_2 = row_Data_2["BoundingBox_KC"]
-                    except:
+                    except Exception as exc:
+                        logging.critical("caught exception", exc_info=exc)
                         bounding_box_str_Data_2 = row_Data_2[
                             "BoundingBox_Tag_KC"
                         ]

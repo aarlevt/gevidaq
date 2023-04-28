@@ -9,6 +9,7 @@ Created on Fri Dec 13 23:04:00 2019
 
 """
 
+import logging
 import os
 import sys
 import threading
@@ -888,8 +889,8 @@ class WaveformGenerator(QWidget):
         try:
             self.switchAutoPadding.setChecked(True)
             self.setAutoPadding()
-        except:
-            pass
+        except Exception as exc:
+            logging.critical("caught exception", exc_info=exc)
 
         self.wavenpfileName, _ = QtWidgets.QFileDialog.getOpenFileName(
             self,
@@ -907,7 +908,8 @@ class WaveformGenerator(QWidget):
                 self.uiDaq_sample_rate = int(
                     os.path.split(self.wavenpfileName)[1][20:-4]
                 )
-            except:
+            except Exception as exc:
+                logging.critical("caught exception", exc_info=exc)
                 try:
                     self.uiDaq_sample_rate = int(
                         float(
@@ -916,7 +918,8 @@ class WaveformGenerator(QWidget):
                             ]
                         )
                     )  # Locate sr_ in the file name to get sampling rate.
-                except:
+                except Exception as exc:
+                    logging.critical("caught exception", exc_info=exc)
                     self.uiDaq_sample_rate = 50000
 
             if self.uiDaq_sample_rate != int(self.SamplingRateTextbox.value()):
@@ -934,7 +937,8 @@ class WaveformGenerator(QWidget):
                 self.generate_graphy(
                     channel_keyword, self.waveform_data_dict[channel_keyword]
                 )
-        except:
+        except Exception as exc:
+            logging.critical("caught exception", exc_info=exc)
             print("File not valid.")
 
     # %%
@@ -1021,7 +1025,8 @@ class WaveformGenerator(QWidget):
 
                 del self.PlotDataItem_dict[channel_keyword]
 
-            except:
+            except Exception as exc:
+                logging.critical("caught exception", exc_info=exc)
                 # In case of delete loaded contour scanning signals
                 self.pw_PlotItem.removeItem(
                     self.PlotDataItem_dict["galvos_X_contour"]
@@ -1655,8 +1660,8 @@ class WaveformGenerator(QWidget):
         if self.Append_Mode is True:
             try:
                 self.pw_PlotItem.removeItem(self.PlotDataItem_dict[channel])
-            except:
-                pass
+            except Exception as exc:
+                logging.critical("caught exception", exc_info=exc)
         self.pw_PlotItem.addItem(current_PlotDataItem)
 
         self.PlotDataItem_dict[channel] = current_PlotDataItem
@@ -2233,7 +2238,8 @@ class WaveformGenerator(QWidget):
                 self.ScanArrayXnum,
             )  # Emit a tuple
             self.GalvoScanInfor.emit(self.GalvoScanInforPackage)
-        except:
+        except Exception as exc:
+            logging.critical("caught exception", exc_info=exc)
             self.GalvoScanInfor.emit("NoGalvo")  # Emit a string
 
         self.button_execute.setEnabled(True)
@@ -2446,7 +2452,8 @@ class WaveformGenerator(QWidget):
                             self.PMT_image_reconstructed, cmap=plt.cm.gray
                         )
                         plt.show()
-                except:
+                except Exception as exc:
+                    logging.critical("caught exception", exc_info=exc)
                     np.save(
                         os.path.join(
                             self.savedirectory,
@@ -2555,7 +2562,8 @@ class WaveformGenerator(QWidget):
                             self.PMT_image_reconstructed, cmap=plt.cm.gray
                         )
                         plt.show()
-                except:
+                except Exception as exc:
+                    logging.critical("caught exception", exc_info=exc)
                     np.save(
                         os.path.join(
                             self.savedirectory,

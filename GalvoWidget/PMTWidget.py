@@ -4,6 +4,7 @@ Created on Tue Jan 21 13:34:56 2020
 
 @author: xinmeng
 """
+import logging
 import os
 import sys
 from datetime import datetime
@@ -564,7 +565,8 @@ Left drag + Shift + Ctrl scales the ROI with size snapping"
             )
             self.pmtTest.start()
 
-        except:
+        except Exception as exc:
+            logging.critical("caught exception", exc_info=exc)
             print("NI-Daq not connected.")
             self.update_pmt_Graphs(
                 data=np.zeros((Value_yPixels, Value_yPixels))
@@ -744,8 +746,8 @@ Left drag + Shift + Ctrl scales the ROI with size snapping"
         """
         try:
             self.pmtvb.removeItem(self.click_poly_roi)
-        except:
-            pass
+        except Exception as exc:
+            logging.critical("caught exception", exc_info=exc)
 
         self.clicked_points_list = []
 

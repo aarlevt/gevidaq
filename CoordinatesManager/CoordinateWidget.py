@@ -8,6 +8,7 @@ Modified by Xin, adding machine learning portal.
 """
 
 import colorsys
+import logging
 import random
 import sys
 import threading
@@ -72,8 +73,8 @@ class CoordinatesWidgetUI(QWidget):
     def closeEvent(self, event):
         try:
             self.DMD
-        except:
-            pass
+        except Exception as exc:
+            logging.critical("caught exception", exc_info=exc)
         else:
             self.DMD.disconnect_DMD()
 
@@ -519,7 +520,8 @@ class CoordinatesWidgetUI(QWidget):
                     "mask_{}".format(self.mask_index_spinbox.value())
                 ]
             )
-        except:
+        except Exception as exc:
+            logging.critical("caught exception", exc_info=exc)
             print("show_mask failed.")
 
     def delete_mask(self):
@@ -576,7 +578,8 @@ class CoordinatesWidgetUI(QWidget):
                 "mask_{}".format(self.mask_index_spinbox.value())
             ] = self.current_mask
 
-        except:
+        except Exception as exc:
+            logging.critical("caught exception", exc_info=exc)
             print("fail to load file.")
 
     # MaskRCNN detection part
