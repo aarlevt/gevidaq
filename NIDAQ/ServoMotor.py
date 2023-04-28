@@ -18,13 +18,6 @@ class Servo:
         self.PWM_frequency = 50
         self.mission = DAQmission()
 
-    #    def power_on(self):
-    #        self.mission.sendSingleDigital(channel = 'servo_power_1', value = True)
-    ##        time.sleep(1.5)
-    #
-    #    def power_off(self):
-    #        self.mission.sendSingleDigital(channel = 'servo_power_1', value = False)
-
     def rotate(self, target_servo, degree):
         """"""
         # Convert degree to duty cycle in PWM.
@@ -36,9 +29,6 @@ class Servo:
             )
 
             PWM_wave = np.where(PWM_wave == 0, False, True)
-            #            plt.figure()
-            #            plt.plot(PWM_wave)
-            #            plt.show()
             PWM_wave_organized = np.array(
                 [(target_servo, PWM_wave)],
                 dtype=[("Specification", "U20"), ("Waveform", bool, (len(PWM_wave),))],
@@ -86,7 +76,4 @@ class Servo:
 if __name__ == "__main__":
 
     servo = Servo()
-    #     servo.power_on()
     servo.rotate(target_servo="servo_modulation_1", degree=0)
-#     servo.rotate(target_servo = 'servo_modulation_2', degree = 0)
-#     servo.power_off()

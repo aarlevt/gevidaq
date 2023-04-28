@@ -710,7 +710,6 @@ class HamamatsuCamera(object):
 
         # Wait for a new frame if the camera is acquiring.
         if captureStatus.value == DCAMCAP_STATUS_BUSY:
-            #            print('DCAMCAP_STATUS_BUSY')
             paramstart = DCAMWAIT_START(
                 0, 0, DCAMWAIT_CAPEVENT_FRAMEREADY | DCAMWAIT_CAPEVENT_STOPPED, 100
             )
@@ -760,8 +759,6 @@ class HamamatsuCamera(object):
 
         if self.debug:
             print(new_frames)
-
-        #        print(new_frames)
 
         return new_frames
 
@@ -1420,7 +1417,6 @@ if __name__ == "__main__":
                     for aframe in frames:
                         video_list.append(aframe.np_array)
                         cnt += 1
-                #                print('frames size is {}'.format(len(frames)))
                 AcquisitionEndTime = time.time()
                 print("Frames acquired: " + str(cnt))
                 print(

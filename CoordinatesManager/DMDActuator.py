@@ -99,9 +99,6 @@ class DMDActuator:
         OFF_TIME = self.DMD.SeqInquire(inquireType=ALP4.ALP_OFF_TIME)
         PICNUM = self.DMD.SeqInquire(inquireType=ALP4.ALP_PICNUM)
         MIN_PICTURE_TIME = self.DMD.SeqInquire(inquireType=ALP4.ALP_MIN_PICTURE_TIME)
-        # TRIGGER_TYPE = self.DMD.ProjInquire(inquireType = ALP4.ALP_PROJ_STEP)
-        # PROJ_STEP = self.DMD.ProjInquire(inquireType = ALP4.ALP_PROJ_MODE)
-        # Exception: Error sending request. One of the parameters is invalid.
 
         print("-------------DMD status-------------")
         print("ALP_PICTURE_TIME: {} μs".format(PICTURE_TIME))
@@ -114,12 +111,7 @@ class DMDActuator:
         print("ALP_OFF_TIME: {} μs (total inactive projection time)".format(OFF_TIME))
         print("Number of pictures in sequence: {}".format(PICNUM))
         print("minimum duration of the display of one picture in μs(MIN_PICTURE_TIME): {}".format(MIN_PICTURE_TIME))
-        # if TRIGGER_TYPE == 2009:
-        #     print("TRIGGER_TYPE: ALP_EDGE_RISING")
-        # else:
-        #     print("TRIGGER_TYPE: {}".format(TRIGGER_TYPE))
         print("------------------------------------")
-        # print("ALP_PROJ_STEP: {} ".format(PROJ_STEP))
 
     def stop_projection(self):
         self.DMD.Halt()

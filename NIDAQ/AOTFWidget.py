@@ -184,7 +184,7 @@ class AOTFWidgetUI(QWidget):
         try:
             print("Servo position initialization turned off.")
             # servo= Servo()
-            # # close the blue shutter
+            # close the blue shutter
             # servo.rotate(target_servo = 'servo_modulation_1', degree = 0)
         except:
             print("Fail to initialize servo position.")

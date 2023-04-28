@@ -1816,7 +1816,7 @@ class ProcessImage:
                 ]  # Individual cell mask in each bounding box
 
                 # =============================================================
-                #             # Find contour along cell mask
+                # Find contour along cell mask
                 # =============================================================
                 cell_contour_mask = closing(
                     ProcessImage.findContour(CellMask_roi, RawImg_roi.copy(), 0.001),
@@ -3591,9 +3591,6 @@ class ProcessImage:
             Sharpness of the image, the higher the better.
 
         """
-        # if image.shape[2] == 3:
-        #     image = rgb2gray(image)
-
         # Blur the image a bit.
         image = cv2.GaussianBlur(image, (3, 3), 0)
 
@@ -5021,9 +5018,6 @@ class PatchAnalysis:
 
         # For fitting, bring the last sample to the front as t=0
         self.averaged_single_period = np.roll(self.averaged_single_period, 1)
-
-        # # Move baseline to 1.
-        # self.averaged_single_period += 1 - np.amin(self.averaged_single_period)
 
     def FitSinglePeriod(self):
 

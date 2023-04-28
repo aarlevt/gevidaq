@@ -87,11 +87,6 @@ def plotPoints(*args):
 
 
 if __name__ == "__main__":
-    #    p1 = np.array([300,300])
-    #    p2 = np.array([600,300])
-    #    p3 = np.array([450,450])
-    #    p4 = np.array([300,600])
-
     p1 = np.array([300, 200])
     p2 = np.array([500, 600])
     p3 = np.array([700, 200])
@@ -99,5 +94,3 @@ if __name__ == "__main__":
 
     # circlePatterns(p1,p2,p3, p4)
     touchingSquarePatterns(sigma, p1, p2, p3)
-
-#    plotPoints(p1, p2, p3)

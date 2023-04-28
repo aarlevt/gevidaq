@@ -50,14 +50,6 @@ class DrawingWidget(pg.ImageView):
             except TypeError:
                 pass
 
-    # def mousePressEventDrawing(self, e):
-    #     if self.flag_is_drawing:
-    #         self.flag_is_drawing = False
-    #     else:
-    #         self.new_roi = True
-    #         self.flag_is_drawing = True
-    #         self.start_point = self.getView().mapToView(e.pos())
-
     def keyPressEvent(self, event):
         if event.key() == QtCore.Qt.Key_Space:
             if self.flag_is_drawing:
@@ -101,13 +93,3 @@ class DrawingWidget(pg.ImageView):
                 self.selectedroi.handles[0]["item"],
                 self.selectedroi.handles[-1]["item"],
             )
-
-    # def resizeEvent(self, event):
-    #     """
-    #     Forces the widget to be square upon resize event
-    #     """
-    #     # Create a square base size of 10x10 and scale it to the new size
-    #     # maintaining aspect ratio.
-    #     new_size = QtCore.QSize(10, 10)
-    #     new_size.scale(event.size(), QtCore.Qt.KeepAspectRatio)
-    #     self.resize(new_size)

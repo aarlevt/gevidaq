@@ -66,8 +66,6 @@ class PIMotor:
 
             if self.pidevice.HasqVER():
                 print("version info: {}".format(self.pidevice.qVER().strip()))
-        #    allaxes = self.pidevice.qSAI_ALL()
-        #        return self.pidevice
         except:
             print("PI device not initilized.")
 

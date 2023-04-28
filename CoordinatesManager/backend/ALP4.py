@@ -88,7 +88,7 @@ class tAlpDynSynchOutGate(ct.Structure):
         ("Period", ct.c_ubyte),  # Period=1..16 enables output; 0: tri-state
         ("Polarity", ct.c_ubyte),  # 0: active pulse is low, 1: high
         ("Gate", ct.c_ubyte * 16),
-    ]  # #Period number of bytes; each one is 0 or 1
+    ]  #Period number of bytes; each one is 0 or 1
     # Period bytes are used!
 
 

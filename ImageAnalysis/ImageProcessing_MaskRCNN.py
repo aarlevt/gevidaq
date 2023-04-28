@@ -278,10 +278,6 @@ class ProcessImageML:
                     background_fileNameList, operation="mean"
                 )
 
-                # # Smooth the background image
-                # background_image = ProcessImage.average_filtering(
-                #     background_image, filter_side_length = 25)
-
                 # Save the individual file.
                 with skimtiff.TiffWriter(
                     os.path.join(background_images_folder, "calculated background.tif"),
@@ -505,10 +501,6 @@ class ProcessImageML:
             background_image = ProcessImage.image_stack_calculation(
                 background_fileNameList, operation="mean"
             )
-
-            # # Smooth the image
-            # background_image = ProcessImage.average_filtering(
-            #     background_image, filter_side_length = 25)
 
             # Save the individual file.
             with skimtiff.TiffWriter(

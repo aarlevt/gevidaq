@@ -410,11 +410,7 @@ class PatchclampSealTestUI(QWidget):
         and
         False if not.
         """
-        # check = QMessageBox.question(self, 'GAINS!', "Are all the gains corresponding?",
-        # QMessageBox.Yes | QMessageBox.No)
-
-        # if check == QMessageBox.Yes:
-        """Start the patchclamp measurement"""
+        # Start the patchclamp measurement
         self.stopButton.setEnabled(True)
         self.startButton.setEnabled(False)
 
@@ -445,11 +441,7 @@ class PatchclampSealTestUI(QWidget):
         and
         False if not.
         """
-        # check = QMessageBox.question(self, 'GAINS!', "Are all the gains corresponding?",
-        # QMessageBox.Yes | QMessageBox.No)
-
-        # if check == QMessageBox.Yes:
-        """Start the patchclamp measurement"""
+        # Start the patchclamp measurement
         self.VmstartButton.setEnabled(False)
         self.VmstopButton.setEnabled(True)
 

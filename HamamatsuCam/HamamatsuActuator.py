@@ -100,15 +100,6 @@ class CamActuator:
             "trigger_active",
         ]
 
-        #                      "image_height",
-        #                      "image_width",
-
-        #                      "buffer_rowbytes",
-        #                      "buffer_top_offset_bytes",
-        #                      "subarray_hsize",
-        #                      "subarray_vsize",
-        #                      "binning"]
-
         self.metaData = "Hamamatsu C13440-20CU "
 
         for param in params:
@@ -257,7 +248,6 @@ class CamActuator:
             ] = (
                 self.hcam.getFrames()
             )  # frames is a list with HCamData type, with np_array being the image.
-            #            print('grabing frame...imageCount{}'.format(self.imageCount))
             for aframe in frames:
                 self.video_list.append(aframe.np_array)
                 self.imageCount += 1
@@ -299,9 +289,6 @@ if __name__ == "__main__":
     cam.StartStreaming(BufferNumber=10, trigger_source="INTERNAL", exposure_time=0.0015)
     print("main thread continues")
     # Make sure that the camera is prepared before waveform execution.
-    #    while cam.isStreaming == True:
-    #        print('Waiting for camera...')
-    #        time.sleep(0.5)
     time.sleep(3.5)
     cam.isSaving = True
     tif_name = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\test.tif"  # TODO hardcoded path

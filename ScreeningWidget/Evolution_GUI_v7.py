@@ -1269,19 +1269,8 @@ class Mainbody(QtWidgets.QWidget):
         None.
 
         """
-        # try:
-        # if len(self.Tag_round_infor) != 0 or len(self.Lib_round_infor) != 0:
-            # If analysis information configured, start analysis afterwards.
-
-            # from ImageAnalysis import EvolutionAnalysisWidget
-            # print("Importing EvolutionAnalysisWidget")
-
-            # self.ScreenAnalysisMLWindow = EvolutionAnalysisWidget.MainGUI()
-            # self.ScreenAnalysisMLWindow.show()
-
-            # time.sleep(4)
         if self.Analyse_roundCheckbox.isChecked():
-            # # By default all data is stored in the same folder.
+            # By default all data is stored in the same folder.
             self.ScreenAnalysisMLWindow.Tag_folder = self.savedirectory
             self.ScreenAnalysisMLWindow.Lib_folder = self.savedirectory
 
@@ -1289,11 +1278,6 @@ class Mainbody(QtWidgets.QWidget):
             # self.ScreenAnalysisMLWindow.Lib_round_infor = self.Lib_round_infor
 
             self.ScreenAnalysisMLWindow.ScreeningAnalysis()
-
-        #     else:
-        #         pass
-        # except:
-        #     print("Analysis failed to start.")
 
     def run_in_thread(self, fn, *args, **kwargs):
         """
@@ -1345,10 +1329,7 @@ class Mainbody(QtWidgets.QWidget):
         # Refresh the focus correction
         self.GeneralSettingDict["FocusCorrectionMatrixDict"] = FocusCorrectionMatrixDict
 
-        # # if saving directory is re-configured, refresh it, otherwise keep as it is.
-        # if len(self.savedirectorytextbox.text()) >= 1:
-        #     self.GeneralSettingDict['savedirectory'] = self.savedirectory
-        # else:
+        # if saving directory is re-configured, refresh it, otherwise keep as it is.
         self.auto_saving_directory()
 
         self.normalOutputWritten("Pipeline loaded.\n")

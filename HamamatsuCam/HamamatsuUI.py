@@ -954,15 +954,6 @@ class CameraUI(QMainWindow):
             "trigger_active",
         ]
 
-        #                      "image_height",
-        #                      "image_width",
-
-        #                      "buffer_rowbytes",
-        #                      "buffer_top_offset_bytes",
-        #                      "subarray_hsize",
-        #                      "subarray_vsize",
-        #                      "binning"]
-
         self.metaData = "Hamamatsu C13440-20CU "
 
         for param in params:
@@ -1227,7 +1218,7 @@ class CameraUI(QMainWindow):
             self.ROIitem.sigRegionChanged.connect(self.update_ROI_spinbox_coordinates)
             # This function ensures the spinboxes show the actual roi coordinates
 
-            #            #Note that clicking is disabled by default to prevent stealing clicks from objects behind the ROI.
+            # Note that clicking is disabled by default to prevent stealing clicks from objects behind the ROI.
             #            self.ROIitem.setAcceptedMouseButtons(Qt.LeftButton)
             #            self.ROIitem.sigClicked.connect(self.ShowROIImage)
 
@@ -1242,7 +1233,6 @@ class CameraUI(QMainWindow):
     def set_roi_flag(self):
         if self.center_roiButton.isChecked():
             self.ROI_vpos_spinbox.setReadOnly(True)
-            #            self.ResetROI()
             self.center_frame = (
                 0.5 * 2048
             )  # self.hcam.getPropertyValue("subarray_vsize")[0]
@@ -1405,11 +1395,9 @@ class CameraUI(QMainWindow):
         if self.ShowROIImgButton.isChecked():
             self.AcquisitionROIstackedWidget.setCurrentIndex(1)
             self.ShowROIImgSwitch = True
-        #            .setImage(self.ROIitem.getArrayRegion(image, self.Live_item), autoLevels=False)
         else:
             self.AcquisitionROIstackedWidget.setCurrentIndex(0)
             self.ShowROIImgSwitch = False
-            # self.Live_view.addItem(self.ROIitem)
 
         """
         # =============================================================================
@@ -1528,8 +1516,6 @@ class CameraUI(QMainWindow):
             self.ShowROIitem.setImage(
                 self.ROIitem.getArrayRegion(image, self.Live_item), autoLevels=None
             )
-
-    #            self.ShowROIitem.setAutoDownsample("subsample")
 
     def SnapImg(self):
         self.StartStream_Thread = threading.Thread(target=self.SNAP)
@@ -1806,20 +1792,10 @@ class CameraUI(QMainWindow):
         )
 
     def SetSavingDirectory(self):
-
-        # files_types = "Tif (*.tif);;Pickle (*.pickle);;YAML (*.yml)"
-        # options = QFileDialog.Options()
-        # self.saving_path, _ = QFileDialog.getSaveFileName(
-        #             self, 'Save as... File', directory = self.default_folder, filter=files_types,options=options)
-
         self.saving_path = str(
             QtWidgets.QFileDialog.getExistingDirectory(directory=self.default_folder)
         )
         self.CamSaving_directory_textbox.setText(self.saving_path)
-        # if len(self.saving_path) > 35:
-        #     self.CamSaving_directory_textbox.setText('...' + self.saving_path[len(self.saving_path)-35:len(self.saving_path)])
-        # elif len(self.saving_path) > 1:
-        #     self.CamSaving_directory_textbox.setText(self.saving_path)
 
     def get_file_dir(self):
         return os.path.join(

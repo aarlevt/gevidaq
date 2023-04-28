@@ -260,9 +260,9 @@ class ObjMotorWidgetUI(QWidget):
     #        self.normalOutputWritten('Objective motor disconnected.'+'\n')
 
     def closeEvent(self, event):
-        # ## Because the software combines both PyQt and PyQtGraph, using the
-        # ## closeEvent() from PyQt will cause a segmentation fault. Calling
-        # ## also the exit() from PyQtGraph solves this problem.
+        # Because the software combines both PyQt and PyQtGraph, using the
+        # closeEvent() from PyQt will cause a segmentation fault. Calling
+        # also the exit() from PyQtGraph solves this problem.
         # pg.exit()
         if self.connect_status == True:
             self.DisconnectMotor()

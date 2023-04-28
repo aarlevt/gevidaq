@@ -439,7 +439,6 @@ class ScanningExecutionThread(QThread):
                                 ROI_number = len(MLresults["scores"])
                                 print("roi number: {}".format(ROI_number))
                                 for each_ROI in range(ROI_number):
-                                    # if MLresults['class_ids'][each_ROI] == 3:
                                     ROIlist = MLresults["rois"][each_ROI]
                                     print(ROIlist)
                                     # np array's column([1]) is the width of image, and is the row in stage coordinates.

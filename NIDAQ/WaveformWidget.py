@@ -1137,7 +1137,6 @@ class WaveformGenerator(QWidget):
         self.uiDaq_sample_rate = int(self.SamplingRateTextbox.value())
 
         # Scanning settings
-        # if int(self.textbox1A.currentText()) == 1:
         Value_voltXMin = int(self.GalvoVoltXMinTextbox.value())
         Value_voltXMax = int(self.GalvoVoltXMaxTextbox.value())
         Value_voltYMin = int(self.GalvoVoltYMinTextbox.value())
@@ -1254,7 +1253,6 @@ class WaveformGenerator(QWidget):
     def generate_galvotrigger(self):
         self.uiDaq_sample_rate = int(self.SamplingRateTextbox.value())
         # Scanning settings
-        # if int(self.textbox1A.currentText()) == 1:
         Value_voltXMin = int(self.GalvoVoltXMinTextbox.value())
         Value_voltXMax = int(self.GalvoVoltXMaxTextbox.value())
         Value_voltYMin = int(self.GalvoVoltYMinTextbox.value())
@@ -1453,8 +1451,6 @@ class WaveformGenerator(QWidget):
             self.uiwavegap_digital_waveform = 0
         else:
             self.uiwavegap_digital_waveform = int(self.DigGapTextbox.text())
-
-        # if int(self.textbox11A.currentText()) == 1:
 
         digital_waveform = generate_digital_waveform(
             self.uiDaq_sample_rate,
@@ -1848,7 +1844,7 @@ class WaveformGenerator(QWidget):
                         )
                     )
 
-                    # # Reset the PlotDataItem
+                    # Reset the PlotDataItem
                     # self.PlotDataItem_dict[waveform_key].setData(
                     #     x_label,
                     #     self.waveform_data_dict[waveform_key][1, :],

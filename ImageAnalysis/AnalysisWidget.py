@@ -78,8 +78,6 @@ class AnalysisWidgetUI(QWidget):
         self.switch_Vp_or_camtrace.addItems(["Correlate to Vp", "Correlate to video", "Photocurrent"])
         self.readimageLayout.addWidget(self.switch_Vp_or_camtrace, 1, 1)
 
-        # self.readimageLayout.addWidget(QLabel('Video of interest:'), 1, 0)
-
         self.textbox_directory_name = QLineEdit(self)
         self.readimageLayout.addWidget(self.textbox_directory_name, 1, 6)
 
@@ -439,7 +437,6 @@ class AnalysisWidgetUI(QWidget):
 
                             # Extra camera triggers: False True True False | Real signals: True
                             # Extra patch voltage:   -0.7  -0.7 -0.7 -0.7  | Real signals: 0.3
-                            # if
                             self.configured_Vp = self.configured_Vp[4:][0:-1]/10
 
                             print("Length of cut Vp: {}".format(len(self.configured_Vp)))
@@ -508,14 +505,6 @@ class AnalysisWidgetUI(QWidget):
             )
         )
 
-        # if self.switch_bg_Video_or_image.currentText() == 'Video':
-        #     self.videostack_background = imread(self.fileName_background)
-        #     print(self.videostack_background.shape)
-        #     self.videostack = self.videostack - self.videostack_background
-        #     print('Substraction complete.')
-
-        # elif self.switch_bg_Video_or_image.currentText() == 'ROI':
-
         unique, counts = np.unique(self.averageimage_ROI_mask, return_counts=True)
         count_dict = dict(zip(unique, counts))
         print("number of 1 and 0:" + str(count_dict))
@@ -551,7 +540,7 @@ class AnalysisWidgetUI(QWidget):
         )
         plt.show()
 
-        # # Use rolling average to smooth the background trace
+        # Use rolling average to smooth the background trace
         # self.background_trace = uniform_filter1d(uniform_filter1d
         # (self.background_trace, size=self.background_rolling_average_number), size=self.background_rolling_average_number*2)
 
@@ -603,10 +592,6 @@ class AnalysisWidgetUI(QWidget):
             dpi=1000,
         )
         plt.show()
-
-        # mean_camera_counts = []
-        # for i in range(self.videostack.shape[0]):
-        #     mean_camera_counts.append(np.mean(self.videostack[i]))
 
         # For each frame in video, substract the background
         container = np.empty((self.videostack.shape[0],self.videostack.shape[1],self.videostack.shape[2]))
@@ -1026,10 +1011,6 @@ class AnalysisWidgetUI(QWidget):
             pass
 
 
-#    def closeEvent(self, event):
-#        QtWidgets.QApplication.quit()
-#        event.accept()
-
 #%%
 class PlotAnalysisGUI(QWidget):
 
@@ -1167,15 +1148,12 @@ class PlotAnalysisGUI(QWidget):
                 self.Checked_display_list, "Cam_trace"
             )
 
-        #            Vm_diff = round(np.mean(Vm[100:200]) - np.mean(Vm[-200:-100]), 2)
-
         reference_length = len(temp_loaded_container[0]["Waveform"])
         xlabel_all = np.arange(reference_length) / Daq_sample_rate
 
         # ----------------------------------------------------For patch perfusion---------------------------------------------------------------
         if len(self.region_file_name) == 0:
 
-            # plt.figure()
             if len(self.Checked_display_list) == 2:
                 figure, (ax1, ax2) = plt.subplots(2, 1)
 
@@ -1185,7 +1163,6 @@ class PlotAnalysisGUI(QWidget):
             for i in range(len(temp_loaded_container)):
                 if temp_loaded_container[i]["Specification"] == "640AO":
                     pass
-                #                    ax1.plot(xlabel_all, temp_loaded_container[i]['Waveform'], label='640AO', color='r')
                 elif temp_loaded_container[i]["Specification"] == "488AO":
                     ax1.plot(
                         xlabel_all,
@@ -1216,7 +1193,6 @@ class PlotAnalysisGUI(QWidget):
         # ----------------------------------------------------For plots with camera regions-----------------------------------------------------
         if len(self.region_file_name) != 0:
             for region_number in range(len(self.region_file_name)):
-                # plt.figure()
                 if len(self.Checked_display_list) == 2:
                     figure, (ax1, ax2) = plt.subplots(2, 1)
                     print(1111)
@@ -1260,7 +1236,6 @@ class PlotAnalysisGUI(QWidget):
                 ax1.legend()
 
                 if "Recorded_trace" in self.Checked_display_list:
-                    #        plt.yticks(np.round(np.arange(min(Vm), max(Vm), 0.05), 2))
                     # Read in recorded waves
                     Readin_fileName = (
                         self.recorded_wave_fileName
@@ -1271,13 +1246,11 @@ class PlotAnalysisGUI(QWidget):
                     ):  # See which channel is recorded
                         Vm = np.load(Readin_fileName, allow_pickle=True)
                         Vm = Vm[9:-1]  # first 5 are sampling rate, Daq coffs
-                        # Vm[0] = Vm[1]
 
                     ax2.set_xlabel("time(s)")
                     ax2.set_title("Recording")
                     ax2.set_ylabel("V (Vm*10)")
                     ax2.plot(xlabel_all, Vm, label="Vm")
-                    # ax2.annotate('Vm diff = '+str(Vm_diff*100)+'mV', xy=(0, max(Vm)-0.1))
                     ax2.legend()
                 elif (
                     "Recorded_trace" not in self.Checked_display_list
@@ -1325,10 +1298,8 @@ class PlotAnalysisGUI(QWidget):
                     )
                     ax3.set_ylabel("CamCounts")
                     ax3.legend()
-                # plt.autoscale(enable=True, axis="y", tight=False)
                 figure.tight_layout()
                 plt.show()
-            # get_ipython().run_line_magic('matplotlib', 'inline')
 
     def closeEvent(self, event):
         try:

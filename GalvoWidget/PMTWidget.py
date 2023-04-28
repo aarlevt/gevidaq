@@ -384,13 +384,11 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
         self.scanning_tabs.addTab(Zstack_widget, "Stack scanning")
 
         # ---------------------------Set tab1 layout---------------------------
-        #        pmtmaster = QGridLayout()
         self.layout.addWidget(pmtimageContainer, 0, 0, 3, 1)
         self.layout.addWidget(pmtroiContainer, 1, 1)
         self.layout.addWidget(pmtContourContainer, 2, 1)
         self.layout.addWidget(self.scanning_tabs, 0, 1)
 
-    #        self.layout.setLayout(pmtmaster)
 
     # --------------------------------------------------------------------------------------------------------------------------------------
     # ------------------------------------------------------Functions for TAB 'PMT'---------------------------------------------------------
@@ -746,7 +744,7 @@ Left drag + Shift + Ctrl scales the ROI with size snapping")
             roi_item.getSceneHandlePositions()
         )
         # print(self.handle_scene_coordinate_position_raw_list)
-        # # ===== The first placed handle is at the end, put back to front.=====
+        # ===== The first placed handle is at the end, put back to front.=====
         # first_placed_handle = self.handle_scene_coordinate_position_raw_list[-1]
 
         # self.handle_scene_coordinate_position_raw_list.insert(0,first_placed_handle)

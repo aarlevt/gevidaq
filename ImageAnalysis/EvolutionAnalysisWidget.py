@@ -397,14 +397,6 @@ class MainGUI(QWidget):
         self.Tag_folder = self.Analysis_saving_directory
         self.Lib_folder = self.Analysis_saving_directory
 
-        # if self.FilepathSwitchBox.currentText() == 'Tag':
-        #     self.Tag_folder = self.Analysis_saving_directory
-        # elif self.FilepathSwitchBox.currentText() == 'Lib':
-        #     self.Lib_folder = self.Analysis_saving_directory
-        # elif self.FilepathSwitchBox.currentText() == 'All':
-        #     self.Tag_folder = self.Analysis_saving_directory
-        #     self.Lib_folder = self.Analysis_saving_directory
-
     def SetAnalysisRound(self):
         """
         Sepcify the round numbers and store the information in list.
@@ -481,7 +473,7 @@ class MainGUI(QWidget):
             self.ProcessML = ProcessImageML()
 
         # =============================================================================
-        #         # ===== General image analysis in folder. =====
+        # ===== General image analysis in folder. =====
         # =============================================================================
         if len(self.Tag_round_infor) == 0 and len(self.Lib_round_infor) == 0:
 
@@ -499,7 +491,7 @@ class MainGUI(QWidget):
                 )
 
         # =============================================================================
-        #         # ===== General image analysis in folder. =====
+        # ===== General image analysis in folder. =====
         # =============================================================================
         if len(self.Tag_round_infor) == 0 and len(self.Lib_round_infor) == 1:
 
@@ -517,7 +509,7 @@ class MainGUI(QWidget):
                 )
 
         # =============================================================================
-        #         # ===== One GFP round, one Arch round. =====
+        # ===== One GFP round, one Arch round. =====
         # =============================================================================
         elif len(self.Tag_round_infor) == 1 and len(self.Lib_round_infor) == 1:
 
@@ -552,14 +544,6 @@ class MainGUI(QWidget):
                 self.Contour_soma_ratio_thres,
             )
 
-            # if self.FilepathSwitchBox.currentText() == "Cam Z-max":
-            #     DataFrames_filtered.to_excel(
-            #         os.path.join(
-            #             self.Tag_folder,
-            #             datetime.now().strftime("%Y-%m-%d_%H-%M-%S") + "cam_CellsProperties.xlsx",
-            #         )
-            #     )
-
             self.DataFrame_sorted = ProcessImage.sort_on_axes(
                 DataFrames_filtered,
                 axis_1=self.X_axisBox.currentText(),
@@ -576,7 +560,7 @@ class MainGUI(QWidget):
             self.UpdateSelectionScatter()
 
         # =============================================================================
-        #         # ===== For multiple single round wavelength experiment. =====
+        # ===== For multiple single round wavelength experiment. =====
         # =============================================================================
         elif len(self.Tag_round_infor) == 0 and len(self.Lib_round_infor) > 2:
 
@@ -588,7 +572,7 @@ class MainGUI(QWidget):
                 cell_Data = self.ProcessML.FluorescenceAnalysis(lib_folder, lib_round)  # TODO unused
 
         # =============================================================================
-        #         # ===== For KCL assay, two rounds of lib. =====
+        # ===== For KCL assay, two rounds of lib. =====
         # =============================================================================
         elif len(self.Tag_round_infor) == 0 and len(self.Lib_round_infor) == 2:
 
@@ -634,7 +618,7 @@ class MainGUI(QWidget):
             self.UpdateSelectionScatter()
 
         # =============================================================================
-        #         # ===== For KCL assay, two rounds of lib/tag. =====
+        # ===== For KCL assay, two rounds of lib/tag. =====
         # =============================================================================
         elif len(self.Tag_round_infor) == 2 and len(self.Lib_round_infor) == 2:
 
@@ -1116,15 +1100,6 @@ class MainGUI(QWidget):
                 self.loaded_image_display, autoLevels=True
             )
             self.OriginalImg_item.setLevels((50, 190))
-        #            self.Matdisplay_Figure.clear()
-        #            ax1 = self.Matdisplay_Figure.add_subplot(111)
-        #            ax1.imshow(loaded_tag_image_display)#Show the first image
-        #            #--------------------------------------------------Add red boundingbox to axis----------------------------------------------
-        #            rect = mpatches.Rectangle((minc, minr), maxc - minc, maxr - minr, fill=False, edgecolor='cyan', linewidth=2)
-        #            ax1.add_patch(rect)
-        #            ax1.text(maxc, minr, 'NO_{}'.format(self.pop_next_top_cell_counter),fontsize=10, color='orange', style='italic')
-        #            self.Matdisplay_Figure.tight_layout()
-        #            self.Matdisplay_Canvas.draw()
 
         # -------------------Print details of cell of interest----------------
         self.normalOutputWritten(
