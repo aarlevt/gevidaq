@@ -73,7 +73,7 @@ class MainGUI(QWidget):
         super().__init__(*args, **kwargs)
         self.setFont(QFont("Arial"))
 
-        #        self.setMinimumSize(900, 1020)
+        # self.setMinimumSize(900, 1020)
         self.setWindowTitle("Screening Analysis")
         self.layout = QGridLayout(self)
 
@@ -85,15 +85,12 @@ class MainGUI(QWidget):
         self.Lib_folder = None
         self.Tag_round_infor = []
         self.Lib_round_infor = []
-        # **************************************************************************************************************************************
-        # -----------------------------------------------------------GUI for Billboard display------------------------------------------------------
-        # **************************************************************************************************************************************
+        # === GUI for Billboard display ===
         ImageDisplayContainer = QGroupBox("Billboard")
         ImageDisplayContainerLayout = QGridLayout()
 
         self.GraphyDisplayTab = QTabWidget()
 
-        # ----------------------------------------------------------------------
         MatDsiplayPart = QWidget()
         MatDsiplayPart.layout = QGridLayout()
 
@@ -125,7 +122,6 @@ class MainGUI(QWidget):
 
         ImageDisplayContainerLayout.addWidget(self.GraphyDisplayTab, 1, 1)
 
-        # ----------------------------------------------------------------------
         ImageButtonContainer = QGroupBox()
         ImageButtonContainerLayout = QGridLayout()
 
@@ -147,7 +143,7 @@ class MainGUI(QWidget):
         self.SwitchMaskButton = StylishQT.MySwitch(
             "Mask", "#FFFFCC", "PMT", "#FFE5CC", width=65
         )
-        #        self.SwitchMaskButton.setChecked(True)
+        # self.SwitchMaskButton.setChecked(True)
         self.SwitchMaskButton.clicked.connect(self.display_ML_mask)
         ImageButtonContainerLayout.addWidget(self.SwitchMaskButton, 2, 6)
 
@@ -190,13 +186,13 @@ class MainGUI(QWidget):
         SaveCellInforButton = QPushButton("Save cell infor", self)
         SaveCellInforButton.clicked.connect(self.saveCellInfor)
         ImageButtonContainerLayout.addWidget(SaveCellInforButton, 5, 6)
-        #        ButtonRankDeleteFromList = QPushButton('Delete', self)
-        #        ButtonRankDeleteFromList.clicked.connect(self.DeleteFromTopCells)
-        #        ImageButtonContainerLayout.addWidget(ButtonRankDeleteFromList, 2, 7)
+        # ButtonRankDeleteFromList = QPushButton('Delete', self)
+        # ButtonRankDeleteFromList.clicked.connect(self.DeleteFromTopCells)
+        # ImageButtonContainerLayout.addWidget(ButtonRankDeleteFromList, 2, 7)
 
-        #        ButtonRankSaveList = QPushButton('Save Excel', self)
-        #        ButtonRankSaveList.clicked.connect(self.SaveCellsDataframetoExcel)
-        #        ImageButtonContainerLayout.addWidget(ButtonRankSaveList, 2, 7)
+        # ButtonRankSaveList = QPushButton('Save Excel', self)
+        # ButtonRankSaveList.clicked.connect(self.SaveCellsDataframetoExcel)
+        # ImageButtonContainerLayout.addWidget(ButtonRankSaveList, 2, 7)
 
         self.ConsoleTextDisplay = QTextEdit()
         self.ConsoleTextDisplay.setFontItalic(True)
@@ -216,9 +212,7 @@ class MainGUI(QWidget):
 
         self.layout.addWidget(ImageDisplayContainer, 0, 0, 2, 2)
         self.layout.addWidget(ImageButtonContainer, 0, 2)
-        # **************************************************************************************************************************************
-        # -----------------------------------------------------------GUI for Image processing settings------------------------------------------
-        # **************************************************************************************************************************************
+        # === GUI for Image processing settings ===
         self.PostProcessTab = QTabWidget()
         self.PostProcessTab.setMaximumWidth(400)
         self.PostProcessTab.setFixedHeight(250)
@@ -248,7 +242,7 @@ class MainGUI(QWidget):
 
         ImageProcessingContainer.setLayout(IPLayout)
 
-        # ---------------------------Loading------------------------------------
+        # === Loading ===
         LoadSettingContainer = QGroupBox()
         LoadSettingLayout = QGridLayout()
 
@@ -282,7 +276,7 @@ class MainGUI(QWidget):
         LoadSettingLayout.addWidget(readExcelButtonOpenDialog, 0, 5)
 
         ExecuteAnalysisButton = QPushButton("Load", self)
-        #        ExecuteAnalysisButton.setObjectName('Startbutton')
+        # ExecuteAnalysisButton.setObjectName('Startbutton')
         ExecuteAnalysisButton.clicked.connect(
             lambda: self.run_in_thread(self.ScreeningAnalysis)
         )
@@ -364,9 +358,7 @@ class MainGUI(QWidget):
 
         LoadSettingContainer.setLayout(LoadSettingLayout)
 
-        # **************************************************************************************************************************************
-        # -----------------------------------------------------------GUI for Selection threshold settings---------------------------------------
-        # **************************************************************************************************************************************
+        # === GUI for Selection threshold settings ===
 
         self.PostProcessTab.addTab(LoadSettingContainer, "Loading settings")
         self.PostProcessTab.addTab(
@@ -377,7 +369,7 @@ class MainGUI(QWidget):
 
         self.setLayout(self.layout)
 
-    # ---------------------------------------------------------------functions for console display------------------------------------------------------------
+    # === functions for console display ===
     def normalOutputWritten(self, text):
         """Append text to the QTextEdit."""
         # Maybe QTextEdit.append() works as well, but this is how I do it:
@@ -389,9 +381,7 @@ class MainGUI(QWidget):
 
     # %%
     """
-    # =============================================================================
-    #     FUNCTIONS FOR DATA ANALYSIS AND DISPLAY
-    # =============================================================================
+    # FUNCTIONS FOR DATA ANALYSIS AND DISPLAY
     """
 
     def SetAnalysisPath(self):
@@ -399,7 +389,6 @@ class MainGUI(QWidget):
         Set the directory information for rounds.
 
         Returns
-        -------
         None.
 
         """
@@ -416,7 +405,6 @@ class MainGUI(QWidget):
         Sepcify the round numbers and store the information in list.
 
         Returns
-        -------
         None.
 
         """
@@ -443,12 +431,10 @@ class MainGUI(QWidget):
         Usage: lambda: self.run_in_thread(self.fn)
 
         Parameters
-        ----------
         fn : function
             Target function to put in thread.
 
         Returns
-        -------
         thread : TYPE
             Threading handle.
 
@@ -467,7 +453,6 @@ class MainGUI(QWidget):
         4) Filter out results under threadhold.
 
         Returns
-        -------
         None.
 
         """
@@ -488,9 +473,7 @@ class MainGUI(QWidget):
         else:
             self.ProcessML = ProcessImageML()
 
-        # =============================================================================
-        # ===== General image analysis in folder. =====
-        # =============================================================================
+        # === General image analysis in folder. ===
         if len(self.Tag_round_infor) == 0 and len(self.Lib_round_infor) == 0:
             if self.FilepathSwitchBox.currentText() == "Cam Z-max":
                 # For camera screening analysis, use Spiking HEK weight
@@ -505,9 +488,7 @@ class MainGUI(QWidget):
                     self.Analysis_saving_directory
                 )
 
-        # =============================================================================
-        # ===== General image analysis in folder. =====
-        # =============================================================================
+        # === General image analysis in folder. ===
         if len(self.Tag_round_infor) == 0 and len(self.Lib_round_infor) == 1:
             if self.FilepathSwitchBox.currentText() == "Cam Z-max":
                 # For camera screening analysis, use Spiking HEK weight
@@ -524,9 +505,7 @@ class MainGUI(QWidget):
                     )
                 )
 
-        # =============================================================================
-        # ===== One GFP round, one Arch round. =====
-        # =============================================================================
+        # === One GFP round, one Arch round. ===
         elif len(self.Tag_round_infor) == 1 and len(self.Lib_round_infor) == 1:
             if self.FilepathSwitchBox.currentText() != "Cam Z-max":
                 # If max projection is already generated
@@ -580,9 +559,7 @@ class MainGUI(QWidget):
 
             self.UpdateSelectionScatter()
 
-        # =============================================================================
-        # ===== For multiple single round wavelength experiment. =====
-        # =============================================================================
+        # === For multiple single round wavelength experiment. ===
         elif len(self.Tag_round_infor) == 0 and len(self.Lib_round_infor) > 2:
             lib_folder = self.Lib_folder
 
@@ -593,9 +570,7 @@ class MainGUI(QWidget):
                     lib_folder, lib_round
                 )  # TODO unused
 
-        # =============================================================================
-        # ===== For KCL assay, two rounds of lib. =====
-        # =============================================================================
+        # === For KCL assay, two rounds of lib. ===
         elif len(self.Tag_round_infor) == 0 and len(self.Lib_round_infor) == 2:
             print(
                 "===== Kcl analysis based on absolute contour intensity ====="
@@ -644,9 +619,7 @@ class MainGUI(QWidget):
 
             self.UpdateSelectionScatter()
 
-        # =============================================================================
-        # ===== For KCL assay, two rounds of lib/tag. =====
-        # =============================================================================
+        # === For KCL assay, two rounds of lib/tag. ===
         elif len(self.Tag_round_infor) == 2 and len(self.Lib_round_infor) == 2:
             print("===== Kcl analysis based on lib/tag contour ratio =====")
             tag_folder = self.Tag_folder
@@ -666,7 +639,6 @@ class MainGUI(QWidget):
             Cell_DataFrame_Merged_1 = ProcessImage.MergeDataFrames(
                 cell_Data_tag_round_1, cell_Data_lib_round_1, method="TagLib"
             )
-            # ------------------------------------------------------------------
 
             # Get the ratio data from the second KC round.
             tag_round_2 = "Round{}".format(self.Tag_round_infor[1])
@@ -682,7 +654,6 @@ class MainGUI(QWidget):
             Cell_DataFrame_Merged_2 = ProcessImage.MergeDataFrames(
                 cell_Data_tag_round_2, cell_Data_lib_round_2, method="TagLib"
             )
-            # ------------------------------------------------------------------
 
             print("Start Cell_DataFrame_Merging.")
             self.Cell_DataFrame_Merged = ProcessImage.MergeDataFrames(
@@ -724,7 +695,6 @@ class MainGUI(QWidget):
         Read in existing excel file and do the ranking and graph generating.
 
         Returns
-        -------
         None.
 
         """
@@ -751,7 +721,6 @@ class MainGUI(QWidget):
         self.Tag_folder = os.path.dirname(self.ExcelfileName)
         self.Lib_folder = os.path.dirname(self.ExcelfileName)
         self.Analysis_saving_directory = os.path.dirname(self.ExcelfileName)
-        # --------------------------------------------------------------------
         DataFrames_filtered = ProcessImage.FilterDataFrames(
             self.Excelfile,
             self.Mean_intensity_in_contour_thres,
@@ -768,11 +737,11 @@ class MainGUI(QWidget):
             weight_3=self.WeightBoxSelectionFactor_3.value(),
         )
         # try:
-        #     print("Save CellsDataframe to Excel...")
-        #     self.DataFrame_sorted.to_excel(os.path.join(self.Tag_folder, datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'_ReloadedEexcel_CellsProperties.xlsx'))
-        #     print("Saved.")
+        # print("Save CellsDataframe to Excel...")
+        # self.DataFrame_sorted.to_excel(os.path.join(self.Tag_folder, datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'_ReloadedEexcel_CellsProperties.xlsx'))
+        # print("Saved.")
         # except:
-        #     pass
+        # pass
 
         self.UpdateSelectionScatter()
 
@@ -781,7 +750,6 @@ class MainGUI(QWidget):
         Replot the data based on current hyperparameters.
 
         Returns
-        -------
         None.
 
         """
@@ -817,7 +785,6 @@ class MainGUI(QWidget):
         Plot the scatter graph.
 
         Returns
-        -------
         None.
 
         """
@@ -896,18 +863,14 @@ class MainGUI(QWidget):
         Cell dataframe index starts from Cell 1, which corresponds to pop_next_top_cell_counter = 0.
 
         Parameters
-        ----------
         direction : string
             In which direction show the next cell.
 
         Returns
-        -------
         None.
 
         """
-        # =============================================================================
-        #         Show the next ranked cell
-        # =============================================================================
+        # Show the next ranked cell
         if direction == "next":
             if self.pop_next_top_cell_counter > (
                 self.TotaNumofCellSelected - 1
@@ -924,9 +887,7 @@ class MainGUI(QWidget):
                 1  # Alwasy plus 1 to get it ready for next move.
             )
 
-        # =============================================================================
-        #         Show the previous ranked cell
-        # =============================================================================
+        # Show the previous ranked cell
         elif direction == "previous":
             self.pop_next_top_cell_counter -= 2
             if self.pop_next_top_cell_counter >= 0:
@@ -943,9 +904,7 @@ class MainGUI(QWidget):
             else:
                 self.pop_next_top_cell_counter = 0
 
-        # =============================================================================
-        #         Show the current cell
-        # =============================================================================
+        # Show the current cell
         elif direction == "null":
             self.pop_next_top_cell_counter -= 1
 
@@ -982,11 +941,11 @@ class MainGUI(QWidget):
         """
         Display the current selected cell image and output some text information
         """
-        # --------------------Show image with cell in box----------------------
-        # -------------- readin image---------------
+        # === Show image with cell in box ===
+        # === readin image ===
 
         if self.ShowLibImgButton.isChecked():
-            # ====== Display the library image ======
+            # === Display the library image ===
             if "ImgNameInfor" in self.CurrentRankCellpProperties.index:
                 # In brightness lib/tag dataframe
                 self.meta_data = self.CurrentRankCellpProperties.loc[
@@ -1040,7 +999,7 @@ class MainGUI(QWidget):
             )
 
         else:
-            # ====== Display the tag protein image ======
+            # === Display the tag protein image ===
             if "ImgNameInfor" in self.CurrentRankCellpProperties.index:
                 # In brightness lib/tag dataframe
                 self.meta_data = self.CurrentRankCellpProperties.loc[
@@ -1146,9 +1105,9 @@ class MainGUI(QWidget):
             self.loaded_image_display[minc, minr:maxr] = 10**4
             self.loaded_image_display[maxc, minr:maxr] = 10**4
 
-        # -------Show image in imageview-------------
+        # === Show image in imageview ===
         if self.FilepathSwitchBox.currentText() != "Cam Z-max":
-            # ====== In case of PMT image ======
+            # === In case of PMT image ===
             self.OriginalImg_item.setImage(
                 np.fliplr(np.rot90(self.loaded_image_display)), autoLevels=True
             )
@@ -1159,7 +1118,7 @@ class MainGUI(QWidget):
             )
             self.OriginalImg_item.setLevels((50, 190))
 
-        # -------------------Print details of cell of interest----------------
+        # === Print details of cell of interest ===
         self.normalOutputWritten(
             "------------------IDNumber {}----------------\n".format(
                 self.CurrentRankCellpProperties.name
@@ -1240,7 +1199,7 @@ class MainGUI(QWidget):
 
                 self.loaded_image_display = imread(self.tag_mask_imagefilename)
 
-            # -------Show image in imageview-------------
+            # === Show image in imageview ===
             self.OriginalImg_item.setImage(
                 np.fliplr(np.rot90(self.loaded_image_display)), autoLevels=True
             )
@@ -1253,11 +1212,10 @@ class MainGUI(QWidget):
         Show the scatter position of cell in ranked sequence.
 
         Returns
-        -------
         None.
 
         """
-        #        if self.ButtonShowInScatter.isChecked():
+        # if self.ButtonShowInScatter.isChecked():
         self.Matdisplay_Figure.clear()
         if len(self.EvaluatingPara_list) == 2:
             ax1 = self.Matdisplay_Figure.add_subplot(111)
@@ -1283,8 +1241,8 @@ class MainGUI(QWidget):
             ax1.set_ylabel(self.EvaluatingPara_list[1])
             self.Matdisplay_Figure.tight_layout()
             self.Matdisplay_Canvas.draw()
-        #        else:
-        #            self.GoThroughTopCells('null')
+        # else:
+        # self.GoThroughTopCells('null')
         elif len(self.EvaluatingPara_list) == 3:
             ax1 = self.Matdisplay_Figure.add_subplot(111, projection="3d")
             ax1.scatter(
@@ -1320,11 +1278,10 @@ class MainGUI(QWidget):
         Show the scatter position of cell which is searched through index IDnum.
 
         Returns
-        -------
         None.
 
         """
-        #        if self.ShowSequenceScatterButton.isChecked():
+        # if self.ShowSequenceScatterButton.isChecked():
         self.Matdisplay_Figure.clear()
 
         if len(self.EvaluatingPara_list) == 2:
@@ -1352,8 +1309,8 @@ class MainGUI(QWidget):
             ax1.set_ylabel(self.EvaluatingPara_list[1])
             self.Matdisplay_Figure.tight_layout()
             self.Matdisplay_Canvas.draw()
-        #        else:
-        #            self.GoThroughTopCells('sequence')
+        # else:
+        # self.GoThroughTopCells('sequence')
         elif len(self.EvaluatingPara_list) == 3:
             ax1 = self.Matdisplay_Figure.add_subplot(111, projection="3d")
             ax1.scatter(

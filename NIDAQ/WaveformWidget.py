@@ -3,11 +3,9 @@
 Created on Fri Dec 13 23:04:00 2019
 
 @author: Meng
-================================================================================
 
     Inidival GUI for waveform generating and executing using NI-DAQ
 
-================================================================================
 
 """
 
@@ -196,9 +194,7 @@ class WaveformGenerator(QWidget):
 
         # self.wavetabs.setCurrentIndex(3)
 
-        # =============================================================================
-        #                           Waveform General settings
-        # =============================================================================
+        # Waveform General settings
         ReadContainer = QGroupBox("General settings")
         self.ReadLayout = QGridLayout()  # self.AnalogLayout manager
 
@@ -210,8 +206,8 @@ class WaveformGenerator(QWidget):
         self.ReferenceWaveform_menu.addItems(
             self.AnalogChannelList + self.DigitalChannelList
         )
-        #        self.transform_for_laser_menu.setFixedHeight(52)
-        #        self.transform_for_laser_menu.setFixedWidth(82)
+        # self.transform_for_laser_menu.setFixedHeight(52)
+        # self.transform_for_laser_menu.setFixedWidth(82)
         self.ReferenceWaveform_menu.setCurrentRow(0)
 
         ReferenceWaveform_container_layout.addWidget(
@@ -281,19 +277,18 @@ class WaveformGenerator(QWidget):
 
         self.saving_prefix = ""
 
-        # ----------------------------------------------------------------------
         executionContainer = QGroupBox("Execution")
         executionContainerLayout = QGridLayout()  # self.AnalogLayout manager
 
         # Checkbox for saving waveforms
         self.checkbox_saveWaveforms = QCheckBox("Save wavefroms")
-        #        self.checkbox_saveWaveforms.setChecked(True)
+        # self.checkbox_saveWaveforms.setChecked(True)
         self.checkbox_saveWaveforms.setStyleSheet(
             'color:CadetBlue;font:bold "Times New Roman"'
         )
         executionContainerLayout.addWidget(self.checkbox_saveWaveforms, 0, 0)
 
-        # ===================== Emission filter ==============================
+        # === Emission filter ===
         emission_channel_container = StylishQT.roundQGroupBox(
             title="Emission filter"
         )
@@ -355,9 +350,7 @@ class WaveformGenerator(QWidget):
 
         ReadContainer.setLayout(self.ReadLayout)
 
-        # =============================================================================
-        #         ======================== ANALOG ====================================
-        # =============================================================================
+        # === ANALOG ===
         AnalogContainer = QGroupBox("Analog signals")
         self.AnalogLayout = QGridLayout()  # self.AnalogLayout manager
 
@@ -528,7 +521,7 @@ class WaveformGenerator(QWidget):
 
         self.wavetab2.setLayout(self.wavetablayout_ramp)
 
-        # ========================= photocycle ===============================
+        # === photocycle ===
         self.photocycletablayout = QGridLayout()
 
         # Tab for general block wave
@@ -622,9 +615,7 @@ class WaveformGenerator(QWidget):
 
         self.wavetab5.setLayout(self.photocycletablayout)
 
-        # =============================================================================
-        #                               Galvo scanning tab
-        # =============================================================================
+        # Galvo scanning tab
 
         self.galvotablayout = QGridLayout()
         self.galvos_tabs = QTabWidget()
@@ -736,9 +727,7 @@ class WaveformGenerator(QWidget):
 
         AnalogContainer.setLayout(self.AnalogLayout)
 
-        # ---------------------------------------------------------------------
-        # -----------------------------Digital---------------------------------
-        # ---------------------------------------------------------------------
+        # === Digital ===
         DigitalContainer = QGroupBox("Digital signals")
         self.DigitalLayout = QGridLayout()  # self.AnalogLayout manager
 
@@ -789,7 +778,7 @@ class WaveformGenerator(QWidget):
 
         self.DigitalLayout.addWidget(self.switchExtraTrigger, 0, 4)
 
-        # ------------------------------------------------------Wave settings------------------------------------------
+        # === Wave settings ===
         self.digitalwavetablayout = QGridLayout()
 
         self.digitalwavetabs = QTabWidget()
@@ -841,9 +830,7 @@ class WaveformGenerator(QWidget):
 
         DigitalContainer.setLayout(self.DigitalLayout)
 
-        # ------------------------------------------------------------------------------------------------------------------
-        # ----------------------------------------------------------Display win-------------------------------------------------
-        # ------------------------------------------------------------------------------------------------------------------
+        # === Display win ===
         self.pw = pg.PlotWidget(title="Waveform plot")
         self.pw.setLabel("bottom", "Time", units="s")
         self.pw.setLabel("left", "Value", units="V")
@@ -854,24 +841,21 @@ class WaveformGenerator(QWidget):
         self.pw_PlotItem = self.pw.getPlotItem()
         self.pw_PlotItem.addLegend()
         self.pw_PlotItem.setDownsampling(auto=True, mode="mean")
-        # ------------------------------------------------------------------------------------------------------------------
-        # ----------------------------------------------------------Data win-------------------------------------------------
-        # ------------------------------------------------------------------------------------------------------------------
+        # === Data win ===
         self.pw_data = pg.PlotWidget(title="Data")
         self.pw_data.setLabel("bottom", "Time", units="s")
         self.pw_data.setMinimumHeight(180)
         # self.pw_data.setLabel('left', 'Value', units='V')
-        # -------------------------------------------------------------Adding to master----------------------------------------
+        # === Adding to master ===
         master_waveform = QGridLayout()
         master_waveform.addWidget(AnalogContainer, 1, 0, 1, 2)
         master_waveform.addWidget(DigitalContainer, 2, 0, 1, 2)
         master_waveform.addWidget(ReadContainer, 0, 0, 1, 1)
         master_waveform.addWidget(executionContainer, 0, 1, 1, 1)
         master_waveform.addWidget(self.pw, 3, 0, 1, 2)
-        #        master_waveform.addWidget(self.pw_data, 4, 0)
+        # master_waveform.addWidget(self.pw_data, 4, 0)
         self.tabs.setLayout(master_waveform)
-        # ********************************************************************
-        #        self.setLayout(pmtmaster)
+        # self.setLayout(pmtmaster)
         self.layout.addWidget(self.tabs, 0, 0)
         self.setLayout(self.layout)
 
@@ -881,9 +865,7 @@ class WaveformGenerator(QWidget):
             self.wavetabs.setCurrentIndex(2)
 
     # %%
-    # =============================================================================
     # Functions for Waveform Tab
-    # =============================================================================
 
     def get_wave_file_np(self):
         self.wavenpfileName, _ = QtWidgets.QFileDialog.getOpenFileName(
@@ -899,7 +881,6 @@ class WaveformGenerator(QWidget):
         Load the pre-configured waveforms saved in np format.
 
         Returns
-        -------
         None.
 
         """
@@ -971,7 +952,6 @@ class WaveformGenerator(QWidget):
         the waveforms, with the key being the channel name.
 
         Returns
-        -------
         None.
 
         """
@@ -980,15 +960,15 @@ class WaveformGenerator(QWidget):
 
         if self.wavetabs.currentIndex() != 2:
             if self.wavetabs.currentIndex() == 0:
-                # ----------------------Square waves--------------------------
+                # === Square waves ===
                 waveform_to_add = self.generate_analog(channel_keyword)
 
             elif self.wavetabs.currentIndex() == 1:
-                # -------------------------Ramp waves-------------------------
+                # === Ramp waves ===
                 waveform_to_add = self.generate_ramp(channel_keyword)
 
             if self.wavetabs.currentIndex() == 4:
-                # ------------------------Photo cycle-------------------------
+                # === Photo cycle ===
                 waveform_to_add = self.generate_photocycle(channel_keyword)
 
             if self.Append_Mode is False:
@@ -1009,7 +989,7 @@ class WaveformGenerator(QWidget):
                 channel_keyword, self.waveform_data_dict[channel_keyword]
             )
 
-        # ----------------------------Galvo scanning---------------------------
+        # === Galvo scanning ===
         elif self.wavetabs.currentIndex() == 2:
             if self.galvos_tabs.currentIndex() == 0:
                 self.waveform_data_dict[
@@ -1077,7 +1057,6 @@ class WaveformGenerator(QWidget):
         Add digital signals to the collection.
 
         Returns
-        -------
         None.
 
         """
@@ -1147,7 +1126,6 @@ class WaveformGenerator(QWidget):
         from PMT widget.
 
         Returns
-        -------
         TYPE
             DESCRIPTION.
 
@@ -1178,9 +1156,9 @@ class WaveformGenerator(QWidget):
 
         # Adding 0 to the end
         # repeated_contoursamples_1 = np.append(repeated_contoursamples_1,
-        #                                       0)
+        # 0)
         # repeated_contoursamples_2 = np.append(repeated_contoursamples_2,
-        #                                       0)
+        # 0)
 
         handle_viewbox_coordinate_position_array_expanded_forDaq_waveform = (
             np.vstack((repeated_contoursamples_1, repeated_contoursamples_2))
@@ -1306,7 +1284,7 @@ class WaveformGenerator(QWidget):
             self.offsetsamples_galvo, self.PMT_data_index_array_repeated
         )
         # self.PMT_data_index_array_repeated = np.append(
-        #     self.PMT_data_index_array_repeated, 0
+        # self.PMT_data_index_array_repeated, 0
         # )
 
         Galvo_samples = np.vstack(
@@ -1453,12 +1431,10 @@ class WaveformGenerator(QWidget):
         Generate analog signals.
 
         Parameters
-        ----------
         channel : TYPE
             DESCRIPTION.
 
         Returns
-        -------
         finalwave : TYPE
             DESCRIPTION.
 
@@ -1505,7 +1481,7 @@ class WaveformGenerator(QWidget):
         return finalwave
 
     # %%
-    # --------------------for generating digital signals-----------------------
+    # === for generating digital signals ===
     def generate_digital(self, channel):
         self.uiDaq_sample_rate = int(self.SamplingRateTextbox.value())
         self.uiwavefrequency_digital_waveform = float(
@@ -1545,7 +1521,7 @@ class WaveformGenerator(QWidget):
         return digital_waveform.generate()
 
     # %%
-    # -------------- for generating ramp voltage signals----------------------
+    # === for generating ramp voltage signals ===
     def generate_ramp(self, channel):
         self.uiDaq_sample_rate = int(self.SamplingRateTextbox.value())
         self.uiwavefrequency_ramp = float(self.AnalogFreqTextbox_ramp.text())
@@ -1706,7 +1682,6 @@ class WaveformGenerator(QWidget):
             Channel name = np.load(file path)[index of channel]("Specification")
 
         Returns
-        -------
         TYPE
             DESCRIPTION.
         TYPE
@@ -1715,7 +1690,7 @@ class WaveformGenerator(QWidget):
             DESCRIPTION.
 
         """
-        # -----------------Find the reference waveform length.------------------
+        # === Find the reference waveform length. ===
         ReferenceWaveform_menu_text = (
             self.ReferenceWaveform_menu.selectedItems()[0].text()
         )
@@ -1736,7 +1711,6 @@ class WaveformGenerator(QWidget):
                 QMessageBox.Ok,
             )
 
-        # =====================================================================
         # Adding 4 values at the front, same for all waveforms except the
         # Camera trigger, which adds one extra trigger to solve the missing
         # trigger in the beginning issue.
@@ -1749,7 +1723,7 @@ class WaveformGenerator(QWidget):
                 for waveform_key in self.waveform_data_dict:
                     if waveform_key != "cameratrigger":
                         if waveform_key in self.AnalogChannelList:
-                            # ==== Padding at the end ====
+                            # === Padding at the end ===
                             if waveform_key != "patchAO":
                                 # For analog channels,
                                 insert_array = np.zeros(self.padding_number)
@@ -1938,7 +1912,7 @@ class WaveformGenerator(QWidget):
             else:
                 for waveform_key in self.waveform_data_dict:
                     if waveform_key in self.AnalogChannelList:
-                        # ==== Padding at the end ====
+                        # === Padding at the end ===
                         if waveform_key != "patchAO":
                             # For analog channels,
                             insert_array = np.zeros(self.padding_number)
@@ -1974,7 +1948,6 @@ class WaveformGenerator(QWidget):
                     # print(self.waveform_data_dict[waveform_key])
         else:
             print("No Auto-padding to reset channels.")
-        # ====================================================================
 
         if ReferenceWaveform_menu_text == "galvos":
             # in case of using galvos as reference wave
@@ -2001,7 +1974,7 @@ class WaveformGenerator(QWidget):
             # Without auto padding, reference length is the same as original waveform.
             print("reference_length: " + str(self.reference_length))
 
-        # ---------------Get all waveforms the same length.---------------------
+        # === Get all waveforms the same length. ===
 
         for waveform_key in self.waveform_data_dict:
             if self.waveform_data_dict[waveform_key].ndim == 1:
@@ -2073,12 +2046,12 @@ class WaveformGenerator(QWidget):
 
                     # Reset the PlotDataItem
                     # self.PlotDataItem_dict[waveform_key].setData(
-                    #     x_label,
-                    #     self.waveform_data_dict[waveform_key][1, :],
-                    #     name=waveform_key,
+                    # x_label,
+                    # self.waveform_data_dict[waveform_key][1, :],
+                    # name=waveform_key,
                     # )
 
-        # ------------------Set galvos sampele stack apart----------------------
+        # === Set galvos sampele stack apart ===
         # Keys for contour scanning in waveform_data_dict change to "galvos_X_contour" and "galvos_Y_contour"
         if (
             "galvos" in self.waveform_data_dict
@@ -2121,7 +2094,7 @@ class WaveformGenerator(QWidget):
             ]
         )
 
-        # ================Reset the PlotDataItem===================
+        # === Reset the PlotDataItem ===
         x_label = np.arange(self.reference_length) / self.uiDaq_sample_rate
 
         for waveform_key in self.waveform_data_dict:
@@ -2172,7 +2145,7 @@ class WaveformGenerator(QWidget):
                         name=waveform_key,
                     )
 
-        # ========= Making containers =========
+        # === Making containers ===
         digital_line_num = 0
         for waveform_key in self.waveform_data_dict:
             if waveform_key in self.DigitalChannelList:
@@ -2206,7 +2179,7 @@ class WaveformGenerator(QWidget):
                 digital_line_num += 1
         print("Writing channels: {}".format(self.waveform_data_dict.keys()))
 
-        # -----------------Saving configed waveforms---------------------------
+        # === Saving configed waveforms ===
         if self.checkbox_saveWaveforms.isChecked():
             ciao = []  # Variable name 'ciao' was defined by Nicolo Ceffa.
 
@@ -2298,7 +2271,6 @@ class WaveformGenerator(QWidget):
         Tread to move filter in advance.
 
         Returns
-        -------
         None.
 
         """
@@ -2366,12 +2338,10 @@ class WaveformGenerator(QWidget):
         Display the recorded signals after execution.
 
         Parameters
-        ----------
         data_waveformreceived : TYPE
             DESCRIPTION.
 
         Returns
-        -------
         None.
 
         """

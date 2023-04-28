@@ -4,9 +4,7 @@ Created on Tue Feb 25 17:27:04 2020
 
 @author: xinmeng
 
--------------------------------------------------------------------------------------------------------------------------------------
                                 Image analysis GUI
--------------------------------------------------------------------------------------------------------------------------------------
 """
 
 import csv
@@ -45,11 +43,10 @@ from .ImageProcessing import PatchAnalysis, ProcessImage
 
 
 class AnalysisWidgetUI(QWidget):
-    #    waveforms_generated = pyqtSignal(object, object, list, int)
-    #    SignalForContourScanning = pyqtSignal(int, int, int, np.ndarray, np.ndarray)
+    # waveforms_generated = pyqtSignal(object, object, list, int)
+    # SignalForContourScanning = pyqtSignal(int, int, int, np.ndarray, np.ndarray)
     MessageBack = pyqtSignal(str)
     Cellselection_DMD_mask_contour = pyqtSignal(list)
-    # ------------------------------------------------------------------------------------------------------------------------------------------
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -60,11 +57,7 @@ class AnalysisWidgetUI(QWidget):
         self.layout = QGridLayout(self)
         self.savedirectory = ""
         self.OC = 0.1  # Patch clamp constant
-        # **************************************************************************************************************************************
-        # --------------------------------------------------------------------------------------------------------------------------------------
-        # -----------------------------------------------------------GUI for Data analysis tab--------------------------------------------------
-        # --------------------------------------------------------------------------------------------------------------------------------------
-        # **************************************************************************************************************************************
+        # === GUI for Data analysis tab ===
         readimageContainer = QGroupBox("Readin images")
         self.readimageLayout = QGridLayout()
 
@@ -123,7 +116,7 @@ class AnalysisWidgetUI(QWidget):
         readimageContainer.setLayout(self.readimageLayout)
         readimageContainer.setMaximumHeight(120)
 
-        # -----------------------------------------------------Image analysis display Tab-------------------------------------------------------
+        # === Image analysis display Tab ===
         Display_Container = QGroupBox("Image analysis display")
         Display_Layout = QGridLayout()
         # Setting tabs
@@ -186,21 +179,17 @@ class AnalysisWidgetUI(QWidget):
             imageanalysis_weight_Container, 0, 1
         )
 
-        # ----------------------------------------------------------------------
         Display_Container_tabs_tab3 = PlotAnalysisGUI()
-        #        Display_Container_tabs_tab3.setLayout(self.Curvedisplay_Layout)
+        # Display_Container_tabs_tab3.setLayout(self.Curvedisplay_Layout)
 
-        # ----------------------------------------------------------------------
         # Display_Container_tabs_tab2 = QWidget()
         # Display_Container_tabs_tab2.setLayout(self.VIdisplay_Layout)
 
-        # ----------------------------------------------------------------------
         Display_Container_tabs_Galvo_WidgetInstance = QWidget()
         Display_Container_tabs_Galvo_WidgetInstance.setLayout(
             image_display_container_layout
         )
 
-        # ----------------------------------------------------------------------
         # self.Display_Container_tabs_Cellselection = QWidget()
         # self.Display_Container_tabs_Cellselection_layout = QGridLayout()
 
@@ -209,7 +198,7 @@ class AnalysisWidgetUI(QWidget):
         # self.Display_Container_tabs_Cellselection_layout.addWidget(self.show_cellselection_gui_button, 0,0)
         # self.Display_Container_tabs_Cellselection.setLayout(self.Display_Container_tabs_Cellselection_layout)
 
-        # ----------------------Show trace--------------------------------------
+        # === Show trace ===
         Display_Container_tabs_tab4 = QWidget()
         Display_Container_tabs_tab4_layout = QGridLayout()
 
@@ -259,14 +248,10 @@ class AnalysisWidgetUI(QWidget):
         self.layout.addWidget(readimageContainer, 0, 0, 1, 2)
         self.layout.addWidget(Display_Container, 1, 0, 1, 2)
 
-    #        master_data_analysis.addWidget(imageanalysis_average_Container, 2, 0, 1,1)
-    #        master_data_analysis.addWidget(imageanalysis_weight_Container, 2, 1, 1,1)
+    # master_data_analysis.addWidget(imageanalysis_average_Container, 2, 0, 1,1)
+    # master_data_analysis.addWidget(imageanalysis_weight_Container, 2, 1, 1,1)
 
-    # **************************************************************************************************************************************
-    # --------------------------------------------------------------------------------------------------------------------------------------
-    # ------------------------------------------------Functions for Data analysis Tab------------------------------------------------------------
-    # --------------------------------------------------------------------------------------------------------------------------------------
-    # **************************************************************************************************************************************
+    # === Functions for Data analysis Tab ===
     def getfile(self):
         self.main_directory = str(QtWidgets.QFileDialog.getExistingDirectory())
         self.textbox_directory_name.setText(self.main_directory)
@@ -289,7 +274,6 @@ class AnalysisWidgetUI(QWidget):
         Getting the data folder, load the video
 
         Returns
-        -------
         None.
 
         """
@@ -404,7 +388,6 @@ class AnalysisWidgetUI(QWidget):
         the front and 1 in the end.
 
         Returns
-        -------
         None.
 
         """
@@ -434,7 +417,7 @@ class AnalysisWidgetUI(QWidget):
                     0 : len(self.Vp) - 2
                 ]  # Here -2 because there are two extra recording points in the recording file.
 
-            # ===================== Load configured waveform =================
+            # === Load configured waveform ===
             elif "Wavefroms_sr_" in file and "npy" in file:
                 self.Waveform_filename_npy = self.main_directory + "/" + file
                 # Read in configured waveforms
@@ -541,7 +524,6 @@ class AnalysisWidgetUI(QWidget):
         Substract the background from the original video.
 
         Returns
-        -------
         None.
 
         """
@@ -728,7 +710,6 @@ class AnalysisWidgetUI(QWidget):
         Display the patch clamp electrode recored membrane potential and current signals.
 
         Returns
-        -------
         None.
 
         """
@@ -787,7 +768,6 @@ class AnalysisWidgetUI(QWidget):
         Calculating the average 2d image from the video.
 
         Returns
-        -------
         None.
 
         """
@@ -835,7 +815,6 @@ class AnalysisWidgetUI(QWidget):
         Calculate the mean background value from the ROI selector.
 
         Returns
-        -------
         None.
 
         """
@@ -869,7 +848,6 @@ class AnalysisWidgetUI(QWidget):
         Calculate the pixels weights using correlation between the video and voltage reocrding.
 
         Returns
-        -------
         None.
 
         """
@@ -962,7 +940,6 @@ class AnalysisWidgetUI(QWidget):
         Display the mean sum weight and display frame by frame.
 
         Returns
-        -------
         None.
 
         """
@@ -1011,7 +988,6 @@ class AnalysisWidgetUI(QWidget):
         Using curve fit function to calculate all the statistics.
 
         Returns
-        -------
         None.
 
         """
@@ -1064,7 +1040,6 @@ class AnalysisWidgetUI(QWidget):
         Display a single trace.
 
         Returns
-        -------
         None.
 
         """
@@ -1134,10 +1109,8 @@ class PlotAnalysisGUI(QWidget):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-        # ------------------------Initiating patchclamp class-------------------
-        # ----------------------------------------------------------------------
-        # ----------------------------------GUI---------------------------------
-        # ----------------------------------------------------------------------
+        # === Initiating patchclamp class ===
+        # === GUI ===
         self.setMinimumSize(200, 200)
         self.setWindowTitle("Plot display")
         self.layout = QGridLayout(self)
@@ -1175,8 +1148,8 @@ class PlotAnalysisGUI(QWidget):
         self.savedirectorytextbox = QtWidgets.QLineEdit(self)
         self.pmtimageLayout.addWidget(self.savedirectorytextbox, 1, 0)
 
-        #        self.v_directorytextbox = QtWidgets.QLineEdit(self)
-        #        self.pmtimageLayout.addWidget(self.v_directorytextbox, 2, 0)
+        # self.v_directorytextbox = QtWidgets.QLineEdit(self)
+        # self.pmtimageLayout.addWidget(self.v_directorytextbox, 2, 0)
 
         self.toolButtonOpenDialog = QtWidgets.QPushButton("Select folder")
 
@@ -1277,7 +1250,7 @@ class PlotAnalysisGUI(QWidget):
         reference_length = len(temp_loaded_container[0]["Waveform"])
         xlabel_all = np.arange(reference_length) / Daq_sample_rate
 
-        # ----------------------------------------------------For patch perfusion---------------------------------------------------------------
+        # === For patch perfusion ===
         if len(self.region_file_name) == 0:
             if len(self.Checked_display_list) == 2:
                 figure, (ax1, ax2) = plt.subplots(2, 1)
@@ -1325,7 +1298,7 @@ class PlotAnalysisGUI(QWidget):
             ax1.legend()
             figure.tight_layout()
             plt.show()  # TODO cleanup
-        # ----------------------------------------------------For plots with camera regions-----------------------------------------------------
+        # === For plots with camera regions ===
         if len(self.region_file_name) != 0:
             for region_number in range(len(self.region_file_name)):
                 if len(self.Checked_display_list) == 2:

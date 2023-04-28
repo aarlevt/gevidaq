@@ -26,24 +26,20 @@ from .ServoMotor import Servo
 
 
 class AOTFWidgetUI(QWidget):
-    #    waveforms_generated = pyqtSignal(object, object, list, int)
-    #    SignalForContourScanning = pyqtSignal(int, int, int, np.ndarray, np.ndarray)
-    #    MessageBack = pyqtSignal(str)
+    # waveforms_generated = pyqtSignal(object, object, list, int)
+    # SignalForContourScanning = pyqtSignal(int, int, int, np.ndarray, np.ndarray)
+    # MessageBack = pyqtSignal(str)
     sig_lasers_status_changed = pyqtSignal(dict)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.setFont(QFont("Arial"))
 
-        #        self.setMinimumSize(1350,900)
+        # self.setMinimumSize(1350,900)
         self.setWindowTitle("StageWidget")
         self.layout = QGridLayout(self)
 
-        # **************************************************************************************************************************************
-        # --------------------------------------------------------------------------------------------------------------------------------------
-        # -----------------------------------------------------------GUI for AOTF---------------------------------------------------------------
-        # --------------------------------------------------------------------------------------------------------------------------------------
-        # **************************************************************************************************************************************
+        # === GUI for AOTF ===
 
         AOTFcontrolContainer = StylishQT.roundQGroupBox(
             title="AOTF control", background_color="azure"
@@ -185,11 +181,7 @@ class AOTFWidgetUI(QWidget):
         thread = threading.Thread(target=self.start_up_event)
         thread.start()
         self.shutter488Button.setChecked(False)
-        # **************************************************************************************************************************************
-        # --------------------------------------------------------------------------------------------------------------------------------------
-        # -----------------------------------------------------------Fuc for AOTF---------------------------------------------------------------
-        # --------------------------------------------------------------------------------------------------------------------------------------
-        # **************************************************************************************************************************************
+        # === Fuc for AOTF ===
 
     def start_up_event(self):
         try:

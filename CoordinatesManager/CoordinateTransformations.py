@@ -88,11 +88,9 @@ def transform(coord, c):
     return np.transpose(np.stack((new_coord_x, new_coord_y)))
 
 
-# =============================================================================
 # Integrated transformation
 #
 # --Based on Izak's work, warp it in easy to use way.
-# =============================================================================
 
 
 def general_coordinates_transformation(
@@ -102,22 +100,18 @@ def general_coordinates_transformation(
     Transform input list of coordinates, return transformed corresponding coordinates.
 
     Parameters
-    ----------
     camera_coordinates_list : list or np.array
         List of camera coordinates np.array, i.e.,
         [np.array([row, col]), np.array([row, col])], in 2048*2048 size.
 
     Returns
-    -------
     Transformed_coordinates : np.array
         np.array of n rows 2 column.
 
     """
 
     if direction == "Camera2Galvo":
-        # ===============================================================
         # Transform from camera pixel positions to galvo voltage values.
-        # ===============================================================
         # Load transformation
         transform_matrix_cam2galvo = load_transformation(
             "galvo_transformation"
@@ -128,9 +122,7 @@ def general_coordinates_transformation(
         )
 
     elif direction == "Galvo2Camera":
-        # ===============================================================
         # Transform from galvo voltage values to camera pixel positions.
-        # ===============================================================
         # Load transformation
         transform_matrix_cam2galvo = load_transformation(
             "galvo_transformation"
@@ -167,9 +159,7 @@ def general_coordinates_transformation(
         )
 
     elif direction == "Camera2PMT":
-        # ===============================================================
         # Transform from camera pixel positions to PMT image pixel positions.
-        # ===============================================================
         # Load transformation
         transform_matrix_cam2galvo = load_transformation(
             "galvo_transformation"
@@ -186,9 +176,7 @@ def general_coordinates_transformation(
         )
 
     elif direction == "PMT2Camera":
-        # ===============================================================
         # Transform from camera pixel positions to PMT image pixel positions.
-        # ===============================================================
 
         # Transform PMT image pixel position to voltages
         galvo_voltage_coordinates = transform_between_PMT_Galvo(
@@ -240,12 +228,10 @@ def load_transformation(target):
     The transformation direction here is ALL STARTING FROM CAMERA COORDINATES!
 
     Parameters
-    ----------
     target : string
         Name of the transformation file.
 
     Returns
-    -------
     transform_matrix : np array
         transform_matrix.
 
@@ -270,12 +256,10 @@ def transform_coordinates(list_of_coordinates, transform_matrix):
     voltage positions.
 
     Parameters
-    ----------
     list_of_coordinates : list
         List of np.array.
 
     Returns
-    -------
     new_list_of_coordinates : np array
         List of np.array.
 
@@ -292,7 +276,6 @@ def transform_between_PMT_Galvo(coordinates_list, direction, scanning_config):
     Transform between PMT image pixel positions and galvo voltage values.
 
     Parameters
-    ----------
     coordinates_list : list or np.array
         DESCRIPTION.
     direction : string
@@ -301,7 +284,6 @@ def transform_between_PMT_Galvo(coordinates_list, direction, scanning_config):
         First element being scanning voltage, second being pixel number of PMT image.
 
     Returns
-    -------
     Transformed_coordinates : np.array
         DESCRIPTION.
 

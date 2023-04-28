@@ -29,7 +29,7 @@ class KCubeWidgetUI(QWidget):
         self.PMT_pos = 32  # mm
 
         self.KCube_instance = KCube()
-        # -------------------------------GUI------------------------------------
+        # === GUI ===
         KCubeContainer = StylishQT.roundQGroupBox(
             title="KCube Widget", background_color="#F8F8FF"
         )
@@ -58,12 +58,10 @@ class KCubeWidgetUI(QWidget):
         Usage: lambda: self.run_in_thread(self.fn)
 
         Parameters
-        ----------
         fn : function
             Target function to put in thread.
 
         Returns
-        -------
         thread : TYPE
             Threading handle.
 

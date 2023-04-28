@@ -40,17 +40,15 @@ class PatchClampUI(QWidget):
     def __init__(self):
         super().__init__()
         """
-        =======================================================================
-        ----------------------------- Start of GUI ----------------------------
-        =======================================================================
+        === Start of GUI ===
         """
         """
-        # ---------------------- General widget settings ---------------------
+        # === General widget settings ===
         """
         self.setWindowTitle("Smartpatcher")
 
         """
-        -------------------------- Hardware container -------------------------
+        === Hardware container ===
         """
         hardwareContainer = QGroupBox("Hardware devices")
         hardwareLayout = QGridLayout()
@@ -108,7 +106,7 @@ class PatchClampUI(QWidget):
         hardwareContainer.setLayout(hardwareLayout)
 
         """
-        --------------------------- Stage movements ---------------------------
+        === Stage movements ===
         """
         stagemoveContainer = QGroupBox("Stage move")
         stagemoveLayout = QGridLayout()
@@ -144,7 +142,7 @@ class PatchClampUI(QWidget):
         stagemoveContainer.setLayout(stagemoveLayout)
 
         """
-        ------------------------- Calibration options -------------------------
+        === Calibration options ===
         """
         calibrationContainer = QGroupBox("Calibration options")
         calibrationLayout = QGridLayout()
@@ -193,7 +191,7 @@ class PatchClampUI(QWidget):
         calibrationContainer.setLayout(calibrationLayout)
 
         """
-        ------------------------- Camera view display -------------------------
+        === Camera view display ===
         """
         liveContainer = QGroupBox("Field-of-view")
         liveContainer.setMinimumWidth(700)
@@ -237,7 +235,7 @@ class PatchClampUI(QWidget):
         liveContainer.setLayout(liveLayout)
 
         """
-        ---------------------- Autopatch control buttons ----------------------
+        === Autopatch control buttons ===
         """
         autopatchContainer = QGroupBox("Autoptach algorithms")
         autopatchLayout = QGridLayout()
@@ -306,7 +304,7 @@ class PatchClampUI(QWidget):
         autopatchContainer.setLayout(autopatchLayout)
 
         """
-        ----------------------- Pressure control layout -----------------------
+        === Pressure control layout ===
         """
         pressurecontrolContainer = QGroupBox(title="Pressure control")
         pressurecontrolLayout = QGridLayout()
@@ -386,7 +384,7 @@ class PatchClampUI(QWidget):
         pressurecontrolContainer.setLayout(pressurecontrolLayout)
 
         """
-        -------------------------- Electrophysiology --------------------------
+        === Electrophysiology ===
         """
         electrophysiologyContainer = QGroupBox("Electrophysiology")
         electrophysiologyLayout = QGridLayout()
@@ -431,7 +429,7 @@ class PatchClampUI(QWidget):
         electrophysiologyContainer.setLayout(electrophysiologyLayout)
 
         """
-        --------------------------- Sensor display ----------------------------
+        === Sensor display ===
         """
         sensorContainer = QGroupBox()
         sensorLayout = QGridLayout()
@@ -481,7 +479,7 @@ class PatchClampUI(QWidget):
         sensorContainer.setLayout(sensorLayout)
 
         """
-        ---------------------- Add widgets and set Layout ---------------------
+        === Add widgets and set Layout ===
         """
         layout = QGridLayout()
         layout.addWidget(hardwareContainer, 0, 0, 2, 1)
@@ -495,19 +493,15 @@ class PatchClampUI(QWidget):
         self.setLayout(layout)
 
         """
-        --------------------------- Stack old GUI's ---------------------------
+        === Stack old GUI's ===
         """
         """
-        =======================================================================
-        ------------------------ Start up roi manager -------------------------
-        =======================================================================
+        === Start up roi manager ===
         """
         self.roimanager = ROIManagerGUI(offset=len(self.liveView.addedItems))
 
         """
-        =======================================================================
-        -------------- Start up backend and connect signals/slots -------------
-        =======================================================================
+        === Start up backend and connect signals/slots ===
         """
         self.backend = SmartPatcher()
         self.backend.worker.draw.connect(self.draw_roi)
@@ -520,16 +514,12 @@ class PatchClampUI(QWidget):
         )
 
         """
-        =======================================================================
-        --------------------- Update constant from backend --------------------
-        =======================================================================
+        === Update constant from backend ===
         """
         self.update_constants_from_backend()
 
         """
-        =======================================================================
-        ----------------------------- End of GUI ------------------------------
-        =======================================================================
+        === End of GUI ===
         """
 
     def request_imagexygrid(self):  # FLAG: relevant for MSc thesis

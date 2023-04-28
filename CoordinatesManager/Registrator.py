@@ -29,14 +29,12 @@ class GalvoRegistrator:
         transforms camera_coordinates into galvo_coordinates using polynomial transform.
 
         Parameters
-        ----------
         grid_points_x : TYPE, optional
             DESCRIPTION. The default is 3.
         grid_points_y : TYPE, optional
             DESCRIPTION. The default is 3.
 
         Returns
-        -------
         transformation : TYPE
             DESCRIPTION.
 

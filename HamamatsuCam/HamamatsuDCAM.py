@@ -88,7 +88,7 @@ except Exception as exc:
 # Hamamatsu structures.
 
 
-## DCAMAPI_INIT
+# DCAMAPI_INIT
 #
 # The dcam initialization structure
 #
@@ -103,7 +103,7 @@ class DCAMAPI_INIT(ctypes.Structure):
     ]
 
 
-## DCAMDEV_OPEN
+# DCAMDEV_OPEN
 #
 # The dcam open structure
 #
@@ -153,7 +153,7 @@ class DCAMREC_STATUS(ctypes.Structure):
     ]
 
 
-## DCAMWAIT_OPEN
+# DCAMWAIT_OPEN
 #
 # The dcam wait open structure
 #
@@ -166,7 +166,7 @@ class DCAMWAIT_OPEN(ctypes.Structure):
     ]
 
 
-## DCAMWAIT_START
+# DCAMWAIT_START
 #
 # The dcam wait start structure
 #
@@ -179,7 +179,7 @@ class DCAMWAIT_START(ctypes.Structure):
     ]
 
 
-## DCAMCAP_TRANSFERINFO
+# DCAMCAP_TRANSFERINFO
 #
 # The dcam capture info structure
 #
@@ -192,7 +192,7 @@ class DCAMCAP_TRANSFERINFO(ctypes.Structure):
     ]
 
 
-## DCAMBUF_ATTACH
+# DCAMBUF_ATTACH
 #
 # The dcam buffer attachment structure
 #
@@ -208,7 +208,7 @@ class DCAMBUF_ATTACH(ctypes.Structure):
     ]
 
 
-## DCAMBUF_FRAME
+# DCAMBUF_FRAME
 #
 # The dcam buffer frame structure
 #
@@ -231,7 +231,7 @@ class DCAMBUF_FRAME(ctypes.Structure):
     ]
 
 
-## DCAMDEV_STRING
+# DCAMDEV_STRING
 #
 # The dcam device string structure
 #
@@ -244,7 +244,7 @@ class DCAMDEV_STRING(ctypes.Structure):
     ]
 
 
-## DCAMPROP_ATTR
+# DCAMPROP_ATTR
 #
 # The dcam property attribute structure.
 #
@@ -271,7 +271,7 @@ class DCAMPROP_ATTR(ctypes.Structure):
     ]
 
 
-## DCAMPROP_VALUETEXT
+# DCAMPROP_VALUETEXT
 #
 # The dcam text property structure.
 #
@@ -615,7 +615,7 @@ class HamamatsuCamera(object):
 
     def getPropertyText(self, property_name):
         """
-        #Return the text options of a property (if any).
+        # Return the text options of a property (if any).
         """
         prop_attr = self.getPropertyAttribute(property_name)
         if not (prop_attr.attribute & DCAMPROP_ATTR_HASVALUETEXT):
@@ -1219,7 +1219,7 @@ class HamamatsuCameraRE(HamamatsuCamera):
 
     def CalculateMaxFileSize(self):
         self.RecordParaDict = {}
-        # ---------------Get property values-----------------
+        # === Get property values ===
         params = [
             "buffer_rowbytes",
             "image_width",
@@ -1272,7 +1272,7 @@ class HamamatsuCameraRE(HamamatsuCamera):
         )
 
         if self.acquisition_mode == "fixed_length":
-            # -------------------------------Allocate buffer------------------------------------
+            # === Allocate buffer ===
             self.checkStatus(
                 dcam.dcambuf_alloc(
                     self.camera_handle,
@@ -1299,7 +1299,7 @@ class HamamatsuCameraRE(HamamatsuCamera):
                     )
                 )
 
-                # -------------------------Wait until record event has stopped----------------------------------------
+                # === Wait until record event has stopped ===
                 paramRecWaitStart = DCAMWAIT_START(
                     0,
                     0,
@@ -1400,7 +1400,7 @@ if __name__ == "__main__":
     paraminit.size = ctypes.sizeof(paraminit)
     error_code = dcam.dcamapi_init(ctypes.byref(paraminit))
     # if (error_code != DCAMERR_NOERROR):
-    #    raise DCAMException("DCAM initialization failed with error code " + str(error_code))
+    # raise DCAMException("DCAM initialization failed with error code " + str(error_code))
 
     n_cameras = paraminit.iDeviceCount
 
@@ -1580,7 +1580,6 @@ if __name__ == "__main__":
 
             hcam.shutdown()
 
-        # --------------------------------------------------------------------------------------------------------------------------------
         elif Streaming_to_disk is True:
             rcam = HamamatsuCameraRE(
                 path="M:\\tnw\\ist\\do\\projects\\Neurophotonics\\Brinkslab\\People\\Xin Meng\\Code\\Python_test\\HamamatsuCam\\test_fullframe",  # TODO hardcoded path

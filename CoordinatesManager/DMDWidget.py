@@ -5,7 +5,6 @@ Created on Tue Jul  7 10:44:31 2020
 
 @author: Izak de Heer
 
--------------------------------------------------------------------------------
 3/8/2020-Xin
 'Settings' control panel added.
     Normally DMD projecting with dark phase of minimum 44 us in between switching
@@ -147,7 +146,7 @@ class DMDWidget(QWidget):
             self.back_load_mask_container_index0, 2, 1
         )
 
-        ## Add layers to stack
+        # Add layers to stack
         self.load_mask_container_stack.addWidget(self.load_mask_container_1)
         self.load_mask_container_stack.addWidget(self.load_mask_container_2)
 
@@ -269,7 +268,7 @@ class DMDWidget(QWidget):
 
     def register(self, laser):
         self.sig_start_registration.emit()
-        ## Add control for lasers, signal slot should be there in AOTF widget
+        # Add control for lasers, signal slot should be there in AOTF widget
         registrator = Registrator.DMDRegistator(self.DMD_actuator)
         self.transform[laser] = registrator.registration(
             registration_pattern="circle"
@@ -363,7 +362,6 @@ class DMDWidget(QWidget):
         Receive untransformed mask coordinates, transform them, create mask, send mask to DMD.
 
         PARAMETERS
-        ----------
         sig_from_CoordinateWidget : list.  [[signal for first frame], [signal for second frame], ...]
                 Signal sent out from CoordinateWidget which contains list of ROIs
                 and other parameters for transformation and mask generation.
@@ -470,7 +468,7 @@ class DMDWidget(QWidget):
         A transition to the next sequence can take place without any gaps, which uses AlpProjStartCont.
         """
         # Set ALP_PROJ_MODE to ALP_MASTER
-        ALP_PROJ_MODE = 2300  # 	Select from ALP_MASTER and ALP_SLAVE mode */
+        ALP_PROJ_MODE = 2300  # Select from ALP_MASTER and ALP_SLAVE mode
         ALP_MASTER = 2301
         ALP_SLAVE = 2302
 
@@ -504,10 +502,10 @@ class DMDWidget(QWidget):
             print("ALP_PROJ_STEP set to ALP_EDGE_RISING")
 
         # Set the binary mode of DMD.
-        ALP_BIN_MODE = 2104  # 	Binary mode: select from ALP_BIN_NORMAL and ALP_BIN_UNINTERRUPTED (AlpSeqControl)
+        ALP_BIN_MODE = 2104  # Binary mode: select from ALP_BIN_NORMAL and ALP_BIN_UNINTERRUPTED (AlpSeqControl)
 
-        ALP_BIN_NORMAL = 2105  # 	Normal operation with progammable dark phase
-        ALP_BIN_UNINTERRUPTED = 2106  # 	Operation without dark phase
+        ALP_BIN_NORMAL = 2105  # Normal operation with progammable dark phase
+        ALP_BIN_UNINTERRUPTED = 2106  # Operation without dark phase
 
         if self.ALP_ALP_BIN_MODE_Combox.currentText() == "ALP_BIN_NORMAL":
             self.DMD_actuator.DMD.SeqControl(

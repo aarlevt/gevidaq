@@ -246,11 +246,9 @@ class ManualRegistrationWindow(QWidget):
         """
 
         Parameters
-        ----------
         x : Matrix to be transformed to string
 
         Returns
-        -------
         string : String to be printed
 
         """

@@ -20,7 +20,7 @@ from skimage.io import imread
 from .ImageProcessing import ProcessImage
 
 
-# ================================================================ProcessImage===============================================
+# === ProcessImage ===
 class ProcessImageML:
     def __init__(
         self,
@@ -31,9 +31,7 @@ class ProcessImageML:
         super().__init__(*args, **kwargs)
 
         """
-        # =============================================================================
         # Initialize the detector instance and load the model.
-        # =============================================================================
         """
         # Load configuration file
         # Setup config file
@@ -53,9 +51,7 @@ class ProcessImageML:
 
     # %%
     """
-    # ======================================================================================================================
-    # ************************************  Retrive scanning scheme and read in images. ************************************
-    # ======================================================================================================================
+    # === Retrive scanning scheme and read in images. ===
     """
 
     def ReadinImgs_Roundstack(self, Nest_data_directory, rowIndex, colIndex):
@@ -63,14 +59,12 @@ class ProcessImageML:
         Read in images from nest directory.
 
         Parameters
-        ----------
         Nest_data_directory : string.
             The directory to folder where the screening data is stored.
         rowIndex, colIndex:
             Row and column index in stage coordinates.
 
         Returns
-        -------
         PMT_image_wholetrace_stack : 2-D ndarray or stack of 2-D ndarray.
             Loaded images.
         """
@@ -86,7 +80,7 @@ class ProcessImageML:
         fileNameList.sort(
             key=lambda x: int(x[x.index("Round") + 5 : x.index("_Coord")])
         )  # Sort the list according to Round number
-        #        print(fileNameList)
+        # print(fileNameList)
 
         for eachfile in fileNameList:
             ImgSequenceNum += 1
@@ -109,14 +103,12 @@ class ProcessImageML:
         Return lists that contain round sequence and coordinates strings, like ['Coords1_R0C0', 'Coords2_R0C1500']
 
         Parameters
-        ----------
         Nest_data_directory : string.
             The directory to folder where the screening data is stored.
         file_keyword : string.
             The keyowrd used to search for file name.
 
         Returns
-        -------
         RoundNumberList : List.
             List of all round numbers in screening.
         CoordinatesList : List.
@@ -125,7 +117,7 @@ class ProcessImageML:
             List of file names strings.
         """
         fileNameList = []
-        #        ImgSequenceNum = 0
+        # ImgSequenceNum = 0
         for file in os.listdir(Nest_data_directory):
             if file_keyword in file:
                 fileNameList.append(file)
@@ -174,14 +166,12 @@ class ProcessImageML:
 
             CoordinatesList = list(dict.fromkeys(CoordinatesList))
 
-        #        print(RoundNumberList, CoordinatesList, fileNameList)
+        # print(RoundNumberList, CoordinatesList, fileNameList)
         return RoundNumberList, CoordinatesList, fileNameList
 
     # %%
     """
-    # ================================================================================================================
-    # ************************************  Run detection on single image  *************************************
-    # ================================================================================================================
+    # === Run detection on single image ===
     """
 
     def DetectionOnImage(self, Rawimage, axis=None, show_result=False):
@@ -229,27 +219,22 @@ class ProcessImageML:
             return MLresults
 
     """
-    # ================================================================================================================
-    # ************************************  Organize cell properties dictionary  *************************************
-    # ================================================================================================================
+    # === Organize cell properties dictionary ===
     """
 
     def FluorescenceAnalysis(self, folder, round_num, save_mask=True):
         """
-        # =============================================================================
         # Given the folder and round number, return a dictionary for the round
         # that contains each scanning position as key and structured array of detailed
         # information about each identified cell as content.
         #
-        #   Returned structured array fields:
-        #   - BoundingBox of cell ROI
-        #   - Mean intensity of whole cell area
-        #   - Mean intensity of cell membrane part
-        #   - Contour soma ratio
-        # =============================================================================
+        # Returned structured array fields:
+        # - BoundingBox of cell ROI
+        # - Mean intensity of whole cell area
+        # - Mean intensity of cell membrane part
+        # - Contour soma ratio
 
         Parameters
-        ----------
         folder : string.
             The directory to folder where the screening data is stored.
         round_num : string.
@@ -258,7 +243,6 @@ class ProcessImageML:
             Whether to save segmentation masks.
 
         Returns
-        -------
         cell_Data : pd.DataFrame.
             Sum of return from func: retrieveDataFromML, for whole round.
         """
@@ -279,9 +263,7 @@ class ProcessImageML:
             cells_counted_in_round = 0
 
             background_substraction = False
-            # =============================================================================
-            #             For background_substraction
-            # =============================================================================
+            # For background_substraction
             # If background images are taken
             background_images_folder = os.path.join(
                 folder, "background {}".format(EachRound)
@@ -319,11 +301,9 @@ class ProcessImageML:
                 self.cell_counted_inRound = 0
 
                 for EachCoord in CoordinatesList:
-                    # =============================================================================
-                    #             For fluorescence:
-                    # =============================================================================
+                    # For fluorescence:
                     print(EachCoord)
-                    # -------------- readin image---------------
+                    # === readin image ===
                     for Eachfilename in enumerate(fileNameList):
                         if (
                             EachCoord in Eachfilename[1]
@@ -349,11 +329,8 @@ class ProcessImageML:
                             _imagefilename = os.path.join(
                                 folder, Eachfilename[1]
                             )
-                    # ------------------------------------------
 
-                    # =========================================================================
-                    #                     USING MASKRCNN...
-                    # =========================================================================
+                    # USING MASKRCNN...
                     # Imagepath      = self.Detector._fixPathName(_imagefilename)
                     Rawimage = imread(_imagefilename)
 
@@ -495,7 +472,6 @@ class ProcessImageML:
         Given the folder, perform general analysis over the images in it.
 
         Parameters
-        ----------
         folder : str
             Path to the folder.
         generate_zmax : bool, optional
@@ -508,7 +484,6 @@ class ProcessImageML:
             DESCRIPTION. The default is True.
 
         Returns
-        -------
         cell_Data : pd.dataframe
             DESCRIPTION.
 
@@ -776,7 +751,6 @@ def showPlotlyScatter(self, DataFrame, x_axis, y_axis, saving_directory):
     Display the scatters through interactive library Plotly.
 
     Parameters
-    ----------
     DataFrame : pd.dataframe
         The feed in datafram.
     x_axis : str.
@@ -787,7 +761,6 @@ def showPlotlyScatter(self, DataFrame, x_axis, y_axis, saving_directory):
         The directory to save the html file.
 
     Returns
-    -------
     None.
 
     """
@@ -805,7 +778,7 @@ def showPlotlyScatter(self, DataFrame, x_axis, y_axis, saving_directory):
         width=1050,
         height=950,
     )
-    #        fig.update_layout(hovermode="x")
+    # fig.update_layout(hovermode="x")
     fig.write_html(saving_directory, auto_open=True)
 
 
@@ -813,7 +786,6 @@ if __name__ == "__main__":
     import skimage
 
     # from skimage.io import imread
-    # =============================================================================
 
     tag_folder = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\2020-4-08 Archon citrine library 100FOVs\trial_3_library_cellspicked"  # TODO hardcoded path
     lib_folder = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\2020-7-30 Archon1 comparision 100 FOV\code_test"  # TODO hardcoded path

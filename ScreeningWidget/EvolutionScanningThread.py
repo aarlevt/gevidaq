@@ -61,13 +61,10 @@ class ScanningExecutionThread(QThread):
     # %%
     def run(self):
         """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        #                                                               Connect devices.
-        # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+        # Connect devices.
         """
         """
-        # =============================================================================
-        #         connect the Objective motor
-        # =============================================================================
+        # connect the Objective motor
         """
         print(
             "----------------------Starting to connect the Objective motor-------------------------"
@@ -81,9 +78,7 @@ class ScanningExecutionThread(QThread):
         print("init_focus_position : {}".format(self.init_focus_position))
 
         """
-        # =============================================================================
-        #         connect the Hmamatsu camera
-        # =============================================================================
+        # connect the Hmamatsu camera
         """
         self._use_camera = False
         # Check if camera is used.
@@ -110,14 +105,12 @@ class ScanningExecutionThread(QThread):
             print("No camera involved.")
 
         """
-        # =============================================================================
-        #         connect the Insight X3
-        # =============================================================================
+        # connect the Insight X3
         """
         if len(self.RoundQueueDict["InsightEvents"]) != 0:
             self.Laserinstance = InsightX3("COM11")
             try:
-                # -------------Initialize laser--------------
+                # === Initialize laser ===
                 self.watchdog_flag = False
                 time.sleep(0.5)
 
@@ -139,9 +132,7 @@ class ScanningExecutionThread(QThread):
 
                 time.sleep(0.5)
         """
-        # =============================================================================
-        #         Initialize ML
-        # =============================================================================
+        # Initialize ML
         """
         self._use_ML = False
         # Check if machine learning segmentation is used.
@@ -162,21 +153,17 @@ class ScanningExecutionThread(QThread):
 
         # %%
         """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        #                                                                  Execution
+        # Execution
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
         TotalGridNumber = self.meshgridnumber**2
 
         for EachGrid in range(TotalGridNumber):
             """
-            #------------------------------------------------------------------------------
-            #:::::::::::::::::::::::::::::::: AT EACH GRID ::::::::::::::::::::::::::::::::
-            #------------------------------------------------------------------------------
+            # :::::::::::::::::::::::::::::::: AT EACH GRID ::::::::::::::::::::::::::::::::
             """
             self.Grid_index = EachGrid
             """
-            # =============================================================================
-            #         For each small repeat unit in the scanning meshgrid
-            # =============================================================================
+            # For each small repeat unit in the scanning meshgrid
             """
 
             time.sleep(0.5)
@@ -185,9 +172,7 @@ class ScanningExecutionThread(QThread):
                 int(len(self.RoundQueueDict) / 2 - 1)
             ):  # EachRound is the round sequence number starting from 0, while the actual number used in dictionary is 1.
                 """
-                #-------------------------------------------------------------------------------
-                #:::::::::::::::::::::::::::::::: AT EACH ROUND ::::::::::::::::::::::::::::::::
-                #-------------------------------------------------------------------------------
+                # :::::::::::::::::::::::::::::::: AT EACH ROUND ::::::::::::::::::::::::::::::::
                 """
                 print(
                     "----------------------------------------------------------------------------"
@@ -198,23 +183,17 @@ class ScanningExecutionThread(QThread):
                     )
                 )  # EachRound+1 is the corresponding round number when setting the dictionary starting from round 1.
                 """
-                # =============================================================================
-                #         Execute Insight event at the beginning of each round
-                # =============================================================================
+                # Execute Insight event at the beginning of each round
                 """
                 self.laser_init(EachRound)
 
                 """
-                # =============================================================================
-                #         Execute filter event at the beginning of each round
-                # =============================================================================
+                # Execute filter event at the beginning of each round
                 """
                 self.filters_init(EachRound)
 
                 """
-                # =============================================================================
-                #         Generate focus position list at the beginning of each round
-                # =============================================================================
+                # Generate focus position list at the beginning of each round
                 """
                 if EachRound == 0:
                     ZStackinfor = self.GeneralSettingDict[
@@ -254,18 +233,14 @@ class ScanningExecutionThread(QThread):
                 )
                 for EachCoord in range(CoordsNum):
                     """
-                    #------------------------------------------------------------------------------------
-                    #:::::::::::::::::::::::::::::::: AT EACH COORDINATE ::::::::::::::::::::::::::::::::
-                    #------------------------------------------------------------------------------------
+                    # :::::::::::::::::::::::::::::::: AT EACH COORDINATE ::::::::::::::::::::::::::::::::
                     """
                     self.error_massage = None
 
                     self.currentCoordsSeq += 1
 
                     """
-                    # =============================================================================
-                    #         Stage movement
-                    # =============================================================================
+                    # Stage movement
                     """
                     self.coord_array = self.RoundCoordsDict[
                         "CoordsPackage_{}".format(EachRound + 1)
@@ -338,10 +313,8 @@ class ScanningExecutionThread(QThread):
                     time.sleep(0.2)
 
                     """
-                    # =============================================================================
-                    #                               Focus position
-                    #         Unpack the focus stack information, conduct auto-focusing if set.
-                    # =============================================================================
+                    # Focus position
+                    # Unpack the focus stack information, conduct auto-focusing if set.
                     """
                     # Here also generate the ZStackPosList.
                     self.ZStackNum = self.unpack_focus_stack(
@@ -356,12 +329,10 @@ class ScanningExecutionThread(QThread):
                         )
                     )
 
-                    # ------------------Move to Z stack focus-------------------
+                    # === Move to Z stack focus ===
                     for EachZStackPos in range(self.ZStackNum):
                         """
-                        #------------------------------------------------------------------------------------
-                        #:::::::::::::::::::::::::::::::: AT EACH ZSTACK ::::::::::::::::::::::::::::::::::::
-                        #------------------------------------------------------------------------------------
+                        # :::::::::::::::::::::::::::::::: AT EACH ZSTACK ::::::::::::::::::::::::::::::::::::
                         """
                         print(
                             "--------------------------------------------Stack {}--------------------------------------------------".format(
@@ -393,7 +364,7 @@ class ScanningExecutionThread(QThread):
                                     self.stack_focus_degree_list
                                 )
                             )
-                            # -----Suppose now it's the 3rd stack position-----
+                            # === Suppose now it's the 3rd stack position ===
                             # Check if focus degree decreased on the 2nd pos,
                             # if so change the obj moveing direction.
                             self.focus_degree_decreasing = False
@@ -415,7 +386,6 @@ class ScanningExecutionThread(QThread):
                                     )
 
                                     self.focus_degree_decreasing = True
-                            # -------------------------------------------------
 
                             print("Target focus pos: {}".format(self.FocusPos))
 
@@ -430,9 +400,7 @@ class ScanningExecutionThread(QThread):
                             self.ZStackOrder = 1
                             self.FocusPos = self.init_focus_position
                         """
-                        # =============================================================================
-                        #         Execute waveform packages
-                        # =============================================================================
+                        # Execute waveform packages
                         """
                         self.Waveform_sequence_Num = int(
                             len(
@@ -441,12 +409,10 @@ class ScanningExecutionThread(QThread):
                                 ][0]
                             )
                         )
-                        # ------------For waveforms in each coordinate----------
+                        # === For waveforms in each coordinate ===
                         for EachWaveform in range(self.Waveform_sequence_Num):
                             """
-                            # =============================================================================
-                            #         For photo-cycle
-                            # =============================================================================
+                            # For photo-cycle
                             """
                             # Get the photo cycle information
                             PhotocyclePackageToBeExecute = self.RoundQueueDict[
@@ -512,12 +478,9 @@ class ScanningExecutionThread(QThread):
                                         yRel=-1 * stage_move_col,
                                     )
                                     time.sleep(1)
-                            # --------------------------------------------------
 
                             """
-                            # =============================================================================
-                            #         Execute pre-set operations at EACH COORDINATE.
-                            # =============================================================================
+                            # Execute pre-set operations at EACH COORDINATE.
                             """
                             self.inidividual_coordinate_operation(
                                 EachRound, EachWaveform, RowIndex, ColumnIndex
@@ -535,7 +498,7 @@ class ScanningExecutionThread(QThread):
 
         # %%
         """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-        #                                                            Disconnect devices.
+        # Disconnect devices.
         # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~"""
 
         # Switch off laser
@@ -570,12 +533,10 @@ class ScanningExecutionThread(QThread):
         Execute Insight event at the beginning of each round
 
         Parameters
-        ----------
         EachRound : int
             Round index.
 
         Returns
-        -------
         None.
 
         """
@@ -708,12 +669,10 @@ class ScanningExecutionThread(QThread):
         Execute filter event at the beginning of each round.
 
         Parameters
-        ----------
         EachRound : int
             Round index.
 
         Returns
-        -------
         None.
 
         """
@@ -805,7 +764,6 @@ class ScanningExecutionThread(QThread):
         Determine focus position either from pre-set numbers of by auto-focusing.
 
         Parameters
-        ----------
         EachGrid : int
             Current grid index.
         EachRound : int
@@ -814,7 +772,6 @@ class ScanningExecutionThread(QThread):
             Current coordinate index.
 
         Returns
-        -------
         ZStackNum : int
             Number of focus positions in stack.
         ZStackPosList : list
@@ -860,7 +817,7 @@ class ScanningExecutionThread(QThread):
                 "focus_position {}".format(self.coord_array["focus_position"])
             )
 
-            # -----------------------Auto focus---------------------------------
+            # === Auto focus ===
             if auto_focus_flag == "yes":
                 if self.coord_array["focus_position"] == -1.0:
                     instance_FocusFinder = FocusFinder(
@@ -997,11 +954,9 @@ class ScanningExecutionThread(QThread):
                     ZStacklinspaceStart, ZStacklinspaceEnd, num=ZStackNum
                 )
                 print("ZStackPos is : {}".format(self.ZStackPosList))
-            # ------------------------------------------------------------------
             # If not auto focus, use the same list variable self.ZStackPosList.
             elif auto_focus_flag == "no":
                 pass
-            # ------------------------------------------------------------------
             # If it's auto-focus round, skip next waveforms.
             elif auto_focus_flag == "pure AF":
                 print("--------------Finding focus-----------------")
@@ -1118,7 +1073,6 @@ class ScanningExecutionThread(QThread):
         Execute pre-set operations at each coordinate.
 
         Parameters
-        ----------
         EachRound : int
             Current round index.
         EachWaveform : int
@@ -1129,7 +1083,6 @@ class ScanningExecutionThread(QThread):
             Current sample stage row index.
 
         Returns
-        -------
         None.
 
         """
@@ -1152,7 +1105,7 @@ class ScanningExecutionThread(QThread):
         ]  # first is current round number, second is current waveform package number.
         self.CurrentPosIndex = [RowIndex, ColumnIndex]
 
-        # ----------------Camera operations-----------------
+        # === Camera operations ===
         _camera_isUsed = False
         if (
             CameraPackageToBeExecute != {}
@@ -1185,12 +1138,12 @@ class ScanningExecutionThread(QThread):
             )
             # HamamatsuCam starts another thread to pull out frames from buffer.
             # Make sure that the camera is prepared before waveform execution.
-            #                                while self.HamamatsuCam.isStreaming is False:
-            #                                    print('Waiting for camera...')
-            #                                    time.sleep(0.5)
+            # while self.HamamatsuCam.isStreaming is False:
+            # print('Waiting for camera...')
+            # time.sleep(0.5)
             time.sleep(1)
         print("Now start waveforms")
-        # ----------------Waveforms operations--------------
+        # === Waveforms operations ===
         if (
             WaveformPackageGalvoInfor != "NoGalvo"
         ):  # Unpack the information of galvo scanning.
@@ -1216,7 +1169,7 @@ class ScanningExecutionThread(QThread):
         # Reconstruct the image from np array and save it.
         self.Process_raw_data()
 
-        # ------------------Camera saving-------------------
+        # === Camera saving ===
         if _camera_isUsed is True:
             self.HamamatsuCam.isSaving = True
             img_text = (
@@ -1268,7 +1221,6 @@ class ScanningExecutionThread(QThread):
         Reconstruct the image from np array and save it.
 
         Returns
-        -------
         None.
 
         """
@@ -1291,7 +1243,7 @@ class ScanningExecutionThread(QThread):
                 )
 
                 # self.PMT_image_reconstructed = self.PMT_image_reconstructed[
-                #     :, 50:550]
+                # :, 50:550]
                 # Cut off the flying back part.
                 if self.daq_sampling_rate == 500000:
                     if Value_yPixels == 500:
@@ -1359,7 +1311,7 @@ class ScanningExecutionThread(QThread):
                 )  # For reconstructed image we pull out the first layer, getting 2d img.
                 plt.show()
 
-                # ---------------------------------------------Calculate the z max projection-----------------------------------------------------------------------
+                # === Calculate the z max projection ===
                 if self.repeatnum == 1:  # Consider one repeat image situlation
                     if self.ZStackNum > 1:
                         if self.ZStackOrder == 1:
@@ -1408,7 +1360,7 @@ class ScanningExecutionThread(QThread):
                             self.PMT_image_reconstructed[np.newaxis, :, :]
                         )
 
-                # ============== Save the max projection image =================
+                # === Save the max projection image ===
                 if self.ZStackOrder == self.ZStackNum:
                     self.PMT_image_maxprojection = np.max(
                         self.PMT_image_maxprojection_stack, axis=0
@@ -1460,7 +1412,7 @@ class ScanningExecutionThread(QThread):
         )
         return tif_name
 
-    # ----------------------------------------------------------------WatchDog for laser----------------------------------------------------------------------------------
+    # === WatchDog for laser ===
     def Status_watchdog(self, querygap):
         while True:
             if self.watchdog_flag is True:

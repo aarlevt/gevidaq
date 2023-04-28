@@ -5,11 +5,9 @@ Created on Tue Aug 18 13:54:51 2020
 @author: xinmeng
 """
 
-# =============================================================================
-# -------------------------Auto focus workflow---------------------------------
+# === Auto focus workflow ===
 # --1. Find local minima range. (one direction until value getting smaller)
 # --2. Bisection to find the optimal.
-# =============================================================================
 
 import os
 import time
@@ -42,7 +40,6 @@ class FocusFinder:
 
 
         Parameters
-        ----------
         source_of_image : string, optional
             The input source of image. The default is PMT.
         init_search_range : int, optional
@@ -59,7 +56,6 @@ class FocusFinder:
             Handle to control Insight X3. The default is None.
 
         Returns
-        -------
         None.
 
         """
@@ -139,7 +135,6 @@ class FocusFinder:
         Bisection way of finding focus.
 
         Returns
-        -------
         mid_position : float
             DESCRIPTION.
 
@@ -237,12 +232,10 @@ class FocusFinder:
         Evaluate the focus degree of certain objective position.
 
         Parameters
-        ----------
         obj_position : float, optional
             The target objective position. The default is None.
 
         Returns
-        -------
         degree_of_focus : float
             Degree of focus.
 

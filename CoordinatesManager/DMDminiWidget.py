@@ -77,10 +77,10 @@ class DMDminiWidgetUI(QWidget):
             self.DMD_actuator.set_timing(self.gap_between_dark_phase)
 
             # Set the binary mode of DMD.
-            ALP_BIN_MODE = 2104  # 	Binary mode: select from ALP_BIN_NORMAL and ALP_BIN_UNINTERRUPTED (AlpSeqControl)
+            ALP_BIN_MODE = 2104  # Binary mode: select from ALP_BIN_NORMAL and ALP_BIN_UNINTERRUPTED (AlpSeqControl)
 
-            # ALP_BIN_NORMAL = 2105  # 	Normal operation with progammable dark phase
-            ALP_BIN_UNINTERRUPTED = 2106  # 	Operation without dark phase
+            # ALP_BIN_NORMAL = 2105  # Normal operation with progammable dark phase
+            ALP_BIN_UNINTERRUPTED = 2106  # Operation without dark phase
 
             self.DMD_actuator.DMD.SeqControl(
                 controlType=ALP_BIN_MODE, value=ALP_BIN_UNINTERRUPTED

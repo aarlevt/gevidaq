@@ -70,9 +70,7 @@ class ProcessImage:
     """
     # %%
     """
-    # =========================================================================
-    #       Retrive scanning scheme and read in images.
-    # =========================================================================
+    # Retrive scanning scheme and read in images.
     """
 
     def ReadinImgs_Roundstack(Nest_data_directory, rowIndex, colIndex):
@@ -80,14 +78,12 @@ class ProcessImage:
         Read in images from nest directory.
 
         Parameters
-        ----------
         Nest_data_directory : string.
             The directory to folder where the screening data is stored.
         rowIndex, colIndex:
             Row and column index in stage coordinates.
 
         Returns
-        -------
         PMT_image_wholetrace_stack : 2-D ndarray or stack of 2-D ndarray.
             Loaded images.
         """
@@ -103,7 +99,7 @@ class ProcessImage:
         fileNameList.sort(
             key=lambda x: int(x[x.index("Round") + 5 : x.index("_Coord")])
         )  # Sort the list according to Round number
-        #        print(fileNameList)
+        # print(fileNameList)
 
         for eachfile in fileNameList:
             ImgSequenceNum += 1
@@ -123,18 +119,14 @@ class ProcessImage:
         Nest_data_directory, row_data_folder=True, file_keyword="PMT_0Zmax"
     ):
         """
-        # =============================================================================
         # Return lists that contain round sequence and coordinates strings, like ['Coords1_R0C0', 'Coords2_R0C1500']
-        # =============================================================================
         Parameters
-        ----------
         Nest_data_directory : string.
             The directory to folder where the screening data is stored.
         row_data_folder: bool.
             If selectively add the file names.
 
         Returns
-        -------
         RoundNumberList : List.
             List of all round numbers in screening.
         CoordinatesList : List.
@@ -205,14 +197,12 @@ class ProcessImage:
                 )
                 CoordinatesList = list(dict.fromkeys(CoordinatesList))
 
-        #        print(CoordinatesList)
+        # print(CoordinatesList)
         return RoundNumberList, CoordinatesList, fileNameList
 
     # %%
     """
-    # =========================================================================
-    #       Individual image processing (traditional)
-    # =========================================================================
+    # Individual image processing (traditional)
     """
 
     def generate_mask(
@@ -225,7 +215,6 @@ class ProcessImage:
         Return a rough binary mask generated from single image or first image of the stack using adaptive thresholding.
 
         Parameters
-        ----------
         imagestack : stack of 2-D ndarray.
             The directory to folder where the screening data is stored.
         openingfactor:
@@ -236,7 +225,6 @@ class ProcessImage:
             Block size applied for adaptive thresholding.
 
         Returns
-        -------
         RegionProposal_Mask : 2-D ndarray.
             Binary mask for cells.
         RegionProposal_ImgInMask : 2-D ndarray.
@@ -252,8 +240,8 @@ class ProcessImage:
         template_image = denoise_tv_chambolle(
             template_image, weight=0.01
         )  # Denoise the image.
-        # -----------------------------------------------Adaptive thresholding-----------------------------------------------
-        #        block_size = binary_adaptive_block_size#335
+        # === Adaptive thresholding ===
+        # block_size = binary_adaptive_block_size#335
         AdaptiveThresholding = threshold_local(
             template_image, binary_adaptive_block_size, offset=0
         )
@@ -284,7 +272,6 @@ class ProcessImage:
         Based on tag fluorescence image, generate region proposal bounding box.
 
         Parameters
-        ----------
         image : ndarray
             Input image.
         RegionProposalMask : ndarray
@@ -309,7 +296,6 @@ class ProcessImage:
             Degree of closing operation on individual cell mask..
 
         Returns
-        -------
         TagFluorescenceLookupBook : structured array.
 
         """
@@ -355,7 +341,7 @@ class ProcessImage:
 
                 RawRegionImg_for_contour = RawRegionImg.copy()
 
-                # ---------Get the cell filled mask-------------
+                # === Get the cell filled mask ===
                 (
                     filled_mask_bef,
                     MeanIntensity_Background,
@@ -387,8 +373,7 @@ class ProcessImage:
                     contour_dilationparameter,
                 )
 
-                #                    Calculate Roundness
-                # --------------------------------------------------------------
+                # Calculate Roundness
                 filled_mask_area = len(
                     np.where(filled_mask_convolve2d == 1)[0]
                 )
@@ -402,7 +387,6 @@ class ProcessImage:
                     / contour_mask_perimeter**2
                 )
 
-                # --------------------------------------------------------------
                 # Roundness Threshold
                 if Roundness < Roundness_thres:
                     MeanIntensity_FilledArea = (
@@ -430,7 +414,7 @@ class ProcessImage:
 
                     Cell_Area_Img = filled_mask_convolve2d * RawRegionImg
 
-                    # ---------------------Calculate dead pixels----------------
+                    # === Calculate dead pixels ===
                     DeadPixelNum = len(np.where(Cell_Area_Img >= 3.86)[0])
                     filled_mask_convolve2d_area = len(
                         np.where(filled_mask_convolve2d >= 0)[0]
@@ -455,7 +439,7 @@ class ProcessImage:
                             Roundness,
                         )
 
-                        # --------------------------------------------------Add red boundingbox to axis----------------------------------------------
+                        # === Add red boundingbox to axis ===
                         rect = mpatches.Rectangle(
                             (minc, minr),
                             maxc - minc,
@@ -507,7 +491,6 @@ class ProcessImage:
         Extract information from bounding box in image.
 
         Parameters
-        ----------
         image : 2-D ndarray.
             Input image.
         bbox_list: List of strings.
@@ -524,7 +507,6 @@ class ProcessImage:
              Degree of morphology closing operation when generating the filled mask for cell.
 
         Returns
-        -------
         LibFluorescenceLookupBook : Dictionary.
             Dictionary with all cells' information in dtype.
 
@@ -582,7 +564,7 @@ class ProcessImage:
 
             RawRegionImg_for_contour = RawRegionImg.copy()
 
-            # ---------Get the cell filled mask-------------
+            # === Get the cell filled mask ===
             bbox_area = (maxr - minr) * (maxc - minc)
 
             (
@@ -617,7 +599,6 @@ class ProcessImage:
             )
 
             # Calculate mean values.
-            # --------------------------------------------------------------
             MeanIntensity_FilledArea = (
                 np.mean(RawRegionImg[np.where(filled_mask_bef == 1)])
                 - MeanIntensity_Background
@@ -637,7 +618,7 @@ class ProcessImage:
 
             Cell_Area_Img = filled_mask_convolve2d * RawRegionImg
 
-            # ---------------------Calculate dead pixels----------------
+            # === Calculate dead pixels ===
             DeadPixelNum = len(np.where(Cell_Area_Img >= 3.86)[0])
             filled_mask_convolve2d_area = len(
                 np.where(filled_mask_convolve2d >= 0)[0]
@@ -661,7 +642,7 @@ class ProcessImage:
                     contour_soma_ratio,
                 )
 
-                # --------------------------------------------------Add red boundingbox to axis----------------------------------------------
+                # === Add red boundingbox to axis ===
                 rect = mpatches.Rectangle(
                     (minc, minr),
                     maxc - minc,
@@ -706,7 +687,6 @@ class ProcessImage:
         Check if there're enough objects in the image.
 
         Parameters
-        ----------
         image : np.array
             Input image.
         percentage_threshold : float, optional
@@ -714,7 +694,6 @@ class ProcessImage:
             The default is 0.0085.
 
         Returns
-        -------
         bool
             DESCRIPTION.
 
@@ -741,9 +720,7 @@ class ProcessImage:
 
     # %%
     """
-    # =========================================================================
-    #     Contour scanning processing
-    # =========================================================================
+    # Contour scanning processing
     """
 
     def findContour(imagewithouthole, image, threshold):
@@ -751,7 +728,6 @@ class ProcessImage:
         Return contour mask by eroding inward from filled cell mask.
 
         Parameters
-        ----------
         imagewithouthole : 2-D ndarray.
             Input filled image.
         image : 2-D ndarray.
@@ -760,7 +736,6 @@ class ProcessImage:
             Threshold for finding contour.
 
         Returns
-        -------
         binarycontour : 2-D ndarray.
             Binary contour mask.
         """
@@ -788,7 +763,6 @@ class ProcessImage:
         Perform inward dilation on contour skeleton
 
         Parameters
-        ----------
         contour_skeleton : ndarray
             Binary skeleton of contour.
         mask_without_holes : ndarray
@@ -797,7 +771,6 @@ class ProcessImage:
             Degree of dilation.
 
         Returns
-        -------
         contour_mask : ndarray
             Dilatied contour mask.
 
@@ -819,7 +792,6 @@ class ProcessImage:
         Return the stand alone single filled cell mask without inner holes.
 
         Parameters
-        ----------
         RawRegionImg : ndarray
             Original region image.
         region_area : TYPE
@@ -830,18 +802,17 @@ class ProcessImage:
             Number used for closing.
 
         Returns
-        -------
         filled_mask_bef: ndarray
             Sstand alone single filled cell mask without inner holes.
 
         """
 
-        # ---------------------------------------------------Get binary cell image baseed on expanded current region image-------------------------------------------------
+        # === Get binary cell image baseed on expanded current region image ===
         RawRegionImg = denoise_tv_chambolle(RawRegionImg, weight=0.01)
         binary_adaptive_block_size = region_area * 0.3
         if (binary_adaptive_block_size % 2) == 0:
             binary_adaptive_block_size += 1
-        #        thresh_regionbef = threshold_otsu(RawRegionImg)
+        # thresh_regionbef = threshold_otsu(RawRegionImg)
         thresh_regionbef = threshold_local(
             RawRegionImg, binary_adaptive_block_size, offset=0
         )
@@ -856,7 +827,7 @@ class ProcessImage:
             binarymask_bef, square(int(cell_region_closing_factor))
         )
 
-        # ---------------------------------------------------fill in the holes, prepare for contour recognition-----------------------------------------------------------
+        # === fill in the holes, prepare for contour recognition ===
         seed_bef = np.copy(expanded_binary_region_bef)
         seed_bef[1:-1, 1:-1] = expanded_binary_region_bef.max()
         mask_bef = expanded_binary_region_bef
@@ -872,11 +843,11 @@ class ProcessImage:
         """ MeanIntensity_Background is not accurate!!!
         """
         MeanIntensity_Background = 0
-        # ----------------------------------------------------Clean up parts that don't belong to cell of interest---------------------------------------
+        # === Clean up parts that don't belong to cell of interest ===
         SubCellClearUpSize = int(
             region_area * 0.35
         )  # Assume that trash parts won't take up 35% of the whole cell boundbox area
-        #        print(region_area)
+        # print(region_area)
         IndividualCellCleared = filled_mask_bef.copy()
 
         clear_border(IndividualCellCleared)
@@ -890,11 +861,10 @@ class ProcessImage:
                 subcellregion.area < SubCellClearUpSize
             ):  # Clean parts that are smaller than SubCellClearUpSize, which should result in only one main part left.
                 for EachsubcellregionCoords in subcellregion.coords:
-                    #                                print(EachsubcellregionCoords.shape)
+                    # print(EachsubcellregionCoords.shape)
                     filled_mask_bef[
                         EachsubcellregionCoords[0], EachsubcellregionCoords[1]
                     ] = 0
-        # ------------------------------------------------------------------------------------------------------------------------------------------------
 
         return filled_mask_bef, MeanIntensity_Background
 
@@ -905,7 +875,6 @@ class ProcessImage:
         Given the cell filled mask, smooth the egde by convolution.
 
         Parameters
-        ----------
         RawRegionImg : ndarray
             Raw input image.
         filled_mask_bef : ndarray
@@ -916,12 +885,11 @@ class ProcessImage:
              The threshold used to shrink the mask.
 
         Returns
-        -------
         filled_mask_reconstructed : ndarray
 
         """
         # Shrink the image a bit.
-        #        filled_mask_bef = binary_erosion(filled_mask_bef, square(1))
+        # filled_mask_bef = binary_erosion(filled_mask_bef, square(1))
         # Try to smooth the boundary.
         kernel = np.ones((5, 5))
         filled_mask_convolve2d = convolve2d(
@@ -937,9 +905,9 @@ class ProcessImage:
         except:
             pass
         # Get rid of little patches.
-        #                self.filled_mask_convolve2d = opening(self.filled_mask_convolve2d, square(int(1)))
+        # self.filled_mask_convolve2d = opening(self.filled_mask_convolve2d, square(int(1)))
 
-        # ---------------------------------------------------fill in the holes, prepare for contour recognition-----------------------------------------------------------
+        # === fill in the holes, prepare for contour recognition ===
         seed_bef = np.copy(filled_mask_convolve2d)
         seed_bef[1:-1, 1:-1] = filled_mask_convolve2d.max()
         mask_bef = filled_mask_convolve2d
@@ -947,7 +915,7 @@ class ProcessImage:
         filled_mask_reconstructed = reconstruction(
             seed_bef, mask_bef, method="erosion"
         )  # The binary mask with filling holes
-        # ----------------------------------------------------Clean up parts that don't belong to cell of interest---------------------------------------
+        # === Clean up parts that don't belong to cell of interest ===
         SubCellClearUpSize = int(
             region_area * 0.30
         )  # Assume that trash parts won't take up 35% of the whole cell boundbox area
@@ -962,11 +930,10 @@ class ProcessImage:
         ):
             if subcellregion_convolve2d.area < SubCellClearUpSize:
                 for EachsubcellregionCoords in subcellregion_convolve2d.coords:
-                    #                                print(EachsubcellregionCoords.shape)
+                    # print(EachsubcellregionCoords.shape)
                     filled_mask_reconstructed[
                         EachsubcellregionCoords[0], EachsubcellregionCoords[1]
                     ] = 0
-        # ------------------------------------------------------------------------------------------------------------------------------------------------
         return filled_mask_reconstructed
 
     def get_Skeletonized_contour(
@@ -982,8 +949,7 @@ class ProcessImage:
         sampling_rate,
     ):
         """
-        # =============================================================================
-        #         Get the skeletonized contour of the cell for automated contour scanning.
+        # Get the skeletonized contour of the cell for automated contour scanning.
         # -- RegionProposalMask: the binary mask for region iterative analysis.
         # -- smallest_size: cells size below this number are ignored.
         # -- lowest_region_intensity: cells with mean region intensity below this are ignored.
@@ -994,7 +960,6 @@ class ProcessImage:
         # -- scanning_voltage: The scanning voltage of input image.
         # -- points_per_contour: desired number of points in contour routine.
         # -- sampling_rate: sampling rate for contour scanning.
-        # =============================================================================
         """
         cleared = RegionProposalMask.copy()
         clear_border(cleared)
@@ -1022,7 +987,7 @@ class ProcessImage:
 
                 RawRegionImg_for_contour = RawRegionImg.copy()
 
-                # ---------Get the cell filled mask-------------
+                # === Get the cell filled mask ===
                 (
                     filled_mask_bef,
                     MeanIntensity_Background,
@@ -1059,7 +1024,7 @@ class ProcessImage:
                     contour_thres,
                 )
                 if len(np.where(contour_mask_thin_line == 1)[0]) > 0:
-                    # -------------------Sorting and filtering----------------------
+                    # === Sorting and filtering ===
                     clockwise_sorted_raw_trace = (
                         ProcessImage.sort_index_clockwise(
                             contour_mask_thin_line
@@ -1073,9 +1038,8 @@ class ProcessImage:
                         clockwise_sorted_raw_trace,
                         filtering_kernel=1.5,
                     )
-                    # --------------------------------------------------------------
 
-                    # ----------Put contour image back to original image.-----------
+                    # === Put contour image back to original image. ===
                     ContourFullFOV = np.zeros((image.shape[0], image.shape[1]))
                     ContourFullFOV[
                         max(minr - 4, 0) : min(maxr + 4, image[0].shape[0]),
@@ -1084,7 +1048,6 @@ class ProcessImage:
 
                     X_routine = X_routine + max(minr - 4, 0)
                     Y_routine = Y_routine + max(minc - 4, 0)
-                    # --------------------------------------------------------------
 
                     figure, (ax1, ax2) = plt.subplots(2, 1, figsize=(10, 10))
                     ax1.imshow(ContourFullFOV, cmap=plt.cm.gray)
@@ -1101,7 +1064,7 @@ class ProcessImage:
                         Y_routine / ContourFullFOV.shape[1]
                     ) * scanning_voltage * 2 - scanning_voltage
 
-                    # --------------interpolate to get 500 points-------------------
+                    # === interpolate to get 500 points ===
                     x_axis = np.arange(0, len(voltage_contour_routine_X))
                     f_x = interpolate.interp1d(
                         x_axis, voltage_contour_routine_X, kind="cubic"
@@ -1120,7 +1083,7 @@ class ProcessImage:
                     )
                     Y_interpolated = f_y(newy)
 
-                    # -----------speed and accelation check-------------------------
+                    # === speed and accelation check ===
                     time_gap = 1 / sampling_rate
                     contour_x_acceleration = (
                         np.diff(X_interpolated, n=2) / time_gap**2
@@ -1155,7 +1118,6 @@ class ProcessImage:
                         "ContourMap_cell{}".format(CellSequenceInRegion)
                     ] = ContourFullFOV
                     CellSequenceInRegion += 1
-                    # --------------------------------------------------------------
 
         return CellSkeletonizedContourDict
 
@@ -1164,12 +1126,10 @@ class ProcessImage:
         Given the binary contour, sort the index so that they are in clockwise sequence for further contour scanning.
 
         Parameters
-        ----------
         cellmap : ndarray
             Binary contour skeleton.
 
         Returns
-        -------
         result : ndarray
             In clockwise sequence.
 
@@ -1192,7 +1152,7 @@ class ProcessImage:
             cclockwiselist = rawindexlist[0:1]
 
         coordstorage = rawindexlist[2:]
-        #        print(len(rawindexlist))
+        # print(len(rawindexlist))
         timeout = time.time()
         while len(clockwiselist + cclockwiselist) != len(rawindexlist):
             for (
@@ -1238,9 +1198,9 @@ class ProcessImage:
             ):
                 break
             # If we have a situation like this at the end of enclosure:
-            #  0  0  1
-            #  0  1  1
-            #  1  0  0
+            # 0  0  1
+            # 0  1  1
+            # 1  0  0
             if (
                 len(clockwiselist + cclockwiselist) > 10
                 and (x_last_clockwise - x_last_cclockwise) ** 2
@@ -1266,9 +1226,7 @@ class ProcessImage:
         cellmap, clockwise_sorted_raw_trace, filtering_kernel
     ):
         """
-        # =============================================================================
-        #  Given the clockwise sorted binary contour, interploate and filter for further contour scanning.
-        # =============================================================================
+        # Given the clockwise sorted binary contour, interploate and filter for further contour scanning.
         """
         Unfiltered_contour_routine_X = np.array([])
         Unfiltered_contour_routine_Y = np.array([])
@@ -1302,17 +1260,15 @@ class ProcessImage:
         repeats=1,
     ):
         """
-        # =============================================================================
-        #  Given the binary mask which ONLY covers cell of interest and original image,
-        #  generate the voltage signals to NI-DAQ for one contour scanning.
+        # Given the binary mask which ONLY covers cell of interest and original image,
+        # generate the voltage signals to NI-DAQ for one contour scanning.
         #
-        #  -- filled_mask: The filled binary mask which ONLY covers cell of interest.
-        #     Refer to outputs from func:get_cell_filled_mask and func:smoothing_filled_mask.
-        #  -- OriginalImage: Raw image.
-        #  -- scanning_voltage: The scanning voltage of input image.
-        #  -- points_per_contour: desired number of points in contour routine.
-        #  -- sampling_rate: sampling rate for contour scanning.
-        # =============================================================================
+        # -- filled_mask: The filled binary mask which ONLY covers cell of interest.
+        # Refer to outputs from func:get_cell_filled_mask and func:smoothing_filled_mask.
+        # -- OriginalImage: Raw image.
+        # -- scanning_voltage: The scanning voltage of input image.
+        # -- points_per_contour: desired number of points in contour routine.
+        # -- sampling_rate: sampling rate for contour scanning.
         """
         AccelerationGalvo = (
             1.54 * 10**8
@@ -1322,9 +1278,8 @@ class ProcessImage:
         contour_mask_thin_line = ProcessImage.findContour(
             filled_mask, OriginalImage.copy(), threshold=0.001
         )
-        # --------------------------------------------------------------
         if len(np.where(contour_mask_thin_line == 1)[0]) > 0:
-            # -------------------Sorting and filtering----------------------
+            # === Sorting and filtering ===
             clockwise_sorted_raw_trace = ProcessImage.sort_index_clockwise(
                 contour_mask_thin_line
             )
@@ -1336,7 +1291,6 @@ class ProcessImage:
                 clockwise_sorted_raw_trace,
                 filtering_kernel=1.5,
             )
-            # --------------------------------------------------------------
 
             # ------------Organize for Ni-daq execution---------------------
             voltage_contour_routine_X = (
@@ -1365,7 +1319,7 @@ class ProcessImage:
             )
             Y_interpolated = f_y(newy)
 
-            # ---------------speed and accelation check-------------------------
+            # === speed and accelation check ===
             time_gap = 1 / sampling_rate
             contour_x_acceleration = (
                 np.diff(X_interpolated, n=2) / time_gap**2
@@ -1422,14 +1376,12 @@ class ProcessImage:
         By default using 50k sampling rate, 500 scans per second and data from 10s.
 
         Parameters
-        ----------
         path : TYPE
             DESCRIPTION.
         method : TYPE, optional
             DESCRIPTION. The default is "Average over each contour 100 points".
 
         Returns
-        -------
         None.
 
         """
@@ -1508,9 +1460,7 @@ class ProcessImage:
 
     # %%
     """
-    # =============================================================================
-    #     ROI and mask generation, DMD related
-    # =============================================================================
+    # ROI and mask generation, DMD related
     """
 
     def CreateBinaryMaskFromRoiCoordinates(
@@ -1566,7 +1516,6 @@ class ProcessImage:
         Create binary mask from roi items from pyqtgraph
 
         Parameters
-        ----------
         image_shape : tuple of size 2.
             The shape of the mask.
         polygon : array_like.
@@ -1574,7 +1523,6 @@ class ProcessImage:
             the number of points.
 
         Returns
-        -------
         mask : 2-D ndarray of type 'bool'.
             The mask that corresponds to the input polygon.
 
@@ -1588,7 +1536,7 @@ class ProcessImage:
         if type(roi_list) is list:
             for roi in roi_list:
                 roi_handle_positions = roi.getLocalHandlePositions()
-                #                print(roi.getLocalHandlePositions())
+                # print(roi.getLocalHandlePositions())
                 num_vertices = len(roi_handle_positions)
                 vertices = np.zeros([num_vertices, 2])
 
@@ -1614,7 +1562,7 @@ class ProcessImage:
             for roikey in roi_list:
                 roi = roi_list[roikey]
                 roi_handle_positions = roi.getLocalHandlePositions()
-                #                print(roi.getLocalHandlePositions())
+                # print(roi.getLocalHandlePositions())
                 num_vertices = len(roi_handle_positions)
                 vertices = np.zeros([num_vertices, 2])
 
@@ -1643,14 +1591,12 @@ class ProcessImage:
         Return vertices from input pyqtgraph roi items
 
         Parameters
-        ----------
         roi_items_list: list of roi items from pyqtgraph.
 
         Returns
-        -------
         list_of_rois: List of vertices np array
             e.g. [np.array([[1,1],[1,2],[2,1]]), #from first roi item
-                  np.array([[1,1],[1,2],[2,1]])  #from second roi item
+                  np.array([[1,1],[1,2],[2,1]])  # from second roi item
                     ]
         """
         list_of_rois = []
@@ -1681,7 +1627,6 @@ class ProcessImage:
         Create binary DMD transformed mask from input vertices
 
         Parameters
-        ----------
         vertices_assemble : np.array of size (n, 2), e.g. np.array([[1,1], [1, 2], [1,3]]),
                             or list of np.array of size 2, e.g. [np.array([1,1]), np.array([2,1])]
             The vertices of the input mask contour.
@@ -1689,7 +1634,6 @@ class ProcessImage:
             To which laser the returned DMD mask belongs.
 
         Returns
-        -------
         mask_transformed : 2-D ndarray.
             The transformed mask that corresponds to the input vertices group.
         """
@@ -1737,7 +1681,6 @@ class ProcessImage:
         First binart mask to contour vertices, then from vertices to transformed vertices then to DMD mask.
 
         Parameters
-        ----------
         binary_mask : TYPE
             DESCRIPTION.
         laser : TYPE
@@ -1754,7 +1697,6 @@ class ProcessImage:
             DESCRIPTION. The default is (1024, 768).
 
         Returns
-        -------
         mask_transformed_final : TYPE
             DESCRIPTION.
 
@@ -1833,21 +1775,17 @@ class ProcessImage:
 
     # %%
     """
-    # =============================================================================
-    #     MaskRCNN related
-    # =============================================================================
+    # MaskRCNN related
     """
 
     def convert_for_MaskRCNN(input_img):
         """Convert the image size and bit-depth to make it suitable for MaskRCNN detection.
 
         Parameters
-        ----------
         input_img : 2-D ndarray.
             Input image.
 
         Returns
-        -------
         output_image : 2-D ndarray.
             Converted image after resizing and bit-size adjustment.
         """
@@ -1883,14 +1821,13 @@ class ProcessImage:
         class_ids = 2: Round cell
         class_ids = 1: Dead cell
 
-        #   Returned structured array fields:
-        #   - BoundingBox of cell ROI
-        #   - Mean intensity of whole cell area
-        #   - Mean intensity of cell membrane part
-        #   - Contour soma ratio
+        # Returned structured array fields:
+        # - BoundingBox of cell ROI
+        # - Mean intensity of whole cell area
+        # - Mean intensity of cell membrane part
+        # - Contour soma ratio
 
         Parameters
-        ----------
         image : 2-D ndarray.
             Input image.
         MLresults : Dictionary.
@@ -1900,7 +1837,6 @@ class ProcessImage:
         add_up_cell_counted_number: int.
             Number of cells already counted in round.
         Returns
-        -------
         Cell_DataFrame : pd.DataFrame.
             Detail information extracted from MaskRCNN mask from the image, in pandas dataframe format.
         add_up_cell_counted_number: int.
@@ -1939,9 +1875,7 @@ class ProcessImage:
                     ROIlist[0] : ROIlist[2], ROIlist[1] : ROIlist[3]
                 ]  # Individual cell mask in each bounding box
 
-                # =============================================================
                 # Find contour along cell mask
-                # =============================================================
                 cell_contour_mask = closing(
                     ProcessImage.findContour(
                         CellMask_roi, RawImg_roi.copy(), 0.001
@@ -1973,7 +1907,7 @@ class ProcessImage:
                     # axs[2].set_xticks([])
                     plt.show()
 
-                # -------------Calculate intensity based on masks---------------
+                # === Calculate intensity based on masks ===
                 # Mean pixel value of cell membrane.
                 cell_contour_meanIntensity = np.mean(
                     RawImg_roi[np.where(cell_contour_mask_dilated == 1)]
@@ -1999,7 +1933,7 @@ class ProcessImage:
                     ROIlist[0], ROIlist[2], ROIlist[1], ROIlist[3]
                 )
 
-                # -------------------- Getting pixel numbers ------------------
+                # === Getting pixel numbers ===
                 cell_contour_mask_pixel_number = len(
                     np.where(cell_contour_mask_dilated == 1)[0]
                 )
@@ -2123,12 +2057,10 @@ class ProcessImage:
         overlapping from the dataframe list.
 
         Parameters
-        ----------
         data_frame_list : list
             List of dataframes of cells from different time points.
 
         Returns
-        -------
         whole_registered_dataframe : pd.DataFrame
             Registered dataframe.
 
@@ -2170,12 +2102,10 @@ class ProcessImage:
         Given the input boundingbox string, return the row/col limits.
 
         Parameters
-        ----------
         bounding_box_str : TYPE
             DESCRIPTION.
 
         Returns
-        -------
         minr_Data : int
             Minimum row index.
         maxr_Data : int
@@ -2220,7 +2150,6 @@ class ProcessImage:
         Show NAN instead if fail to trace back the cell.
 
         Parameters
-        ----------
         dataframe_previous : pd.DataFrame
             DataFrame of first time point.
         dataframe_latter : pd.DataFrame
@@ -2230,7 +2159,6 @@ class ProcessImage:
             seen as same cell. The default is 0.6.
 
         Returns
-        -------
         registered_dataframe : pd.DataFrame
             Show NAN on row instead if fail to trace back the cell.
 
@@ -2360,12 +2288,11 @@ class ProcessImage:
     def MergeDataFrames(cell_Data_1, cell_Data_2, method="TagLib"):
         """Merge Data frames based on input methods.
 
-        #   'TagLib': Merge tag protein screening round with library screening round.
-        #   -In this mode, for each bounding box in the tag round, it will search through every bounding box in library round and find the best match with
-        #   -with the most intersection, and then treat them as images from the same cell and merge the two input dataframes.
+        # 'TagLib': Merge tag protein screening round with library screening round.
+        # -In this mode, for each bounding box in the tag round, it will search through every bounding box in library round and find the best match with
+        # -with the most intersection, and then treat them as images from the same cell and merge the two input dataframes.
 
         Parameters
-        ----------
         cell_Data_1, cell_Data_2 : pd.DataFrame.
             Input data from two rounds.
         method : String.
@@ -2373,7 +2300,6 @@ class ProcessImage:
             'TagLib': for brightness screening.
 
         Returns
-        -------
         Cell_DataFrame_Merged : pd.DataFrame.
             Detail information from merging two input dataframe, with bounding boxes from different rounds overlapping above 60% seen as same cell.
         """
@@ -2569,7 +2495,6 @@ class ProcessImage:
             Cell_DataFrame_Merged = Cell_DataFrame_Merged.T
             print("Cell_DataFrame_Merged.")
 
-        # =====================================================================
         elif method == "Kcl":
             """
             # There are two situatiions here, one is simply with absolute intenesity,
@@ -2847,12 +2772,10 @@ class ProcessImage:
         Return False if failed to find the same cell from other round.
 
         Parameters
-        ----------
         input_series : TYPE
             Input series from dataframe cell_Data_1.
 
         Returns
-        -------
         pd_data_of_single_cell : TYPE
             Return False if failed to find the same cell from other round.
 
@@ -3026,7 +2949,6 @@ class ProcessImage:
         Filter the dataframe based on input numbers.
 
         Parameters
-        ----------
         DataFrame : pd.DataFrame.
             Input data.
         Mean_intensity_in_contour_thres : Float.
@@ -3035,7 +2957,6 @@ class ProcessImage:
             Threshold for contour soma ratio.
 
         Returns
-        -------
         DataFrames_filtered : pd.DataFrame.
             Filtered dataframe.
         """
@@ -3094,7 +3015,6 @@ class ProcessImage:
         Sort the dataframe based on normalized distance calculated from two given axes.
 
         Parameters
-        ----------
         DataFrame : TYPE
             The input dataframe.
         axis_1 : str
@@ -3107,7 +3027,6 @@ class ProcessImage:
             The weight for axis 2 when sorting.
 
         Returns
-        -------
         DataFrame_sorted : pd.dataframe
             DESCRIPTION.
 
@@ -3190,9 +3109,7 @@ class ProcessImage:
 
     # %%
     """
-    # =============================================================================
-    #     Pixel weighting
-    # =============================================================================
+    # Pixel weighting
     """
 
     def readbinaryfile(filepath):
@@ -3200,12 +3117,10 @@ class ProcessImage:
         Read in the binary files, which has 'Ip' or 'Vp' as suffix that comes from old Labview code.
 
         Parameters
-        ----------
         filepath : String
             Path to the target numpy file.
 
         Returns
-        -------
         data : np.array
             The inteprated data.
         srate : TYPE
@@ -3268,14 +3183,12 @@ class ProcessImage:
         calculate the weighted pixel information.
 
         Parameters
-        ----------
         video : np.array
             The input video in numpy array format.
         Vin : np.array
             Input patch voltage signals or camera trace, with which the video correlate.
 
         Returns
-        -------
         corrimage : np.array
             DF/DV image.
         weightimage : np.array
@@ -3297,14 +3210,14 @@ class ProcessImage:
         readin_voltage_variance = readin_voltage_patch - average_voltage
         voltagelength = len(readin_voltage_patch)
 
-        # ----------------------Subtract off background-------------------------
+        # === Subtract off background ===
         # Reshape the mean intensity 2D image to 3D, to the same length as voltage signal.
         averageimage_tiled = np.tile(video_mean_image, (voltagelength, 1, 1))
 
         # 3-D array of variance between each frame from raw video and the total mean intensity image.
         readin_video_variance = readin_video - averageimage_tiled
 
-        # -----Correlate the changes in intensity with the applied voltage------
+        # === Correlate the changes in intensity with the applied voltage ===
         # Reshape the 1D readin_voltage_variance into 3D.
         readin_voltage_variance_3D = np.resize(
             readin_voltage_variance, (voltagelength, 1, 1)
@@ -3313,7 +3226,7 @@ class ProcessImage:
         readin_video_variance_copy = readin_video_variance.copy()
 
         # At each frame, get the product of video_variance and voltage_variance
-        #  = DV*DF
+        # = DV*DF
         for i in range(voltagelength):
             readin_video_variance_copy[i] = (
                 readin_video_variance_copy[i] * readin_voltage_variance_3D[i]
@@ -3333,7 +3246,7 @@ class ProcessImage:
 
         imtermediate = np.zeros(estimate_DV.shape)
 
-        # --------Look at the residuals to get a noise at each pixel-----------
+        # === Look at the residuals to get a noise at each pixel ===
         for i in range(voltagelength):
             # At each frame, compute the variance between predicted "voltage" and input voltage.
             imtermediate[i] = (
@@ -3358,9 +3271,7 @@ class ProcessImage:
 
     # %%
     """
-    # =============================================================================
-    #     1-D array processing
-    # =============================================================================
+    # 1-D array processing
     """
 
     def signal_to_noise(a, axis=0, ddof=0):
@@ -3369,7 +3280,6 @@ class ProcessImage:
         Returns the signal-to-noise ratio of `a`, here defined as the mean
         divided by the standard deviation.
         Parameters
-        ----------
         a : array_like
             An array_like object containing the sample data.
         axis : int or None, optional
@@ -3378,7 +3288,6 @@ class ProcessImage:
         ddof : int, optional
             Degrees of freedom correction for standard deviation. Default is 0.
         Returns
-        -------
         s2n : ndarray
             The mean to standard deviation ratio(s) along `axis`, or 0 where the
             standard deviation is 0.
@@ -3393,14 +3302,12 @@ class ProcessImage:
         Return the fft frequency analysis of input array.
 
         Parameters
-        ----------
         array : array_like
             An array_like object containing the sample data.
         show_result : bool, optional
             If show the results. The default is True.
 
         Returns
-        -------
         freqs : array_like
             frequency amplitude array.
 
@@ -3425,12 +3332,10 @@ class ProcessImage:
         X axis is interpolated 10 times by default.
 
         Parameters
-        ----------
         raw_data_list : list
             input number list.
 
         Returns
-        -------
         fitted_curve : np.array
             Gaussian fit of input number list.
 
@@ -3458,14 +3363,12 @@ class ProcessImage:
         interpolate_1D
 
         Parameters
-        ----------
         input_array : np.array
             DESCRIPTION.
         desired_number : int, optional
             Number of elements in final array. The default is None.
 
         Returns
-        -------
         interpolated : np.array
             DESCRIPTION.
 
@@ -3491,14 +3394,12 @@ class ProcessImage:
         return the index range for both.
 
         Parameters
-        ----------
         array : np.array
             DESCRIPTION.
         threshold : float
             Threshold for deviding.
 
         Returns
-        -------
         upper_index_dict : dict
             DESCRIPTION.
         lower_index_dict : dict
@@ -3568,14 +3469,12 @@ class ProcessImage:
         Give a 1D trace, do bi-exponential fit on it.
 
         Parameters
-        ----------
         data : TYPE
             DESCRIPTION.
         sampling_rate : TYPE
             DESCRIPTION.
 
         Returns
-        -------
         TYPE
             DESCRIPTION.
 
@@ -3639,14 +3538,12 @@ class ProcessImage:
         Give a 1D trace, do bi-exponential fit on it.
 
         Parameters
-        ----------
         data : TYPE
             DESCRIPTION.
         sampling_rate : TYPE
             DESCRIPTION.
 
         Returns
-        -------
         TYPE
             DESCRIPTION.
 
@@ -3654,12 +3551,10 @@ class ProcessImage:
 
         time_axis = np.arange(len(data)) / sampling_rate
 
-        # =============================================================================
-        #     F(t) = A × (C × exp(–t/t1) + (1 – C) × exp(–t/t2)), where t1 was the time constant
-        #     of the fast component and t2 was the time constant of the slow component. The
-        #     percentage of the total magnitude that was associated with the fast component (%t1
-        #     ) was defined as C above.
-        # =============================================================================
+        # F(t) = A × (C × exp(–t/t1) + (1 – C) × exp(–t/t2)), where t1 was the time constant
+        # of the fast component and t2 was the time constant of the slow component. The
+        # percentage of the total magnitude that was associated with the fast component (%t1
+        # ) was defined as C above.
         def func(t, A, t1, C, t2):
             return A * (C * np.exp(-(t / t1)) + (1 - C) * np.exp(-(t / t2)))
 
@@ -3742,7 +3637,6 @@ class ProcessImage:
         Give a 1D trace, do bi-exponential fit on it.
 
         Parameters
-        ----------
         data : np array
             DESCRIPTION.
         sampling_rate : int
@@ -3754,7 +3648,6 @@ class ProcessImage:
             "substract": Normalize by just substracting the fitting trace.
 
         Returns
-        -------
         fluorescence_trace_normalized : np.array
             Corrected trace.
         fitting_stacts : dict
@@ -3803,7 +3696,7 @@ class ProcessImage:
         # Reconstruct the fitting
         fitted_trace = bleachfunc(time_axis, *popt)
 
-        # ======== Vizualization before photobleach normalization ============
+        # === Vizualization before photobleach normalization ===
         if show_fitting:
             fig1, ax = plt.subplots(figsize=(6.0, 4))
             (p01,) = ax.plot(
@@ -3831,7 +3724,6 @@ class ProcessImage:
             ax.xaxis.set_ticks_position("bottom")
             ax.yaxis.set_ticks_position("left")
             plt.show()
-        # =====================================================================
 
         # Normalize
         if normalize_method == "true divide":
@@ -3850,7 +3742,6 @@ class ProcessImage:
         when the measurement reaches a plateau value (important for the estimation of the variance).
 
         Parameters
-        ----------
         measured_array : 1D array
             The measured data points.
         fit_array : 1D array (same shape as measured_array)
@@ -3864,7 +3755,6 @@ class ProcessImage:
             extinguished after 5*tau, choose the threshold accordingly. The default is 0.25.
 
         Returns
-        -------
         float
             Reduced Chi squared value.
             If >>1, the fit is not good;
@@ -3895,9 +3785,7 @@ class ProcessImage:
 
     # %%
     """
-    # =============================================================================
-    #     2-D array processing
-    # =============================================================================
+    # 2-D array processing
     """
 
     def variance_of_laplacian(image):
@@ -3906,12 +3794,10 @@ class ProcessImage:
         measure, which is simply the variance of the Laplacian
 
         Parameters
-        ----------
         image : np.array
             Gray scale input image.
 
         Returns
-        -------
         sharpness : float
             Sharpness of the image, the higher the better.
 
@@ -3938,7 +3824,6 @@ class ProcessImage:
         Calculate the local entropy of input image.
 
         Parameters
-        ----------
         image : TYPE
             DESCRIPTION.
         amax : float, optional
@@ -3948,7 +3833,6 @@ class ProcessImage:
             Disk size when calculating entropy. The default is 20.
 
         Returns
-        -------
         TYPE
             DESCRIPTION.
 
@@ -4000,7 +3884,6 @@ class ProcessImage:
         Given a list of image file names, operate and output an image from it.
 
         Parameters
-        ----------
         image_file_names : list
             List of image file names.
         operation : string, optional
@@ -4010,7 +3893,6 @@ class ProcessImage:
             -- max projection: calculate the max projection over the stack.
 
         Returns
-        -------
         output : TYPE
             DESCRIPTION.
 
@@ -4040,14 +3922,12 @@ class ProcessImage:
         Convolution with a mean filter.
 
         Parameters
-        ----------
         image : np.array
             Input image.
         filter_side_length : int
             Size of the filter.
 
         Returns
-        -------
         image_mean_filtered : np.array
             image_mean_filtered.
 
@@ -4064,9 +3944,7 @@ class ProcessImage:
 
     # %%
     """
-    # =============================================================================
-    #     Screening data post-processing
-    # =============================================================================
+    # Screening data post-processing
     """
 
     def find_repeat_imgs(Nest_data_directory, similarity_thres=0.04):
@@ -4074,14 +3952,12 @@ class ProcessImage:
         Find repeating images inside diretory.
 
         Parameters
-        ----------
         Nest_data_directory : str
             DESCRIPTION.
         similarity_thres : float, optional
             DESCRIPTION. The default is 0.04.
 
         Returns
-        -------
         similar_img_list : TYPE
             DESCRIPTION.
         img_diff_list : TYPE
@@ -4144,14 +4020,12 @@ class ProcessImage:
         and find the image with highest focus degree.
 
         Parameters
-        ----------
         Nest_data_directory : TYPE
             DESCRIPTION.
         save_image : TYPE, optional
             DESCRIPTION. The default is True.
 
         Returns
-        -------
         None.
 
         """
@@ -4191,12 +4065,10 @@ class ProcessImage:
         Find the most in-focus image from the image list.
 
         Parameters
-        ----------
         img_stack : list
             List of input images.
 
         Returns
-        -------
         img_highest_focus_degree : np.ndarray
             Best in-focus image.
 
@@ -4229,7 +4101,6 @@ class ProcessImage:
         Generate the max projection for camera images stack.
 
         Parameters
-        ----------
         directory : TYPE
             DESCRIPTION.
         save_max_projection : TYPE, optional
@@ -4238,7 +4109,6 @@ class ProcessImage:
             DESCRIPTION. The default is True.
 
         Returns
-        -------
         None.
 
         """
@@ -4263,7 +4133,7 @@ class ProcessImage:
 
                 coordinate_infor = each_coordinate
 
-                # ---------------------------------------------Calculate the z max projection-----------------------------------------------------------------------
+                # === Calculate the z max projection ===
                 ZStackOrder = 0
                 for each_z_img_filename in img_zstack_list:
                     each_z_img = imread(
@@ -4338,9 +4208,7 @@ class ProcessImage:
 
     # %%
     """
-    # =============================================================================
-    #     Images stitching
-    # =============================================================================
+    # Images stitching
     """
 
     def image_stitching(
@@ -4350,14 +4218,12 @@ class ProcessImage:
         Stitch all screening images together into one.
 
         Parameters
-        ----------
         Nest_data_directory : string
             Directory in which all images are stored.
         row_data_folder : bool, optional
             For MaskRCNN mask stitching, this is False. The default is True.
 
         Returns
-        -------
         Stitched_image_dict : dict
             Dict containing stitched images of all rounds.
 
@@ -4515,12 +4381,10 @@ class ProcessImage:
         Retrieve the objective motor position from images meta data, and map it.
 
         Parameters
-        ----------
         Nest_data_directory : string
              Directory in which all images are stored.
 
         Returns
-        -------
         focus_map_dict : dict
             Dict containing focus position of recorded images of all rounds.
 
@@ -4638,9 +4502,7 @@ class ProcessImage:
 
     # %%
     """
-    # =============================================================================
-    #     For photo current calculation
-    # =============================================================================
+    # For photo current calculation
     """
 
     def PhotoCurrent(
@@ -4652,7 +4514,6 @@ class ProcessImage:
         Calculate and display the photocurrent.
 
         Parameters
-        ----------
         main_directory : TYPE
             DESCRIPTION.
         marker : TYPE, optional
@@ -4663,7 +4524,6 @@ class ProcessImage:
             DESCRIPTION.
 
         Returns
-        -------
         None.
 
         """
@@ -4762,9 +4622,7 @@ class ProcessImage:
 
     # %%
     """
-    # =============================================================================
-    #     PMT contour scan processing
-    # =============================================================================
+    # PMT contour scan processing
     """
 
     def PMT_contour_scan_processing(
@@ -4778,7 +4636,6 @@ class ProcessImage:
         plot the trace along time.
 
         Parameters
-        ----------
         path : string
             Path to PMT recording.
         DAQ_sampling_rate : int, optional
@@ -4787,7 +4644,6 @@ class ProcessImage:
             Number of points in one contour scan. The default is 100.
 
         Returns
-        -------
         fluorescence_trace_normalized : np.array
             Normalized trace.
 
@@ -4907,9 +4763,7 @@ class ProcessImage:
 
     # %%
     """
-    # =============================================================================
-    #     For making graphs
-    # =============================================================================
+    # For making graphs
     """
 
     def Screening_boxplot(path, title="Boxplot", dark_style=False):
@@ -4917,7 +4771,6 @@ class ProcessImage:
         Making box plot of for example bringhtness screening comparison data.
 
         Parameters
-        ----------
         path : string
             Path to data collection file.
         title : TYPE, optional
@@ -4926,7 +4779,6 @@ class ProcessImage:
             Style. The default is False.
 
         Returns
-        -------
         None.
 
         """
@@ -5097,7 +4949,6 @@ class ProcessImage:
         Generating bar graph of comparision between mutants' df/f from sheets in excel.
 
         Parameters
-        ----------
         path : str
             Path to the excel file.
         sheet_dictionary : dict
@@ -5110,7 +4961,6 @@ class ProcessImage:
             If to use dark style. The default is False.
 
         Returns
-        -------
         None.
 
         """
@@ -5286,9 +5136,7 @@ class ProcessImage:
             plt.show()
 
     # %%
-    # =============================================================================
-    #     Curve fitting, updated version
-    # =============================================================================
+    # Curve fitting, updated version
 
 
 class PatchAnalysis:
@@ -5304,9 +5152,9 @@ class PatchAnalysis:
         rhodopsin="Not specified",
     ):
         """
-        # ========================== Workflow ================================
+        # === Workflow ===
 
-        # ---------------- Input for initialization of the class -------------
+        # === Input for initialization of the class ===
         # weighted_trace   = Weighted trace of fluorescence signal
         # waveform       = waveform generated from Native Instruments DAQ, here is The configured Vp trace
         # voltage_step_frequency = frequency of voltage clamp squre waves
@@ -5321,7 +5169,6 @@ class PatchAnalysis:
         # ===
 
 
-        # ====================================================================
         """
 
         self.weighted_trace = weighted_trace
@@ -5347,7 +5194,6 @@ class PatchAnalysis:
 
         self.main_directory = main_directory
 
-        # ====================================================================
         self.desired_frame_number = self.total_time * self.camera_fps
 
         # Sometimes there's missing frame at the beginning of the video
@@ -5388,7 +5234,6 @@ class PatchAnalysis:
         Do bleaching correction on the weighted trace.
 
         Returns
-        -------
 
         """
         # Time axis for camera fluorescence signal
@@ -5514,7 +5359,7 @@ class PatchAnalysis:
             )
 
     def ExtractPeriod(self):
-        # ================= Cut out the skipping periods =====================
+        # === Cut out the skipping periods ===
         # Here use self.fluorescence_trace_for_sensitivity
         self.skip_frame_number = int(
             self.frame_number_per_voltage_step * self.skip
@@ -5525,7 +5370,7 @@ class PatchAnalysis:
             self.skip_frame_number :
         ]
 
-        # ================= Calculate an averaged period =====================
+        # === Calculate an averaged period ===
 
         self.used_number_of_votalgeSteps = int(
             self.total_number_of_votalgeSteps - self.skip
@@ -5546,9 +5391,9 @@ class PatchAnalysis:
             np.arange(len(self.averaged_single_period)) / self.camera_fps
         )
 
-        # ========== Daq signals in an averaged period ==========
-        #   Camera triggers: True True ... True True | False ... False False
-        #   Voltage patch:   0.3  0.3  ... 0.3  0.3  | -0.7  ... -0.7  -0.7
+        # === Daq signals in an averaged period ===
+        # Camera triggers: True True ... True True | False ... False False
+        # Voltage patch:   0.3  0.3  ... 0.3  0.3  | -0.7  ... -0.7  -0.7
 
         # For fitting, bring the last sample to the front as t=0
         self.averaged_single_period = np.roll(self.averaged_single_period, 1)
@@ -5558,12 +5403,10 @@ class PatchAnalysis:
 
         # ===== Bi-exponential function for the fitting algorithm =====
 
-        # =============================================================================
-        #     F(t) = A × (C × exp(–t/t1) + (1 – C) × exp(–t/t2)), where t1 was the time constant
-        #     of the fast component and t2 was the time constant of the slow component. The
-        #     percentage of the total magnitude that was associated with the fast component (%t1
-        #     ) was defined as C above.
-        # =============================================================================
+        # F(t) = A × (C × exp(–t/t1) + (1 – C) × exp(–t/t2)), where t1 was the time constant
+        # of the fast component and t2 was the time constant of the slow component. The
+        # percentage of the total magnitude that was associated with the fast component (%t1
+        # ) was defined as C above.
         def func(t, A, t1, C, t2):
             return A * (C * np.exp(-(t / t1)) + (1 - C) * np.exp(-(t / t2)))
 
@@ -5571,7 +5414,7 @@ class PatchAnalysis:
 
         fitting_length = int(len(self.averaged_single_period) / 2)
 
-        # ========================= Upswing ==================================
+        # === Upswing ===
 
         # First half time axis for fitting in seconds
         self.fitting_time_axis = np.arange(fitting_length) / self.camera_fps
@@ -5666,7 +5509,7 @@ class PatchAnalysis:
                 dpi=1200,
             )
 
-        # ===== Single exponential function for the fitting algorithm =====
+        # === Single exponential function for the fitting algorithm ===
 
         fig5_2, ax_2 = plt.subplots(figsize=(10.0, 8))
 
@@ -5734,7 +5577,7 @@ class PatchAnalysis:
                 dpi=1200,
             )
 
-        # =========================== Downswing ==============================
+        # === Downswing ===
 
         # Last half of trace for fitting
         self.downswing_single_period_raw = self.averaged_single_period[
@@ -5832,7 +5675,7 @@ class PatchAnalysis:
                 dpi=1200,
             )
 
-        # ===== Single exponential function for the fitting algorithm =====
+        # === Single exponential function for the fitting algorithm ===
 
         fig6_2, ax2_2 = plt.subplots(figsize=(10.0, 8))
 
@@ -5896,13 +5739,11 @@ class PatchAnalysis:
             )
 
     def ExtractSensitivity(self):
-        # =============================================================================
         # Fluorescence changes to voltage steps were calculated as Δ F/F = (Fss – Fbl)/Fbl ,
         # where Fss(steady-state fluorescence) is the mean fluorescence intensity averaged
         # over 50-70 ms during a voltage step after the fluorescence signal reaches
         # its plateau, and Fbl(baseline fluorescence) is the mean fluorescence intensity
         # averaged over 100 ms before the voltage step.
-        # =============================================================================
 
         # In individual period, which part percentage wise is seen as steady state.
         self.steady_state_region = [0.4, 0.98]
@@ -6021,9 +5862,7 @@ class PatchAnalysis:
                 output_file.write(self.statistics_test)
 
     # %%
-    # =============================================================================
-    #     Curve fitting, adapted from Mels' code.
-    # =============================================================================
+    # Curve fitting, adapted from Mels' code.
 
 
 class CurveFit:
@@ -6037,7 +5876,7 @@ class CurveFit:
         main_directory=None,
         rhodopsin="Not specified",
     ):
-        #### Input for initialization of the class ####
+        # Input for initialization of the class ####
         # fluorescence   = Weighted trace of fluorescence signal
         # waveform       = waveform generated with Native Instruments DAQ, here is Vp
         # rhodopsin      = label for the data (e.g., 'Helios4')
@@ -6239,13 +6078,13 @@ class CurveFit:
             + 1
         )
 
-        ##### Initialize empty lists needed for the next for loop ####
+        # Initialize empty lists needed for the next for loop ####
         # fluorescence_list_true     = list for fluorescence signal belonging to top of square wave
         # fluorescence_list_false    = list for fluorescence signal belonging to bottom of square wave
         # time_list_true             = list for time points belonging to top of square wave
         # time_list_false            = list for time points belonging to bottom of square wave
         # time_difference            = list for trigger time difference (difference between time point of fluorescence signal
-        #                             and voltage waveform directly after each step)
+        # and voltage waveform directly after each step)
         # counter                    =
         self.fluorescence_list_true = []
         self.fluorescence_list_false = []
@@ -6380,7 +6219,7 @@ class CurveFit:
         self.periods_time = TidyData(self.periods_time)
 
     def TransformCurves(self):
-        #### Initialize empty lists ####
+        # Initialize empty lists ####
         # vertical_translation       = will store vertical translations (flourescence elevation) for every isolated period
         # horizontal_translation     = will store horizontal translations (time lapse) for every isolated period
         # transformed_periods        = will store the isolated fluorescence signals after transformation
@@ -6541,24 +6380,20 @@ class CurveFit:
 
         # Bi-exponential function for the fitting algorithm
 
-        # =============================================================================
-        #     F(t) = A × (C × exp(–t/t1) + (1 – C) × exp(–t/t2)), where t1 was the time constant
-        #     of the fast component and t2 was the time constant of the slow component. The
-        #     percentage of the total magnitude that was associated with the fast component (%t1
-        #     ) was defined as C above.
-        # =============================================================================
+        # F(t) = A × (C × exp(–t/t1) + (1 – C) × exp(–t/t2)), where t1 was the time constant
+        # of the fast component and t2 was the time constant of the slow component. The
+        # percentage of the total magnitude that was associated with the fast component (%t1
+        # ) was defined as C above.
         def func(t, A, t1, C, t2):
             return A * (C * np.exp(-(t / t1)) + (1 - C) * np.exp(-(t / t2)))
 
         parameter_bounds = ([-np.inf, 0, 0, 0], [np.inf, 0.1, 1, 0.1])
 
-        # ============== Upswing =================
+        # === Upswing ===
 
-        # =============================================================================
         # Only the first 50 ms in the fluorescence rise and fluorescence decay segments
         # were used in the downstream bi-exponential fitting.
         # Here we have 5hz step, so first half will be 50 ms in time.
-        # =============================================================================
         array_length = len(self.avg_time_upswing)
         print("array_length{}".format(array_length))
         print(round(array_length / 2))
@@ -6663,7 +6498,7 @@ class CurveFit:
                 dpi=1200,
             )
 
-        # ============== Downswing =================
+        # === Downswing ===
         self.avg_fluorescence_downswing = self.avg_fluorescence_downswing[
             : round(array_length / 2)
         ]
@@ -6770,7 +6605,7 @@ class CurveFit:
                 dpi=1200,
             )
         # except:
-        #     print('fit_on_averaged_curve failed.')
+        # print('fit_on_averaged_curve failed.')
 
     def ExponentialFitting(self):
         # Intialize empty lists
@@ -6801,11 +6636,9 @@ class CurveFit:
 
             parameter_bounds = ([-np.inf, 0, 0, 0], [np.inf, 0.1, 1, 0.1])
 
-            # =============================================================================
             # Only the first 50 ms in the fluorescence rise and fluorescence decay segments
             # were used in the downstream bi-exponential fitting.
             # Here we have 5hz step, so first half will be 50 ms in time.
-            # =============================================================================
             array_length = len(self.avg_time_upswing)
             self.individual_period_for_fitting = (
                 self.transformed_periods_fluorescence_kinetics[ii][
@@ -6887,13 +6720,11 @@ class CurveFit:
             )
 
     def extract_sensitivity(self):
-        # =============================================================================
         # Fluorescence changes to voltage steps were calculated as Δ F/F = (Fss – Fbl)/Fbl ,
         # where Fss(steady-state fluorescence) is the mean fluorescence intensity averaged
         # over 50-70 ms during a voltage step after the fluorescence signal reaches
         # its plateau, and Fbl(baseline fluorescence) is the mean fluorescence intensity
         # averaged over 100 ms before the voltage step.
-        # =============================================================================
 
         self.upper_step_values = []
         self.lower_step_values = []
@@ -7026,7 +6857,7 @@ class CurveFit:
         # Save the raw mean trace
         self.upper_step_trace = np.array(self.upper_step_trace)
 
-        # ======================= Average over ===============================
+        # === Average over ===
         self.upper_step_averaged_trace = np.mean(
             self.upper_step_trace.reshape(
                 (upper_single_trace_number, upper_single_trace_length)

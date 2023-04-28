@@ -16,9 +16,7 @@ import tifffile as skimtiff
 
 from . import HamamatsuDCAM
 
-# =============================================================================
 # Script based Hamamatsu camera operations
-# =============================================================================
 
 
 class CamActuator:
@@ -43,10 +41,8 @@ class CamActuator:
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         """
-        # =============================================================================
-        #         Initialization of the camera.
-        #         Load dcamapi.dll version: 19.12.641.5901
-        # =============================================================================
+        # Initialization of the camera.
+        # Load dcamapi.dll version: 19.12.641.5901
         """
         self.isLiving = False
         self.isStreaming = False
@@ -54,10 +50,8 @@ class CamActuator:
         self.metaData = "Hamamatsu C13440-20CU "
 
     def initializeCamera(self):
-        # =====================================================================
-        #         Initialize the camera
-        #         Set default camera properties.
-        # =====================================================================
+        # Initialize the camera
+        # Set default camera properties.
         files = importlib.resources.files(sys.modules[__package__])
         traversable = files.joinpath("19_12/dcamapi.dll")
         with importlib.resources.as_file(traversable) as path:
@@ -69,13 +63,13 @@ class CamActuator:
             ctypes.byref(paraminit)
         )  # TODO unused
         # if (error_code != DCAMERR_NOERROR):
-        #    raise DCAMException("DCAM initialization failed with error code " + str(error_code))
+        # raise DCAMException("DCAM initialization failed with error code " + str(error_code))
 
         n_cameras = paraminit.iDeviceCount
         print("found:", n_cameras, "cameras")
 
         if n_cameras > 0:
-            # ------------------------Initialization----------------------------
+            # === Initialization ===
             self.hcam = HamamatsuDCAM.HamamatsuCameraMR(camera_id=0)
 
             # Enable defect correction
@@ -157,10 +151,8 @@ class CamActuator:
             self.hcam.setPropertyValue("subarray_mode", "ON")
 
     def SnapImage(self, exposure_time):
-        # =====================================================================
-        #         Snap and return captured image.
-        #         - exposure_time: Exposure time of the camera.
-        # =====================================================================
+        # Snap and return captured image.
+        # - exposure_time: Exposure time of the camera.
         self.hcam.setPropertyValue("trigger_source", "INTERNAL")
         self.hcam.setPropertyValue("exposure_time", exposure_time)
 
@@ -198,9 +190,7 @@ class CamActuator:
         return ImageSnapped
 
     def LIVE(self):
-        # =====================================================================
-        #         Start the continuous stream
-        # =====================================================================
+        # Start the continuous stream
         self.isLiving = True
         self.hcam.acquisition_mode = "run_till_abort"
         self.hcam.startAcquisition()
@@ -225,13 +215,11 @@ class CamActuator:
         self.hcam.stopAcquisition()
 
     def StartStreaming(self, BufferNumber, **kwargs):
-        # =====================================================================
-        #         Start the camera video streaming.
-        #         - trigger_source: specify the camera trigger mode.
-        #         - BufferNumber: number of frames assigned for video.
-        #         - **kwargs can be set as camera property name and desired value pairs,
-        #           like: trigger_active = "SYNCREADOUT"
-        # =====================================================================
+        # Start the camera video streaming.
+        # - trigger_source: specify the camera trigger mode.
+        # - BufferNumber: number of frames assigned for video.
+        # - **kwargs can be set as camera property name and desired value pairs,
+        # like: trigger_active = "SYNCREADOUT"
 
         # Set extra input settings
         for camProName, value in kwargs.items():
@@ -269,10 +257,8 @@ class CamActuator:
                 self.isStreaming = False
 
     def StopStreaming(self, saving_dir=None):
-        # =====================================================================
-        #         Stop the streaming and save the file.
-        #         - saving_dir: directory in which the video is saved.
-        # =====================================================================
+        # Stop the streaming and save the file.
+        # - saving_dir: directory in which the video is saved.
         self.isStreaming = False
         # Stop the acquisition
         self.hcam.stopAcquisition()

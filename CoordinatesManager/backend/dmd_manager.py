@@ -55,7 +55,7 @@ class DMD_manager:
             for i in range(2, self.seq_length):
                 self.image = np.hstack([self.image, img_seq[:, :, i].ravel()])
 
-        #            self.image = np.squeeze(np.reshape(img_seq, (1, -1), order='F'))
+        # self.image = np.squeeze(np.reshape(img_seq, (1, -1), order='F'))
 
         self.image = (
             self.image > 0
@@ -79,7 +79,7 @@ class DMD_manager:
         Illuminate the sample using a light pattern that is defined by the mask.
 
         """
-        ### Code needed to display a sequence with waiting time frame_rate.
+        # Code needed to display a sequence with waiting time frame_rate.
 
         # Run the sequence in an infinite loop
         if frame_rate is not None:
@@ -90,7 +90,7 @@ class DMD_manager:
         # Stop the sequence display
         self.DMD.Halt()
 
-    #        self.DMD.FreeSeq()
+    # self.DMD.FreeSeq()
 
     def freeMemory(self):
         """

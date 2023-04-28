@@ -86,7 +86,7 @@ class FancyPushButton(QtWidgets.QPushButton):
             duration=250,
         )
 
-        #        self.setStyleSheet("QPushButton:disabled {color:white;background-color: grey; border-style: outset;border-radius: 8px;border-width: 2px;font: bold 12px;padding: 6px}")
+        # self.setStyleSheet("QPushButton:disabled {color:white;background-color: grey; border-style: outset;border-radius: 8px;border-width: 2px;font: bold 12px;padding: 6px}")
         self.setGraphicsEffect(
             QtWidgets.QGraphicsDropShadowEffect(
                 blurRadius=3, xOffset=2, yOffset=2
@@ -198,7 +198,7 @@ class GeneralFancyButton(QtWidgets.QPushButton):
     def __init__(self, label="", parent=None):
         super().__init__(parent)
         # with Icons.Path("Run_1.png") as path:
-        #     self.setIcon(QIcon(path))
+        # self.setIcon(QIcon(path))
         StyleSheet = (
             "QPushButton {color:#FFFFFF;font: bold;background-color: qlineargradient( x1:0 y1:0, x2:1 y2:0, stop:0 #39C0F0, stop:1 #6666FF);border-radius: 8px;}"
             "QPushButton:hover:!pressed {color:white;background-color: #9999FF;border-radius: 8px;}"

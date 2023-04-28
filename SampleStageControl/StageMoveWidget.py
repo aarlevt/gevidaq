@@ -30,15 +30,11 @@ class StageWidgetUI(QWidget):
         super().__init__(*args, **kwargs)
         self.setFont(QFont("Arial"))
         self.ludlStage = LudlStage("COM12")
-        #        self.setMinimumSize(1350,900)
+        # self.setMinimumSize(1350,900)
         self.setWindowTitle("StageWidget")
         self.layout = QGridLayout(self)
 
-        # **************************************************************************************************************************************
-        # --------------------------------------------------------------------------------------------------------------------------------------
-        # -----------------------------------------------------------GUI for Stage--------------------------------------------------------------
-        # --------------------------------------------------------------------------------------------------------------------------------------
-        # **************************************************************************************************************************************
+        # === GUI for Stage ===
         stagecontrolContainer = QGroupBox("Stage control")
         stagecontrolContainer.setStyleSheet(
             "QGroupBox {\
@@ -87,7 +83,7 @@ class StageWidgetUI(QWidget):
         self.stage_left.setFixedHeight(40)
         with Icons.Path("LeftArrow.png") as path:
             self.stage_left.setIcon(QIcon(path))
-        #        self.stage_left.setStyleSheet("QPushButton {padding: 10px;}");
+        # self.stage_left.setStyleSheet("QPushButton {padding: 10px;}");
         self.stage_left.setIconSize(QSize(35, 35))
         self.stagecontrolLayout.addWidget(self.stage_left, 2, 3)
         self.stage_left.clicked.connect(
@@ -148,8 +144,8 @@ class StageWidgetUI(QWidget):
         self.stagecontrolLayout.addWidget(self.stage_speed, 2, 1)
         self.stagecontrolLayout.addWidget(QLabel("Step:"), 2, 0)
 
-        #        self.stage_current_pos_Label = QLabel("Current position: ")
-        #        self.stagecontrolLayout.addWidget(self.stage_current_pos_Label, 1, 0)
+        # self.stage_current_pos_Label = QLabel("Current position: ")
+        # self.stagecontrolLayout.addWidget(self.stage_current_pos_Label, 1, 0)
 
         self.stage_goto = QPushButton()
         with Icons.Path("move_coord.png") as path:
@@ -162,9 +158,9 @@ class StageWidgetUI(QWidget):
         self.stage_goto.setFixedWidth(35)
         self.stage_goto.setFixedHeight(35)
         self.stagecontrolLayout.setAlignment(Qt.AlignVCenter)
-        #        self.stage_goto.setStyleSheet("QPushButton {color:white;background-color: #6495ED; border-style: outset;border-radius: 8px;border-width: 2px;font: bold 12px;padding: 6px}"
-        #                                            "QPushButton:pressed {color:red;background-color: white; border-style: outset;border-radius: 8px;border-width: 2px;font: bold 12px;padding: 6px}"
-        #                                            "QPushButton:hover:!pressed {color:green;background-color: #6495ED; border-style: outset;border-radius: 8px;border-width: 2px;font: bold 12px;padding: 6px}")
+        # self.stage_goto.setStyleSheet("QPushButton {color:white;background-color: #6495ED; border-style: outset;border-radius: 8px;border-width: 2px;font: bold 12px;padding: 6px}"
+        # "QPushButton:pressed {color:red;background-color: white; border-style: outset;border-radius: 8px;border-width: 2px;font: bold 12px;padding: 6px}"
+        # "QPushButton:hover:!pressed {color:green;background-color: #6495ED; border-style: outset;border-radius: 8px;border-width: 2px;font: bold 12px;padding: 6px}")
         self.stagecontrolLayout.addWidget(self.stage_goto, 1, 0)
         self.stage_goto.clicked.connect(
             lambda: self.run_in_thread(
@@ -180,17 +176,13 @@ class StageWidgetUI(QWidget):
         self.stage_goto_y.setFixedWidth(47)
         self.stagecontrolLayout.addWidget(self.stage_goto_y, 1, 2)
 
-        #        self.stagecontrolLayout.addWidget(QLabel('Click arrow to enable WASD keyboard control'), 4, 0, 1, 3)
+        # self.stagecontrolLayout.addWidget(QLabel('Click arrow to enable WASD keyboard control'), 4, 0, 1, 3)
 
         stagecontrolContainer.setLayout(self.stagecontrolLayout)
-        #        stagecontrolContainer.setMinimumHeight(206)
+        # stagecontrolContainer.setMinimumHeight(206)
         self.layout.addWidget(stagecontrolContainer, 2, 0)
 
-        # **************************************************************************************************************************************
-        # --------------------------------------------------------------------------------------------------------------------------------------
-        # -----------------------------------------------------------Fucs for stage movement----------------------------------------------------
-        # --------------------------------------------------------------------------------------------------------------------------------------
-        # **************************************************************************************************************************************
+        # === Fucs for stage movement ===
 
     def sample_stage_move(self, direction):
         self.sample_move_distance_Rel = int(self.stage_speed.value())
@@ -222,12 +214,10 @@ class StageWidgetUI(QWidget):
         Usage: lambda: self.run_in_thread(self.fn)
 
         Parameters
-        ----------
         fn : function
             Target function to put in thread.
 
         Returns
-        -------
         thread : TYPE
             Threading handle.
 

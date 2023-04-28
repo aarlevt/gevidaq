@@ -50,14 +50,12 @@ class DAQmission(
         Write one single digital signal.
 
         Parameters
-        ----------
         channel : str
             Purpose of the channel.
         value : bool
             Value to send.
 
         Returns
-        -------
         None.
 
         """
@@ -75,14 +73,12 @@ class DAQmission(
         Write one single analog signal.
 
         Parameters
-        ----------
         channel : str
             Purpose of the channel.
         value : float
             Value to send.
 
         Returns
-        -------
         None.
 
         """
@@ -129,16 +125,13 @@ class DAQmission(
               A list that contains the readin channels wanted.
         """
 
-        # =============================================================================
-        #         Setting up waveforms
-        # =============================================================================
+        # Setting up waveforms
 
         Analog_channel_number = len(analog_signals)
         Digital_channel_number = len(digital_signals)
         self.readin_channels = readin_channels
         self.sampling_rate = sampling_rate
 
-        # ----------------------------------------------------------------------
         # galvosx and galvosy as specification key words are already enough.
 
         # Get the average number and y pixel number information from data
@@ -183,9 +176,7 @@ class DAQmission(
                     ]
                     analog_signals["Specification"][i] = "galvosy"
 
-        # ----------------------------------------------------------------------
-
-        # -------------------Devide samples from Dev1 or 2----------------------
+        # === Devide samples from Dev1 or 2 ===
         self.Dev1_analog_channel_list = []
         self.Dev2_analog_channel_list = []
 
@@ -220,7 +211,6 @@ class DAQmission(
 
         Dev1_analog_channel_number = len(self.Dev1_analog_channel_list)
         Dev2_analog_channel_number = len(self.Dev2_analog_channel_list)
-        # ----------------------------------------------------------------------
 
         # See if only digital signal is involved.
         if Analog_channel_number == 0 and Digital_channel_number != 0:
@@ -231,16 +221,15 @@ class DAQmission(
         # See if Dev1 is involved. If only Dev2 is involved in sending analog
         # signals then the timing configs are different.
 
-        # ------------------Number of samples in each waveform------------------
+        # === Number of samples in each waveform ===
         if self.Only_Digital_signals is False:
             self.Waveforms_length = len(analog_signals["Waveform"][0])
             num_rows, num_cols = analog_signals["Waveform"].shape
             print("row number of analog signals:  " + str(num_rows))
         elif self.Only_Digital_signals is True:
             self.Waveforms_length = len(digital_signals["Waveform"][0])
-        # ----------------------------------------------------------------------
 
-        # -------Stack the Analog samples of dev1 and dev2 individually---------
+        # === Stack the Analog samples of dev1 and dev2 individually ===
         # IN CASE OF ONLY ONE ARRAY, WE NEED TO CONVERT THE SHAPE TO (1,N) BY USING np.array([]) OUTSIDE THE ARRAY!!
         if Dev1_analog_channel_number == 1:
             Dev1_analog_samples_to_write = np.array(
@@ -289,9 +278,8 @@ class DAQmission(
                 Digital_samples_to_write = np.vstack(
                     (Digital_samples_to_write, digital_signals["Waveform"][i])
                 )
-        # ----------------------------------------------------------------------
 
-        # ------------------Set the dtype of digital signals--------------------
+        # === Set the dtype of digital signals ===
         # For each digital waveform sample, it 0 or 1. To write to NI-daq, you
         # need to send int number corresponding to the channel binary value,
         # like write 8(2^3, 0001) to channel 4.
@@ -324,7 +312,7 @@ class DAQmission(
                 [Digital_samples_to_write]
             )  # here convert the shape from (n,) to (1,n)
 
-        # ------------Set up data holder for recording data---------------------
+        # === Set up data holder for recording data ===
         if len(self.readin_channels) != 0:
             self.has_recording_channel = True
         else:
@@ -336,20 +324,15 @@ class DAQmission(
             )
         else:
             self.Dataholder = np.zeros((1, self.Waveforms_length))
-        # ----------------------------------------------------------------------
 
-        # =============================================================================
-        #         Configure DAQ channels and execute waveforms
-        # =============================================================================
+        # Configure DAQ channels and execute waveforms
 
         """
-        # =============================================================================
-        #         Analog signal in Dev 1 is involved
-        # =============================================================================
+        # Analog signal in Dev 1 is involved
         """
         if Dev1_analog_channel_number != 0:
             with nidaqmx.Task() as slave_Task_1_analog_dev1, nidaqmx.Task() as slave_Task_1_analog_dev2, nidaqmx.Task() as master_Task_readin, nidaqmx.Task() as slave_Task_2_digitallines:
-                # ------------------adding channels-------------------------
+                # === adding channels ===
                 # Set tasks from different devices apart
                 for i in range(Dev1_analog_channel_number):
                     slave_Task_1_analog_dev1.ao_channels.add_ao_voltage_chan(
@@ -371,7 +354,7 @@ class DAQmission(
                         self.channel_LUT["Vp"]
                     )  # If no read-in channel is added, vp channel is added to keep code alive.
 
-                #            print(self.Dataholder.shape)
+                # print(self.Dataholder.shape)
                 if "PMT" in self.readin_channels:
                     master_Task_readin.ai_channels.add_ai_voltage_chan(
                         self.channel_LUT["PMT"]
@@ -380,18 +363,15 @@ class DAQmission(
                     master_Task_readin.ai_channels.add_ai_voltage_chan(
                         self.channel_LUT["Vp"]
                     )
-                # =============================================================================
-                #     For the current measurement, we use the voltage channel in DAQ
-                #     and convert to current later devided by current gain and patch
-                #     probe resistance.
-                # =============================================================================
+                # For the current measurement, we use the voltage channel in DAQ
+                # and convert to current later devided by current gain and patch
+                # probe resistance.
                 if "Ip" in self.readin_channels:
                     master_Task_readin.ai_channels.add_ai_voltage_chan(
                         self.channel_LUT["Ip"]
                     )
-                # ----------------------------------------------------------
 
-                # ---------------get scaling coefficients-------------------
+                # === get scaling coefficients ===
                 self.aichannelnames = (
                     master_Task_readin.ai_channels.channel_names
                 )
@@ -425,9 +405,8 @@ class DAQmission(
                 self.ai_dev_scaling_coeff_list = np.append(
                     self.ai_dev_scaling_coeff_vp, self.ai_dev_scaling_coeff_ip
                 )
-                # ----------------------------------------------------------
 
-                # ----------------------setting clock-----------------------
+                # === setting clock ===
                 if (
                     clock_source == "DAQ"
                 ):  # If NI-DAQ is set as master clock source
@@ -448,10 +427,10 @@ class DAQmission(
                     # and clock receiving port on Dev2.
                     master_Task_readin.export_signals.samp_clk_output_term = (
                         self.channel_LUT["clock1Channel"]
-                    )  #'/Dev1/PFI1'#
+                    )  # '/Dev1/PFI1'#
                     master_Task_readin.export_signals.start_trig_output_term = self.channel_LUT[
                         "trigger1Channel"
-                    ]  #'/Dev1/PFI2'
+                    ]  # '/Dev1/PFI2'
 
                     # If dev2 is involved, set the timing for dev2.
                     if Dev2_analog_channel_number != 0:
@@ -489,7 +468,7 @@ class DAQmission(
                         )
                         AnalogWriter_dev2.auto_start = False
 
-                    # ----------------------Digital clock-----------------------
+                    # === Digital clock ===
                     if Digital_channel_number != 0:
                         slave_Task_2_digitallines.timing.cfg_samp_clk_timing(
                             self.sampling_rate,
@@ -498,7 +477,6 @@ class DAQmission(
                             samps_per_chan=self.Waveforms_length,
                         )
                         # slave_Task_2_digitallines.triggers.sync_type.SLAVE = True
-                    # ----------------------------------------------------------
 
                 elif (
                     clock_source == "Camera"
@@ -524,10 +502,10 @@ class DAQmission(
                     )
                     master_Task_readin.export_signals.samp_clk_output_term = (
                         self.channel_LUT["clock1Channel"]
-                    )  #'/Dev1/PFI1'#
+                    )  # '/Dev1/PFI1'#
                     master_Task_readin.export_signals.start_trig_output_term = self.channel_LUT[
                         "trigger1Channel"
-                    ]  #'/Dev1/PFI2'
+                    ]  # '/Dev1/PFI2'
                     master_Task_readin.triggers.start_trigger.cfg_dig_edge_start_trig(
                         self.cam_trigger_receiving_port
                     )
@@ -570,7 +548,7 @@ class DAQmission(
                         )
                         AnalogWriter_dev2.auto_start = False
 
-                    # ----------------------Digital clock-----------------------
+                    # === Digital clock ===
                     if Digital_channel_number != 0:
                         slave_Task_2_digitallines.timing.cfg_samp_clk_timing(
                             self.sampling_rate,
@@ -582,9 +560,8 @@ class DAQmission(
                             self.cam_trigger_receiving_port
                         )
                         # slave_Task_2_digitallines.triggers.sync_type.SLAVE = True
-                    # ----------------------------------------------------------
 
-                # ------------Configure the writer and reader---------------
+                # === Configure the writer and reader ===
                 AnalogWriter = nidaqmx.stream_writers.AnalogMultiChannelWriter(
                     slave_Task_1_analog_dev1.out_stream, auto_start=False
                 )
@@ -599,9 +576,8 @@ class DAQmission(
                     DigitalWriter.auto_start = False
                 reader = AnalogMultiChannelReader(master_Task_readin.in_stream)
                 reader.auto_start = False
-                # ---------------------------------------------------------------------------------------------------------------------
 
-                # -----------------------------------------------------Begin to execute in DAQ------------------------------------------
+                # === Begin to execute in DAQ ===
                 AnalogWriter.write_many_sample(
                     Dev1_analog_samples_to_write, timeout=605.0
                 )
@@ -624,7 +600,7 @@ class DAQmission(
                 if Digital_channel_number != 0:
                     slave_Task_2_digitallines.start()
 
-                master_Task_readin.start()  #!!!!!!!!!!!!!!!!!!!! READIN TASK HAS TO START AHEAD OF READ MANY SAMPLES, OTHERWISE ITS NOT SYN!!!
+                master_Task_readin.start()  # !!!!!!!!!!!!!!!!!!!! READIN TASK HAS TO START AHEAD OF READ MANY SAMPLES, OTHERWISE ITS NOT SYN!!!
 
                 reader.read_many_sample(
                     data=self.Dataholder,
@@ -665,9 +641,7 @@ class DAQmission(
                         ] = self.galvosy_originalkey
 
             """
-            # =============================================================================
-            #         Only Dev 2 is involved  in sending analog signals
-            # =============================================================================
+            # Only Dev 2 is involved  in sending analog signals
             """
         elif Dev2_analog_channel_number != 0:
             with nidaqmx.Task() as slave_Task_1_analog_dev2, nidaqmx.Task() as master_Task_readin, nidaqmx.Task() as slave_Task_2_digitallines:
@@ -688,7 +662,7 @@ class DAQmission(
                         self.channel_LUT["Vp"]
                     )  # If no read-in channel is added, vp channel is added to keep code alive.
 
-                #            print(self.Dataholder.shape)
+                # print(self.Dataholder.shape)
                 if "PMT" in self.readin_channels:
                     master_Task_readin.ai_channels.add_ai_voltage_chan(
                         self.channel_LUT["PMT"]
@@ -734,9 +708,8 @@ class DAQmission(
                 self.ai_dev_scaling_coeff_list = np.append(
                     self.ai_dev_scaling_coeff_vp, self.ai_dev_scaling_coeff_ip
                 )
-                # ----------------------------------------------------------
 
-                # ----------------------setting clock-----------------------
+                # === setting clock ===
                 if (
                     clock_source == "DAQ"
                 ):  # If NI-DAQ is set as master clock source
@@ -749,10 +722,10 @@ class DAQmission(
 
                     master_Task_readin.export_signals.samp_clk_output_term = (
                         self.channel_LUT["clock1Channel"]
-                    )  #'/Dev1/PFI1'#
+                    )  # '/Dev1/PFI1'#
                     master_Task_readin.export_signals.start_trig_output_term = self.channel_LUT[
                         "trigger1Channel"
-                    ]  #'/Dev1/PFI2'
+                    ]  # '/Dev1/PFI2'
 
                     if Dev2_analog_channel_number != 0:
                         # By default assume that read master task is in dev1
@@ -804,10 +777,10 @@ class DAQmission(
                     )
                     master_Task_readin.export_signals.samp_clk_output_term = (
                         self.channel_LUT["clock1Channel"]
-                    )  #'/Dev1/PFI1'#
+                    )  # '/Dev1/PFI1'#
                     master_Task_readin.export_signals.start_trig_output_term = self.channel_LUT[
                         "trigger1Channel"
-                    ]  #'/Dev1/PFI2'
+                    ]  # '/Dev1/PFI2'
 
                     if Dev2_analog_channel_number != 0:
                         # By default assume that read master task is in dev1
@@ -837,7 +810,7 @@ class DAQmission(
                         )
                         AnalogWriter_dev2.auto_start = False
 
-                    # --------------------Digital clock---------------------
+                    # === Digital clock ===
                     if Digital_channel_number != 0:
                         slave_Task_2_digitallines.timing.cfg_samp_clk_timing(
                             self.sampling_rate,
@@ -848,7 +821,6 @@ class DAQmission(
                         slave_Task_2_digitallines.triggers.start_trigger.cfg_dig_edge_start_trig(
                             self.cam_trigger_receiving_port
                         )
-                # ----------------------------------------------------------
 
                 # Configure the writer and reader
 
@@ -862,9 +834,8 @@ class DAQmission(
                     DigitalWriter.auto_start = False
                 reader = AnalogMultiChannelReader(master_Task_readin.in_stream)
                 reader.auto_start = False
-                # ---------------------------------------------------------------------------------------------------------------------
 
-                # -----------------------------------------------------Begin to execute in DAQ------------------------------------------
+                # === Begin to execute in DAQ ===
 
                 if Dev2_analog_channel_number != 0:
                     AnalogWriter_dev2.write_many_sample(
@@ -883,7 +854,7 @@ class DAQmission(
                 if Digital_channel_number != 0:
                     slave_Task_2_digitallines.start()
 
-                master_Task_readin.start()  #!!!!!!!!!!!!!!!!!!!! READIN TASK HAS TO START AHEAD OF READ MANY SAMPLES, OTHERWISE ITS NOT SYN!!!
+                master_Task_readin.start()  # !!!!!!!!!!!!!!!!!!!! READIN TASK HAS TO START AHEAD OF READ MANY SAMPLES, OTHERWISE ITS NOT SYN!!!
 
                 reader.read_many_sample(
                     data=self.Dataholder,
@@ -922,9 +893,7 @@ class DAQmission(
                         ] = self.galvosy_originalkey
 
             """
-            # =============================================================================
-            #         Only digital signals
-            # =============================================================================
+            # Only digital signals
             """
         elif self.Only_Digital_signals is True:
             # some preparations for digital lines
@@ -957,8 +926,7 @@ class DAQmission(
                 )
                 DigitalWriter.auto_start = False
 
-                # ---------------------------------------------------------------------------------------------------------------------
-                # -----------------------------------------------------Begin to execute in DAQ------------------------------------------
+                # === Begin to execute in DAQ ===
                 print("^^^^^^^^^^^^^^^^^^Daq tasks start^^^^^^^^^^^^^^^^^^")
                 DigitalWriter.write_many_sample_port_uint32(
                     Digital_samples_to_write, timeout=605.0
@@ -970,7 +938,6 @@ class DAQmission(
 
                 slave_Task_2_digitallines.stop()
                 print("^^^^^^^^^^^^^^^^^^Daq tasks finish^^^^^^^^^^^^^^^^^^")
-        # ----------------------------------------------------------------------------------------------------------------------------------
 
     def get_raw_data(self):
         return self.Dataholder
@@ -1074,8 +1041,8 @@ class DAQmission(
                 )
 
 
-#                self.pmtimage = Image.fromarray(self.data_PMT) #generate an image object
-#                self.pmtimage.save(os.path.join(directory, 'PMT'+datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'.tif')) #save as tif
+# self.pmtimage = Image.fromarray(self.data_PMT) #generate an image object
+# self.pmtimage.save(os.path.join(directory, 'PMT'+datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'.tif')) #save as tif
 
 
 if __name__ == "__main__":

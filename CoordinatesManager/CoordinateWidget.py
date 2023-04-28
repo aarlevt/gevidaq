@@ -90,19 +90,19 @@ class CoordinatesWidgetUI(QWidget):
 
         self.image_mask_stack = QTabWidget()
 
-        # ---------------------------ROIs win----------------------------------
+        # === ROIs win ===
         self.selection_view = DrawingWidget(self)
         self.selection_view.setMinimumWidth(900)
         self.selection_view.enable_drawing(True)
         # self.selection_view.getView().setLimits(xMin = 0, xMax = 2048, yMin = 0, yMax = 2048, \
-        #                                         minXRange = 2048, minYRange = 2048, maxXRange = 2048, maxYRange = 2048)
+        # minXRange = 2048, minYRange = 2048, maxXRange = 2048, maxYRange = 2048)
         self.selection_view.ui.roiBtn.hide()
         self.selection_view.ui.menuBtn.hide()
         self.selection_view.ui.normGroup.hide()
         self.selection_view.ui.roiPlot.hide()
         # self.selection_view.setImage(plt.imread('CoordinatesManager/Registration_Images/StageRegistration/Distance200_Offset0/A1.png'))
 
-        # ---------------------------Mask win----------------------------------
+        # === Mask win ===
         self.mask_view = SquareImageView()
         self.mask_view.getView().setLimits(
             xMin=0,
@@ -120,7 +120,7 @@ class CoordinatesWidgetUI(QWidget):
         self.mask_view.ui.roiPlot.hide()
         self.mask_view.ui.histogram.hide()
 
-        # -------------------------MAsk RCNN-----------------------------------
+        # === MAsk RCNN ===
         MLmaskviewBox = QWidget()
         MLmaskviewBoxLayout = QGridLayout()
 
@@ -145,7 +145,7 @@ class CoordinatesWidgetUI(QWidget):
 
         self.layout.addWidget(self.image_mask_stack, 0, 0, 4, 7)
 
-        # ---------------------- Mask generation Container  --------------
+        # === Mask generation Container ===
 
         self.maskGeneratorContainer = roundQGroupBox()
         self.maskGeneratorContainer.setFixedSize(320, 220)
@@ -311,7 +311,6 @@ class CoordinatesWidgetUI(QWidget):
         """--------------------------------------------------------------------
         # Singal sent out from DMDWidget to ask for mask generated here.
         # And then the generated roi list is sent back to function:receive_mask_coordinates in DMDWidget.
-        #  --------------------------------------------------------------------
         """
         self.DMDWidget.sig_request_mask_coordinates.connect(
             lambda: self.cast_mask_coordinates("dmd")
@@ -327,7 +326,7 @@ class CoordinatesWidgetUI(QWidget):
             lambda: self.sig_finished_registration.emit()
         )
 
-        # ---------------------------Galvo control-----------------------------
+        # === Galvo control ===
         self.GalvoWidget = GalvoWidget.GalvoWidget()
         self.GalvoWidget.setFixedWidth(200)
         self.GalvoWidget.setFixedHeight(180)
@@ -346,7 +345,7 @@ class CoordinatesWidgetUI(QWidget):
             lambda: self.sig_finished_registration.emit()
         )
 
-        # -------------------------Manual registration-------------------------
+        # === Manual registration ===
         self.ManualRegistrationWidget = (
             ManualRegistration.ManualRegistrationWidget()
         )
@@ -360,12 +359,10 @@ class CoordinatesWidgetUI(QWidget):
 
         self.layout.addWidget(self.ManualRegistrationWidget, 2, 9, 1, 1)
 
-        # -------------------------Stage collect-------------------------------
+        # === Stage collect ===
         self.StageRegistrationWidget = StageRegistrationWidget.StageWidget()
         self.StageRegistrationWidget.setFixedWidth(100)
         self.layout.addWidget(self.StageRegistrationWidget, 3, 9, 1, 1)
-
-        # =====================================================================
 
     # %%
 
@@ -395,7 +392,6 @@ class CoordinatesWidgetUI(QWidget):
         Manually load image to draw rois on.
 
         Returns
-        -------
         None.
 
         """
@@ -416,7 +412,6 @@ class CoordinatesWidgetUI(QWidget):
         list of rois from the current ROIitems in "Select" Drawwidget and send it back to the calling widget.
 
         Parameters
-        ----------
         receiver : string.
             Specifies which widget is requesting.
 
@@ -454,9 +449,9 @@ class CoordinatesWidgetUI(QWidget):
 
             list_of_rois.append(vertices)
         # array([[   0,   0],
-        #        [2048,   0],
-        #        [2048, 2048,
-        #        [   0, 2048]])
+        # [2048,   0],
+        # [2048, 2048,
+        # [   0, 2048]])
         return list_of_rois
 
     def create_mask(self):
@@ -465,7 +460,6 @@ class CoordinatesWidgetUI(QWidget):
         further transformation.
 
         Returns
-        -------
         None.
 
         """
@@ -486,7 +480,7 @@ class CoordinatesWidgetUI(QWidget):
             target_laser,
         ]
 
-        # ---- This is the roi list sent to DMD to generate final stack of masks.----
+        # === This is the roi list sent to DMD to generate final stack of masks. ===
         self.sig_to_calling_widget[
             "mask_{}".format(self.mask_index_spinbox.value())
         ] = current_mask_sig
@@ -509,12 +503,10 @@ class CoordinatesWidgetUI(QWidget):
         If direction == 1, then show next mask, elif direction == -1, show previous one.
 
         Parameters
-        ----------
         direction : TYPE
             -1: Previous; 1: Next.
 
         Returns
-        -------
         None.
 
         """
@@ -587,9 +579,7 @@ class CoordinatesWidgetUI(QWidget):
         except:
             print("fail to load file.")
 
-    # =============================================================================
-    #     MaskRCNN detection part
-    # =============================================================================
+    # MaskRCNN detection part
 
     def init_ML(self):
         # Initialize the detector instance and load the model.
@@ -634,9 +624,7 @@ class CoordinatesWidgetUI(QWidget):
         self.Matdisplay_Canvas.draw()
 
     # %%
-    # =============================================================================
-    #     Configure click event to add clicked cell mask
-    # =============================================================================
+    # Configure click event to add clicked cell mask
 
     def _onclick(self, event):
         """Highlights the cell selected in the figure by the user when clicked on"""
@@ -707,9 +695,7 @@ class CoordinatesWidgetUI(QWidget):
         return colors
 
     # %%
-    # =============================================================================
-    #     For mask generation
-    # =============================================================================
+    # For mask generation
 
     def generate_MLmask(self):
         """Generate binary mask with all selected cells"""
@@ -736,7 +722,7 @@ class CoordinatesWidgetUI(QWidget):
             contours = self.selected_cells_infor_dict[
                 "cell{}_verts".format(str(selected_index))
             ]
-            #            contours = find_contours(self.Mask[:,:,selected_index], 0.5) # Find iso-valued contours in a 2D array for a given level value.
+            # contours = find_contours(self.Mask[:,:,selected_index], 0.5) # Find iso-valued contours in a 2D array for a given level value.
 
             for n, contour in enumerate(contours):
                 contour_coord_array = contours[n]
@@ -791,12 +777,10 @@ class CoordinatesWidgetUI(QWidget):
         Usage: lambda: self.run_in_thread(self.fn)
 
         Parameters
-        ----------
         fn : function
             Target function to put in thread.
 
         Returns
-        -------
         thread : TYPE
             Threading handle.
 

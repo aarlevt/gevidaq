@@ -70,14 +70,12 @@ class CameraUI(QMainWindow):
         self.ROIselector_ispresented = False
         self.Live_sleeptime = 0.06666  # default camera live fps
         self.default_folder = "M:/tnw/ist/do/projects/Neurophotonics/Brinkslab/Data"  # TODO hardcoded path
-        # ----------------------------------------------------------------------
-        # ----------------------------------GUI---------------------------------
-        # ----------------------------------------------------------------------
+        # === GUI ===
         self.setWindowTitle("Hamamatsu Orca Flash")
         self.setFont(QFont("Arial"))
         self.setMinimumSize(1280, 1000)
         self.layout = QGridLayout()
-        # ----------------Create menu bar and add action------------------------
+        # === Create menu bar and add action ===
         menuBar = self.menuBar()
         fileMenu = menuBar.addMenu("&Camera")
 
@@ -105,9 +103,7 @@ class CameraUI(QMainWindow):
         MainWinCentralWidget = QWidget()
         MainWinCentralWidget.layout = QGridLayout()
         """
-        # =============================================================================
-        #         Camera settings container.
-        # =============================================================================
+        # Camera settings container.
         """
         CameraSettingContainer = StylishQT.roundQGroupBox(
             title="General settings"
@@ -131,12 +127,11 @@ class CameraUI(QMainWindow):
             lambda: self.run_in_thread(self.cam_connect_switch)
         )
 
-        # ----------------------------------------------------------------------
         CameraSettingTab = QTabWidget()
         CameraSettingTab.layout = QGridLayout()
 
         """
-        ----------------------------Camera tab---------------------------------
+        === Camera tab ===
         """
         CameraSettingTab_1 = QWidget()
         CameraSettingTab_1.layout = QGridLayout()
@@ -172,7 +167,6 @@ class CameraUI(QMainWindow):
         )
         CameraSettingTab_1.layout.addWidget(self.DefectCorrectionButton, 2, 3)
 
-        # ----------------------------------------------------------------------
         CameraImageFormatContainer = QGroupBox("Image format")
         CameraImageFormatContainer.setStyleSheet(
             "QGroupBox { background-color:#F5F5F5;}"
@@ -227,7 +221,6 @@ class CameraUI(QMainWindow):
             CameraImageFormatContainer, 0, 0, 1, 4
         )
 
-        # ----------------------------------------------------------------------
         self.CamExposureBox = QDoubleSpinBox(self)
         self.CamExposureBox.setDecimals(6)
         self.CamExposureBox.setMinimum(0)
@@ -244,12 +237,11 @@ class CameraUI(QMainWindow):
 
         self.CamExposureBox.setKeyboardTracking(False)
         self.CamExposureBox.valueChanged.connect(self.SetExposureTime)
-        # ----------------------------------------------------------------------
 
         CameraSettingTab_1.setLayout(CameraSettingTab_1.layout)
 
         """
-        -----------------------------------ROI tab-----------------------------
+        === ROI tab ===
         """
         CameraSettingTab_2 = QWidget()
         CameraSettingTab_2.layout = QGridLayout()
@@ -311,7 +303,6 @@ class CameraUI(QMainWindow):
         self.ShowROIImgButton.setEnabled(False)
         CameraSettingTab_2.layout.addWidget(self.ShowROIImgButton, 2, 3, 1, 1)
 
-        # ----------------------------------------------------------------------
         CameraROIPosContainer = QGroupBox("ROI position")
         CameraROIPosContainer.setStyleSheet(
             "QGroupBox { background-color:#F5F5F5;}"
@@ -326,35 +317,35 @@ class CameraUI(QMainWindow):
         CameraROIPosLayout.addWidget(OffsetLabel, 0, 1)
         CameraROIPosLayout.addWidget(ROISizeLabel, 0, 2)
 
-        #        validator = QIntValidator(0, 2048, self)
-        #        self.ROI_hpos_spinbox = QLineEdit(self)
-        #        self.ROI_hpos_spinbox.setValidator(validator)
-        #        self.ROI_hpos_spinbox.returnPressed.connect(self.spin_value_changed)
+        # validator = QIntValidator(0, 2048, self)
+        # self.ROI_hpos_spinbox = QLineEdit(self)
+        # self.ROI_hpos_spinbox.setValidator(validator)
+        # self.ROI_hpos_spinbox.returnPressed.connect(self.spin_value_changed)
         self.ROI_hpos_spinbox = QSpinBox()
         self.ROI_hpos_spinbox.setMaximum(2048)
         self.ROI_hpos_spinbox.setValue(0)
-        #        self.ROI_hpos_spinbox.valueChanged.connect(self.spin_value_changed)
+        # self.ROI_hpos_spinbox.valueChanged.connect(self.spin_value_changed)
 
         CameraROIPosLayout.addWidget(self.ROI_hpos_spinbox, 1, 1)
 
         self.ROI_vpos_spinbox = QSpinBox()
         self.ROI_vpos_spinbox.setMaximum(2048)
         self.ROI_vpos_spinbox.setValue(0)
-        #        self.ROI_vpos_spinbox.valueChanged.connect(self.spin_value_changed)
+        # self.ROI_vpos_spinbox.valueChanged.connect(self.spin_value_changed)
 
         CameraROIPosLayout.addWidget(self.ROI_vpos_spinbox, 2, 1)
 
         self.ROI_hsize_spinbox = QSpinBox()
         self.ROI_hsize_spinbox.setMaximum(2048)
         self.ROI_hsize_spinbox.setValue(2048)
-        #        self.ROI_hsize_spinbox.valueChanged.connect(self.spin_value_changed)
+        # self.ROI_hsize_spinbox.valueChanged.connect(self.spin_value_changed)
 
         CameraROIPosLayout.addWidget(self.ROI_hsize_spinbox, 1, 2)
 
         self.ROI_vsize_spinbox = QSpinBox()
         self.ROI_vsize_spinbox.setMaximum(2048)
         self.ROI_vsize_spinbox.setValue(2048)
-        #        self.ROI_vsize_spinbox.valueChanged.connect(self.spin_value_changed)
+        # self.ROI_vsize_spinbox.valueChanged.connect(self.spin_value_changed)
 
         CameraROIPosLayout.addWidget(self.ROI_vsize_spinbox, 2, 2)
 
@@ -378,7 +369,7 @@ class CameraUI(QMainWindow):
         CameraSettingTab_2.setLayout(CameraSettingTab_2.layout)
 
         """
-        --------------------------------Timing tab-----------------------------
+        === Timing tab ===
         """
         CameraSettingTab_3 = QWidget()
         CameraSettingTab_3.layout = QGridLayout()
@@ -428,7 +419,7 @@ class CameraUI(QMainWindow):
         self.TimingstackedWidget.addWidget(MasterPulseWidget)
         self.TimingstackedWidget.setCurrentIndex(0)
 
-        # -------------------------ExternTrigger--------------------------------
+        # === ExternTrigger ===
         ExternTriggerWidget.layout = QGridLayout()
         ExternTriggerWidget.layout.addWidget(QLabel("Trigger Signal:"), 0, 0)
         self.ExternTriggerSingalComboBox = QComboBox()
@@ -449,7 +440,6 @@ class CameraUI(QMainWindow):
         )
 
         CameraSettingTab_3.setLayout(CameraSettingTab_3.layout)
-        # ----------------------------------------------------------------------
         CameraSettingTab.addTab(CameraSettingTab_1, "Camera")
         CameraSettingTab.addTab(CameraSettingTab_2, "ROI")
         CameraSettingTab.addTab(CameraSettingTab_3, "Timing")
@@ -463,9 +453,7 @@ class CameraUI(QMainWindow):
         MainWinCentralWidget.layout.addWidget(CameraSettingContainer, 0, 0)
 
         """
-        # =============================================================================
-        #         Camera acquisition container.
-        # =============================================================================
+        # Camera acquisition container.
         """
 
         CameraAcquisitionContainer = QGroupBox("Acquisition")
@@ -485,7 +473,6 @@ class CameraUI(QMainWindow):
         CameraAcquisitionContainer.setMaximumWidth(325)
         CameraAcquisitionLayout = QGridLayout()
 
-        # ----------------------------------------------------------------------
         CamSpecContainer = QGroupBox("浜松 Hamamastu specs")
         CamSpecContainer.setStyleSheet(
             "QGroupBox {\
@@ -504,21 +491,21 @@ class CameraUI(QMainWindow):
         self.CamFPSLabel.setStyleSheet(
             "QLabel { background-color : azure; color : teal; }"
         )
-        #        self.CamFPSLabel.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+        # self.CamFPSLabel.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
         CamSpectLayout.addWidget(self.CamFPSLabel, 0, 0, 1, 1)
 
         self.CamExposureTimeLabel = QLabel("Exposure time:     ")
         self.CamExposureTimeLabel.setStyleSheet(
             "QLabel { background-color : azure; color : teal; }"
         )
-        #        self.CamFPSLabel.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+        # self.CamFPSLabel.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
         CamSpectLayout.addWidget(self.CamExposureTimeLabel, 1, 0, 1, 1)
 
         self.CamReadoutTimeLabel = QLabel("Readout speed:     ")
         self.CamReadoutTimeLabel.setStyleSheet(
             "QLabel { background-color : azure; color : teal; }"
         )
-        #        self.CamFPSLabel.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
+        # self.CamFPSLabel.setAlignment(Qt.AlignHCenter | Qt.AlignVCenter)
         CamSpectLayout.addWidget(self.CamReadoutTimeLabel, 2, 0, 1, 1)
 
         CamSpecContainer.setFixedHeight(120)
@@ -526,7 +513,7 @@ class CameraUI(QMainWindow):
         CamSpecContainer.setLayout(CamSpectLayout)
         CameraAcquisitionLayout.addWidget(CamSpecContainer, 0, 0)
 
-        # -----------------------Saving directory -----------------------------
+        # === Saving directory ===
         dir_container = StylishQT.roundQGroupBox()
         dir_container_layout = QGridLayout()
 
@@ -549,14 +536,13 @@ class CameraUI(QMainWindow):
         dir_container.setLayout(dir_container_layout)
 
         CameraAcquisitionLayout.addWidget(dir_container, 1, 0)
-        # ----------------------------------------------------------------------
         self.AcquisitionROIstackedWidget = QStackedWidget()
 
-        # ---------------------------AcquisitionTabs----------------------------
+        # === AcquisitionTabs ===
         CameraAcquisitionTab = QTabWidget()
         CameraAcquisitionTab.layout = QGridLayout()
         """
-        ------------------------------Live tab---------------------------------
+        === Live tab ===
         """
         CameraAcquisitionTab_1 = QWidget()
         CameraAcquisitionTab_1.layout = QGridLayout()
@@ -633,7 +619,7 @@ class CameraUI(QMainWindow):
         CameraAcquisitionTab_1.setLayout(CameraAcquisitionTab_1.layout)
 
         """
-        ----------------------------Stream tab---------------------------------
+        === Stream tab ===
         """
         CameraAcquisitionTab_2 = QWidget()
         CameraAcquisitionTab_2.layout = QGridLayout()
@@ -643,7 +629,7 @@ class CameraUI(QMainWindow):
         CamStreamActionLayout = QGridLayout()
 
         self.StreamStopSingalComBox = QComboBox()
-        #        self.StreamStopSingalComBox.lineEdit().setAlignment(Qt.AlignCenter)
+        # self.StreamStopSingalComBox.lineEdit().setAlignment(Qt.AlignCenter)
         self.StreamStopSingalComBox.addItems(
             ["Stop signal: Frames", "Stop signal: Time"]
         )
@@ -689,13 +675,11 @@ class CameraUI(QMainWindow):
         CamStreamActionLayout.addWidget(Label_buffernumber, 2, 1)
 
         self.StreamMemMethodComBox = QComboBox()
-        #        self.StreamStopSingalComBox.lineEdit().setAlignment(Qt.AlignCenter)
+        # self.StreamStopSingalComBox.lineEdit().setAlignment(Qt.AlignCenter)
         self.StreamMemMethodComBox.addItems(
             ["Stream to RAM", "Stream to Hard disk"]
         )
         CamStreamActionLayout.addWidget(self.StreamMemMethodComBox, 2, 0)
-
-        # ----------------------------------------------------------------------
 
         ApplyStreamSettingButton = StylishQT.FancyPushButton(50, 22)
         ApplyStreamSettingButton.setText("Apply")
@@ -712,7 +696,7 @@ class CameraUI(QMainWindow):
         CameraAcquisitionTab_2.layout.addWidget(self.StartStreamButton, 5, 3)
 
         """
-        ------------------------Acquisition status-----------------------------
+        === Acquisition status ===
         """
 
         self.CamStreamIsFree = QLabel("No Stream Activity")
@@ -735,7 +719,6 @@ class CameraUI(QMainWindow):
         self.StreamStatusStackedWidget.addWidget(CamStreamSavingWidget)
         self.StreamStatusStackedWidget.setCurrentIndex(0)
 
-        # ----------------------------------------------------------------------
         CamStreamBusyWidget.layout = QGridLayout()
         CamStreamBusylabel = QLabel()
         CamStreamBusylabel.setFixedHeight(35)
@@ -755,7 +738,7 @@ class CameraUI(QMainWindow):
         CamStreamBusyWidget.layout.addWidget(self.CamStreamingLabel, 0, 0)
         CamStreamBusyWidget.setLayout(CamStreamBusyWidget.layout)
 
-        # -----------------------Saving prograssbar-----------------------------
+        # === Saving prograssbar ===
         CamStreamSavingWidget.layout = QGridLayout()
         CamStreamSavingWidget.layout.addWidget(
             QLabel("File saving progress:"), 0, 0
@@ -772,12 +755,11 @@ class CameraUI(QMainWindow):
         )
         CamStreamSavingWidget.setLayout(CamStreamSavingWidget.layout)
 
-        #        CamStreamProgressContainer.layout.addWidget(self.StreamStatusStackedWidget, 6, 0, 1, 4)
-        #        CamStreamProgressContainer.setLayout(CamStreamProgressContainer.layout)
+        # CamStreamProgressContainer.layout.addWidget(self.StreamStatusStackedWidget, 6, 0, 1, 4)
+        # CamStreamProgressContainer.setLayout(CamStreamProgressContainer.layout)
         CameraAcquisitionTab_2.layout.addWidget(
             self.StreamStatusStackedWidget, 6, 0, 1, 4
         )
-        # ----------------------------------------------------------------------
         self.CamStreamActionContainer.setLayout(CamStreamActionLayout)
 
         CameraAcquisitionTab_2.layout.addWidget(
@@ -794,11 +776,11 @@ class CameraUI(QMainWindow):
         self.AcquisitionROIstackedWidget.addWidget(CameraAcquisitionTab)
 
         """
-        #----------------------------Check ROI---------------------------------
+        # === Check ROI ===
         """
         ShowROIWidgetContainer = QGroupBox()
-        #        LiveWidgetContainer.setMaximumHeight(920)
-        #        LiveWidgetContainer.setMaximumWidth(950)
+        # LiveWidgetContainer.setMaximumHeight(920)
+        # LiveWidgetContainer.setMaximumWidth(950)
         ShowROIWidgetContainerLayout = QGridLayout()
 
         self.ShowROIWidget = pg.ImageView()
@@ -816,7 +798,6 @@ class CameraUI(QMainWindow):
         ShowROIWidgetContainer.setLayout(ShowROIWidgetContainerLayout)
 
         self.AcquisitionROIstackedWidget.addWidget(ShowROIWidgetContainer)
-        # ----------------------------------------------------------------------
         self.AcquisitionROIstackedWidget.setCurrentIndex(0)
         CameraAcquisitionLayout.addWidget(
             self.AcquisitionROIstackedWidget, 2, 0
@@ -826,11 +807,9 @@ class CameraUI(QMainWindow):
         MainWinCentralWidget.layout.addWidget(CameraAcquisitionContainer, 1, 0)
 
         """
-        # =============================================================================
-        # --------------------------------Live Screen----------------------------------
-        #   Initiating an imageview object for the main Livescreen. Hiding the pre
+        # === Live Screen ===
+        # Initiating an imageview object for the main Livescreen. Hiding the pre
         # existing ROI and menubuttons.
-        # =============================================================================
         """
         LiveWidgetContainer = QGroupBox()
         LiveWidgetContainer.setMinimumHeight(920)
@@ -855,24 +834,20 @@ class CameraUI(QMainWindow):
         MainWinCentralWidget.setLayout(MainWinCentralWidget.layout)
         self.setCentralWidget(MainWinCentralWidget)
 
-        # ----------------Once open GUI, try to connect the camera--------------
+        # === Once open GUI, try to connect the camera ===
         try:
             self.ConnectCamera()
         except:
             pass
 
         """
-        #=========================================================================================================================================
-        #--------------------------------------------------------------END of GUI-----------------------------------------------------------------
-        #=========================================================================================================================================
+        # === END of GUI ===
         """
 
     def ConnectCamera(self):
         """
-        # =============================================================================
-        #         Initialization of the camera.
-        #         Load dcamapi.dll version: 19.12.641.5901
-        # =============================================================================
+        # Initialization of the camera.
+        # Load dcamapi.dll version: 19.12.641.5901
         """
 
         files = importlib.resources.files(sys.modules[__package__])
@@ -886,14 +861,14 @@ class CameraUI(QMainWindow):
             ctypes.byref(paraminit)
         )  # TODO unused
         # if (error_code != DCAMERR_NOERROR):
-        #    raise DCAMException("DCAM initialization failed with error code " + str(error_code))
+        # raise DCAMException("DCAM initialization failed with error code " + str(error_code))
 
         n_cameras = paraminit.iDeviceCount
 
         print("found:", n_cameras, "cameras")
 
         if n_cameras > 0:
-            # ------------------------Initialization----------------------------
+            # === Initialization ===
             self.hcam = HamamatsuDCAM.HamamatsuCameraMR(camera_id=0)
 
             # Enable defect correction
@@ -956,9 +931,7 @@ class CameraUI(QMainWindow):
             self.DisconnectCamera()
 
         """
-        # =============================================================================
-        #                              Properties Settings
-        # =============================================================================
+        # Properties Settings
         """
 
     def ListCameraProperties(self):
@@ -1171,9 +1144,7 @@ class CameraUI(QMainWindow):
             self.hcam.setPropertyValue("trigger_active", "SYNCREADOUT")
 
         """
-        # =============================================================================
-        #                               ROI functions
-        # =============================================================================
+        # ROI functions
         """
 
     def ShowROISelector(self):
@@ -1206,7 +1177,7 @@ class CameraUI(QMainWindow):
                             sideScalers=True,
                             pen=ROIpen,
                         )
-                        ## Create text object, use HTML tags to specify color/size
+                        # Create text object, use HTML tags to specify color/size
                         self.ROIitemText = pg.TextItem(
                             html='<div style="text-align: center"><span style="color: #FFF;">Estimated max fps: </span><span style="color: #FF0; \
                             font-size: 10pt;">0</span></div>',
@@ -1229,7 +1200,7 @@ class CameraUI(QMainWindow):
                             sideScalers=True,
                             pen=ROIpen,
                         )
-                        ## Create text object, use HTML tags to specify color/size
+                        # Create text object, use HTML tags to specify color/size
                         self.ROIitemText = pg.TextItem(
                             html='<div style="text-align: center"><span style="color: #FFF;">Estimated max fps: </span><span style="color: #FF0; \
                             font-size: 10pt;">0</span></div>',
@@ -1254,7 +1225,7 @@ class CameraUI(QMainWindow):
                         sideScalers=True,
                         pen=ROIpen,
                     )
-                    ## Create text object, use HTML tags to specify color/size
+                    # Create text object, use HTML tags to specify color/size
                     self.ROIitemText = pg.TextItem(
                         html='<div style="text-align: center"><span style="color: #FFF;">Estimated max fps: </span><span style="color: #FF0; \
                         font-size: 10pt;">0</span></div>',
@@ -1272,7 +1243,7 @@ class CameraUI(QMainWindow):
                     sideScalers=True,
                     pen=ROIpen,
                 )
-                ## Create text object, use HTML tags to specify color/size
+                # Create text object, use HTML tags to specify color/size
                 self.ROIitemText = pg.TextItem(
                     html='<div style="text-align: center"><span style="color: #FFF;">Estimated max fps: </span><span style="color: #FF0; \
                     font-size: 10pt;">0</span></div>',
@@ -1289,8 +1260,8 @@ class CameraUI(QMainWindow):
             # This function ensures the spinboxes show the actual roi coordinates
 
             # Note that clicking is disabled by default to prevent stealing clicks from objects behind the ROI.
-            #            self.ROIitem.setAcceptedMouseButtons(Qt.LeftButton)
-            #            self.ROIitem.sigClicked.connect(self.ShowROIImage)
+            # self.ROIitem.setAcceptedMouseButtons(Qt.LeftButton)
+            # self.ROIitem.sigClicked.connect(self.ShowROIImage)
 
             self.Live_view.addItem(self.ROIitemText)
         else:
@@ -1299,7 +1270,7 @@ class CameraUI(QMainWindow):
             self.Live_view.removeItem(self.ROIitemText)
             self.ROIselector_ispresented = False
 
-    # -----------------------Center ROI part from Douwe-------------------------
+    # === Center ROI part from Douwe ===
     def set_roi_flag(self):
         if self.center_roiButton.isChecked():
             self.ROI_vpos_spinbox.setReadOnly(True)
@@ -1356,7 +1327,7 @@ class CameraUI(QMainWindow):
         except:
             pass
 
-        ## Create text object, use HTML tags to specify color/size
+        # Create text object, use HTML tags to specify color/size
         self.ROIitemText = pg.TextItem(
             html='<div style="text-align: center"><span style="color: #FFF;">Estimated max fps: </span><span style="color: #FF0; \
             font-size: 10pt;">{}</span></div>'.format(
@@ -1397,14 +1368,12 @@ class CameraUI(QMainWindow):
         self.UpdateStatusLabel()
         self.update_ROI_estimateMaxFps()
 
-    # ----------------------------ROI centering functions-----------------------
+    # === ROI centering functions ===
     def center_roi(self):
         self.v_center = int(self.center_frame - 0.5 * self.ROI_vsize)
         if self.ROI_vpos != self.v_center:
             self.ROIitem.setPos(self.ROI_hpos, self.v_center)
             self.update_ROI_spinbox_coordinates()
-
-    # --------------------------------------------------------------------------
 
     def SetROI(self):
         # Set property only works strating living/recording next time
@@ -1474,9 +1443,7 @@ class CameraUI(QMainWindow):
             self.ShowROIImgSwitch = False
 
         """
-        # =============================================================================
-        #                               LIVE functions
-        # =============================================================================
+        # LIVE functions
         """
 
     def LiveSwitchEvent(self):
@@ -1536,7 +1503,6 @@ class CameraUI(QMainWindow):
         Save the latest live image from RAM.
 
         Returns
-        -------
         None.
 
         """
@@ -1610,7 +1576,7 @@ class CameraUI(QMainWindow):
         self.GetKeyCameraProperties()
 
         if self.isStreaming is False and self.isLiving is False:
-            #            self.hcam.setACQMode("fixed_length", number_frames = 1)
+            # self.hcam.setACQMode("fixed_length", number_frames = 1)
             self.hcam.startAcquisition()
             # Start pulling out frames from buffer
             self.video_list = []
@@ -1676,9 +1642,7 @@ class CameraUI(QMainWindow):
         self.close()
 
         """
-        # =============================================================================
-        #                              STREAM functions
-        # =============================================================================
+        # STREAM functions
         """
 
     def UpdateBufferNumber(self):
@@ -1750,19 +1714,19 @@ class CameraUI(QMainWindow):
     def StartStreaming(self, StopSignal, BufferNumber, StreamDuration):
         # Get propreties and stored as metadata
         self.GetKeyCameraProperties()
-        # --------------------Start the acquisition-------------------------
+        # === Start the acquisition ===
         # Duration hard limit:
         if StopSignal == "Time":
             # Set the timeout timer.
-            #                self.StreamDuration_timer = QTimer()
-            #                self.StreamDuration_timer.setSingleShot(True)
-            #                self.StreamDuration_timer.timeout.connect(self.StopStreamingThread)
+            # self.StreamDuration_timer = QTimer()
+            # self.StreamDuration_timer.setSingleShot(True)
+            # self.StreamDuration_timer.timeout.connect(self.StopStreamingThread)
             self.isStreaming = True
 
             self.hcam.setACQMode("fixed_length", number_frames=BufferNumber)
             self.hcam.startAcquisition()
             QTimer.singleShot(StreamDuration * 1000, self.StopStreamingThread)
-            #                self.StreamDuration_timer.start(StreamDuration*1000) # Starts or restarts the timer with a timeout of duration msec milliseconds.
+            # self.StreamDuration_timer.start(StreamDuration*1000) # Starts or restarts the timer with a timeout of duration msec milliseconds.
 
             # Start pulling out frames from buffer
             self.video_list = []
@@ -1851,7 +1815,7 @@ class CameraUI(QMainWindow):
                         (self.dims[1], self.dims[0]),
                     )
                     tif.save(image, compress=0, description=self.metaData)
-                    # ---------Update file saving progress bar------------
+                    # === Update file saving progress bar ===
                     if (
                         eachframe / self.imageCount * 100
                         - int(eachframe / self.imageCount * 100)
@@ -1901,12 +1865,10 @@ class CameraUI(QMainWindow):
         Usage: lambda: self.run_in_thread(self.fn)
 
         Parameters
-        ----------
         fn : function
             Target function to put in thread.
 
         Returns
-        -------
         thread : TYPE
             Threading handle.
 

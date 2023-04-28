@@ -14,12 +14,10 @@ def run_in_thread(fn, *args, **kwargs):
     Usage: lambda: self.run_in_thread(self.fn)
 
     Parameters
-    ----------
     fn : function
         Target function to put in thread.
 
     Returns
-    -------
     thread : TYPE
         Threading handle.
 

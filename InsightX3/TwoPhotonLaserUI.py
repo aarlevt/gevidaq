@@ -45,9 +45,7 @@ class InsightWidgetUI(QWidget):
         self.laserReady = False
         self.laserRun = False
         ini_watchdogtimeout = 0
-        # =============================================================================
-        #        Operation panel
-        # =============================================================================
+        # Operation panel
         BasicLaserEventContainer = QGroupBox()
         self.BasicLaserEventLayout = QGridLayout()
 
@@ -98,9 +96,7 @@ class InsightWidgetUI(QWidget):
 
         BasicLaserEventContainer.setLayout(self.BasicLaserEventLayout)
         self.layout.addWidget(BasicLaserEventContainer, 1, 0)
-        # =============================================================================
-        #         Status panel
-        # =============================================================================
+        # Status panel
         LaserStatusContainer = QGroupBox("Laser status")
         self.LaserStatusLayout = QGridLayout()
 
@@ -113,9 +109,7 @@ class InsightWidgetUI(QWidget):
         self.Initialize_laser()
 
     def Initialize_laser(self):
-        # =============================================================================
-        #         Initialization
-        # =============================================================================
+        # Initialization
         self.Laserinstance = InsightX3("COM11")  # TODO hardcoded port
 
         self.WatchdogTimerTextbox.setEnabled(True)
@@ -136,9 +130,7 @@ class InsightWidgetUI(QWidget):
             self.LaserStatuslabel.setText("Laser not connected.")
 
     """
-    # =============================================================================
-    #     Laser events
-    # =============================================================================
+    # Laser events
     """
 
     def Status_watchdog(self, Status_queue, querygap):
@@ -156,7 +148,7 @@ class InsightWidgetUI(QWidget):
         if self.LaserSwitch.isChecked():
             turnONThread = threading.Thread(target=self.TurnOnLaser)
             turnONThread.start()
-        #            self.TurnOnLaser()
+        # self.TurnOnLaser()
         else:
             turnOFFThread = threading.Thread(target=self.TurnOffLaser)
             turnOFFThread.start()
@@ -165,7 +157,7 @@ class InsightWidgetUI(QWidget):
         self.watchdog_flag = False
         time.sleep(0.5)
         self.Status_list = self.Laserinstance.QueryStatus()
-        # -------------Initialize laser--------------
+        # === Initialize laser ===
         if self.warmupstatus is False:
             warmupstatus = 0
             while int(warmupstatus) != 100:
@@ -300,7 +292,7 @@ class InsightWidgetUI(QWidget):
         time.sleep(0.5)
         self.Laserinstance.SaveVariables()
 
-    #        self.close()
+    # self.close()
 
     def QuitHibernate(self):
         """
@@ -313,7 +305,7 @@ class InsightWidgetUI(QWidget):
         self.Laserinstance.SaveVariables()
         self.Laserinstance.Turn_Off_PumpLaser()
 
-    #        self.close()
+    # self.close()
 
     def closeEvent(self, event):
         """

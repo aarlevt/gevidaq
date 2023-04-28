@@ -15,9 +15,7 @@ from PyQt5.QtCore import QThread, pyqtSignal
 
 from ..NIDAQ import wavegenerator
 
-# =============================================================================
 # For continuous raster scanning
-# =============================================================================
 
 
 class pmtimaging_continuous_Thread(QThread):
@@ -202,9 +200,7 @@ class pmtimagingTest:
         self.pmtimagingThread.wait()
 
 
-# =============================================================================
 # For continuous contour scanning
-# =============================================================================
 
 
 class pmtimaging_continuous_Thread_contour(QThread):

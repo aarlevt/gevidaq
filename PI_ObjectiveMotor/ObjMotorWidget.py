@@ -28,9 +28,9 @@ from .focuser import PIMotor
 
 
 class ObjMotorWidgetUI(QWidget):
-    #    waveforms_generated = pyqtSignal(object, object, list, int)
-    #    SignalForContourScanning = pyqtSignal(int, int, int, np.ndarray, np.ndarray)
-    #    MessageBack = pyqtSignal(str)
+    # waveforms_generated = pyqtSignal(object, object, list, int)
+    # SignalForContourScanning = pyqtSignal(int, int, int, np.ndarray, np.ndarray)
+    # MessageBack = pyqtSignal(str)
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -40,11 +40,7 @@ class ObjMotorWidgetUI(QWidget):
         self.setWindowTitle("ObjMotorWidget")
         self.layout = QGridLayout(self)
         self.connect_status = False
-        # **************************************************************************************************************************************
-        # --------------------------------------------------------------------------------------------------------------------------------------
-        # -----------------------------------------------------------GUI for Objective Motor----------------------------------------------------
-        # --------------------------------------------------------------------------------------------------------------------------------------
-        # **************************************************************************************************************************************
+        # === GUI for Objective Motor ===
 
         # Movement based on relative positions.
         self.ObjMotorcontrolContainer = QGroupBox("Objective focus")
@@ -88,7 +84,7 @@ class ObjMotorWidgetUI(QWidget):
         self.ObjMotor_upwards.clicked.connect(
             lambda: self.MovingMotorThread("Motor_move_upwards")
         )
-        #        self.ObjMotor_upwards.setShortcut('w')
+        # self.ObjMotor_upwards.setShortcut('w')
 
         self.ObjMotor_down = QPushButton()
         self.ObjMotor_down.setStyleSheet(
@@ -103,13 +99,13 @@ class ObjMotorWidgetUI(QWidget):
         self.ObjMotor_down.clicked.connect(
             lambda: self.MovingMotorThread("Motor_move_downwards")
         )
-        #        self.stage_down.setShortcut('s')
+        # self.stage_down.setShortcut('s')
 
         self.ObjMotor_target = QDoubleSpinBox(self)
         self.ObjMotor_target.setMinimum(-10000)
         self.ObjMotor_target.setMaximum(10000)
         self.ObjMotor_target.setDecimals(6)
-        #        self.ObjMotor_target.setValue(3.45)
+        # self.ObjMotor_target.setValue(3.45)
         self.ObjMotor_target.setSingleStep(0.001)
         self.ObjMotorcontrolLayout.addWidget(self.ObjMotor_target, 2, 1)
         self.ObjMotorcontrolLayout.addWidget(QLabel("Target:"), 2, 0)
@@ -146,29 +142,25 @@ class ObjMotorWidgetUI(QWidget):
         self.FocusSlider = QScrollBar(Qt.Horizontal)
         self.FocusSlider.setMinimum(2500000)
         self.FocusSlider.setMaximum(4800000)
-        #        self.FocusSlider.setTickPosition(QSlider.TicksBothSides)
-        #        self.FocusSlider.setTickInterval(1000000)
+        # self.FocusSlider.setTickPosition(QSlider.TicksBothSides)
+        # self.FocusSlider.setTickInterval(1000000)
         self.FocusSlider.setStyleSheet("color:white; background: lightblue")
         self.FocusSlider.setSingleStep(10000)
-        #        self.line640 = QLineEdit(self)
-        #        self.line640.setFixedWidth(60)
-        #        self.FocusSlider.sliderReleased.connect(lambda:self.updatelinevalue(640))
+        # self.line640 = QLineEdit(self)
+        # self.line640.setFixedWidth(60)
+        # self.FocusSlider.sliderReleased.connect(lambda:self.updatelinevalue(640))
         self.FocusSlider.valueChanged.connect(
             lambda: self.MovingMotorThread("Motor_move_slider")
         )
         self.FocusSlider.setTracking(False)
-        #        self.line640.returnPressed.connect(lambda:self.updatesider(640))
+        # self.line640.returnPressed.connect(lambda:self.updatesider(640))
         self.ObjMotorcontrolLayout.addWidget(self.FocusSlider, 4, 0, 1, 4)
 
         self.ObjMotorcontrolContainer.setLayout(self.ObjMotorcontrolLayout)
         self.ObjMotorcontrolContainer.setMaximumHeight(300)
         self.layout.addWidget(self.ObjMotorcontrolContainer, 4, 0)
 
-        # **************************************************************************************************************************************
-        # --------------------------------------------------------------------------------------------------------------------------------------
-        # -----------------------------------------------------------Fucs for Motor movement----------------------------------------------------
-        # --------------------------------------------------------------------------------------------------------------------------------------
-        # **************************************************************************************************************************************
+        # === Fucs for Motor movement ===
 
     def ConnectMotor(self):
         if self.ObjMotor_connect.isChecked():
@@ -268,7 +260,7 @@ class ObjMotorWidgetUI(QWidget):
         print("Disconnected")
         self.connect_status = False
 
-    #        self.normalOutputWritten('Objective motor disconnected.'+'\n')
+    # self.normalOutputWritten('Objective motor disconnected.'+'\n')
 
     def closeEvent(self, event):
         # Because the software combines both PyQt and PyQtGraph, using the
@@ -283,13 +275,13 @@ class ObjMotorWidgetUI(QWidget):
 
 
 class ConnectObj_Thread(QThread):
-    #    videostack_signal = pyqtSignal(np.ndarray)
+    # videostack_signal = pyqtSignal(np.ndarray)
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
 
-    #        self.fileName = fileName
-    #        self.xRel = xRel
-    #        self.yRel = yRel
+    # self.fileName = fileName
+    # self.xRel = xRel
+    # self.yRel = yRel
 
     def run(self):
         self.pi_device_instance = PIMotor()

@@ -33,7 +33,6 @@ class RasterScan:
         Object to run raster PMT scanning.
 
         Parameters
-        ----------
         Daq_sample_rate : int
             Sampling rate used to generate the waveforms.
         edge_volt : float
@@ -48,12 +47,11 @@ class RasterScan:
             Whether return the processed image. The default is True.
 
         Returns
-        -------
         None.
 
         """
 
-        # ---------------------Generate the waveforms---------------------------
+        # === Generate the waveforms ===
         self.Daq_sample_rate = Daq_sample_rate
         self.averagenum = average_number
         self.edge_volt = edge_volt
@@ -198,7 +196,6 @@ class PMT_zscan:
         Object to run Z-stack scanning.
 
         Parameters
-        ----------
         saving_dir : str
             Directory to save images.
         z_depth : float
@@ -218,7 +215,6 @@ class PMT_zscan:
             DESCRIPTION.
 
         Returns
-        -------
         None.
 
         """
@@ -282,7 +278,6 @@ class PMT_zscan:
         Take PMT image at certain objective position.
 
         Parameters
-        ----------
         obj_position : float, optional
             The target objective position. The default is None.
 

@@ -34,7 +34,7 @@ from .pmt_thread import pmtimagingTest, pmtimagingTest_contour
 
 
 class PMTWidgetUI(QWidget):
-    #    waveforms_generated = pyqtSignal(object, object, list, int)
+    # waveforms_generated = pyqtSignal(object, object, list, int)
     SignalForContourScanning = pyqtSignal(
         int, int, int, np.ndarray, np.ndarray
     )
@@ -47,7 +47,7 @@ class PMTWidgetUI(QWidget):
         self.setMinimumSize(1200, 850)
         self.setWindowTitle("PMTWidget")
         self.layout = QGridLayout(self)
-        # ------------------------Initiating class-------------------
+        # === Initiating class ===
         self.pmtTest = pmtimagingTest()
         self.pmtTest_contour = pmtimagingTest_contour()
 
@@ -59,11 +59,7 @@ class PMTWidgetUI(QWidget):
 
         self.clicked_points_list = []
         self.flag_is_drawing = False
-        # **************************************************************************************************************************************
-        # --------------------------------------------------------------------------------------------------------------------------------------
-        # -----------------------------------------------------------GUI for PMT tab------------------------------------------------------------
-        # --------------------------------------------------------------------------------------------------------------------------------------
-        # **************************************************************************************************************************************
+        # === GUI for PMT tab ===
         pmtimageContainer = StylishQT.roundQGroupBox(title="PMT image")
         self.pmtimageLayout = QGridLayout()
 
@@ -81,7 +77,7 @@ class PMTWidgetUI(QWidget):
         self.pmt_roiwidget.addLabel("ROI", row=0, col=0)
 
         self.pmtimageroiLayout.addWidget(self.pmt_roiwidget, 0, 0)
-        # --------------------------- create ROI ------------------------------
+        # === create ROI ===
         self.vb_2 = self.pmt_roiwidget.addViewBox(
             row=1, col=0, lockAspect=True, colspan=1
         )
@@ -113,12 +109,12 @@ class PMTWidgetUI(QWidget):
 
         pmtimageContainer.setMinimumWidth(850)
         pmtroiContainer.setFixedHeight(320)
-        #        pmtroiContainer.setMaximumWidth(300)
+        # pmtroiContainer.setMaximumWidth(300)
 
         pmtimageContainer.setLayout(self.pmtimageLayout)
         pmtroiContainer.setLayout(self.pmtimageroiLayout)
 
-        # ----------------------------Contour-----------------------------------
+        # === Contour ===
         pmtContourContainer = StylishQT.roundQGroupBox(
             title="Contour selection"
         )
@@ -252,14 +248,14 @@ Left drag + Shift + Ctrl scales the ROI with size snapping"
 
         pmtContourContainer.setLayout(self.pmtContourLayout)
 
-        # ----------------------------Control-----------------------------------
+        # === Control ===
         # controlContainer = StylishQT.roundQGroupBox(title = "Galvo Scanning Panel")
         # controlContainer.setFixedWidth(280)
         self.scanning_tabs = QTabWidget()
         self.scanning_tabs.setFixedWidth(280)
         self.scanning_tabs.setFixedHeight(320)
 
-        # ---------------------------- Continuous scanning -----------------------------------
+        # === Continuous scanning ===
         Continuous_widget = QWidget()
         controlLayout = QGridLayout()
 
@@ -289,7 +285,7 @@ Left drag + Shift + Ctrl scales the ROI with size snapping"
         self.stopButton.setEnabled(False)
         controlLayout.addWidget(self.stopButton, 6, 1)
 
-        # ---------------------Galvo scanning-----------------------------------
+        # === Galvo scanning ===
         self.continuous_scanning_sr_spinbox = QSpinBox(self)
         self.continuous_scanning_sr_spinbox.setMinimum(0)
         self.continuous_scanning_sr_spinbox.setMaximum(1000000)
@@ -325,7 +321,7 @@ Left drag + Shift + Ctrl scales the ROI with size snapping"
 
         Continuous_widget.setLayout(controlLayout)
 
-        # -------------------------- stack scanning ----------------------------
+        # === stack scanning ===
         Zstack_widget = QWidget()
         Zstack_Layout = QGridLayout()
 
@@ -413,27 +409,23 @@ Left drag + Shift + Ctrl scales the ROI with size snapping"
         self.scanning_tabs.addTab(Continuous_widget, "Continuous scanning")
         self.scanning_tabs.addTab(Zstack_widget, "Stack scanning")
 
-        # ---------------------------Set tab1 layout---------------------------
+        # === Set tab1 layout ===
         self.layout.addWidget(pmtimageContainer, 0, 0, 3, 1)
         self.layout.addWidget(pmtroiContainer, 1, 1)
         self.layout.addWidget(pmtContourContainer, 2, 1)
         self.layout.addWidget(self.scanning_tabs, 0, 1)
 
-    # --------------------------------------------------------------------------------------------------------------------------------------
-    # ------------------------------------------------------Functions for TAB 'PMT'---------------------------------------------------------
-    # --------------------------------------------------------------------------------------------------------------------------------------
+    # === Functions for TAB 'PMT' ===
 
     def generate_poly_roi(self, event):
         """
         For each click event, add a handle to the poly roi
 
         Parameters
-        ----------
         event : TYPE
             DESCRIPTION.
 
         Returns
-        -------
         None.
 
         """
@@ -530,7 +522,6 @@ Left drag + Shift + Ctrl scales the ROI with size snapping"
         Do raster scan and update the graph.
 
         Returns
-        -------
         None.
 
         """
@@ -621,7 +612,6 @@ Left drag + Shift + Ctrl scales the ROI with size snapping"
         Show the number of handles.
 
         Returns
-        -------
         None.
 
         """
@@ -636,7 +626,6 @@ Left drag + Shift + Ctrl scales the ROI with size snapping"
         Regenerate the handles from desired roi in sequence.
 
         Returns
-        -------
         None.
 
         """
@@ -660,7 +649,6 @@ Left drag + Shift + Ctrl scales the ROI with size snapping"
         Add one coordinate signals to the loop.
 
         Returns
-        -------
         None.
 
         """
@@ -702,7 +690,6 @@ Left drag + Shift + Ctrl scales the ROI with size snapping"
         Add together all the signals and emit it to other widgets.
 
         Returns
-        -------
         None.
 
         """
@@ -735,7 +722,6 @@ Left drag + Shift + Ctrl scales the ROI with size snapping"
         Before executing contour scanning, preset galvo positions to first point.
 
         Returns
-        -------
         None.
 
         """
@@ -753,7 +739,6 @@ Left drag + Shift + Ctrl scales the ROI with size snapping"
         Reset_roi_handles positions.
 
         Returns
-        -------
         None.
 
         """
@@ -776,7 +761,6 @@ Left drag + Shift + Ctrl scales the ROI with size snapping"
         Geneate the voltage signals according to current ROI's handle positions.
 
         Returns
-        -------
         TYPE
             np.array. (2,n), two rows stack together.
 
@@ -794,7 +778,7 @@ Left drag + Shift + Ctrl scales the ROI with size snapping"
             roi_item.getSceneHandlePositions()
         )
         # print(self.handle_scene_coordinate_position_raw_list)
-        # ===== The first placed handle is at the end, put back to front.=====
+        # === The first placed handle is at the end, put back to front. ===
         # first_placed_handle = self.handle_scene_coordinate_position_raw_list[-1]
 
         # self.handle_scene_coordinate_position_raw_list.insert(0,first_placed_handle)
@@ -823,13 +807,12 @@ Left drag + Shift + Ctrl scales the ROI with size snapping"
             )
             self.Interpolation_number = self.point_num_per_line - 1
 
-            # ====== Doing the uniform interpolation in between handles =======
+            # === Doing the uniform interpolation in between handles ===
             self.handle_scene_coordinate_position_array_expanded = self.interpolate_evenly_between_nodes(
                 node_number=self.ROIhandles_nubmer,
                 point_num_per_line=self.point_num_per_line,
                 node_position_array=self.handle_scene_coordinate_position_array,
             )
-            # =================================================================
 
             self.handle_viewbox_coordinate_position_array_expanded = np.zeros(
                 (contour_point_number, 2)
@@ -866,7 +849,7 @@ Left drag + Shift + Ctrl scales the ROI with size snapping"
                 handle_viewbox_coordinates=self.handle_viewbox_coordinate_position_array_expanded,
             )
 
-            # ================= The signals to NIDAQ ==================
+            # === The signals to NIDAQ ===
             current_stacked_voltage_signals = np.vstack(
                 (
                     self.handle_viewbox_coordinate_position_array_expanded_x,
@@ -874,14 +857,14 @@ Left drag + Shift + Ctrl scales the ROI with size snapping"
                 )
             )
 
-            # ================= Speed and acceleration check ===================
+            # === Speed and acceleration check ===
             self.speed_acceleration_check(
                 self.Daq_sample_rate_pmt,
                 self.handle_viewbox_coordinate_position_array_expanded_x,
                 self.handle_viewbox_coordinate_position_array_expanded_y,
             )
 
-        # ============================ Uniform =================================
+        # === Uniform ===
 
         if self.contour_strategy.currentText() == "Uniform":
             # Calculate the total distance
@@ -1279,7 +1262,7 @@ Left drag + Shift + Ctrl scales the ROI with size snapping"
                 handle_viewbox_coordinates=self.handle_viewbox_coordinate_position_array_expanded,
             )
 
-            # ================= The signals to NIDAQ ==================
+            # === The signals to NIDAQ ===
             current_stacked_voltage_signals = np.vstack(
                 (
                     self.handle_viewbox_coordinate_position_array_expanded_x,
@@ -1287,7 +1270,7 @@ Left drag + Shift + Ctrl scales the ROI with size snapping"
                 )
             )
 
-            # ================= Speed and acceleration check ===================
+            # === Speed and acceleration check ===
             self.speed_acceleration_check(
                 self.Daq_sample_rate_pmt,
                 self.handle_viewbox_coordinate_position_array_expanded_x,
@@ -1306,7 +1289,6 @@ Left drag + Shift + Ctrl scales the ROI with size snapping"
         Interpolate evenly in between roi handles
 
         Parameters
-        ----------
         node_number : int
             Number of handles in roi.
         point_num_per_line : int
@@ -1315,11 +1297,10 @@ Left drag + Shift + Ctrl scales the ROI with size snapping"
             DESCRIPTION.
 
         Returns
-        -------
         interpolated_array. (n,2), 2 columns
 
         """
-        # --------------------------------------Interpolation from first to last---------------------------------------------
+        # === Interpolation from first to last ===
         for i in range(node_number - 1):
             Interpolation_x_diff = (
                 node_position_array[i + 1][0] - node_position_array[i][0]
@@ -1409,7 +1390,7 @@ Left drag + Shift + Ctrl scales the ROI with size snapping"
             axis=0,
         )
 
-        # ===== The first placed handle is at the end, put back to front.=====
+        # === The first placed handle is at the end, put back to front. ===
 
         interpolated_array_modified = np.zeros(
             [interpolated_array.shape[0], interpolated_array.shape[1]]
@@ -1432,7 +1413,6 @@ Left drag + Shift + Ctrl scales the ROI with size snapping"
         Transform the viewbox coordinates to galvo scanning voltage signals
 
         Parameters
-        ----------
         Value_xPixels : int
             pixel number in the image.
         Value_voltXMax : int
@@ -1443,7 +1423,6 @@ Left drag + Shift + Ctrl scales the ROI with size snapping"
             DESCRIPTION.
 
         Returns
-        -------
         transformed_x : TYPE
             DESCRIPTION.
         transformed_y : TYPE
@@ -1480,7 +1459,6 @@ Left drag + Shift + Ctrl scales the ROI with size snapping"
         Check the speed and acceleration of galvos
 
         Parameters
-        ----------
         sampling_rate : int
             DESCRIPTION.
         trace_x : np.array
@@ -1489,7 +1467,6 @@ Left drag + Shift + Ctrl scales the ROI with size snapping"
             DESCRIPTION.
 
         Returns
-        -------
         None.
 
         """
@@ -1539,7 +1516,6 @@ Left drag + Shift + Ctrl scales the ROI with size snapping"
         Emit generated contour signals to the main widget, then pass to waveform widget.
 
         Returns
-        -------
         None.
 
         """
@@ -1558,7 +1534,6 @@ Left drag + Shift + Ctrl scales the ROI with size snapping"
         Create the stack scanning instance and run.
 
         Returns
-        -------
         None.
 
         """

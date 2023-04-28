@@ -57,17 +57,13 @@ class Mainbody(QtWidgets.QWidget):
 
         self.setFont(QFont("Arial"))
 
-        # ----------------------------------------------------------------------
-        # ----------------------------------GUI---------------------------------
-        # ----------------------------------------------------------------------
+        # === GUI ===
         self.setMinimumSize(1630, 1080)
         self.setMaximumHeight(1080)
         self.setWindowTitle("Fiumicino")
         self.layout = QtWidgets.QGridLayout(self)
         """
-        # =============================================================================
-        #         GUI for right tabs panel-Creating instances of each widget showing on right side tabs.
-        # =============================================================================
+        # GUI for right tabs panel-Creating instances of each widget showing on right side tabs.
         """
         self.tabs = QtWidgets.QTabWidget()
         self.Camera_WidgetInstance = HamamatsuCam.HamamatsuUI.CameraUI()
@@ -85,25 +81,20 @@ class Mainbody(QtWidgets.QWidget):
             CoordinatesManager.CoordinateWidget.CoordinatesWidgetUI()
         )
 
-        # --------------Add tab widgets-------------------
+        # === Add tab widgets ===
         self.tabs.addTab(self.Camera_WidgetInstance, "Camera imaging")
         self.tabs.addTab(self.Galvo_WidgetInstance, "PMT imaging")
         self.tabs.addTab(self.Waveformer_WidgetInstance, "Waveform")
         # self.tabs.addTab(self.PatchClamp_WidgetInstance,"Patch clamp")
         self.tabs.addTab(self.Coordinate_WidgetInstance, "Coordinates")
         self.tabs.addTab(self.Analysis_WidgetInstance, "Image analysis")
-        # =============================================================================
 
         self.savedirectory = ""
 
         """
-        # =============================================================================
-        #         GUI for left panel.
-        # =============================================================================
+        # GUI for left panel.
         """
-        # =============================================================================
-        #         GUI for set directory
-        # =============================================================================
+        # GUI for set directory
         setdirectoryContainer = StylishQT.roundQGroupBox(title="Set directory")
         self.setdirectorycontrolLayout = QtWidgets.QGridLayout()
 
@@ -134,9 +125,7 @@ class Mainbody(QtWidgets.QWidget):
             self.toolButtonOpenDialog, 0, 3
         )
 
-        # =============================================================================
-        #         Console massage
-        # =============================================================================
+        # Console massage
         self.console_text_edit = QtWidgets.QTextEdit()
         # self.console_text_edit.setFontItalic(True)
         self.console_text_edit.setPlaceholderText("Notice board from console.")
@@ -169,9 +158,7 @@ class Mainbody(QtWidgets.QWidget):
 
         self.layout.addWidget(setdirectoryContainer, 2, 0, 1, 4)
 
-        # =============================================================================
-        #         GUI for general buttons
-        # =============================================================================
+        # GUI for general buttons
 
         with Icons.Path("shutter.png") as path:
             self.shutter2PButton = StylishQT.checkableButton(Icon_path=path)
@@ -199,58 +186,42 @@ class Mainbody(QtWidgets.QWidget):
         self.layout.addWidget(self.shutter2PButton, 5, 0)
         self.layout.addWidget(self.LEDButton, 5, 1)
 
-        # =============================================================================
-        #         GUI for weather
-        # =============================================================================
+        # GUI for weather
         # self.layout.addWidget(GeneralWidgets.Weather_GUI.WeatherUI(), 1, 0)
 
-        # =============================================================================
-        #         GUI for Thorlabs motor
-        # =============================================================================
+        # GUI for Thorlabs motor
         self.KCubeWidgetInstance = (
             SampleStageControl.StageMoveWidget.StageWidgetUI()
         )
         self.layout.addWidget(self.KCubeWidgetInstance, 9, 0, 1, 4)
 
-        # =============================================================================
-        #         GUI for sample stage
-        # =============================================================================
+        # GUI for sample stage
         self.StageMoveWidgetInstance = (
             ThorlabsKCube.KCubeWidget.KCubeWidgetUI()
         )
         self.layout.addWidget(self.StageMoveWidgetInstance, 10, 0, 1, 4)
 
-        # =============================================================================
-        #         GUI for AOTF
-        # =============================================================================
+        # GUI for AOTF
         self.AOTFWidgetInstance = NIDAQ.AOTFWidget.AOTFWidgetUI()
         self.layout.addWidget(self.AOTFWidgetInstance, 6, 0, 1, 3)
 
-        # =============================================================================
-        #         GUI for DMD-mini
-        # =============================================================================
+        # GUI for DMD-mini
         self.DMDminiWidgetInstance = (
             CoordinatesManager.DMDminiWidget.DMDminiWidgetUI()
         )
         self.layout.addWidget(self.DMDminiWidgetInstance, 6, 3, 1, 1)
 
-        # =============================================================================
-        #         GUI for fliter silder
-        # =============================================================================
+        # GUI for fliter silder
         FilterSliderWidgetInstance = (
             ThorlabsFilterSlider.FilterSliderWidget.FilterSliderWidgetUI()
         )
         self.layout.addWidget(FilterSliderWidgetInstance, 8, 0, 1, 4)
 
-        # =============================================================================
-        #         GUI for objective motor
-        # =============================================================================
+        # GUI for objective motor
         ObjMotorInstance = PI_ObjectiveMotor.ObjMotorWidget.ObjMotorWidgetUI()
         self.layout.addWidget(ObjMotorInstance, 7, 0, 1, 4)
 
-        # =============================================================================
-        #         GUI for camera button
-        # =============================================================================
+        # GUI for camera button
         # self.open_cam = StylishQT.FancyPushButton(50, 50, color1=(255,153,255), color2=(204,208,255))
 
         # self.open_cam.setIcon(QIcon('./Icons/Hamamatsu.png'))
@@ -259,9 +230,7 @@ class Mainbody(QtWidgets.QWidget):
         # self.open_cam.clicked.connect(self.open_camera)
         # self.layout.addWidget(self.open_cam, 4, 0, 1, 1)
         # self.open_cam.setGraphicsEffect(QtWidgets.QGraphicsDropShadowEffect(blurRadius=3, xOffset=2, yOffset=2))
-        # =============================================================================
-        #         GUI for Insight X3
-        # =============================================================================
+        # GUI for Insight X3
         self.open_Insight = StylishQT.FancyPushButton(
             40, 50, color1=(176, 224, 230), color2=(135, 206, 250)
         )
@@ -277,9 +246,7 @@ class Mainbody(QtWidgets.QWidget):
                 blurRadius=3, xOffset=2, yOffset=2
             )
         )
-        # =============================================================================
-        #         GUI for evolution screening
-        # =============================================================================
+        # GUI for evolution screening
         self.open_screening_button = StylishQT.FancyPushButton(
             40, 50, color1=(245, 245, 220), color2=(255, 228, 196)
         )
@@ -295,9 +262,7 @@ class Mainbody(QtWidgets.QWidget):
                 blurRadius=3, xOffset=2, yOffset=2
             )
         )
-        # =============================================================================
-        #         GUI for open_sealtest
-        # =============================================================================
+        # GUI for open_sealtest
         self.open_sealtest_button = StylishQT.FancyPushButton(
             40, 50, color1=(255, 153, 255), color2=(204, 208, 255)
         )
@@ -315,9 +280,7 @@ class Mainbody(QtWidgets.QWidget):
             )
         )
 
-        # =============================================================================
-        #         GUI for Auto-patcher
-        # =============================================================================
+        # GUI for Auto-patcher
         self.open_AutoPatcher_button = StylishQT.FancyPushButton(
             40, 50, color1=(50, 50, 255), color2=(100, 100, 255)
         )
@@ -335,15 +298,12 @@ class Mainbody(QtWidgets.QWidget):
             )
         )
 
-        # **************************************************************************************************************************************
         # self.setLayout(pmtmaster)
 
         self.layout.addWidget(self.tabs, 0, 4, 12, 4)
         self.setLayout(self.layout)
 
-        # =============================================================================
-        #         Establishing communication between widgets.
-        # =============================================================================
+        # Establishing communication between widgets.
         self.Galvo_WidgetInstance.SignalForContourScanning.connect(
             self.PassVariable_GalvoWidget_to_Waveformer
         )
@@ -373,8 +333,7 @@ class Mainbody(QtWidgets.QWidget):
         )
 
         """
-        ***************************************************************************************************************************************
-        ************************************************************END of GUI*****************************************************************
+        === END of GUI ===
         """
 
         self.Init_Meta_Text()
@@ -385,8 +344,7 @@ class Mainbody(QtWidgets.QWidget):
         sys.stdout = sys.__stdout__
 
         """
-        ***************************************************************************************************************************************
-        ************************************************************ Functions to pass variables across widges ********************************
+        === Functions to pass variables across widges ===
         """
 
     def PassVariable_GalvoWidget_to_Waveformer(
@@ -417,9 +375,7 @@ class Mainbody(QtWidgets.QWidget):
         # Time needed for single round of contour scanning
         self.Waveformer_WidgetInstance.time_per_contour = time_per_contour
 
-    # =============================================================================
-    #     Fucs for set directory
-    # =============================================================================
+    # Fucs for set directory
     # Set the savedirectory and prefix of Waveform widget in syn.
     def set_saving_directory(self):
         self.savedirectory = str(
@@ -486,9 +442,7 @@ class Mainbody(QtWidgets.QWidget):
         )
         self.open_AutoPatcher_UIWindow.show()
 
-    # =============================================================================
-    #     Fucs for console display
-    # =============================================================================
+    # Fucs for console display
     def normalOutputWritten(self, text):
         """Append text to the QTextEdit."""
         # Maybe QTextEdit.append() works as well, but this is how I do it:

@@ -18,7 +18,7 @@ def xValuesSingleSawtooth(
     Third part: linearly moving down
     Fourth part: accelerating to rampup speed
     """
-    # ---------Defining standard variables------------
+    # === Defining standard variables ===
     constants = HardwareConstants()
     speedGalvo = constants.maxGalvoSpeed  # Volt/s
     aGalvo = constants.maxGalvoAccel  # Acceleration galvo in volt/s^2
@@ -33,21 +33,19 @@ def xValuesSingleSawtooth(
         -speedGalvo / sampleRate
     )  # Ramp down speed in volt/pixel (Default sawtooth)
 
-    # -----------Checking for triangle wave-----------
+    # === Checking for triangle wave ===
     if sawtooth is False:
         rampDownSpeed = -rampUpSpeed
 
-    # ---------------------------------------------------------------------------
-    # ---------------------------x pixel wave function---------------------------
-    # ---------------------------------------------------------------------------
+    # === x pixel wave function ===
 
-    # -----------Defining the ramp up (x)------------
+    # === Defining the ramp up (x) ===
     rampUp = np.linspace(voltXMin, voltXMax, xPixels)
     xArray = np.append(
         xArray, rampUp
     )  # Adding the voltage values for the ramp up
 
-    # -----------Defining the inertial part-------------
+    # === Defining the inertial part ===
     inertialPart = np.array(
         []
     )  # Making a temporary array for storing the voltage values of the inertial part
@@ -70,7 +68,7 @@ def xValuesSingleSawtooth(
             xArray.size
         )  # Defining the linesize for the yArray in case of a triangle wave
 
-    # ----------Defining the ramp down----------------
+    # === Defining the ramp down ===
     a = aGalvoPix
     startVoltage = xArray[-1] + rampDownSpeed
     # We calculate the endvoltage by using the timespan for the intertial part and
@@ -98,7 +96,7 @@ def xValuesSingleSawtooth(
     )  # Specifying the linear path
     xArray = np.append(xArray, rampDown)  # Adding the array to the total path
 
-    # ----------Defining the second inertial part-------------
+    # === Defining the second inertial part ===
     inertialPart2 = np.array([])
     vIn = rampDownSpeed  # Speed of "incoming" ramp (volt/pixel)
     a = aGalvoPix  # Acceleration in volt/pixel^2
@@ -589,9 +587,9 @@ class generate_AO:
         return self.finalwave_
 
 
-##########################################################################################
+#
 # Dark probe code
-##########################################################################################
+#
 
 
 def dark_probe(
@@ -653,8 +651,8 @@ def dark_probe(
 
     # count=0
     # for i in range(samples-1):
-    #     if camera_signal[i+1]>camera_signal[i]:
-    #         count=count+1○
+    # if camera_signal[i+1]>camera_signal[i]:
+    # count=count+1○
     # print(count)
 
     # plt.plot(x,sig)

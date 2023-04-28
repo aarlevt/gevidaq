@@ -26,11 +26,7 @@ class FilterSliderWidgetUI(QtWidgets.QWidget):
         self.setWindowTitle("FilterSliderWidget")
         self.layout = QtWidgets.QGridLayout(self)
 
-        # **************************************************************************************************************************************
-        # --------------------------------------------------------------------------------------------------------------------------------------
-        # -----------------------------------------------------------GUI for Filter movement----------------------------------------------------
-        # --------------------------------------------------------------------------------------------------------------------------------------
-        # **************************************************************************************************************************************
+        # === GUI for Filter movement ===
         ControlContainer = StylishQT.roundQGroupBox(
             title="Filter Control", background_color="azure"
         )
@@ -130,11 +126,7 @@ class FilterSliderWidgetUI(QtWidgets.QWidget):
 
         self.layout.addWidget(ControlContainer, 0, 0)
 
-        # **************************************************************************************************************************************
-        # --------------------------------------------------------------------------------------------------------------------------------------
-        # -----------------------------------------------------------Fucs for filter movement---------------------------------------------------
-        # --------------------------------------------------------------------------------------------------------------------------------------
-        # **************************************************************************************************************************************
+        # === Fucs for filter movement ===
 
     def run_in_thread(self, fn, *args, **kwargs):
         """
@@ -142,12 +134,10 @@ class FilterSliderWidgetUI(QtWidgets.QWidget):
         Usage: lambda: self.run_in_thread(self.fn)
 
         Parameters
-        ----------
         fn : function
             Target function to put in thread.
 
         Returns
-        -------
         thread : TYPE
             Threading handle.
 
@@ -193,7 +183,7 @@ class FilterSliderWidgetUI(QtWidgets.QWidget):
         ELL9Filter_ins.moveToPosition(pos)
 
     def update_slider_current_pos(self, current_pos):
-        #        .setValue(current_pos)
+        # .setValue(current_pos)
         print("Slider current position: {}".format(current_pos))
 
 

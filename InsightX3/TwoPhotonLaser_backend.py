@@ -4,9 +4,7 @@ Created on Thu Mar 12 11:31:53 2020
 
 @author: xinmeng
 
-# =============================================================================
 # General control of Insight X3.
-# =============================================================================
 """
 
 import time
@@ -105,9 +103,7 @@ class InsightX3:
                 int(status_byte.decode("utf-8"))
             )  # It's now a 32 bit string.
 
-        # =============================================================================
-        #         Interpretation from bit numbers. Referring Insight Programming A-8 for details.
-        # =============================================================================
+        # Interpretation from bit numbers. Referring Insight Programming A-8 for details.
         Status_list = []
         if Status_binary[31] == "1":
             Status_list.append("Emission")
@@ -118,7 +114,7 @@ class InsightX3:
         elif Status_binary[29] == "0":
             Status_list.append("Tunable beam shutter closed")
         # if Status_binary[28] == '1':
-        #     Status_list.append('Fixed IP beam shutter open')# always 1 for our laser.
+        # Status_list.append('Fixed IP beam shutter open')# always 1 for our laser.
         if Status_binary[26] == "1":
             Status_list.append("Servo on")
         if Status_binary[22] == "1":
@@ -188,8 +184,8 @@ class InsightX3:
             Insight.write(command.encode("ascii"))
             LaserPower = (Insight.readline()).decode("utf-8")
 
-            #            print('LaserPower is {} w.'.format(LaserPower))
-            #            print(LaserPower)
+            # print('LaserPower is {} w.'.format(LaserPower))
+            # print(LaserPower)
             return LaserPower
 
     @Try_until_Success
@@ -269,9 +265,9 @@ class InsightX3:
         with serial.Serial(self.address, self.baudrate) as Insight:
             Insight.write(command.encode("ascii"))
 
-    #            ONresponse = (Insight.readline()).decode("utf-8")
+    # ONresponse = (Insight.readline()).decode("utf-8")
 
-    #            print('The response to ON is: {}'.format(ONresponse))
+    # print('The response to ON is: {}'.format(ONresponse))
 
     @Try_until_Success
     def Turn_Off_PumpLaser(self):
@@ -346,7 +342,7 @@ class QueryLaserStatusThread(QThread):
             # print('WatchDog started.')
             try:
                 self.Status_list = self.Laserinstance.QueryStatus()
-                #                self.Status_wavelength = self.Laserinstance.QueryWavelength()
+                # self.Status_wavelength = self.Laserinstance.QueryWavelength()
                 self.Status_power = self.Laserinstance.QueryPower()
                 self.Status_list.append(self.Status_power)
                 self.Thread_Status_list.emit(self.Status_list)

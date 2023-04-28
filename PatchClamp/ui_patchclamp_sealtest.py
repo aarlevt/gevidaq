@@ -105,7 +105,7 @@ class PatchclampSealTestUI(QWidget):
         super().__init__(*args, **kwargs)
         self.saving_dir = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Patch clamp\seal_test"  # TODO hardcoded path
 
-        # ------------------------Initiating patchclamp class-------------------
+        # === Initiating patchclamp class ===
         self.sealTest = PatchclampSealTest()
         self.sealTest.measurementThread.measurement.connect(
             self.handleMeasurement
@@ -122,9 +122,7 @@ class PatchclampSealTestUI(QWidget):
         )  # Connecting to the measurement signal
 
         self.zapfunction = PatchclampSealTest_zap()
-        # ----------------------------------------------------------------------
-        # ----------------------------------GUI---------------------------------
-        # ----------------------------------------------------------------------
+        # === GUI ===
         self.setFixedHeight(770)
         self.setWindowTitle("Patchclamp Seal Test")
 
@@ -134,7 +132,7 @@ class PatchclampSealTestUI(QWidget):
             self.ICON_GREEN_LED = QPixmap(path)
         self.is_sealtesting = False
 
-        # ------------------------------Gains-----------------------------------
+        # === Gains ===
         gainContainer = StylishQT.roundQGroupBox(title="Gains")
         # gainContainer.setFixedWidth(320)
         gainLayout = QGridLayout()
@@ -161,7 +159,7 @@ class PatchclampSealTestUI(QWidget):
 
         gainContainer.setLayout(gainLayout)
 
-        # ------------------------------Wavesettings-----------------------------------
+        # === Wavesettings ===
         WavesettingsContainer = StylishQT.roundQGroupBox(title="Wave settings")
         # WavesettingsContainer.setFixedWidth(320)
         WavesettingsContainerLayout = QGridLayout()
@@ -186,7 +184,7 @@ class PatchclampSealTestUI(QWidget):
 
         WavesettingsContainer.setLayout(WavesettingsContainerLayout)
 
-        # ------------------------------Membrane potential-----------------------------------
+        # === Membrane potential ===
         Vm_measureContainer = StylishQT.roundQGroupBox(title="Vm measurement")
         # Vm_measureContainer.setFixedWidth(320)
         Vm_measureContainerLayout = QGridLayout()
@@ -217,7 +215,7 @@ class PatchclampSealTestUI(QWidget):
 
         Vm_measureContainer.setLayout(Vm_measureContainerLayout)
 
-        # ------------------------------zap-----------------------------------
+        # === zap ===
         zapContainer = StylishQT.roundQGroupBox(title="ZAP")
         # zapContainer.setFixedWidth(320)
         zapContainerLayout = QGridLayout()
@@ -255,7 +253,7 @@ class PatchclampSealTestUI(QWidget):
 
         zapContainer.setLayout(zapContainerLayout)
 
-        # ------------------------------Hold Vm-----------------------------------
+        # === Hold Vm ===
         HoldContainer = StylishQT.roundQGroupBox(title="Set Vm")
         HoldContainerLayout = QGridLayout()
 
@@ -288,7 +286,7 @@ class PatchclampSealTestUI(QWidget):
 
         HoldContainer.setLayout(HoldContainerLayout)
 
-        # ----------------------------Control-----------------------------------
+        # === Control ===
         controlContainer = StylishQT.roundQGroupBox(title="Control")
         controlContainer.setFixedWidth(350)
         controlLayout = QGridLayout()
@@ -320,7 +318,7 @@ class PatchclampSealTestUI(QWidget):
 
         controlContainer.setLayout(controlLayout)
 
-        # -----------------------------Plots------------------------------------
+        # === Plots ===
         plotContainer = StylishQT.roundQGroupBox(title="Output")
         plotContainer.setFixedWidth(350)
         self.plotLayout = (
@@ -371,14 +369,14 @@ class PatchclampSealTestUI(QWidget):
         self.plotLayout.addWidget(valueContainer, 2, 0, 1, 1)
 
         plotContainer.setLayout(self.plotLayout)
-        # ---------------------------Adding to master---------------------------
+        # === Adding to master ===
         master = QVBoxLayout()
         master.addWidget(controlContainer)
         master.addWidget(plotContainer)
 
         self.setLayout(master)
 
-        # --------------------------Setting variables---------------------------
+        # === Setting variables ===
         self.changeVolInGain(self.inVolGainList.currentText())
         self.changeVolOutGain(self.outVolGainList.currentText())
         self.changeCurOutGain(self.outCurGainList.currentText())
@@ -487,8 +485,8 @@ class PatchclampSealTestUI(QWidget):
         StartGUIThread = threading.Thread(target=self.startUpdatingGUI)
         StartGUIThread.start()
 
-    #        else:
-    #            .disconnect()
+    # else:
+    # .disconnect()
     def handleMeasurement(self, voltOut, curOut):
         """Handle the measurement. Update the graph."""
 

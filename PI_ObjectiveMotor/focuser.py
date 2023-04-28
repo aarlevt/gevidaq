@@ -28,7 +28,6 @@ class PIMotor:
         gcsdll	: Name or path to GCS DLL to use, overwrites 'devname'.
 
         Returns
-        -------
         None.
 
         """
@@ -75,7 +74,7 @@ class PIMotor:
         # pidevice.SVO(pidevice.axes, [True] * len(pidevice.axes))
         # pitools.waitontarget(pidevice, axes=pidevice.axes)
 
-        #            pitools.startup(pidevice, stages=STAGES, refmode=REFMODE)
+        # pitools.startup(pidevice, stages=STAGES, refmode=REFMODE)
 
         # Now we query the allowed motion range of all connected stages.
         # GCS commands often return an (ordered) dictionary with axes/channels
@@ -111,8 +110,8 @@ if __name__ == "__main__":
     # import logging
     # logging.basicConfig(level=logging.DEBUG)
     pi = PIMotor()
-    #    pi_device = pi.ConnectPIMotor
+    # pi_device = pi.ConnectPIMotor
 
-    #    PIMotor.move(pi.pidevice, 3.455)
+    # PIMotor.move(pi.pidevice, 3.455)
     print(pi.GetCurrentPos())
     pi.CloseMotorConnection()

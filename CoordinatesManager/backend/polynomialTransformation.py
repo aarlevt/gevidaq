@@ -82,7 +82,7 @@ class polynomialRegression:
         self.size = 2 + 4 * self.order
         self.hsize = (
             1 + 2 * self.order
-        )  ## Define half size, just for convenience
+        )  # Define half size, just for convenience
 
         if len(self.q.shape) != 1 and self.order == 0:
             num_input_points = self.q.shape[0]

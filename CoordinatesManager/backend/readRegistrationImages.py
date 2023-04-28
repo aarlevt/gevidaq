@@ -164,19 +164,19 @@ def selectROI(image):
     coordinates of the input image and the threshold used to segment the input
     image.
     """
-    ## Normalize image
+    # Normalize image
     img = (image - image.min()) / (image.max() - image.min())
 
-    ## Clip image
+    # Clip image
     img_clipped = np.clip(img, 0, 0.3)
     img_clipped = img
 
-    ## Normalize clipped image
+    # Normalize clipped image
     img_clipped = (img_clipped - img_clipped.min()) / (
         img_clipped.max() - img_clipped.min()
     )
 
-    ## Find and apply Otsu threshold
+    # Find and apply Otsu threshold
     threshold = skimage.filters.threshold_minimum(img_clipped.ravel())
 
     img_thresholded = img_clipped > threshold

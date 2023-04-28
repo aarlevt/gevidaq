@@ -175,7 +175,7 @@ class PatchclampSealTest:
         self.measurementThread.wait()
 
 
-# ---------------------------------------------------------------------Hold---------------------------------------------------------------
+# === Hold ===
 class ContinuousPatchThread_hold(QThread):
     """
     Class for performing a continuous patchclamp measurement. It inherits the
@@ -335,7 +335,7 @@ class PatchclampSealTest_hold:
         self.measurementThread_hold.wait()
 
 
-# -----------------------------------------------------------------for current clamp----------------------------------------------------
+# === for current clamp ===
 class ContinuousPatchThread_currentclamp(QThread):
     """
     Class for performing a continuous patchclamp measurement. It inherits the
@@ -496,7 +496,7 @@ class PatchclampSealTest_currentclamp:
         self.measurementThread_currentclamp.wait()
 
 
-# ---------------------------------------------------------------------ZAP---------------------------------------------------------------
+# === ZAP ===
 class ContinuousPatchThread_zap(QThread):
     """
     Class for performing a continuous patchclamp measurement. It inherits the
