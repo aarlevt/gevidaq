@@ -195,7 +195,7 @@ class ProcessImageML:
 
         MLresults = results[0]
 
-        if show_result == True:
+        if show_result is True:
             # Set class_names = [None,None,None,None] to mute class name display.
             visualize.display_instances(
                 Rawimage,
@@ -209,7 +209,7 @@ class ProcessImageML:
                 WhiteSpace=(0, 0),
             )  # MLresults['class_ids'],MLresults['scores'],
 
-        if axis != None:
+        if axis is not None:
             # If axis is given, draw on axis.
             visualize.display_instances(
                 Rawimage,
@@ -358,7 +358,7 @@ class ProcessImageML:
                     Rawimage = imread(_imagefilename)
 
                     # Background substraction
-                    if background_substraction == True:
+                    if background_substraction is True:
                         # Convert to signed int to perform substraction
                         Rawimage = Rawimage.astype(
                             np.int16
@@ -375,7 +375,7 @@ class ProcessImageML:
 
                     MLresults = results[0]
 
-                    if save_mask == True:
+                    if save_mask is True:
                         fig, ax = plt.subplots()
                         # Set class_names = [None,None,None,None] to mute class name display.
                         visualize.display_instances(
@@ -519,7 +519,7 @@ class ProcessImageML:
         root_folder = folder
 
         # If need to do zmax projection first
-        if generate_zmax == True:
+        if generate_zmax is True:
             ProcessImage.cam_screening_post_processing(root_folder)
             # Here a new folder for maxProjection is generated inside, change the path
             folder = os.path.join(root_folder, "maxProjection")
@@ -566,7 +566,7 @@ class ProcessImageML:
             print(image_file_name)
             Rawimage = imread(os.path.join(folder, image_file_name))
 
-            if background_substraction == True:
+            if background_substraction is True:
                 Rawimage = np.abs(Rawimage - background_image).astype(
                     np.uint16
                 )
@@ -577,7 +577,7 @@ class ProcessImageML:
                 Rawimage, axis=None, show_result=show_result
             )
 
-            if save_mask == True:
+            if save_mask is True:
                 if not os.path.exists(os.path.join(folder, "ML_masks")):
                     # If the folder is not there, create the folder
                     os.mkdir(os.path.join(folder, "ML_masks"))
@@ -638,7 +638,7 @@ class ProcessImageML:
                     cell_Data = cell_Data.append(Cell_Data_new)
             total_cells_counted_in_folder += total_cells_counted_in_coord
 
-        if save_excel == True:
+        if save_excel is True:
             # Save to excel
             cell_Data.to_excel(
                 os.path.join(

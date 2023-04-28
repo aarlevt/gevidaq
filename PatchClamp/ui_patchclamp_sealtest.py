@@ -497,7 +497,7 @@ class PatchclampSealTestUI(QWidget):
         self.curOut = curOut / self.outCurGain / self.probeGain
 
     def startUpdatingGUI(self):
-        while self.is_sealtesting == True:
+        while self.is_sealtesting is True:
             try:
                 # self.outVolPlotWidget.append_(self.voltOut)
                 self.outCurPlotWidget.append_(self.curOut)

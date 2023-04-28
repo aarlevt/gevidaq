@@ -129,9 +129,9 @@ class LudlStage:
         Moves the motor to a relative position.
         Set position to None if this axis is not used.
         """
-        if xRel == None:
+        if xRel is None:
             command = "Movrel Y = %d" % yRel + self.endOfLine
-        elif yRel == None:
+        elif yRel is None:
             command = "Movrel X = %d" % xRel + self.endOfLine
         else:
             command = "Movrel X = %d Y = %d" % (xRel, yRel) + self.endOfLine
@@ -175,7 +175,7 @@ class LudlStage:
         Enable or disable the joystick.
         """
         switch = "+"
-        if on == False:
+        if on is False:
             switch = "-"
 
         command = "Joystick X%s Y%s" % (switch, switch) + self.endOfLine

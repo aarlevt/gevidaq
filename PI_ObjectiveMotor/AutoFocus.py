@@ -74,7 +74,7 @@ class FocusFinder:
         # Parameters for imaging.
         self.imaging_conditions = imaging_conditions
 
-        if motor_handle == None:
+        if motor_handle is None:
             # Connect the objective if the handle is not provided.
             self.pi_device_instance = PIMotor()
         else:
@@ -97,7 +97,7 @@ class FocusFinder:
                 edge_volt=self.imaging_conditions["edge_volt"],
             )
         elif source_of_image == "Camera":
-            if camera_handle == None:
+            if camera_handle is None:
                 # If no camera instance fed in, initialize camera.
                 self.HamamatsuCam_ins = CamActuator()
                 self.HamamatsuCam_ins.initializeCamera()
@@ -129,7 +129,7 @@ class FocusFinder:
         ]
         print(max_focus_pos)
 
-        if move_to_focus == True:
+        if move_to_focus is True:
             self.pi_device_instance.move(max_focus_pos)
 
         return max_focus_pos
@@ -248,7 +248,7 @@ class FocusFinder:
 
         """
 
-        if obj_position != None:
+        if obj_position is not None:
             self.pi_device_instance.move(obj_position)
 
         # Get the image.

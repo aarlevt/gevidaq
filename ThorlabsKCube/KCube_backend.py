@@ -61,7 +61,7 @@ class KCube:
 
         homed = False
 
-        while homed == False:
+        while homed is False:
             self.lib.BMC_GetNextMessage(
                 self.serialNumber,
                 ctypes.byref(self.messageType),
@@ -97,7 +97,7 @@ class KCube:
 
         moved = False
 
-        while moved == False:
+        while moved is False:
             self.lib.BMC_GetNextMessage(
                 self.serialNumber,
                 ctypes.byref(self.messageType),

@@ -643,7 +643,7 @@ class CoordinatesWidgetUI(QWidget):
         if self.NumCells > 0:
             ShapeMask = np.shape(self.Mask)
             # get coorinates at selected location in image coordinates
-            if event.xdata == None or event.ydata == None:
+            if event.xdata is None or event.ydata is None:
                 return
             xcoor = min(max(int(event.xdata), 0), ShapeMask[1])
             ycoor = min(max(int(event.ydata), 0), ShapeMask[0])

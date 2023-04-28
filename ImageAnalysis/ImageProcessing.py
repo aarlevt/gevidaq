@@ -145,7 +145,7 @@ class ProcessImage:
         fileNameList = []
 
         for file in os.listdir(Nest_data_directory):
-            if row_data_folder == True:
+            if row_data_folder is True:
                 if file_keyword in file:
                     fileNameList.append(file)
             elif "Thumbs" not in file:
@@ -176,7 +176,7 @@ class ProcessImage:
                 dict.fromkeys(RoundNumberList)
             )  # Remove Duplicates
 
-            if row_data_folder == True:
+            if row_data_folder is True:
                 # Get the coordinates, R_C_
                 if "_PMT" in eachfilename:
                     CoordinatesList.append(
@@ -328,7 +328,7 @@ class ProcessImage:
         CellSequenceInRegion = 0
         dirforcellprp = {}
         show_img = False
-        if show_img == True:
+        if show_img is True:
             plt.figure()
             fig_showlabel, ax_showlabel = plt.subplots(
                 ncols=1, nrows=1, figsize=(6, 6)
@@ -468,7 +468,7 @@ class ProcessImage:
                             round(MeanIntensity_Contour, 3)
                         )[0:5]
 
-                        if show_img == True:
+                        if show_img is True:
                             ax_showlabel.add_patch(rect)
                             ax_showlabel.text(
                                 (maxc + minc) / 2,
@@ -484,7 +484,7 @@ class ProcessImage:
                             )
 
                         CellSequenceInRegion += 1
-        if show_img == True:
+        if show_img is True:
             ax_showlabel.set_axis_off()
             plt.show()
 
@@ -540,7 +540,7 @@ class ProcessImage:
         dirforcellprp = {}
 
         show_img = False
-        if show_img == True:
+        if show_img is True:
             plt.figure()
             fig_showlabel, ax_showlabel = plt.subplots(
                 ncols=1, nrows=1, figsize=(6, 6)
@@ -674,7 +674,7 @@ class ProcessImage:
                     round(MeanIntensity_Contour, 3)
                 )[0:5]
 
-                if show_img == True:
+                if show_img is True:
                     ax_showlabel.add_patch(rect)
                     ax_showlabel.text(
                         (maxc + minc) / 2,
@@ -691,7 +691,7 @@ class ProcessImage:
 
                 CellSequenceInRegion += 1
 
-        if show_img == True:
+        if show_img is True:
             ax_showlabel.set_axis_off()
             plt.show()
 
@@ -1959,7 +1959,7 @@ class ProcessImage:
                     cell_contour_mask_dilated, square(4)
                 )
 
-                if show_each_cell == True:
+                if show_each_cell is True:
                     fig, axs = plt.subplots(2)
                     # fig.suptitle('Individual cell mask')
                     axs[0].imshow(RawImg_roi)
@@ -3409,7 +3409,7 @@ class ProcessImage:
         FFT = abs(scipy.fft.fft(array))
         freqs = fftpack.fftfreq(len(array)) * 5000
 
-        if show_result == True:
+        if show_result is True:
             pylab.subplot(211)
             pylab.plot(array[2:,])
             pylab.subplot(212)
@@ -3472,7 +3472,7 @@ class ProcessImage:
         """
         f = interpolate.interp1d(np.arange(len(input_array)), input_array)
 
-        if desired_number == None:
+        if desired_number is None:
             xnew = np.linspace(
                 0, np.amax(np.arange(len(input_array))), len(input_array) * 10
             )
@@ -3953,7 +3953,7 @@ class ProcessImage:
             DESCRIPTION.
 
         """
-        if amax == None:
+        if amax is None:
             image_uint8 = img_as_ubyte(image / np.amax(image))
         else:
             image = np.where(image >= amax, amax, image)
@@ -4171,7 +4171,7 @@ class ProcessImage:
 
         print(fileNameList[index_highest_focus_degree])
 
-        if save_image == True:
+        if save_image is True:
             # Save the file.
             with skimtiff.TiffWriter(
                 os.path.join(
@@ -4289,13 +4289,13 @@ class ProcessImage:
                         Cam_image_maxprojection_stack, axis=0
                     ).astype(np.uint16)
 
-                    if seperate_folder == True:
+                    if seperate_folder is True:
                         if not os.path.exists(
                             os.path.join(directory, "maxProjection")
                         ):
                             # If the folder is not there, create the folder
                             os.mkdir(os.path.join(directory, "maxProjection"))
-                        if save_max_projection == True:
+                        if save_max_projection is True:
                             # Save the zmax file.
                             with skimtiff.TiffWriter(
                                 os.path.join(
@@ -4315,7 +4315,7 @@ class ProcessImage:
                                     compress=0,
                                 )
                     else:
-                        if save_max_projection == True:
+                        if save_max_projection is True:
                             # Save the zmax file.
                             with skimtiff.TiffWriter(
                                 os.path.join(
@@ -4376,7 +4376,7 @@ class ProcessImage:
                 if (
                     Each_round in Each_coord_image_filename
                 ):  # Loop through each image in round
-                    if row_data_folder == True:
+                    if row_data_folder is True:
                         Coord_text = Each_coord_image_filename[
                             Each_coord_image_filename.index(
                                 "_R"
@@ -4442,7 +4442,7 @@ class ProcessImage:
         example_image = imread(
             os.path.join(Nest_data_directory, fileNameList[0])
         )
-        if row_data_folder == True:
+        if row_data_folder is True:
             image_pixel_number = example_image.shape[0]
         else:  # In ML masks there's a white line at the bottom of image.
             image_pixel_number = example_image.shape[0] - 1
@@ -4451,7 +4451,7 @@ class ProcessImage:
         for Each_round in RoundNumberList:
             # Create the empty array holder
             final_image_size = image_pixel_number * number_of_coord
-            if row_data_folder == True:
+            if row_data_folder is True:
                 final_image_holder = np.empty(
                     (final_image_size, final_image_size)
                 )
@@ -4489,7 +4489,7 @@ class ProcessImage:
                         )
                     )
 
-                    if row_data_folder == True:
+                    if row_data_folder is True:
                         final_image_holder[
                             final_image_holder_row_start : final_image_holder_row_start
                             + image_pixel_number,
@@ -5002,7 +5002,7 @@ class ProcessImage:
 
         bar_plot = True
 
-        if bar_plot == True:
+        if bar_plot is True:
             x_pos = np.arange(len(listed_facts)) + 1
 
             # Build the plot
@@ -5058,7 +5058,7 @@ class ProcessImage:
 
         excel_data_ = pd.read_excel(xls)
 
-        if dark_style == True:
+        if dark_style is True:
             plt.style.use("dark_background")
 
         fig = plt.figure()
@@ -5438,7 +5438,7 @@ class PatchAnalysis:
         ax.xaxis.set_ticks_position("bottom")
         ax.yaxis.set_ticks_position("left")
         plt.show()
-        if self.main_directory != None:
+        if self.main_directory is not None:
             fig1.savefig(
                 (
                     os.path.join(
@@ -5481,7 +5481,7 @@ class PatchAnalysis:
         ax.xaxis.set_ticks_position("bottom")
         ax.yaxis.set_ticks_position("left")
         plt.show()
-        if self.main_directory != None:
+        if self.main_directory is not None:
             fig2.savefig(
                 (
                     os.path.join(
@@ -5502,7 +5502,7 @@ class PatchAnalysis:
         ax.xaxis.set_ticks_position("bottom")
         ax.yaxis.set_ticks_position("left")
         plt.show()
-        if self.main_directory != None:
+        if self.main_directory is not None:
             fig3.savefig(
                 (
                     os.path.join(
@@ -5655,7 +5655,7 @@ class PatchAnalysis:
         ax.xaxis.set_ticks_position("bottom")
         ax.yaxis.set_ticks_position("left")
         plt.show()
-        if self.main_directory != None:
+        if self.main_directory is not None:
             fig5.savefig(
                 (
                     os.path.join(
@@ -5723,7 +5723,7 @@ class PatchAnalysis:
         ax_2.xaxis.set_ticks_position("bottom")
         ax_2.yaxis.set_ticks_position("left")
         plt.show()
-        if self.main_directory != None:
+        if self.main_directory is not None:
             fig5_2.savefig(
                 (
                     os.path.join(
@@ -5821,7 +5821,7 @@ class PatchAnalysis:
         ax2.xaxis.set_ticks_position("bottom")
         ax2.yaxis.set_ticks_position("left")
         plt.show()
-        if self.main_directory != None:
+        if self.main_directory is not None:
             fig6.savefig(
                 (
                     os.path.join(
@@ -5884,7 +5884,7 @@ class PatchAnalysis:
         ax2_2.xaxis.set_ticks_position("bottom")
         ax2_2.yaxis.set_ticks_position("left")
         plt.show()
-        if self.main_directory != None:
+        if self.main_directory is not None:
             fig6_2.savefig(
                 (
                     os.path.join(
@@ -5950,7 +5950,7 @@ class PatchAnalysis:
         ax.xaxis.set_ticks_position("bottom")
         ax.yaxis.set_ticks_position("left")
         plt.show()
-        if self.main_directory != None:
+        if self.main_directory is not None:
             fig_averaged_period.savefig(
                 (
                     os.path.join(
@@ -6008,7 +6008,7 @@ class PatchAnalysis:
         )
 
         print(self.statistics_test)
-        if self.main_directory != None:
+        if self.main_directory is not None:
             with open(
                 os.path.join(
                     self.main_directory,
@@ -6113,7 +6113,7 @@ class CurveFit:
         ax.xaxis.set_ticks_position("bottom")
         ax.yaxis.set_ticks_position("left")
         plt.show()
-        if self.main_directory != None:
+        if self.main_directory is not None:
             fig1.savefig(
                 (
                     os.path.join(
@@ -6156,7 +6156,7 @@ class CurveFit:
         ax.xaxis.set_ticks_position("bottom")
         ax.yaxis.set_ticks_position("left")
         plt.show()
-        if self.main_directory != None:
+        if self.main_directory is not None:
             fig2.savefig(
                 (
                     os.path.join(
@@ -6177,7 +6177,7 @@ class CurveFit:
         ax.xaxis.set_ticks_position("bottom")
         ax.yaxis.set_ticks_position("left")
         plt.show()
-        if self.main_directory != None:
+        if self.main_directory is not None:
             fig3.savefig(
                 (
                     os.path.join(
@@ -6652,7 +6652,7 @@ class CurveFit:
         ax.xaxis.set_ticks_position("bottom")
         ax.yaxis.set_ticks_position("left")
         plt.show()
-        if self.main_directory != None:
+        if self.main_directory is not None:
             fig.savefig(
                 (
                     os.path.join(
@@ -6759,7 +6759,7 @@ class CurveFit:
         ax2.xaxis.set_ticks_position("bottom")
         ax2.yaxis.set_ticks_position("left")
         plt.show()
-        if self.main_directory != None:
+        if self.main_directory is not None:
             fig2.savefig(
                 (
                     os.path.join(
@@ -6875,7 +6875,7 @@ class CurveFit:
         ax.xaxis.set_ticks_position("bottom")
         ax.yaxis.set_ticks_position("left")
         plt.show()
-        if self.main_directory != None:
+        if self.main_directory is not None:
             fig5.savefig(
                 (
                     os.path.join(
@@ -7012,7 +7012,7 @@ class CurveFit:
         ax.xaxis.set_ticks_position("bottom")
         ax.yaxis.set_ticks_position("left")
         plt.show()
-        if self.main_directory != None:
+        if self.main_directory is not None:
             fig6.savefig(
                 (
                     os.path.join(
@@ -7061,7 +7061,7 @@ class CurveFit:
         ax.xaxis.set_ticks_position("bottom")
         ax.yaxis.set_ticks_position("left")
         plt.show()
-        if self.main_directory != None:
+        if self.main_directory is not None:
             fig_averaged_period.savefig(
                 (
                     os.path.join(
@@ -7212,7 +7212,7 @@ class CurveFit:
         )
 
         print(self.statistics_test)
-        if self.main_directory != None:
+        if self.main_directory is not None:
             with open(
                 os.path.join(
                     self.main_directory,
@@ -7280,7 +7280,7 @@ if __name__ == "__main__":
     PMT_contour_scan_processing = True
     screening_comparison = False
 
-    if stitch_img == True:
+    if stitch_img is True:
         Nest_data_directory = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2022-06-10  Evolution screening validation\WT\2022-06-10_16-26-51_WT_pmt"  # TODO hardcoded path
         Stitched_image_dict = ProcessImage.image_stitching(
             Nest_data_directory, scanning_coord_step=1568, row_data_folder=True
@@ -7295,18 +7295,18 @@ if __name__ == "__main__":
                 )
             )
 
-    elif retrievefocus_map == True:
+    elif retrievefocus_map is True:
         Nest_data_directory = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2020-11-5 Lib z3_2p5um 9coords AF gap3"  # TODO hardcoded path
         focus_map_dict = ProcessImage.retrieve_focus_map(Nest_data_directory)
 
-    elif find_focus == True:
+    elif find_focus is True:
         ProcessImage.find_infocus_from_stack(
             r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Xin\2021-08-12 camera focus\fov3",  # TODO hardcoded path
             method="variance_of_laplacian",
             save_image=False,
         )
 
-    elif registration == True:
+    elif registration is True:
         data_1_xlsx = pd.ExcelFile(
             r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2020-11-17 photobleaching WT LentiII\Round2_2020-11-20_17-29-19_CellsProperties.xlsx"  # TODO hardcoded path
         )
@@ -7323,7 +7323,7 @@ if __name__ == "__main__":
         registered_dataframe = ProcessImage.Register_cells(
             [data_1, data_2, data_3]
         )
-    elif merge_dataFrames == True:
+    elif merge_dataFrames is True:
         data_1_xlsx = pd.ExcelFile(
             r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2021-01-27 Lib8 Archon KCl 8b8 ND1p5ND0p3\m1.xlsx"  # TODO hardcoded path
         )
@@ -7346,22 +7346,22 @@ if __name__ == "__main__":
             r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2021-01-27 Lib8 Archon KCl 8b8 ND1p5ND0p3\m3.xlsx"  # TODO hardcoded path
         )
 
-    elif cam_screening_analysis == True:
+    elif cam_screening_analysis is True:
         ProcessImage.cam_screening_post_processing(
             r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Delizzia\2020-11-19_2020-11-19_10-14-32_trial_cam_screen"  # TODO hardcoded path
         )
 
-    elif photo_current == True:
+    elif photo_current is True:
         ProcessImage.PhotoCurrent(
             r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Patch clamp\2021-08-07 GR mutants\E166Q\CELL5\Photocurrent"
         )  # TODO hardcoded path
 
-    elif PMT_contour_scan_processing == True:
+    elif PMT_contour_scan_processing is True:
         fluorescence_trace_normalized_for_average = ProcessImage.CurveFit_PMT(
             r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Patch clamp\2021-08-04 2p Patch\QuasAr1\CELL3\ND1\PMT_array_2021-08-04_14-39-35.npy",  # TODO hardcoded path
             number_of_periods=25,
         )
-    elif screening_comparison == True:
+    elif screening_comparison is True:
         ProcessImage.Screening_boxplot(
             r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Octoscope\Evolution screening\2022-06-14 evolution screening H106R\data collection ratio.xlsx"
         )  # TODO hardcoded path

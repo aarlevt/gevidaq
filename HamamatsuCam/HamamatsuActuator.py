@@ -205,7 +205,7 @@ class CamActuator:
         self.hcam.acquisition_mode = "run_till_abort"
         self.hcam.startAcquisition()
 
-        while self.isLiving == True:
+        while self.isLiving is True:
             [
                 frames,
                 dims,
@@ -254,7 +254,7 @@ class CamActuator:
         # Start pulling out frames from buffer
         self.video_list = []
         self.imageCount = 0  # The actual frame number that gets recorded.
-        while self.isStreaming == True:  # Record for range() number of images.
+        while self.isStreaming is True:  # Record for range() number of images.
             [
                 frames,
                 self.dims,
@@ -277,7 +277,7 @@ class CamActuator:
         # Stop the acquisition
         self.hcam.stopAcquisition()
 
-        if saving_dir != None:
+        if saving_dir is not None:
             self.isSaving = True
             # Save the file.
             with skimtiff.TiffWriter(saving_dir, append=True) as tif:
@@ -310,7 +310,7 @@ if __name__ == "__main__":
     tif_name = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\test.tif"  # TODO hardcoded path
     cam.StopStreaming(saving_dir=tif_name)
     # Make sure that the saving process is finished.
-    while cam.isSaving == True:
+    while cam.isSaving is True:
         print("Camera saving...")
         time.sleep(0.5)
 

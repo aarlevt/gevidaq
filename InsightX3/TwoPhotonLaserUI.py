@@ -143,7 +143,7 @@ class InsightWidgetUI(QWidget):
 
     def Status_watchdog(self, Status_queue, querygap):
         while True:
-            if self.watchdog_flag == True:
+            if self.watchdog_flag is True:
                 self.Status_list = self.Laserinstance.QueryStatus()
                 Status_queue.put(self.Status_list)
                 self.LaserStatuslabel.setText(str(self.Status_list))
@@ -166,7 +166,7 @@ class InsightWidgetUI(QWidget):
         time.sleep(0.5)
         self.Status_list = self.Laserinstance.QueryStatus()
         # -------------Initialize laser--------------
-        if self.warmupstatus == False:
+        if self.warmupstatus is False:
             warmupstatus = 0
             while int(warmupstatus) != 100:
                 try:

@@ -275,7 +275,7 @@ class ObjMotorWidgetUI(QWidget):
         # closeEvent() from PyQt will cause a segmentation fault. Calling
         # also the exit() from PyQtGraph solves this problem.
         # pg.exit()
-        if self.connect_status == True:
+        if self.connect_status is True:
             self.DisconnectMotor()
 
         QtWidgets.QApplication.quit()

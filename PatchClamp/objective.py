@@ -21,7 +21,7 @@ class PIMotor:
 
     def __init__(self, objective_motor_handle=None):
         # Connect the objective motor if it is not given
-        if objective_motor_handle == None:
+        if objective_motor_handle is None:
             files = importlib.resources.files(PI_ObjectiveMotor)
             traversable = files.joinpath("PI_GCS2_DLL_x64.dll")
             with importlib.resources.as_file(traversable) as path:

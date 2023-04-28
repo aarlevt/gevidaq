@@ -674,7 +674,7 @@ class AnalysisWidgetUI(QWidget):
 
         saveBgSubstractedVideop = False
         # Save the file.
-        if saveBgSubstractedVideop == True:
+        if saveBgSubstractedVideop is True:
             with skimtiff.TiffWriter(
                 os.path.join(
                     self.main_directory,

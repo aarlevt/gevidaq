@@ -1180,7 +1180,7 @@ class HamamatsuCameraRE(HamamatsuCamera):
         pararecord.ext = self.recording_extension
         pararecord.maxframepersession = 2000
 
-        if self.USE_USERMETADATA == True:
+        if self.USE_USERMETADATA is True:
             pararecord.userdatasize = 64  # Set this to the maximum bytes of binary user meta data for each frame.
             pararecord.userdatasize_session = 128  # Set this to the maximum bytes of binary user meta data for each session.
             pararecord.userdatasize_file = 256  # Set this to the maximum bytes of binary user meta data for the file.
@@ -1309,7 +1309,7 @@ class HamamatsuCameraRE(HamamatsuCamera):
                 paramRecWaitStart.size = ctypes.sizeof(paramRecWaitStart)
 
                 RECStop = False
-                while RECStop != True:
+                while RECStop is not True:
                     fn_return = dcam.dcamwait_start(  # TODO unused
                         self.wait_handle, ctypes.byref(paramRecWaitStart)
                     )
@@ -1412,7 +1412,7 @@ if __name__ == "__main__":
     # True: Streaming to disk while capturing.
 
     if n_cameras > 0:
-        if Streaming_to_disk == False:
+        if Streaming_to_disk is False:
             hcam = HamamatsuCameraMR(camera_id=0)
             print(hcam.setPropertyValue("defect_correct_mode", 1))
             print("camera 0 model:", hcam.getModelInfo(0))
@@ -1581,7 +1581,7 @@ if __name__ == "__main__":
             hcam.shutdown()
 
         # --------------------------------------------------------------------------------------------------------------------------------
-        elif Streaming_to_disk == True:
+        elif Streaming_to_disk is True:
             rcam = HamamatsuCameraRE(
                 path="M:\\tnw\\ist\\do\\projects\\Neurophotonics\\Brinkslab\\People\\Xin Meng\\Code\\Python_test\\HamamatsuCam\\test_fullframe",  # TODO hardcoded path
                 ext="dcimg",

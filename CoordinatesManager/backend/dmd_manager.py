@@ -82,7 +82,7 @@ class DMD_manager:
         ### Code needed to display a sequence with waiting time frame_rate.
 
         # Run the sequence in an infinite loop
-        if frame_rate != None:
+        if frame_rate is not None:
             self.DMD.SetTiming(illuminationTime=frame_rate)
         self.DMD.Run()
 

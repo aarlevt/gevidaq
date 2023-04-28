@@ -342,7 +342,7 @@ class QueryLaserStatusThread(QThread):
         self.Status_power = None
 
     def run(self):
-        while self.stopflag == False:
+        while self.stopflag is False:
             # print('WatchDog started.')
             try:
                 self.Status_list = self.Laserinstance.QueryStatus()
@@ -353,7 +353,7 @@ class QueryLaserStatusThread(QThread):
             except:
                 print("Query status failed.")
             time.sleep(((1 / self.queryfreq)))
-        if self.stopflag == True:
+        if self.stopflag is True:
             self.quit()
             self.wait()
             print("WatchDog stopped.")

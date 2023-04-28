@@ -26,7 +26,7 @@ class PressureThread(QThread):
         self.waveform = None
 
         # Pressure controller attributes
-        if pressurecontroller_handle == None:
+        if pressurecontroller_handle is None:
             self.pressurecontroller = PressureController(
                 address="COM21", baud=9600
             )

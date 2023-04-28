@@ -289,7 +289,7 @@ class ScanningExecutionThread(QThread):
                         move_executed = False
                         trial_number = 0
 
-                        while move_executed == False:
+                        while move_executed is False:
                             # Row/Column indexs of np.array are opposite of stage row-col indexs.
                             self.ludlStage.moveAbs(RowIndex, ColumnIndex)
                             time.sleep(1.5)
@@ -552,7 +552,7 @@ class ScanningExecutionThread(QThread):
             self.Laserinstance.Turn_Off_PumpLaser()
 
         # Disconnect camera
-        if self._use_camera == True:
+        if self._use_camera is True:
             self.HamamatsuCam.Exit()
 
         # Disconnect focus motor
@@ -785,7 +785,7 @@ class ScanningExecutionThread(QThread):
                 EM_filter_Pos = 1
 
             # Execution
-            if ND_filter1_Pos != None and ND_filter2_Pos != None:
+            if ND_filter1_Pos is not None and ND_filter2_Pos != None:
                 # Move filter 1
                 self.filter1 = ELL9Filter("COM9")
                 self.filter1.moveToPosition(ND_filter1_Pos)
@@ -794,7 +794,7 @@ class ScanningExecutionThread(QThread):
                 self.filter2 = ELL9Filter("COM7")
                 self.filter2.moveToPosition(ND_filter2_Pos)
                 time.sleep(1)
-            if EM_filter_Pos != None:
+            if EM_filter_Pos is not None:
                 self.filter3 = ELL9Filter("COM15")
                 self.filter3.moveToPosition(EM_filter_Pos)
                 time.sleep(1)
@@ -874,7 +874,7 @@ class ScanningExecutionThread(QThread):
                         camera_handle=self.HamamatsuCam,
                     )
                     print("--------------Start auto-focusing-----------------")
-                    if self.HamamatsuCam != None:
+                    if self.HamamatsuCam is not None:
                         # For camera AF
                         self.auto_focus_position = (
                             instance_FocusFinder.gaussian_fit()
@@ -904,7 +904,7 @@ class ScanningExecutionThread(QThread):
                                 )
                             )
 
-                            if self.HamamatsuCam != None:
+                            if self.HamamatsuCam is not None:
                                 # For camera AF
                                 self.auto_focus_position = (
                                     instance_FocusFinder.gaussian_fit()
@@ -1015,7 +1015,7 @@ class ScanningExecutionThread(QThread):
                     camera_handle=self.HamamatsuCam,
                 )
                 print("--------------Start auto-focusing-----------------")
-                if self.HamamatsuCam != None:
+                if self.HamamatsuCam is not None:
                     # For camera AF
                     self.auto_focus_position = (
                         instance_FocusFinder.gaussian_fit()
@@ -1043,7 +1043,7 @@ class ScanningExecutionThread(QThread):
                             )
                         )
 
-                        if self.HamamatsuCam != None:
+                        if self.HamamatsuCam is not None:
                             # For camera AF
                             self.auto_focus_position = (
                                 instance_FocusFinder.gaussian_fit()
@@ -1185,7 +1185,7 @@ class ScanningExecutionThread(QThread):
             )
             # HamamatsuCam starts another thread to pull out frames from buffer.
             # Make sure that the camera is prepared before waveform execution.
-            #                                while self.HamamatsuCam.isStreaming == False:
+            #                                while self.HamamatsuCam.isStreaming is False:
             #                                    print('Waiting for camera...')
             #                                    time.sleep(0.5)
             time.sleep(1)
@@ -1217,7 +1217,7 @@ class ScanningExecutionThread(QThread):
         self.Process_raw_data()
 
         # ------------------Camera saving-------------------
-        if _camera_isUsed == True:
+        if _camera_isUsed is True:
             self.HamamatsuCam.isSaving = True
             img_text = (
                 "_Cam_"
@@ -1228,7 +1228,7 @@ class ScanningExecutionThread(QThread):
             self.cam_tif_name = self.generate_tif_name(extra_text=img_text)
             self.HamamatsuCam.StopStreaming(saving_dir=self.cam_tif_name)
             # Make sure that the saving process is finished.
-            while self.HamamatsuCam.isSaving == True:
+            while self.HamamatsuCam.isSaving is True:
                 print("Camera saving...")
                 time.sleep(0.5)
             time.sleep(1)
@@ -1373,9 +1373,9 @@ class ScanningExecutionThread(QThread):
                             # stack as it's the worst, else if focus degree of the 2nd image
                             # is decreasing, delete the 2nd as it's the worst.
 
-                            if self.ditch_worst_focus == True:
+                            if self.ditch_worst_focus is True:
                                 if self.ZStackOrder >= 3:
-                                    if self.focus_degree_decreasing == False:
+                                    if self.focus_degree_decreasing is False:
                                         # Delete the first image.
                                         self.PMT_image_maxprojection_stack = np.delete(
                                             self.PMT_image_maxprojection_stack,
@@ -1463,7 +1463,7 @@ class ScanningExecutionThread(QThread):
     # ----------------------------------------------------------------WatchDog for laser----------------------------------------------------------------------------------
     def Status_watchdog(self, querygap):
         while True:
-            if self.watchdog_flag == True:
+            if self.watchdog_flag is True:
                 self.Status_list = self.Laserinstance.QueryStatus()
                 time.sleep(querygap)
             else:

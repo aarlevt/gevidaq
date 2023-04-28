@@ -98,7 +98,7 @@ class RasterScan:
             slave_Task.ao_channels.add_ao_voltage_chan("/Dev1/ao0:1")
             master_Task.ai_channels.add_ai_voltage_chan("/Dev1/ai0")
 
-            if self.flag_continuous == False:
+            if self.flag_continuous is False:
                 # Timing of analog output channels
                 slave_Task.timing.cfg_samp_clk_timing(
                     rate=self.Daq_sample_rate,
@@ -155,7 +155,7 @@ class RasterScan:
                 output.reshape(self.averagenum, -1), axis=0
             )
 
-            if self.flag_return_image == True:
+            if self.flag_return_image is True:
                 # Calculate the mean of average frames.
                 self.data_PMT = np.reshape(
                     Dataholder_average,
@@ -226,7 +226,7 @@ class PMT_zscan:
         self.scanning_flag = True
         self.saving_dir = saving_dir
 
-        if motor_handle == None:
+        if motor_handle is None:
             # Connect the objective if the handle is not provided.
             self.pi_device_instance = PIMotor()
         else:
@@ -264,7 +264,7 @@ class PMT_zscan:
 
     def start_scan(self):
         for self.each_pos_index in range(len(self.z_stack_positions)):
-            if self.scanning_flag == True:
+            if self.scanning_flag is True:
                 # Go through each position and get image.
                 self.make_PMT_iamge(
                     round(self.z_stack_positions[self.each_pos_index], 6)
@@ -288,7 +288,7 @@ class PMT_zscan:
 
         """
 
-        if obj_position != None:
+        if obj_position is not None:
             self.pi_device_instance.move(obj_position)
 
         # Get the image.

@@ -27,7 +27,7 @@ class CameraThread(QThread):
         self.mutex = QMutex()
 
         # Camera attributes
-        if camerahandle == None:
+        if camerahandle is None:
             self.camera = CamActuator()
             self.camera.initializeCamera()
         else:

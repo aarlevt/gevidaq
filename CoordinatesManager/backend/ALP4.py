@@ -437,7 +437,7 @@ class ALP4:
                     Serial number of the DMD to initialize, useful for multiple DMD control.
                     If not specify, open the first available DMD.
         """
-        if DeviceNum == None:
+        if DeviceNum is None:
             DeviceNum = ct.c_long(ALP_DEFAULT)
 
         self._checkError(
@@ -692,20 +692,20 @@ class ALP4:
         --------
         See ALPLib.AlpSeqAlloc in the ALP API description for more information.
         """
-        if (SequenceId == None) and (self._lastDDRseq):
+        if SequenceId is None and self._lastDDRseq:
             SequenceId = self._lastDDRseq
-        if SequenceId == None:
+        if SequenceId is None:
             self._raiseError("No sequence to display.")
 
-        if synchDelay == None:
+        if synchDelay is None:
             synchDelay = ALP_DEFAULT
-        if synchPulseWidth == None:
+        if synchPulseWidth is None:
             synchPulseWidth = ALP_DEFAULT
-        if triggerInDelay == None:
+        if triggerInDelay is None:
             triggerInDelay = ALP_DEFAULT
-        if illuminationTime == None:
+        if illuminationTime is None:
             illuminationTime = ALP_DEFAULT
-        if pictureTime == None:
+        if pictureTime is None:
             pictureTime = ALP_DEFAULT
 
         self._checkError(
@@ -785,7 +785,7 @@ class ALP4:
         """
         ret = ct.c_long(0)
 
-        if (SequenceId == None) and (self._lastDDRseq):
+        if SequenceId is None and self._lastDDRseq:
             SequenceId = self._lastDDRseq
 
         self._checkError(
@@ -821,7 +821,7 @@ class ALP4:
         """
         ret = ct.c_long(0)
 
-        if (SequenceId == None) and (self._lastDDRseq):
+        if SequenceId is None and self._lastDDRseq:
             SequenceId = self._lastDDRseq
 
         self._checkError(
@@ -860,7 +860,7 @@ class ALP4:
         """
         UserStructPtr = ct.c_double(0)
 
-        if (SequenceId == None) and (self._lastDDRseq):
+        if SequenceId is None and self._lastDDRseq:
             SequenceId = self._lastDDRseq
 
         self._checkError(
@@ -1010,7 +1010,7 @@ class ALP4:
         See AlpSeqControl in the ALP API description for control types.
         """
 
-        if (SequenceId == None) and (self._lastDDRseq):
+        if SequenceId is None and self._lastDDRseq:
             SequenceId = self._lastDDRseq
 
         self._checkError(
@@ -1034,7 +1034,7 @@ class ALP4:
                      Identified of the sequence. If not specified, free the last sequence allocated in the DMD board memory
         """
 
-        if (SequenceId == None) and (self._lastDDRseq):
+        if SequenceId is None and self._lastDDRseq:
             SequenceId = self._lastDDRseq
 
         self.Seqs.remove(
@@ -1066,9 +1066,9 @@ class ALP4:
         --------
         See ALPLib.AlpProjStart and ALPLib.AlpProjStartCont in the ALP API description for more information.
         """
-        if (SequenceId == None) and (self._lastDDRseq):
+        if SequenceId is None and self._lastDDRseq:
             SequenceId = self._lastDDRseq
-        if SequenceId == None:
+        if SequenceId is None:
             self._raiseError("No sequence to display.")
 
         if loop:

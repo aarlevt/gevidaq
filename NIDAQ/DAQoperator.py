@@ -40,7 +40,7 @@ class DAQmission(
         field) and values being the port of the daq. If not specified it will load the dictionary
         from NiDaqChannels class in NIDAQ.constants.
         """
-        if channel_LUT == None:
+        if channel_LUT is None:
             self.channel_LUT = NiDaqChannels().look_up_table
         else:
             self.channel_LUT = channel_LUT
@@ -88,7 +88,7 @@ class DAQmission(
         """
 
         self.channelname = self.channel_LUT[channel]
-        if value == True:
+        if value is True:
             writting_value = np.array([1], dtype=bool)
         else:
             writting_value = np.array([0], dtype=bool)
@@ -232,11 +232,11 @@ class DAQmission(
         # signals then the timing configs are different.
 
         # ------------------Number of samples in each waveform------------------
-        if self.Only_Digital_signals == False:
+        if self.Only_Digital_signals is False:
             self.Waveforms_length = len(analog_signals["Waveform"][0])
             num_rows, num_cols = analog_signals["Waveform"].shape
             print("row number of analog signals:  " + str(num_rows))
-        elif self.Only_Digital_signals == True:
+        elif self.Only_Digital_signals is True:
             self.Waveforms_length = len(digital_signals["Waveform"][0])
         # ----------------------------------------------------------------------
 
@@ -330,7 +330,7 @@ class DAQmission(
         else:
             self.has_recording_channel = False
 
-        if self.has_recording_channel == True:
+        if self.has_recording_channel is True:
             self.Dataholder = np.zeros(
                 (len(self.readin_channels), self.Waveforms_length)
             )
@@ -361,7 +361,7 @@ class DAQmission(
                     line_grouping=LineGrouping.CHAN_FOR_ALL_LINES,
                 )
 
-                if self.has_recording_channel == True:
+                if self.has_recording_channel is True:
                     self.Dataholder = np.zeros(
                         (len(self.readin_channels), self.Waveforms_length)
                     )
@@ -647,7 +647,7 @@ class DAQmission(
                     slave_Task_2_digitallines.stop()
                 master_Task_readin.stop()
 
-                if self.has_recording_channel == True:
+                if self.has_recording_channel is True:
                     self.collected_data.emit(self.Dataholder)
                 self.finishSignal.emit()
                 print("^^^^^^^^^^^^^^^^^^Daq tasks finish^^^^^^^^^^^^^^^^^^")
@@ -678,7 +678,7 @@ class DAQmission(
                     line_grouping=LineGrouping.CHAN_FOR_ALL_LINES,
                 )
 
-                if self.has_recording_channel == True:
+                if self.has_recording_channel is True:
                     self.Dataholder = np.zeros(
                         (len(self.readin_channels), self.Waveforms_length)
                     )
@@ -904,7 +904,7 @@ class DAQmission(
                     slave_Task_2_digitallines.stop()
                 master_Task_readin.stop()
 
-                if self.has_recording_channel == True:
+                if self.has_recording_channel is True:
                     self.collected_data.emit(self.Dataholder)
                 self.finishSignal.emit()
                 print("^^^^^^^^^^^^^^^^^^Daq tasks finish^^^^^^^^^^^^^^^^^^")
@@ -926,7 +926,7 @@ class DAQmission(
             #         Only digital signals
             # =============================================================================
             """
-        elif self.Only_Digital_signals == True:
+        elif self.Only_Digital_signals is True:
             # some preparations for digital lines
             Waveforms_length = len(digital_signals["Waveform"][0])
 
@@ -977,7 +977,7 @@ class DAQmission(
 
     def save_as_binary(self, directory):
         # print(self.ai_dev_scaling_coeff_vp)
-        if self.has_recording_channel == True:
+        if self.has_recording_channel is True:
             if "Vp" in self.readin_channels:
                 if "PMT" not in self.readin_channels:
                     self.binaryfile_vp_data = np.concatenate(

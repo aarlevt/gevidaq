@@ -34,7 +34,7 @@ def xValuesSingleSawtooth(
     )  # Ramp down speed in volt/pixel (Default sawtooth)
 
     # -----------Checking for triangle wave-----------
-    if sawtooth == False:
+    if sawtooth is False:
         rampDownSpeed = -rampUpSpeed
 
     # ---------------------------------------------------------------------------
@@ -65,7 +65,7 @@ def xValuesSingleSawtooth(
         xArray, inertialPart
     )  # Adding the array to the total path
 
-    if sawtooth == False:
+    if sawtooth is False:
         lineSizeStepFunction = (
             xArray.size
         )  # Defining the linesize for the yArray in case of a triangle wave
@@ -81,7 +81,7 @@ def xValuesSingleSawtooth(
         + voltXMin
     )
 
-    if sawtooth == True:
+    if sawtooth is True:
         timespanRampDown = abs(
             math.ceil((endVoltage - startVoltage) / rampDownSpeed)
         )
@@ -107,7 +107,7 @@ def xValuesSingleSawtooth(
     )  # We can use the same time units as the first inertial part but not including the last value, as this is part of the next iteration
     xArray = np.append(xArray, inertialPart2)
 
-    if sawtooth == True:
+    if sawtooth is True:
         lineSizeStepFunction = xArray.size
 
     return xArray, lineSizeStepFunction
@@ -198,7 +198,7 @@ def waveRecPic(
     )
 
     # Looping it to get the desired amount of periods for x
-    if sawtooth == True:
+    if sawtooth is True:
         extendedXArray = repeatWave(xArray, yPixels)
     else:
         repeats = int(math.ceil(yPixels / 2))

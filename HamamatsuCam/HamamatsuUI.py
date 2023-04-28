@@ -1111,7 +1111,7 @@ class CameraUI(QMainWindow):
 
     def SubArrayModeSwitchEvent(self):
         # Set property only works strating living/recording next time
-        if self.isLiving == True:
+        if self.isLiving is True:
             self.StopLIVE()
 
         if self.SubArrayModeSwitchButton.isChecked():
@@ -1408,7 +1408,7 @@ class CameraUI(QMainWindow):
 
     def SetROI(self):
         # Set property only works strating living/recording next time
-        if self.isLiving == True:
+        if self.isLiving is True:
             self.StopLIVE()
         # Remove the ROI
         self.Live_view.removeItem(self.ROIitem)
@@ -1507,7 +1507,7 @@ class CameraUI(QMainWindow):
         self.hcam.acquisition_mode = "run_till_abort"
         self.hcam.startAcquisition()
 
-        while self.isLiving == True:
+        while self.isLiving is True:
             [
                 frames,
                 dims,
@@ -1548,12 +1548,12 @@ class CameraUI(QMainWindow):
             tif.save(self.Live_image, description=self.metaData, compress=0)
 
     def UpdateScreen(self, image):
-        if self.Live_item_autolevel == True:
+        if self.Live_item_autolevel is True:
             # Down sample the image when it's full resolution
             if (
                 self.subarray_vsize == 2048
                 and self.subarray_hsize == 2048
-                and self.ROIselector_ispresented == False
+                and self.ROIselector_ispresented is False
             ):
                 self.Live_item.setImage(
                     block_reduce(
@@ -1567,7 +1567,7 @@ class CameraUI(QMainWindow):
             else:
                 self.Live_item.setImage(image, autoLevels=None)
 
-        elif self.Live_item_autolevel == False:
+        elif self.Live_item_autolevel is False:
             """
             Set image scaling levels. Can be one of:
                 [blackLevel, whiteLevel]
@@ -1577,7 +1577,7 @@ class CameraUI(QMainWindow):
             if (
                 self.subarray_vsize == 2048
                 and self.subarray_hsize == 2048
-                and self.ROIselector_ispresented == False
+                and self.ROIselector_ispresented is False
             ):
                 self.Live_item.setImage(
                     block_reduce(
@@ -1592,7 +1592,7 @@ class CameraUI(QMainWindow):
                 self.Live_item.setImage(image, autoLevels=False)
 
         # Update ROI checking screen
-        if self.ShowROIImgSwitch == True:
+        if self.ShowROIImgSwitch is True:
             self.ShowROIitem.setImage(
                 self.ROIitem.getArrayRegion(image, self.Live_item),
                 autoLevels=None,
@@ -1609,7 +1609,7 @@ class CameraUI(QMainWindow):
         # Get propreties and stored as metadata
         self.GetKeyCameraProperties()
 
-        if self.isStreaming == False and self.isLiving == False:
+        if self.isStreaming is False and self.isLiving is False:
             #            self.hcam.setACQMode("fixed_length", number_frames = 1)
             self.hcam.startAcquisition()
             # Start pulling out frames from buffer
@@ -1638,7 +1638,7 @@ class CameraUI(QMainWindow):
 
             self.Live_image = self.SnapImage
 
-        elif self.isStreaming == False and self.isLiving == True:
+        elif self.isStreaming is False and self.isLiving is True:
             self.hcam.stopAcquisition()
 
             self.SnapImage = self.Live_image
@@ -1727,7 +1727,7 @@ class CameraUI(QMainWindow):
             self.StopStreamingThread()
 
     def StartStreamingThread(self):
-        if self.isStreaming == False and self.isLiving == False:
+        if self.isStreaming is False and self.isLiving is False:
             self.StartStream_Thread = threading.Thread(
                 target=self.StartStreaming,
                 args=(self.StopSignal, self.BufferNumber, self.StreamDuration),
@@ -1735,7 +1735,7 @@ class CameraUI(QMainWindow):
             self.StartStream_Thread.start()
 
     def StopStreamingThread(self):
-        if self.isStreaming == True and self.isLiving == False:
+        if self.isStreaming is True and self.isLiving is False:
             self.StartStreamButton.setChecked(False)
             with Icons.Path("StartStreaming.png") as path:
                 self.StartStreamButton.setIcon(QIcon(path))
@@ -1839,7 +1839,7 @@ class CameraUI(QMainWindow):
         self.StreamBusymovie.stop()
         self.StreamStatusStackedWidget.setCurrentIndex(2)
 
-        if saveFile == True:
+        if saveFile is True:
             # Save the file.
             with skimtiff.TiffWriter(
                 self.get_file_dir(), append=True, imagej=True

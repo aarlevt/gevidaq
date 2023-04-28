@@ -28,12 +28,12 @@ class roundQGroupBox(QtWidgets.QGroupBox):
         """
         Round corner group box. Background color can be set e.g. background_color = 'blue'
         """
-        if background_color != None:
+        if background_color is not None:
             self.background_color = background_color
         else:
             self.background_color = "None"
 
-        if title != None:
+        if title is not None:
             self.setTitle(title)
 
         StyleSheet = (

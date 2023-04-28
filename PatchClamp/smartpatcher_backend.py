@@ -122,21 +122,21 @@ class SmartPatcher(QObject):
 
             # connected the started method to an executable algorithm
             if name == "target2center":
-                if self.XYstage == None or np.array_equal(
+                if self.XYstage is None or np.array_equal(
                     self.target_coordinates, [None, None, None]
                 ):
                     raise ValueError("XY stage not connected")
                 else:
                     self.thread.started.connect(self.worker.target2center)
             elif name == "hardcalibration":
-                if self.camerathread == None or self.micromanipulator == None:
+                if self.camerathread is None or self.micromanipulator is None:
                     raise ValueError(
                         "Camera and/or micromanipulator not connected"
                     )
                 else:
                     self.thread.started.connect(self.worker.hardcalibration)
             elif name == "pre-checks":
-                if self.sealtestthread == None or self.pressurethread == None:
+                if self.sealtestthread is None or self.pressurethread is None:
                     raise ValueError(
                         "Patch amplifier and/or pressure controller not connected"
                     )
@@ -145,8 +145,8 @@ class SmartPatcher(QObject):
             elif name == "autopatch":
                 if (
                     self.camerathread == None
-                    or self.micromanipulator == None
-                    or self.objectivemotor == None
+                    or self.micromanipulator is None
+                    or self.objectivemotor is None
                 ):
                     raise ValueError(
                         "Camera, objective and/or micromanipulator not connected"
@@ -156,8 +156,8 @@ class SmartPatcher(QObject):
             elif name == "approach":
                 if (
                     self.sealtestthread == None
-                    or self.pressurethread == None
-                    or self.micromanipulator == None
+                    or self.pressurethread is None
+                    or self.micromanipulator is None
                     or np.array_equal(
                         self.target_coordinates, [None, None, None]
                     )
@@ -172,14 +172,14 @@ class SmartPatcher(QObject):
                 else:
                     self.thread.started.connect(self.worker.pipette2target)
             elif name == "gigaseal":
-                if self.sealtestthread == None or self.pressurethread == None:
+                if self.sealtestthread is None or self.pressurethread is None:
                     raise ValueError(
                         "Sealtest and/or pressure controller not connected"
                     )
                 else:
                     self.thread.started.connect(self.worker.gigaseal)
             elif name == "break-in":
-                if self.sealtestthread == None or self.pressurethread == None:
+                if self.sealtestthread is None or self.pressurethread is None:
                     raise ValueError(
                         "Sealtest and/or pressure controller not connected"
                     )

@@ -991,7 +991,7 @@ class WaveformGenerator(QWidget):
                 # ------------------------Photo cycle-------------------------
                 waveform_to_add = self.generate_photocycle(channel_keyword)
 
-            if self.Append_Mode == False:
+            if self.Append_Mode is False:
                 self.waveform_data_dict[channel_keyword] = waveform_to_add
             else:
                 # === In Append mode ===
@@ -1088,7 +1088,7 @@ class WaveformGenerator(QWidget):
         else:
             waveform_to_add = self.generate_galvotrigger()
 
-        if self.Append_Mode == False:
+        if self.Append_Mode is False:
             self.waveform_data_dict[channel_keyword] = waveform_to_add
         else:
             # === In Append mode ===
@@ -1676,7 +1676,7 @@ class WaveformGenerator(QWidget):
         current_PlotDataItem = PlotDataItem(x_label, waveform, name=channel)
         current_PlotDataItem.setPen(self.color_dictionary[channel])
 
-        if self.Append_Mode == True:
+        if self.Append_Mode is True:
             try:
                 self.pw_PlotItem.removeItem(self.PlotDataItem_dict[channel])
             except:
@@ -1740,12 +1740,12 @@ class WaveformGenerator(QWidget):
         # Adding 4 values at the front, same for all waveforms except the
         # Camera trigger, which adds one extra trigger to solve the missing
         # trigger in the beginning issue.
-        if self.Auto_padding_flag == True:
+        if self.Auto_padding_flag is True:
             print("Auto-padding to reset channels.")
 
             self.padding_number = 115
 
-            if self.Adding_extra_camera_trigger_flag == True:
+            if self.Adding_extra_camera_trigger_flag is True:
                 for waveform_key in self.waveform_data_dict:
                     if waveform_key != "cameratrigger":
                         if waveform_key in self.AnalogChannelList:
@@ -1989,8 +1989,8 @@ class WaveformGenerator(QWidget):
         else:
             self.reference_length = len(reference_wave)
 
-        if self.Auto_padding_flag == True:
-            if self.Adding_extra_camera_trigger_flag == True:
+        if self.Auto_padding_flag is True:
+            if self.Adding_extra_camera_trigger_flag is True:
                 # In case of adding extra camera trigger, 4 values are added to all channels at the start
                 self.reference_length += len(insert_array) + 1
             else:
