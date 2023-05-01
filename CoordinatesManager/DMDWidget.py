@@ -553,7 +553,7 @@ class DMDWidget(QWidget):
             except OSError as exc:
                 raise exc  # TODO logging
             else:
-                print("Transform for " + laser + " loaded.")
+                print(f"Transform for {laser} loaded.")
                 self.transform[laser] = np.reshape(
                     transform, (transform.shape[1], -1, 2)
                 )

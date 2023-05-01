@@ -671,7 +671,7 @@ class HamamatsuCamera(object):
 
         # Check if the property exists.
         if not (property_name in self.properties):
-            print(" unknown property name:", property_name)
+            print(f"unknown property name: {property_name}")
             return False
         prop_id = self.properties[property_name]
 
@@ -801,7 +801,7 @@ class HamamatsuCamera(object):
 
         # Check if the property exists.
         if not (property_name in self.properties):
-            print(" unknown property name:", property_name)
+            print(f"unknown property name: {property_name}")
             return False
 
         # If the value is text, figure out what the
@@ -812,10 +812,7 @@ class HamamatsuCamera(object):
                 property_value = float(text_values[property_value])
             else:
                 print(
-                    " unknown property text value:",
-                    property_value,
-                    "for",
-                    property_name,
+                    f"unknown property text value: {property_value} for {property_name}"
                 )
                 return False
 
@@ -823,22 +820,12 @@ class HamamatsuCamera(object):
         [pv_min, pv_max] = self.getPropertyRange(property_name)
         if property_value < pv_min:
             print(
-                " set property value",
-                property_value,
-                "is less than minimum of",
-                pv_min,
-                property_name,
-                "setting to minimum",
+                f"set property value {property_value} is less than minimum of {pv_min} {property_name} setting to minimum"
             )
             property_value = pv_min
         if property_value > pv_max:
             print(
-                " set property value",
-                property_value,
-                "is greater than maximum of",
-                pv_max,
-                property_name,
-                "setting to maximum",
+                f"set property value {property_value} is greater than maximum of {pv_max} {property_name} setting to maximum"
             )
             property_value = pv_max
 
@@ -943,10 +930,7 @@ class HamamatsuCamera(object):
         self.checkStatus(dcam.dcamcap_stop(self.camera_handle), "dcamcap_stop")
 
         print(
-            "max camera backlog was",
-            self.max_backlog,
-            "of",
-            self.number_image_buffers,
+            f"max camera backlog was {self.max_backlog} of {self.number_image_buffers}"
         )
         self.max_backlog = 0
 
@@ -1151,7 +1135,7 @@ class HamamatsuCameraMR(HamamatsuCamera):
                 "dcambuf_release",
             )
 
-        print("max camera backlog was:", self.max_backlog)
+        print(f"max camera backlog was: {self.max_backlog}")
         self.max_backlog = 0
 
 
@@ -1404,7 +1388,7 @@ if __name__ == "__main__":
 
     n_cameras = paraminit.iDeviceCount
 
-    print("found:", n_cameras, "cameras")
+    print(f"found: {n_cameras} cameras")
 
     Streaming_to_disk = (
         False  # False: Filling RAM first, Saving to hard disk afterwards.
@@ -1415,7 +1399,7 @@ if __name__ == "__main__":
         if Streaming_to_disk is False:
             hcam = HamamatsuCameraMR(camera_id=0)
             print(hcam.setPropertyValue("defect_correct_mode", 1))
-            print("camera 0 model:", hcam.getModelInfo(0))
+            print(f"camera 0 model: {hcam.getModelInfo(0)}")
 
             # List support properties.
             # Property names are converted. For example, internal_frame_rate = DCAM_IDPROP_INTERNALFRAMERATE in API reference.
@@ -1431,22 +1415,13 @@ if __name__ == "__main__":
                     if p_rw[1]:
                         read_write += ", write"
                     print(
-                        "  ",
-                        i,
-                        ")",
-                        id_name,
-                        " = ",
-                        p_value,
-                        " type is:",
-                        p_type,
-                        ",",
-                        read_write,
+                        f"{i}) {id_name} = {p_value} type is: {p_type}, {read_write}"
                     )
                     text_values = hcam.getPropertyText(id_name)
                     if len(text_values) > 0:
                         print("          option / value")
                         for key in sorted(text_values, key=text_values.get):
-                            print("         ", key, "/", text_values[key])
+                            print(f"         {key}/{text_values[key]}")
 
             # Test setting & getting some parameters.
             if True:
@@ -1473,7 +1448,7 @@ if __name__ == "__main__":
                 ]
 
                 for param in params:
-                    print(param, hcam.getPropertyValue(param)[0])
+                    print(f"{param} {hcam.getPropertyValue(param)[0]}")
                     if param == "subarray_hsize":
                         subarray_hsize = hcam.getPropertyValue(param)[0]
                     if param == "subarray_vsize":
@@ -1507,7 +1482,7 @@ if __name__ == "__main__":
                         video_list.append(aframe.np_array)
                         cnt += 1
                 AcquisitionEndTime = time.time()
-                print("Frames acquired: " + str(cnt))
+                print(f"Frames acquired: {cnt}")
                 print(
                     "Total time is: {} s.".format(
                         AcquisitionEndTime - hcam.AcquisitionStartTime
@@ -1559,17 +1534,17 @@ if __name__ == "__main__":
                         waitTime = random.random() * 0.03
                         time.sleep(waitTime)
                         iterations += 1
-                        print("Frames loaded: " + str(len(frames)))
-                        print("Wait time: " + str(waitTime))
+                        print(f"Frames loaded: {len(frames)}")
+                        print(f"Wait time: {waitTime}")
                         for aframe in frames:
-                            print(cnt, aframe[0:5])
+                            print(f"{cnt} {aframe[0:5]}")
                             cnt += 1
                     if cnt < 10:
                         print(
                             "##############Error: Not all frames found#########"
                         )
                         input("Press enter to continue")
-                    print("Frames acquired: " + str(cnt))
+                    print(f"Frames acquired: {cnt}")
                     hcam.stopAcquisition()
 
                     hcam.setACQMode("run_till_abort")
@@ -1601,22 +1576,13 @@ if __name__ == "__main__":
                     if p_rw[1]:
                         read_write += ", write"
                     print(
-                        "  ",
-                        i,
-                        ")",
-                        id_name,
-                        " = ",
-                        p_value,
-                        " type is:",
-                        p_type,
-                        ",",
-                        read_write,
+                        f"{i}) {id_name} = {p_value} type is: {p_type}, {read_write}"
                     )
                     text_values = rcam.getPropertyText(id_name)
                     if len(text_values) > 0:
                         print("          option / value")
                         for key in sorted(text_values, key=text_values.get):
-                            print("         ", key, "/", text_values[key])
+                            print(f"         {key}/{text_values[key]}")
 
             # Test setting & getting some parameters.
             if True:
@@ -1650,7 +1616,7 @@ if __name__ == "__main__":
                     "----------------Testing fixed length acquisition-------------------"
                 )
                 rcam.setACQMode("fixed_length", number_frames=200 * 2)
-                print("Acquisition_mode is: " + str(rcam.acquisition_mode))
+                print(f"Acquisition_mode is: {rcam.acquisition_mode}")
 
                 rcam.startAcquisition()
                 rcam.stopAcquisition()

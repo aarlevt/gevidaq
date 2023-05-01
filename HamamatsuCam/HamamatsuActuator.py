@@ -66,7 +66,7 @@ class CamActuator:
         # raise DCAMException("DCAM initialization failed with error code " + str(error_code))
 
         n_cameras = paraminit.iDeviceCount
-        print("found:", n_cameras, "cameras")
+        print(f"found: {n_cameras} cameras")
 
         if n_cameras > 0:
             # === Initialization ===

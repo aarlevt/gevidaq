@@ -225,7 +225,7 @@ class DAQmission(
         if self.Only_Digital_signals is False:
             self.Waveforms_length = len(analog_signals["Waveform"][0])
             num_rows, num_cols = analog_signals["Waveform"].shape
-            print("row number of analog signals:  " + str(num_rows))
+            print(f"row number of analog signals:  {num_rows}")
         elif self.Only_Digital_signals is True:
             self.Waveforms_length = len(digital_signals["Waveform"][0])
 

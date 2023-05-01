@@ -86,14 +86,14 @@ class polynomialRegression:
 
         if len(self.q.shape) != 1 and self.order == 0:
             num_input_points = self.q.shape[0]
-            print("Number of input points is " + str(num_input_points))
+            print(f"Number of input points is {num_input_points}")
             print("For zeroth order input one point only")
             self.Q = None
             return
 
         if self.q.shape[0] != self.hsize and self.order != 0:
             num_input_points = self.q.shape[0]
-            print("Number of input points is " + str(num_input_points))
+            print(f"Number of input points is {num_input_points}")
             print("For N'th order input 1+2N points")
             self.Q = None
             return
@@ -167,7 +167,7 @@ class polynomialRegression:
         # self.T = np.moveaxis(np.reshape(self.A[2:], (2,2,-1)), 0, -2)
 
         for i in range(self.order):
-            print(str(i + 1) + "'th order transformation matrix =")
+            print(f"{i + 1} 'th order transformation matrix =")
             print(np.around(self.T[i, :, :], 5))
             print()
 

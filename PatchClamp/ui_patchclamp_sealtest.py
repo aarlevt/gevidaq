@@ -460,7 +460,7 @@ class PatchclampSealTestUI(QWidget):
         constant = self.HoldingList.value()
         self.executer = DAQmission()
         self.executer.sendSingleAnalog("patchAO", constant / 1000 * 10)
-        print("Holding vm at " + str(constant) + " mV")
+        print(f"Holding vm at {constant} mV")
 
     def stophold(self):
         self.executer.sendSingleAnalog("patchAO", 0)
@@ -636,9 +636,6 @@ class PatchclampSealTestUI(QWidget):
         self.startButton.setEnabled(True)
         self.sealTest.aboutToQuitHandler()
         self.is_sealtesting = False
-        # constant = float(self.HoldingList.currentText()[0:3])
-        # self.executer = execute_constant_vpatch(constant/1000*10)
-        # print("Holding vm at "+str(constant)+' mV')
 
     '''
     def closeEvent(self, event):

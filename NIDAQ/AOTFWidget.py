@@ -283,22 +283,22 @@ class AOTFWidgetUI(QWidget):
             switch = True
 
         if wavelength == "640":
-            print(wavelength + ":" + str(value))
-            print(str(switch))
+            print(f"{wavelength}:{value}")
+            print(f"{switch}")
             daq.sendSingleAnalog("640AO", value)
 
             daq.sendSingleDigital("640blanking", switch)
 
         elif wavelength == "532":
-            print(wavelength + ":" + str(value))
-            print(str(switch))
+            print(f"{wavelength}:{value}")
+            print(f"{switch}")
             daq.sendSingleAnalog("532AO", value)
 
             daq.sendSingleDigital("640blanking", switch)
 
         else:
-            print(wavelength + ":" + str(value))
-            print(str(switch))
+            print(f"{wavelength}:{value}")
+            print(f"{switch}")
             daq.sendSingleAnalog("488AO", value)
 
             daq.sendSingleDigital("640blanking", switch)

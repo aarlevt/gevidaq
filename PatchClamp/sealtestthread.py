@@ -66,7 +66,7 @@ class SealTestThread(QThread):
     @mode.setter
     def mode(self, mode):
         self._mode = mode
-        print("Sealtestthread operation mode: " + mode)
+        print(f"Sealtestthread operation mode: {mode}")
 
     def stop(self):
         self.isRunning = False

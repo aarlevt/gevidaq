@@ -1974,10 +1974,10 @@ class WaveformGenerator(QWidget):
             else:
                 # No extra camera trigger, 1 each extra in the beginning and at the end
                 self.reference_length += 2
-            print("reference_length: " + str(self.reference_length))
+            print(f"reference_length: {self.reference_length}")
         else:
             # Without auto padding, reference length is the same as original waveform.
-            print("reference_length: " + str(self.reference_length))
+            print(f"reference_length: {self.reference_length}")
 
         # === Get all waveforms the same length. ===
 

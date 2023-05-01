@@ -542,7 +542,7 @@ class AnalysisWidgetUI(QWidget):
             self.averageimage_ROI_mask, return_counts=True
         )
         count_dict = dict(zip(unique, counts))
-        print("number of 1 and 0:" + str(count_dict))
+        print(f"number of 1 and 0: {count_dict}")
 
         self.background_trace = []
 
@@ -897,7 +897,7 @@ class AnalysisWidgetUI(QWidget):
                 len(self.Vp_downsample) - len(self.videostack) :
             ]
 
-            print(self.videostack.shape, self.Vp_downsample.shape)
+            print(f"{self.videostack.shape} {self.Vp_downsample.shape}")
 
             (
                 self.corrimage,

@@ -866,7 +866,7 @@ class CameraUI(QMainWindow):
 
         n_cameras = paraminit.iDeviceCount
 
-        print("found:", n_cameras, "cameras")
+        print(f"found: {n_cameras} cameras")
 
         if n_cameras > 0:
             # === Initialization ===
@@ -948,22 +948,13 @@ class CameraUI(QMainWindow):
             if p_rw[1]:
                 read_write += ", write"
             print(
-                "  ",
-                i,
-                ")",
-                id_name,
-                " = ",
-                p_value,
-                " type is:",
-                p_type,
-                ",",
-                read_write,
+                f"{i}) {id_name} = {p_value} type is: {p_type}, {read_write}"
             )
             text_values = self.hcam.getPropertyText(id_name)
             if len(text_values) > 0:
                 print("          option / value")
                 for key in sorted(text_values, key=text_values.get):
-                    print("         ", key, "/", text_values[key])
+                    print(f"         {key}/{text_values[key]}")
 
     def GetKeyCameraProperties(self):
         params = [
@@ -1788,7 +1779,7 @@ class CameraUI(QMainWindow):
     def StopStreaming(self, saveFile):
         # Stop the acquisitiondjc
         AcquisitionEndTime = time.time()
-        print("Frames acquired: " + str(self.imageCount))
+        print(f"Frames acquired: {self.imageCount}")
         print(
             "Total time is: {} s.".format(
                 AcquisitionEndTime - self.hcam.AcquisitionStartTime
