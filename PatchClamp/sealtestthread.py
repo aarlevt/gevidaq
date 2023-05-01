@@ -108,7 +108,7 @@ class SealTestThread(QThread):
             ]
             writeClock = self.configs["clock1Channel"]
         else:
-            assert True, "No corresponding clocks defined"
+            raise RuntimeError("No corresponding clocks defined")
 
         if self.mode == "voltageclamp":
             readTask.timing.cfg_samp_clk_timing(

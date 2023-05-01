@@ -68,10 +68,7 @@ class ContinuousPatchThread(QThread):
             ]
             writeClock = self.configs["clock1Channel"]
         else:
-            assert (
-                True,
-                "No corresponding clocks defined",
-            )  # TODO use exception
+            raise RuntimeError("No corresponding clocks defined")
 
         readTask.timing.cfg_samp_clk_timing(
             rate=self.sampleRate,
@@ -227,10 +224,7 @@ class ContinuousPatchThread_hold(QThread):
             ]
             writeClock = self.configs["clock1Channel"]
         else:
-            assert (
-                True,
-                "No corresponding clocks defined",
-            )  # TODO use exception
+            raise RuntimeError("No corresponding clocks defined")
 
         readTask.timing.cfg_samp_clk_timing(
             rate=self.sampleRate,
@@ -387,10 +381,7 @@ class ContinuousPatchThread_currentclamp(QThread):
             ]
             writeClock = self.configs["clock1Channel"]
         else:
-            assert (
-                True,
-                "No corresponding clocks defined",
-            )  # TODO use exception
+            raise RuntimeError("No corresponding clocks defined")
 
         readTask.timing.cfg_samp_clk_timing(
             rate=self.sampleRate,
@@ -544,10 +535,7 @@ class ContinuousPatchThread_zap(QThread):
             ]
             writeClock = self.configs["clock1Channel"]
         else:
-            assert (
-                True,
-                "No corresponding clocks defined",
-            )  # TODO use exception
+            raise RuntimeError("No corresponding clocks defined")
 
         readTask.timing.cfg_samp_clk_timing(
             rate=self.sampleRate,
