@@ -459,15 +459,9 @@ class ScanningExecutionThread(QThread):
                                         ROIlist[1]
                                         + (ROIlist[3] - ROIlist[1]) / 2
                                     )
-                                    logging.info(
-                                        "ROI_center_width ".format(ROIlist)
-                                    )
                                     ROI_center_height = int(
                                         ROIlist[0]
                                         + (ROIlist[2] + ROIlist[0]) / 2
-                                    )
-                                    logging.info(
-                                        "ROI_center_height ".format(ROIlist)
                                     )
                                     cam_stage_transform_factor = 1.135
 
@@ -760,7 +754,7 @@ class ScanningExecutionThread(QThread):
                 EM_filter_Pos = 1
 
             # Execution
-            if ND_filter1_Pos is not None and ND_filter2_Pos != None:
+            if ND_filter1_Pos is not None and ND_filter2_Pos is not None:
                 # Move filter 1
                 self.filter1 = ELL9Filter("COM9")
                 self.filter1.moveToPosition(ND_filter1_Pos)
@@ -862,9 +856,8 @@ class ScanningExecutionThread(QThread):
 
                     relative_move_coords = [[1550, 0], [0, 1550], [1550, 1550]]
                     trial_num = 0
-                    while (
-                        self.auto_focus_position == False
-                    ):  # If there's no cell in FOV
+                    # If there's no cell in FOV
+                    while self.auto_focus_position is False:
                         if trial_num <= 2:
                             logging.info("No cells found. move to next pos.")
                             # Move to next position in real scanning coordinates.
@@ -1005,9 +998,8 @@ class ScanningExecutionThread(QThread):
 
                 relative_move_coords = [[1550, 0], [0, 1550], [1550, 1550]]
                 trial_num = 0
-                while (
-                    self.auto_focus_position == False
-                ):  # If there's no cell in FOV
+                # If there's no cell in FOV
+                while self.auto_focus_position is False:
                     if trial_num <= 2:
                         logging.info("No cells found. move to next pos.")
                         # Move to next position in real scanning coordinates.

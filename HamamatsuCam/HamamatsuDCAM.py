@@ -81,8 +81,6 @@ try:
     with importlib.resources.as_file(traversable) as path:
         dcam = ctypes.WinDLL(str(path))
 except Exception as exc:
-    import logging
-
     logging.critical("could not load dll", exc_info=exc)
 
 

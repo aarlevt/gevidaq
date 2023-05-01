@@ -4989,7 +4989,7 @@ class ProcessImage:
             for each_sheet in sheet_dictionary:
                 data_frame_each_sheet = pd.read_excel(xls, each_sheet)
 
-                if sheet_dictionary[each_sheet] == None:
+                if sheet_dictionary[each_sheet] is None:
                     # If all rows in the sheet are valid data
                     column_values = data_frame_each_sheet[
                         plotting_property

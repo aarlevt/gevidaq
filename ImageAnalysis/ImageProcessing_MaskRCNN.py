@@ -704,11 +704,11 @@ class ProcessImageML:
                 jj = Sub_Selec[ii][pp]
                 Maskt = Result["masks"][:, :, jj]
                 # Dilate ii mask once
-                Mask_dilate = ndimage.binary_dilation(
+                Mask_dilate = ndimage.binary_dilation(  # TODO undefined
                     Mask, iterations=1
                 )  # Check if this works with lists as I think mask is a list, and ndimage works on numpy.
                 # Now check for overlap
-                Overlap = np.logical_and(Mask_dilate == True, Maskt == True)
+                Overlap = np.logical_and(Mask_dilate is True, Maskt is True)
                 # Get degree of overlap
                 Degree_Overlap = np.sum(Overlap, where=True)
                 if Degree_Overlap > 0:

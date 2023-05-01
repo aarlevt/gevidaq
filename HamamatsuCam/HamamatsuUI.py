@@ -1726,9 +1726,8 @@ class CameraUI(QMainWindow):
             # Start pulling out frames from buffer
             self.video_list = []
             self.imageCount = 0  # The actual frame number that gets recorded.
-            while (
-                self.isStreaming == True
-            ):  # Record for range() number of images.
+            # Record for range() number of images.
+            while self.isStreaming is True:
                 [
                     frames,
                     self.dims,

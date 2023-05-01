@@ -109,7 +109,7 @@ class SmartPatcher(QObject):
         Note:   It is possible to connect multiple slots or to connect the same
                 slot multiple times. Beware because they will run all at once.
         """
-        if self.thread.isRunning() == True:
+        if self.thread.isRunning() is True:
             pass
         else:
             # disconnect the started method to prevent double execution
@@ -145,7 +145,7 @@ class SmartPatcher(QObject):
                     self.thread.started.connect(self.worker.prechecks)
             elif name == "autopatch":
                 if (
-                    self.camerathread == None
+                    self.camerathread is None
                     or self.micromanipulator is None
                     or self.objectivemotor is None
                 ):
@@ -156,7 +156,7 @@ class SmartPatcher(QObject):
                     self.thread.started.connect(self.worker.autopatch)
             elif name == "approach":
                 if (
-                    self.sealtestthread == None
+                    self.sealtestthread is None
                     or self.pressurethread is None
                     or self.micromanipulator is None
                     or np.array_equal(
