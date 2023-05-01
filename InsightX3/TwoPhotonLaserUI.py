@@ -143,7 +143,7 @@ class InsightWidgetUI(QWidget):
                 self.LaserStatuslabel.setText(str(self.Status_list))
                 time.sleep(querygap)
             else:
-                print("Watchdog stopped")
+                logging.info("Watchdog stopped")
                 time.sleep(querygap)
 
     def LaserSwitchEvent(self):
@@ -172,7 +172,7 @@ class InsightWidgetUI(QWidget):
 
             if int(warmupstatus) == 100:
                 self.warmupstatus = True
-                print("Laser fully warmed up.")
+                logging.info("Laser fully warmed up.")
 
                 if "Laser state:Ready" in self.Status_list:
                     self.Laserinstance.Turn_On_PumpLaser()
@@ -189,7 +189,7 @@ class InsightWidgetUI(QWidget):
 
                         if "Laser state:RUN" in Status_list:
                             self.laserRun = True
-                            print("Laser state:RUN")
+                            logging.info("Laser state:RUN")
                             break
 
         time.sleep(0.5)

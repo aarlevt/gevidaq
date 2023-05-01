@@ -7,6 +7,7 @@ Created on Wed May 27 17:14:53 2020
 """
 import ctypes
 import importlib.resources
+import logging
 import sys
 import threading
 import time
@@ -66,7 +67,7 @@ class CamActuator:
         # raise DCAMException("DCAM initialization failed with error code " + str(error_code))
 
         n_cameras = paraminit.iDeviceCount
-        print(f"found: {n_cameras} cameras")
+        logging.info(f"found: {n_cameras} cameras")
 
         if n_cameras > 0:
             # === Initialization ===
@@ -224,7 +225,9 @@ class CamActuator:
         # Set extra input settings
         for camProName, value in kwargs.items():
             self.hcam.setPropertyValue(camProName, value)
-            print("setProperty {} to Value {}".format(camProName, value))
+            logging.info(
+                "setProperty {} to Value {}".format(camProName, value)
+            )
 
         # Start the acquisition
         self.hcam.setACQMode("fixed_length", number_frames=BufferNumber)
@@ -289,7 +292,7 @@ if __name__ == "__main__":
     cam.StartStreaming(
         BufferNumber=10, trigger_source="INTERNAL", exposure_time=0.0015
     )
-    print("main thread continues")
+    logging.info("main thread continues")
     # Make sure that the camera is prepared before waveform execution.
     time.sleep(3.5)
     cam.isSaving = True
@@ -297,7 +300,7 @@ if __name__ == "__main__":
     cam.StopStreaming(saving_dir=tif_name)
     # Make sure that the saving process is finished.
     while cam.isSaving is True:
-        print("Camera saving...")
+        logging.info("Camera saving...")
         time.sleep(0.5)
 
     cam.Exit()

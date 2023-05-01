@@ -7,6 +7,8 @@ Created on Mon Mar 18 12:21:01 2019
 Notes:
 
 """
+import logging
+
 import nidaqmx
 import numpy as np
 from nidaqmx.stream_readers import AnalogSingleChannelReader
@@ -276,7 +278,7 @@ class pmtimaging_continuous_Thread_contour(QThread):
             output = np.zeros(self.readNumber)
             slave_Task3.start()  # Will wait for the readtask to start so it can use its clock
             master_Task.start()
-            print("Contour scanning!!")
+            logging.info("Contour scanning!!")
             while not self.isInterruptionRequested():
                 reader.read_many_sample(
                     data=output, number_of_samples_per_channel=self.readNumber
@@ -316,4 +318,4 @@ class pmtimagingTest_contour:
     def aboutToQuitHandler(self):
         self.pmtimagingThread_contour.requestInterruption()
         self.pmtimagingThread_contour.wait()
-        print("Contour scan stopped!!")
+        logging.info("Contour scan stopped!!")

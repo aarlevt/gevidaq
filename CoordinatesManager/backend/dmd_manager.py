@@ -61,7 +61,7 @@ class DMD_manager:
         self.image = (
             self.image > 0
         ) * 1  # First part makes it True/False, multiplying by 1 converts it to binary
-        print(self.image.shape)
+        logging.info(self.image.shape)
 
         # Binary amplitude image (0 or 1)
         bitDepth = 1

@@ -48,7 +48,7 @@ from .ImageProcessing import ProcessImage
 try:
     from .ImageProcessing_MaskRCNN import ProcessImageML
 except ImportError:
-    print("None-MaskRCNN environment.")
+    logging.info("None-MaskRCNN environment.")
 
 
 def run_in_thread(fn):
@@ -555,7 +555,7 @@ class MainGUI(QWidget):
                 weight_3=self.WeightBoxSelectionFactor_3.value(),
             )
 
-            print("Save CellsDataframe to Excel...")
+            logging.info("Save CellsDataframe to Excel...")
             self.SaveCellsDataframetoExcel()
 
             self.UpdateSelectionScatter()
@@ -573,7 +573,7 @@ class MainGUI(QWidget):
 
         # === For KCL assay, two rounds of lib. ===
         elif len(self.Tag_round_infor) == 0 and len(self.Lib_round_infor) == 2:
-            print(
+            logging.info(
                 "===== Kcl analysis based on absolute contour intensity ====="
             )
             lib_folder = self.Lib_folder
@@ -588,11 +588,11 @@ class MainGUI(QWidget):
                 lib_folder, KC_round
             )
 
-            print("Start Cell_DataFrame_Merging.")
+            logging.info("Start Cell_DataFrame_Merging.")
             self.Cell_DataFrame_Merged = ProcessImage.MergeDataFrames(
                 cell_Data_EC, cell_Data_KC, method="Kcl"
             )
-            print("Cell_DataFrame_Merged.")
+            logging.info("Cell_DataFrame_Merged.")
 
             DataFrames_filtered = ProcessImage.FilterDataFrames(
                 self.Cell_DataFrame_Merged,
@@ -609,7 +609,7 @@ class MainGUI(QWidget):
                 weight_2=self.WeightBoxSelectionFactor_2.value(),
                 weight_3=self.WeightBoxSelectionFactor_3.value(),
             )
-            print("Save CellsDataframe to Excel...")
+            logging.info("Save CellsDataframe to Excel...")
             self.DataFrame_sorted.to_excel(
                 os.path.join(
                     self.Tag_folder,
@@ -622,7 +622,9 @@ class MainGUI(QWidget):
 
         # === For KCL assay, two rounds of lib/tag. ===
         elif len(self.Tag_round_infor) == 2 and len(self.Lib_round_infor) == 2:
-            print("===== Kcl analysis based on lib/tag contour ratio =====")
+            logging.info(
+                "===== Kcl analysis based on lib/tag contour ratio ====="
+            )
             tag_folder = self.Tag_folder
             lib_folder = self.Lib_folder
 
@@ -656,13 +658,13 @@ class MainGUI(QWidget):
                 cell_Data_tag_round_2, cell_Data_lib_round_2, method="TagLib"
             )
 
-            print("Start Cell_DataFrame_Merging.")
+            logging.info("Start Cell_DataFrame_Merging.")
             self.Cell_DataFrame_Merged = ProcessImage.MergeDataFrames(
                 Cell_DataFrame_Merged_1, Cell_DataFrame_Merged_2, method="Kcl"
             )
             # self.Cell_DataFrame_Merged.to_excel(os.path.join(self.Tag_folder, datetime.now().strftime('%Y-%m-%d_%H-%M-%S')+'_merged_CellsProperties.xlsx'))
             # print(self.Cell_DataFrame_Merged.columns)
-            print("Cell_DataFrame_Merged.")
+            logging.info("Cell_DataFrame_Merged.")
 
             DataFrames_filtered = ProcessImage.FilterDataFrames(
                 self.Cell_DataFrame_Merged,
@@ -679,7 +681,7 @@ class MainGUI(QWidget):
                 weight_2=self.WeightBoxSelectionFactor_2.value(),
                 weight_3=self.WeightBoxSelectionFactor_3.value(),
             )
-            print("Save CellsDataframe to Excel...")
+            logging.info("Save CellsDataframe to Excel...")
             self.DataFrame_sorted.to_excel(
                 os.path.join(
                     self.Tag_folder,
@@ -771,7 +773,7 @@ class MainGUI(QWidget):
             weight_2=self.WeightBoxSelectionFactor_2.value(),
             weight_3=self.WeightBoxSelectionFactor_3.value(),
         )
-        print("Save CellsDataframe to Excel...")
+        logging.info("Save CellsDataframe to Excel...")
         self.DataFrame_sorted.to_excel(
             os.path.join(
                 self.Tag_folder,
@@ -990,7 +992,7 @@ class MainGUI(QWidget):
                         self.Lib_folder, self.meta_data + "_Cam_Zmax.tif"
                     )
 
-            print(
+            logging.info(
                 self.lib_imagefilename[
                     len(self.lib_imagefilename)
                     - 50 : len(self.lib_imagefilename)
@@ -1037,7 +1039,7 @@ class MainGUI(QWidget):
                 self.tag_imagefilename = os.path.join(
                     self.Tag_folder, self.meta_data + "_PMT_0Zmax.tif"
                 )
-            print(
+            logging.info(
                 self.tag_imagefilename[
                     len(self.tag_imagefilename)
                     - 50 : len(self.tag_imagefilename)
@@ -1088,7 +1090,7 @@ class MainGUI(QWidget):
             (minr + maxr) // 2,
             (minc + maxc) // 2,
         ]
-        print(
+        logging.info(
             "current CellCentre_PMTimgCoordinates: {}".format(
                 self.currentCellCentre_PMTimgCoordinates
             )
@@ -1367,7 +1369,7 @@ class MainGUI(QWidget):
                 scanning_config=[5, 500],
             )
         )
-        print(
+        logging.info(
             "Corresponding coordinates in camera image: {}".format(
                 camera_centre_coordinates[0]
             )
@@ -1386,7 +1388,7 @@ class MainGUI(QWidget):
         # Transform into stage coordinates
         relative_stage_move_row = int(relative_cam_pixel_offset_row * -1.132)
         relative_stage_move_col = int(relative_cam_pixel_offset_col * 1.132)
-        print(
+        logging.info(
             "Stage relative moving steps: {}".format(
                 [relative_stage_move_row, relative_stage_move_col]
             )
@@ -1424,7 +1426,7 @@ class MainGUI(QWidget):
                 os.path.join(self.Analysis_saving_directory, "Picked cells")
             ):
                 # If the folder is not there, create the folder
-                print("Create Picked Cells folder.")
+                logging.info("Create Picked Cells folder.")
                 os.mkdir(
                     os.path.join(
                         self.Analysis_saving_directory, "Picked cells"

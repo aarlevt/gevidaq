@@ -866,7 +866,7 @@ class CameraUI(QMainWindow):
 
         n_cameras = paraminit.iDeviceCount
 
-        print(f"found: {n_cameras} cameras")
+        logging.info(f"found: {n_cameras} cameras")
 
         if n_cameras > 0:
             # === Initialization ===
@@ -937,7 +937,7 @@ class CameraUI(QMainWindow):
         """
 
     def ListCameraProperties(self):
-        print("Supported properties:")
+        logging.info("Supported properties:")
         props = self.hcam.getProperties()
         for i, id_name in enumerate(sorted(props.keys())):
             [p_value, p_type] = self.hcam.getPropertyValue(id_name)
@@ -947,14 +947,14 @@ class CameraUI(QMainWindow):
                 read_write += "read"
             if p_rw[1]:
                 read_write += ", write"
-            print(
+            logging.info(
                 f"{i}) {id_name} = {p_value} type is: {p_type}, {read_write}"
             )
             text_values = self.hcam.getPropertyText(id_name)
             if len(text_values) > 0:
-                print("          option / value")
+                logging.info("          option / value")
                 for key in sorted(text_values, key=text_values.get):
-                    print(f"         {key}/{text_values[key]}")
+                    logging.info(f"         {key}/{text_values[key]}")
 
     def GetKeyCameraProperties(self):
         params = [
@@ -1448,7 +1448,7 @@ class CameraUI(QMainWindow):
                 self.ResetLiveImgView()
             except Exception as exc:
                 logging.critical("caught exception", exc_info=exc)
-                print("clear failed.")
+                logging.info("clear failed.")
 
             StartLiveThread = threading.Thread(target=self.LIVE)
             StartLiveThread.start()
@@ -1779,13 +1779,13 @@ class CameraUI(QMainWindow):
     def StopStreaming(self, saveFile):
         # Stop the acquisitiondjc
         AcquisitionEndTime = time.time()
-        print(f"Frames acquired: {self.imageCount}")
-        print(
+        logging.info(f"Frames acquired: {self.imageCount}")
+        logging.info(
             "Total time is: {} s.".format(
                 AcquisitionEndTime - self.hcam.AcquisitionStartTime
             )
         )
-        print(
+        logging.info(
             "Estimated fps: {} hz.".format(
                 int(
                     self.imageCount
@@ -1820,7 +1820,7 @@ class CameraUI(QMainWindow):
                             int(eachframe / self.imageCount * 100)
                         )
 
-            print(
+            logging.info(
                 "Done writing "
                 + str(self.imageCount)
                 + " frames, recorded for "

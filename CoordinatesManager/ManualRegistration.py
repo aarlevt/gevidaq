@@ -180,7 +180,7 @@ class ManualRegistrationWindow(QWidget):
             self.image_viewer.roi1
         except Exception as exc:
             logging.critical("caught exception", exc_info=exc)
-            print("Press in image to set crosshair")
+            logging.info("Press in image to set crosshair")
             return
 
         coords = [
@@ -200,7 +200,7 @@ class ManualRegistrationWindow(QWidget):
 
         coord = self.abs_coordinate_textbox_x.text()
         if coord == "":
-            print("No absolute x coordinate")
+            logging.info("No absolute x coordinate")
             return
         else:
             abscoordx = float(coord)
@@ -208,7 +208,7 @@ class ManualRegistrationWindow(QWidget):
 
         coord = self.abs_coordinate_textbox_y.text()
         if coord == "":
-            print("No absolute y coordinate")
+            logging.info("No absolute y coordinate")
             return
         else:
             abscoordy = float(coord)
@@ -216,7 +216,7 @@ class ManualRegistrationWindow(QWidget):
 
         coord = self.img_coordinate_textbox_x.text()
         if coord == "":
-            print("Invalid image x coordinate")
+            logging.info("Invalid image x coordinate")
             return
         else:
             imgcoordx = float(coord)
@@ -224,7 +224,7 @@ class ManualRegistrationWindow(QWidget):
 
         coord = self.img_coordinate_textbox_y.text()
         if coord == "":
-            print("Invalid image y coordinate")
+            logging.info("Invalid image y coordinate")
             return
         else:
             imgcoordy = float(coord)
@@ -232,7 +232,7 @@ class ManualRegistrationWindow(QWidget):
 
         self.abs_coords.append([abscoordx, abscoordy])
         self.img_coords.append([imgcoordx, imgcoordy])
-        print("Coordinates saved")
+        logging.info("Coordinates saved")
 
         try:
             self.coordinate_counter_int
@@ -331,7 +331,7 @@ class ManualRegistrationWidget(QWidget):
 
     def receive_camera_image(self, image):
         self.window.image_viewer.setImage(image)
-        print("Image received")
+        logging.info("Image received")
 
 
 if __name__ == "__main__":

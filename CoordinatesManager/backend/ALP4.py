@@ -7,6 +7,7 @@ Created on Wed Oct 05 15:48:53 2016
 """
 
 import ctypes as ct
+import logging
 import platform
 
 import numpy as np
@@ -418,7 +419,7 @@ class ALP4:
             if not warning:
                 raise Exception(errorMsg)
             else:
-                print(errorMsg)
+                logging.info(errorMsg)
 
     def Initialize(self, DeviceNum=None):
         """

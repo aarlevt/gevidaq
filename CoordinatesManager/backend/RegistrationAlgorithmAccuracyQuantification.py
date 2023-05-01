@@ -10,6 +10,7 @@ automated recognition of registration grid points for cirlces and touching
 squares patterns.
 """
 
+import logging
 import os
 
 import matplotlib.pyplot as plt
@@ -45,9 +46,9 @@ class Coordinates:
             self.counter += 1
 
     def print_coords(self):
-        print("--------------------------")
-        print("Coordinates list:")
-        print(np.asarray(self.coords))
+        logging.info("--------------------------")
+        logging.info("Coordinates list:")
+        logging.info(np.asarray(self.coords))
 
 
 def open_coordinate_files(method):
@@ -225,7 +226,7 @@ if __name__ == "__main__":
             coords = Coordinates(fig, axs, n)
             fig.canvas.mpl_connect("button_press_event", coords.save_coord)
 
-            print(n)
+            logging.info(n)
             for i in range(num_points):
                 if method == "squares":
                     image = plt.imread(
@@ -272,7 +273,7 @@ if __name__ == "__main__":
             fig, axs = plt.subplots(2, 3)
             axs = axs.ravel()
 
-            print(n)
+            logging.info(n)
             for i in range(num_points):
                 if method == "squares":
                     image = plt.imread(

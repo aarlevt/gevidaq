@@ -4,6 +4,7 @@ Created on Tue Mar 31 10:30:41 2020
 
 @author: Izak de Heer
 """
+import logging
 import os
 import time
 
@@ -69,10 +70,10 @@ class GalvoRegistrator:
                 image
             )
 
-        print("Galvo Coordinate")
-        print(galvo_coordinates)
-        print("Camera coordinates")
-        print(camera_coordinates)
+        logging.info("Galvo Coordinate")
+        logging.info(galvo_coordinates)
+        logging.info("Camera coordinates")
+        logging.info(camera_coordinates)
         del galvothread
         self.cam.Exit()
 
@@ -84,15 +85,15 @@ class GalvoRegistrator:
             galvo_coordinates, camera_coordinates, order=1
         )
 
-        print("Transformation found for x:")
-        print(transformation_cam2galvo[:, :, 0])
-        print("Transformation found for y:")
-        print(transformation_cam2galvo[:, :, 1])
+        logging.info("Transformation found for x:")
+        logging.info(transformation_cam2galvo[:, :, 0])
+        logging.info("Transformation found for y:")
+        logging.info(transformation_cam2galvo[:, :, 1])
 
-        print("galvo2cam found for x:")
-        print(transformation_galvo2cam[:, :, 0])
-        print("galvo2cam found for y:")
-        print(transformation_galvo2cam[:, :, 1])
+        logging.info("galvo2cam found for x:")
+        logging.info(transformation_galvo2cam[:, :, 0])
+        logging.info("galvo2cam found for y:")
+        logging.info(transformation_galvo2cam[:, :, 1])
 
         return transformation_cam2galvo
 
@@ -154,10 +155,10 @@ class DMDRegistator:
 
             self.DMD.stop_projection()
 
-        print("DMD coordinates:")
-        print(dmd_coordinates)
-        print("Found camera coordinates:")
-        print(camera_coordinates)
+        logging.info("DMD coordinates:")
+        logging.info(dmd_coordinates)
+        logging.info("Found camera coordinates:")
+        logging.info(camera_coordinates)
 
         self.DMD.free_memory()
         self.cam.Exit()
@@ -165,10 +166,10 @@ class DMDRegistator:
         transformation = CoordinateTransformations.polynomial2DFit(
             camera_coordinates, dmd_coordinates, order=1
         )
-        print("Transformation found for x:")
-        print(transformation[:, :, 0])
-        print("Transformation found for y:")
-        print(transformation[:, :, 1])
+        logging.info("Transformation found for x:")
+        logging.info(transformation[:, :, 0])
+        logging.info("Transformation found for y:")
+        logging.info(transformation[:, :, 1])
         return transformation
 
     def create_registration_image_touching_squares(x, y, sigma=75):

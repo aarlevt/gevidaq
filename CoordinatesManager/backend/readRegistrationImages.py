@@ -223,7 +223,7 @@ def selectROI(image):
             np.amin(contour[:, 0])
         except Exception as exc:
             logging.critical("caught exception", exc_info=exc)
-            print("np.amin failed")
+            logging.info("np.amin failed")
 
         bbox = np.array(
             [
@@ -413,7 +413,7 @@ if __name__ == "__main__":
             )
             axs[1, i].set_axis_off()
 
-            print(coordinates)
+            logging.info(coordinates)
 
             plt.tight_layout()
             plt.show()
@@ -426,7 +426,7 @@ if __name__ == "__main__":
             + ".png"
         )
         image = np.average(image, axis=2)
-        print(findTouchingSquaresCenterCoordinate_curvefit(image))
+        logging.info(findTouchingSquaresCenterCoordinate_curvefit(image))
 
     if False:
         fig, axs = plt.subplots(1, 4)

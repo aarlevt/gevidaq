@@ -12,7 +12,7 @@ import time
 try:
     from pipython import GCSDevice, pitools
 except ImportError:
-    print("pipython not configured.")
+    logging.info("pipython not configured.")
 
 
 class PIMotor:
@@ -44,11 +44,11 @@ class PIMotor:
             with importlib.resources.as_file(traversable) as path:
                 self.pidevice = GCSDevice(gcsdll=str(path))
 
-            print(self.pidevice.EnumerateUSB())
+            logging.info(self.pidevice.EnumerateUSB())
             # InterfaceSetupDlg() is an interactive dialog. There are other methods to
             # connect to an interface without user interaction.
             serialstring = self.pidevice.EnumerateUSB()
-            print(serialstring[0])
+            logging.info(serialstring[0])
             # pidevice.InterfaceSetupDlg(key='sample')
             # pidevice.ConnectRS232(comport=1, baudrate=115200)
             self.pidevice.ConnectUSB(
@@ -60,16 +60,18 @@ class PIMotor:
             # identification string with a trailing line feed character which
             # we "strip" away.
 
-            print("connected: {}".format(self.pidevice.qIDN().strip()))
+            logging.info("connected: {}".format(self.pidevice.qIDN().strip()))
 
             # Show the version info which is helpful for PI support when there
             # are any issues.
 
             if self.pidevice.HasqVER():
-                print("version info: {}".format(self.pidevice.qVER().strip()))
+                logging.info(
+                    "version info: {}".format(self.pidevice.qVER().strip())
+                )
         except Exception as exc:
             logging.critical("caught exception", exc_info=exc)
-            print("PI device not initilized.")
+            logging.info("PI device not initilized.")
 
     def move(self, target_pos):
         # pidevice.StopAll()
@@ -92,7 +94,9 @@ class PIMotor:
         time.sleep(0.3)
         positions = self.pidevice.qPOS(self.pidevice.axes)
         for axis in self.pidevice.axes:
-            print("position of axis {} = {:.5f}".format(axis, positions[axis]))
+            logging.info(
+                "position of axis {} = {:.5f}".format(axis, positions[axis])
+            )
 
     def GetCurrentPos(self):
         # positions is a dictionary with key being axis name, here '1'.
@@ -115,5 +119,5 @@ if __name__ == "__main__":
     # pi_device = pi.ConnectPIMotor
 
     # PIMotor.move(pi.pidevice, 3.455)
-    print(pi.GetCurrentPos())
+    logging.info(pi.GetCurrentPos())
     pi.CloseMotorConnection()

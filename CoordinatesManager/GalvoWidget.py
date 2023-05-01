@@ -7,6 +7,7 @@ Created on Tue Jul  7 14:38:53 2020
 """
 
 import importlib.resources
+import logging
 import sys
 
 import matplotlib.pyplot as plt
@@ -198,9 +199,9 @@ class GalvoWidget(QWidget):
             transform = np.loadtxt(path.as_posix())
 
         self.transform = np.reshape(transform, (transform.shape[1], -1, 2))
-        print("Transform for galvos loaded:")
-        print(self.transform[:, :, 0])
-        print(self.transform[:, :, 1])
+        logging.info("Transform for galvos loaded:")
+        logging.info(self.transform[:, :, 0])
+        logging.info(self.transform[:, :, 1])
 
 
 if __name__ == "__main__":

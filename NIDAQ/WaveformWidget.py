@@ -862,7 +862,7 @@ class WaveformGenerator(QWidget):
 
         # Automatically switch to galvo settings
         if self.current_Analog_channel.currentIndex() == 0:
-            print(1112132)
+            logging.info(1112132)
             self.wavetabs.setCurrentIndex(2)
 
     # %%
@@ -923,7 +923,7 @@ class WaveformGenerator(QWidget):
                     self.uiDaq_sample_rate = 50000
 
             if self.uiDaq_sample_rate != int(self.SamplingRateTextbox.value()):
-                print("ERROR: Sampling rates is different!")
+                logging.info("ERROR: Sampling rates is different!")
 
             self.PlotDataItem_dict = {}
             self.waveform_data_dict = {}
@@ -939,7 +939,7 @@ class WaveformGenerator(QWidget):
                 )
         except Exception as exc:
             logging.critical("caught exception", exc_info=exc)
-            print("File not valid.")
+            logging.info("File not valid.")
 
     # %%
     def setAppendModeFlag(self):
@@ -1108,10 +1108,10 @@ class WaveformGenerator(QWidget):
         # Add extra 4 samples of one camera trigger or not
         if self.switchExtraTrigger.isChecked():
             self.Adding_extra_camera_trigger_flag = False
-            print("Don't add one extra camera trigger.")
+            logging.info("Don't add one extra camera trigger.")
         else:
             self.Adding_extra_camera_trigger_flag = True
-            print("Add one extra camera trigger.")
+            logging.info("Add one extra camera trigger.")
 
     def setAutoPadding(self):
         # Add 0 at the start and the end of waveforms to reset channels.
@@ -1119,10 +1119,10 @@ class WaveformGenerator(QWidget):
         # Over command extra camera trigger.
         if self.switchAutoPadding.isChecked():
             self.Auto_padding_flag = False
-            print("Don't pad 0 to reset channels.")
+            logging.info("Don't pad 0 to reset channels.")
         else:
             self.Auto_padding_flag = True
-            print("Pad 0 to reset channels.")
+            logging.info("Pad 0 to reset channels.")
 
     # %%
     def generate_contour_for_waveform(self):
@@ -1720,7 +1720,7 @@ class WaveformGenerator(QWidget):
         # Camera trigger, which adds one extra trigger to solve the missing
         # trigger in the beginning issue.
         if self.Auto_padding_flag is True:
-            print("Auto-padding to reset channels.")
+            logging.info("Auto-padding to reset channels.")
 
             self.padding_number = 115
 
@@ -1952,7 +1952,7 @@ class WaveformGenerator(QWidget):
 
                     # print(self.waveform_data_dict[waveform_key])
         else:
-            print("No Auto-padding to reset channels.")
+            logging.info("No Auto-padding to reset channels.")
 
         if ReferenceWaveform_menu_text == "galvos":
             # in case of using galvos as reference wave
@@ -1974,10 +1974,10 @@ class WaveformGenerator(QWidget):
             else:
                 # No extra camera trigger, 1 each extra in the beginning and at the end
                 self.reference_length += 2
-            print(f"reference_length: {self.reference_length}")
+            logging.info(f"reference_length: {self.reference_length}")
         else:
             # Without auto padding, reference length is the same as original waveform.
-            print(f"reference_length: {self.reference_length}")
+            logging.info(f"reference_length: {self.reference_length}")
 
         # === Get all waveforms the same length. ===
 
@@ -2169,7 +2169,7 @@ class WaveformGenerator(QWidget):
                 waveform_key in self.AnalogChannelList
                 or "galvos" in waveform_key
             ):
-                print(len(self.waveform_data_dict[waveform_key]))
+                logging.info(len(self.waveform_data_dict[waveform_key]))
                 self.analog_array[analog_line_num] = np.array(
                     [(self.waveform_data_dict[waveform_key], waveform_key)],
                     dtype=dataType_analog,
@@ -2182,7 +2182,9 @@ class WaveformGenerator(QWidget):
                     dtype=dataType_digital,
                 )
                 digital_line_num += 1
-        print("Writing channels: {}".format(self.waveform_data_dict.keys()))
+        logging.info(
+            "Writing channels: {}".format(self.waveform_data_dict.keys())
+        )
 
         # === Saving configed waveforms ===
         if self.checkbox_saveWaveforms.isChecked():
@@ -2218,7 +2220,7 @@ class WaveformGenerator(QWidget):
         if self.ReadChanIpTextbox.isChecked():
             self.readinchan.append("Ip")
 
-        print("Recording channels: {}".format(self.readinchan))
+        logging.info("Recording channels: {}".format(self.readinchan))
 
         self.GeneratedWaveformPackage = (
             int(self.SamplingRateTextbox.value()),
@@ -2290,7 +2292,7 @@ class WaveformGenerator(QWidget):
             )
             move_emission_filter_thread.start()
             move_emission_filter_thread.join()
-            print("Emission filter moved to Arch.")
+            logging.info("Emission filter moved to Arch.")
             time.sleep(0.7)
         elif self.FilterButtongroup.checkedId() == -3:
             # Arch filter selected.
@@ -2299,7 +2301,7 @@ class WaveformGenerator(QWidget):
             )
             move_emission_filter_thread.start()
             move_emission_filter_thread.join()
-            print("Emission filter moved to GFP/Citrine.")
+            logging.info("Emission filter moved to GFP/Citrine.")
             time.sleep(0.7)
 
         run_DAQ_Waveforms_thread = threading.Thread(

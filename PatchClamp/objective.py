@@ -6,6 +6,7 @@ Created on Thu Dec  9 10:18:47 2021
 """
 
 import importlib.resources
+import logging
 
 from pipython import GCSDevice, pitools
 
@@ -51,7 +52,9 @@ class PIMotor:
         # below this line is not really necessary
         positions = self.objective.qPOS(self.objective.axes)
         for axis in self.objective.axes:
-            print("position of axis {} = {:.5f}".format(axis, positions[axis]))
+            logging.info(
+                "position of axis {} = {:.5f}".format(axis, positions[axis])
+            )
 
     def getPos(self):
         """

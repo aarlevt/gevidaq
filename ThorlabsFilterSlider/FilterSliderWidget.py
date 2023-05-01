@@ -6,6 +6,7 @@ Created on Wed Mar  4 13:54:35 2020
 """
 
 
+import logging
 import sys
 import threading
 
@@ -184,7 +185,7 @@ class FilterSliderWidgetUI(QtWidgets.QWidget):
 
     def update_slider_current_pos(self, current_pos):
         # .setValue(current_pos)
-        print("Slider current position: {}".format(current_pos))
+        logging.info("Slider current position: {}".format(current_pos))
 
 
 if __name__ == "__main__":

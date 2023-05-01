@@ -9,6 +9,7 @@ READIN TASK HAS TO START AHEAD OF READ MANY SAMPLES, OTHERWISE ITS NOT in SYN!!!
 """
 # The adaptive NI DAQ tool
 
+import logging
 import os
 from datetime import datetime
 
@@ -225,7 +226,7 @@ class DAQmission(
         if self.Only_Digital_signals is False:
             self.Waveforms_length = len(analog_signals["Waveform"][0])
             num_rows, num_cols = analog_signals["Waveform"].shape
-            print(f"row number of analog signals:  {num_rows}")
+            logging.info(f"row number of analog signals:  {num_rows}")
         elif self.Only_Digital_signals is True:
             self.Waveforms_length = len(digital_signals["Waveform"][0])
 
@@ -592,7 +593,9 @@ class DAQmission(
                         Digital_samples_to_write, timeout=605.0
                     )
 
-                print("^^^^^^^^^^^^^^^^^^Daq tasks start^^^^^^^^^^^^^^^^^^")
+                logging.info(
+                    "^^^^^^^^^^^^^^^^^^Daq tasks start^^^^^^^^^^^^^^^^^^"
+                )
                 if Dev2_analog_channel_number != 0:
                     slave_Task_1_analog_dev2.start()
                 slave_Task_1_analog_dev1.start()
@@ -626,7 +629,9 @@ class DAQmission(
                 if self.has_recording_channel is True:
                     self.collected_data.emit(self.Dataholder)
                 self.finishSignal.emit()
-                print("^^^^^^^^^^^^^^^^^^Daq tasks finish^^^^^^^^^^^^^^^^^^")
+                logging.info(
+                    "^^^^^^^^^^^^^^^^^^Daq tasks finish^^^^^^^^^^^^^^^^^^"
+                )
 
             # set the keys of galvos back for next round
             if Analog_channel_number != 0:
@@ -847,7 +852,9 @@ class DAQmission(
                         Digital_samples_to_write, timeout=605.0
                     )
 
-                print("^^^^^^^^^^^^^^^^^^Daq tasks start^^^^^^^^^^^^^^^^^^")
+                logging.info(
+                    "^^^^^^^^^^^^^^^^^^Daq tasks start^^^^^^^^^^^^^^^^^^"
+                )
                 if Dev2_analog_channel_number != 0:
                     slave_Task_1_analog_dev2.start()
 
@@ -878,7 +885,9 @@ class DAQmission(
                 if self.has_recording_channel is True:
                     self.collected_data.emit(self.Dataholder)
                 self.finishSignal.emit()
-                print("^^^^^^^^^^^^^^^^^^Daq tasks finish^^^^^^^^^^^^^^^^^^")
+                logging.info(
+                    "^^^^^^^^^^^^^^^^^^Daq tasks finish^^^^^^^^^^^^^^^^^^"
+                )
 
             # set the keys of galvos back for next round
             if Analog_channel_number != 0:
@@ -927,7 +936,9 @@ class DAQmission(
                 DigitalWriter.auto_start = False
 
                 # === Begin to execute in DAQ ===
-                print("^^^^^^^^^^^^^^^^^^Daq tasks start^^^^^^^^^^^^^^^^^^")
+                logging.info(
+                    "^^^^^^^^^^^^^^^^^^Daq tasks start^^^^^^^^^^^^^^^^^^"
+                )
                 DigitalWriter.write_many_sample_port_uint32(
                     Digital_samples_to_write, timeout=605.0
                 )
@@ -937,7 +948,9 @@ class DAQmission(
                 slave_Task_2_digitallines.wait_until_done(timeout=605.0)
 
                 slave_Task_2_digitallines.stop()
-                print("^^^^^^^^^^^^^^^^^^Daq tasks finish^^^^^^^^^^^^^^^^^^")
+                logging.info(
+                    "^^^^^^^^^^^^^^^^^^Daq tasks finish^^^^^^^^^^^^^^^^^^"
+                )
 
     def get_raw_data(self):
         return self.Dataholder

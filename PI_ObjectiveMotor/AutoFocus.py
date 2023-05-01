@@ -9,6 +9,7 @@ Created on Tue Aug 18 13:54:51 2020
 # --1. Find local minima range. (one direction until value getting smaller)
 # --2. Bisection to find the optimal.
 
+import logging
 import os
 import time
 
@@ -116,14 +117,14 @@ class FocusFinder:
             # Go through each position and write down the focus degree.
             degree_of_focus = self.evaluate_focus(round(each_pos, 6))
             degree_of_focus_list.append(degree_of_focus)
-        print(degree_of_focus_list)
+        logging.info(degree_of_focus_list)
 
-        print("Fitting failed. Find max in the list.")
+        logging.info("Fitting failed. Find max in the list.")
 
         max_focus_pos = sample_positions[
             degree_of_focus_list.index(max(degree_of_focus_list))
         ]
-        print(max_focus_pos)
+        logging.info(max_focus_pos)
 
         if move_to_focus is True:
             self.pi_device_instance.move(max_focus_pos)
@@ -152,7 +153,7 @@ class FocusFinder:
                 # Get degree of focus in the mid.
                 mid_position = (upper_position + lower_position) / 2
                 degree_of_focus_mid = self.evaluate_focus(mid_position)
-                print(
+                logging.info(
                     "mid focus degree: {}".format(
                         round(degree_of_focus_mid, 5)
                     )
@@ -163,7 +164,7 @@ class FocusFinder:
                 if not ProcessImage.if_theres_cell(
                     self.galvo_image.astype("float32")
                 ):
-                    print("no cell")
+                    logging.info("no cell")
                     mid_position = False
                     break
 
@@ -171,14 +172,14 @@ class FocusFinder:
                 degree_of_focus_up = self.evaluate_focus(
                     obj_position=upper_position
                 )
-                print(
+                logging.info(
                     "top focus degree: {}".format(round(degree_of_focus_up, 5))
                 )
                 # Move to bottom and evaluate.
                 degree_of_focus_low = self.evaluate_focus(
                     obj_position=lower_position
                 )
-                print(
+                logging.info(
                     "bot focus degree: {}".format(
                         round(degree_of_focus_low, 5)
                     )
@@ -200,7 +201,7 @@ class FocusFinder:
                 mid_position = (upper_position + lower_position) / 2
                 degree_of_focus_mid = self.evaluate_focus(mid_position)
 
-                print(
+                logging.info(
                     "Current focus degree: {}".format(
                         round(degree_of_focus_mid, 5)
                     )
@@ -218,7 +219,7 @@ class FocusFinder:
                     degree_of_focus_mid,
                 ]
 
-            print(
+            logging.info(
                 "The upper pos: {}; The lower: {}".format(
                     biesection_range_dic["top"][0],
                     biesection_range_dic["bot"][0],

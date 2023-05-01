@@ -67,16 +67,18 @@ class ScanningExecutionThread(QThread):
         """
         # connect the Objective motor
         """
-        print(
+        logging.info(
             "----------------------Starting to connect the Objective motor-------------------------"
         )
         self.pi_device_instance = PIMotor()
-        print("Objective motor connected.")
+        logging.info("Objective motor connected.")
         self.errornum = 0
         self.init_focus_position = self.pi_device_instance.pidevice.qPOS(
             self.pi_device_instance.pidevice.axes
         )["1"]
-        print("init_focus_position : {}".format(self.init_focus_position))
+        logging.info(
+            "init_focus_position : {}".format(self.init_focus_position)
+        )
 
         """
         # connect the Hmamatsu camera
@@ -98,12 +100,12 @@ class ScanningExecutionThread(QThread):
                             self._use_camera = True
 
         if self._use_camera:
-            print("Connecting camera...")
+            logging.info("Connecting camera...")
             self.HamamatsuCam = CamActuator()
             self.HamamatsuCam.initializeCamera()
         else:
             self.HamamatsuCam = None
-            print("No camera involved.")
+            logging.info("No camera involved.")
 
         """
         # connect the Insight X3
@@ -124,7 +126,7 @@ class ScanningExecutionThread(QThread):
                 time.sleep(0.5)
             except Exception as exc:
                 logging.critical("caught exception", exc_info=exc)
-                print("Laser not connected.")
+                logging.info("Laser not connected.")
 
             # If turn on the laser shutter in the beginning
             if "Shutter_Open" in self.GeneralSettingDict["StartUpEvents"]:
@@ -151,7 +153,7 @@ class ScanningExecutionThread(QThread):
             from ImageAnalysis.ImageProcessing_MaskRCNN import ProcessImageML
 
             self.Predictor = ProcessImageML()
-            print("ML loaded.")
+            logging.info("ML loaded.")
 
         # %%
         """~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -176,10 +178,10 @@ class ScanningExecutionThread(QThread):
                 """
                 # :::::::::::::::::::::::::::::::: AT EACH ROUND ::::::::::::::::::::::::::::::::
                 """
-                print(
+                logging.info(
                     "----------------------------------------------------------------------------"
                 )
-                print(
+                logging.info(
                     "Below is Grid {}, Round {}.".format(
                         EachGrid, EachRound + 1
                     )
@@ -276,7 +278,7 @@ class ScanningExecutionThread(QThread):
                                 row_Position,
                                 col_Position,
                             ) = self.ludlStage.getPos()
-                            print(
+                            logging.info(
                                 "=== Get pos: {},{} ===".format(
                                     row_Position, col_Position
                                 )
@@ -291,12 +293,12 @@ class ScanningExecutionThread(QThread):
                             trial_number += 1
 
                             if trial_number >= 2:
-                                print("Move failed")
+                                logging.info("Move failed")
                                 self.error_massage = "Fail_MoveStage"
                                 self.errornum += 1
                                 break
 
-                        print(
+                        logging.info(
                             "==================Stage move to {}==================".format(
                                 [RowIndex, ColumnIndex]
                             )
@@ -307,7 +309,7 @@ class ScanningExecutionThread(QThread):
                         logging.critical("caught exception", exc_info=exc)
                         self.error_massage = "Fail_MoveStage"
                         self.errornum += 1
-                        print(
+                        logging.info(
                             "Stage move failed! Error number: {}".format(
                                 int(self.errornum)
                             )
@@ -326,7 +328,7 @@ class ScanningExecutionThread(QThread):
 
                     self.stack_focus_degree_list = []
 
-                    print(
+                    logging.info(
                         "*******************************************Round {}. Current index: {}.**************************************************".format(
                             EachRound + 1, [RowIndex, ColumnIndex]
                         )
@@ -337,7 +339,7 @@ class ScanningExecutionThread(QThread):
                         """
                         # :::::::::::::::::::::::::::::::: AT EACH ZSTACK ::::::::::::::::::::::::::::::::::::
                         """
-                        print(
+                        logging.info(
                             "--------------------------------------------Stack {}--------------------------------------------------".format(
                                 EachZStackPos + 1
                             )
@@ -365,7 +367,7 @@ class ScanningExecutionThread(QThread):
                                     )
                                     # FocusDegree_img_reconstructed is not generated with camera imaging.
                                     pass
-                            print(
+                            logging.info(
                                 "stack_focus_degree_list is {}".format(
                                     self.stack_focus_degree_list
                                 )
@@ -387,13 +389,15 @@ class ScanningExecutionThread(QThread):
                                         )
                                         / 2
                                     )
-                                    print(
+                                    logging.info(
                                         "Focus degree decreasing, run the other direction."
                                     )
 
                                     self.focus_degree_decreasing = True
 
-                            print("Target focus pos: {}".format(self.FocusPos))
+                            logging.info(
+                                "Target focus pos: {}".format(self.FocusPos)
+                            )
 
                             self.pi_device_instance.move(self.FocusPos)
                             # self.auto_focus_positionInStack = self.pi_device_instance.pidevice.qPOS(self.pi_device_instance.pidevice.axes)
@@ -444,32 +448,38 @@ class ScanningExecutionThread(QThread):
                                 )
 
                                 ROI_number = len(MLresults["scores"])
-                                print("roi number: {}".format(ROI_number))
+                                logging.info(
+                                    "roi number: {}".format(ROI_number)
+                                )
                                 for each_ROI in range(ROI_number):
                                     ROIlist = MLresults["rois"][each_ROI]
-                                    print(ROIlist)
+                                    logging.info(ROIlist)
                                     # np array's column([1]) is the width of image, and is the row in stage coordinates.
                                     ROI_center_width = int(
                                         ROIlist[1]
                                         + (ROIlist[3] - ROIlist[1]) / 2
                                     )
-                                    print("ROI_center_width ".format(ROIlist))
+                                    logging.info(
+                                        "ROI_center_width ".format(ROIlist)
+                                    )
                                     ROI_center_height = int(
                                         ROIlist[0]
                                         + (ROIlist[2] + ROIlist[0]) / 2
                                     )
-                                    print("ROI_center_height ".format(ROIlist))
+                                    logging.info(
+                                        "ROI_center_height ".format(ROIlist)
+                                    )
                                     cam_stage_transform_factor = 1.135
 
                                     stage_move_col = (
                                         int((img_width) / 2) - ROI_center_width
                                     ) * cam_stage_transform_factor
-                                    print(stage_move_col)
+                                    logging.info(stage_move_col)
                                     stage_move_row = (
                                         int((img_height) / 2)
                                         - ROI_center_height
                                     ) * cam_stage_transform_factor
-                                    print(stage_move_row)
+                                    logging.info(stage_move_row)
                                     # Move cell of interest to the center of field of view
                                     self.ludlStage.moveRel(
                                         xRel=stage_move_row,
@@ -495,7 +505,7 @@ class ScanningExecutionThread(QThread):
                         time.sleep(0.6)  # Wait for receiving data to be done.
                     time.sleep(0.5)
 
-                    print(
+                    logging.info(
                         "*************************************************************************************************************************"
                     )
 
@@ -527,11 +537,11 @@ class ScanningExecutionThread(QThread):
         # Disconnect focus motor
         try:
             self.pi_device_instance.CloseMotorConnection()
-            print("Objective motor disconnected.")
+            logging.info("Objective motor disconnected.")
         except Exception as exc:
             logging.critical("caught exception", exc_info=exc)
 
-        print("Error number: {}".format(self.errornum))
+        logging.info("Error number: {}".format(self.errornum))
 
     # %%
     def laser_init(self, EachRound):
@@ -554,7 +564,7 @@ class ScanningExecutionThread(QThread):
         ]
 
         if len(InsightX3EventIndexList) == 1:
-            print(InsightX3EventIndexList)
+            logging.info(InsightX3EventIndexList)
             InsightText = self.RoundQueueDict["InsightEvents"][
                 InsightX3EventIndexList[0]
             ]
@@ -565,7 +575,7 @@ class ScanningExecutionThread(QThread):
                 self.Laserinstance.Open_TunableBeamShutter()
 
                 time.sleep(0.5)
-                print("Laser shutter open.")
+                logging.info("Laser shutter open.")
                 self.watchdog_flag = True
                 time.sleep(0.5)
 
@@ -576,7 +586,7 @@ class ScanningExecutionThread(QThread):
                 self.Laserinstance.Close_TunableBeamShutter()
 
                 time.sleep(0.5)
-                print("Laser shutter closed.")
+                logging.info("Laser shutter closed.")
                 self.watchdog_flag = True
                 time.sleep(0.5)
             elif "WavelengthTo" in InsightText:
@@ -634,7 +644,7 @@ class ScanningExecutionThread(QThread):
 
                 self.Laserinstance.Open_TunableBeamShutter()
 
-                print("Laser shutter open.")
+                logging.info("Laser shutter open.")
                 self.watchdog_flag = True
                 time.sleep(0.5)
 
@@ -664,7 +674,7 @@ class ScanningExecutionThread(QThread):
                 self.Laserinstance.Close_TunableBeamShutter()
 
                 time.sleep(1)
-                print("Laser shutter closed.")
+                logging.info("Laser shutter closed.")
                 self.watchdog_flag = True
                 time.sleep(0.5)
 
@@ -819,7 +829,7 @@ class ScanningExecutionThread(QThread):
             # If go for auto-focus at this coordinate
             auto_focus_flag = self.coord_array["auto_focus_flag"]
             # auto_focus_flag = False
-            print(
+            logging.info(
                 "focus_position {}".format(self.coord_array["focus_position"])
             )
 
@@ -836,7 +846,9 @@ class ScanningExecutionThread(QThread):
                         motor_handle=self.pi_device_instance,
                         camera_handle=self.HamamatsuCam,
                     )
-                    print("--------------Start auto-focusing-----------------")
+                    logging.info(
+                        "--------------Start auto-focusing-----------------"
+                    )
                     if self.HamamatsuCam is not None:
                         # For camera AF
                         self.auto_focus_position = (
@@ -854,14 +866,14 @@ class ScanningExecutionThread(QThread):
                         self.auto_focus_position == False
                     ):  # If there's no cell in FOV
                         if trial_num <= 2:
-                            print("No cells found. move to next pos.")
+                            logging.info("No cells found. move to next pos.")
                             # Move to next position in real scanning coordinates.
                             self.ludlStage.moveRel(
                                 relative_move_coords[trial_num][0],
                                 relative_move_coords[trial_num][1],
                             )
                             time.sleep(1)
-                            print(
+                            logging.info(
                                 "Now stage pos is {}".format(
                                     self.ludlStage.getPos()
                                 )
@@ -885,13 +897,15 @@ class ScanningExecutionThread(QThread):
 
                             trial_num += 1
                         else:
-                            print("No cells in neighbouring area.")
+                            logging.info("No cells in neighbouring area.")
                             self.auto_focus_position = self.ZStackPosList[
                                 int(len(self.ZStackPosList) / 2)
                             ]
                             break
 
-                    print("--------------End of auto-focusing----------------")
+                    logging.info(
+                        "--------------End of auto-focusing----------------"
+                    )
                     time.sleep(1)
 
                     # Record the position, try to write it in the NEXT round dict.
@@ -914,7 +928,7 @@ class ScanningExecutionThread(QThread):
                                 coordinate[
                                     "focus_position"
                                 ] = self.auto_focus_position
-                                print(
+                                logging.info(
                                     "Write founded focus position to next round coord: {}.".format(
                                         coordinate
                                     )
@@ -940,7 +954,7 @@ class ScanningExecutionThread(QThread):
                     self.previous_auto_focus_position = self.RoundCoordsDict[
                         "CoordsPackage_{}".format(EachRound + 1)
                     ][EachCoord]["focus_position"]
-                    print(
+                    logging.info(
                         "Previous_auto_focus_position found: {}".format(
                             self.previous_auto_focus_position
                         )
@@ -961,13 +975,13 @@ class ScanningExecutionThread(QThread):
                 self.ZStackPosList = np.linspace(
                     ZStacklinspaceStart, ZStacklinspaceEnd, num=ZStackNum
                 )
-                print("ZStackPos is : {}".format(self.ZStackPosList))
+                logging.info("ZStackPos is : {}".format(self.ZStackPosList))
             # If not auto focus, use the same list variable self.ZStackPosList.
             elif auto_focus_flag == "no":
                 pass
             # If it's auto-focus round, skip next waveforms.
             elif auto_focus_flag == "pure AF":
-                print("--------------Finding focus-----------------")
+                logging.info("--------------Finding focus-----------------")
 
                 instance_FocusFinder = FocusFinder(
                     source_of_image=AutoFocusConfig["source_of_image"],
@@ -977,7 +991,9 @@ class ScanningExecutionThread(QThread):
                     motor_handle=self.pi_device_instance,
                     camera_handle=self.HamamatsuCam,
                 )
-                print("--------------Start auto-focusing-----------------")
+                logging.info(
+                    "--------------Start auto-focusing-----------------"
+                )
                 if self.HamamatsuCam is not None:
                     # For camera AF
                     self.auto_focus_position = (
@@ -993,14 +1009,14 @@ class ScanningExecutionThread(QThread):
                     self.auto_focus_position == False
                 ):  # If there's no cell in FOV
                     if trial_num <= 2:
-                        print("No cells found. move to next pos.")
+                        logging.info("No cells found. move to next pos.")
                         # Move to next position in real scanning coordinates.
                         self.ludlStage.moveRel(
                             relative_move_coords[trial_num][0],
                             relative_move_coords[trial_num][1],
                         )
                         time.sleep(1)
-                        print(
+                        logging.info(
                             "Now stage pos is {}".format(
                                 self.ludlStage.getPos()
                             )
@@ -1025,7 +1041,7 @@ class ScanningExecutionThread(QThread):
 
                         trial_num += 1
                     else:
-                        print(
+                        logging.info(
                             "No cells in neighbouring area. Write init_focus_position."
                         )
                         try:
@@ -1037,7 +1053,9 @@ class ScanningExecutionThread(QThread):
                             self.auto_focus_position = self.init_focus_position
                         break
 
-                print("--------------End of auto-focusing----------------")
+                logging.info(
+                    "--------------End of auto-focusing----------------"
+                )
                 time.sleep(1)
 
                 # Record the position, try to write it in the NEXT round dict.
@@ -1061,7 +1079,7 @@ class ScanningExecutionThread(QThread):
                                 "focus_position"
                             ] = self.auto_focus_position
 
-                            print(
+                            logging.info(
                                 "Write founded focus position to next round coord: {}.".format(
                                     coordinate
                                 )
@@ -1153,7 +1171,7 @@ class ScanningExecutionThread(QThread):
             # print('Waiting for camera...')
             # time.sleep(0.5)
             time.sleep(1)
-        print("Now start waveforms")
+        logging.info("Now start waveforms")
         # === Waveforms operations ===
         if (
             WaveformPackageGalvoInfor != "NoGalvo"
@@ -1193,7 +1211,7 @@ class ScanningExecutionThread(QThread):
             self.HamamatsuCam.StopStreaming(saving_dir=self.cam_tif_name)
             # Make sure that the saving process is finished.
             while self.HamamatsuCam.isSaving is True:
-                print("Camera saving...")
+                logging.info("Camera saving...")
                 time.sleep(0.5)
             time.sleep(1)
 
@@ -1206,7 +1224,7 @@ class ScanningExecutionThread(QThread):
             self.recorded_raw_data[0][0 : len(self.recorded_raw_data[0]) - 1]
             * -1
         )
-        print(len(self.data_collected_0))
+        logging.info(len(self.data_collected_0))
 
         if self.channel_number == 1:
             if "Vp" in self.readinchan:
@@ -1225,7 +1243,7 @@ class ScanningExecutionThread(QThread):
             elif "PMT" in self.readinchan:
                 self.PMT_image_processing()
 
-        print("ProcessData executed.")
+        logging.info("ProcessData executed.")
 
     def PMT_image_processing(self):
         """
@@ -1282,7 +1300,7 @@ class ScanningExecutionThread(QThread):
                         self.PMT_image_reconstructed.astype("float32")
                     )
                 )
-                print(
+                logging.info(
                     "FocusDegree_img_reconstructed is {}".format(
                         self.FocusDegree_img_reconstructed
                     )
@@ -1406,7 +1424,9 @@ class ScanningExecutionThread(QThread):
 
             except Exception as exc:
                 logging.critical("caught exception", exc_info=exc)
-                print("No.{} image failed to generate.".format(imageSequence))
+                logging.info(
+                    "No.{} image failed to generate.".format(imageSequence)
+                )
 
     def generate_tif_name(self, extra_text="_"):
         tif_name = os.path.join(
@@ -1431,7 +1451,7 @@ class ScanningExecutionThread(QThread):
                 self.Status_list = self.Laserinstance.QueryStatus()
                 time.sleep(querygap)
             else:
-                print("Watchdog stopped")
+                logging.info("Watchdog stopped")
                 time.sleep(querygap)
 
 
@@ -1454,4 +1474,4 @@ if __name__ == "__main__":
         return tif_name
 
     name = generate_tif_name(extra_text="img_text")
-    print(name)
+    logging.info(name)

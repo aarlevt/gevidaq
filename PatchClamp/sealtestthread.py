@@ -7,6 +7,8 @@ Created on Mon Sep 27 15:48:59 2021
 """
 
 
+import logging
+
 import nidaqmx
 import numpy as np
 from nidaqmx.stream_readers import AnalogMultiChannelReader
@@ -66,7 +68,7 @@ class SealTestThread(QThread):
     @mode.setter
     def mode(self, mode):
         self._mode = mode
-        print(f"Sealtestthread operation mode: {mode}")
+        logging.info(f"Sealtestthread operation mode: {mode}")
 
     def stop(self):
         self.isRunning = False
@@ -219,4 +221,4 @@ class SealTestThread(QThread):
             else:
                 pass
 
-            print("sealtest thread stopped")
+            logging.info("sealtest thread stopped")

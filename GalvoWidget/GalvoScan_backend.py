@@ -5,6 +5,7 @@ Created on Wed Aug 19 11:35:22 2020
 @author: xinmeng
 """
 
+import logging
 import os
 import time
 
@@ -249,7 +250,7 @@ class PMT_zscan:
         self.z_stack_positions = np.linspace(
             z_depth_start, z_depth_end, self.total_step_number
         )
-        print(self.z_stack_positions)
+        logging.info(self.z_stack_positions)
         # Parameters for imaging.
         self.RasterScanins = RasterScan(
             imaging_conditions["Daq_sample_rate"],

@@ -6,6 +6,7 @@ Created on Fri Sep 25 15:14:54 2020
 """
 
 import ctypes
+import logging
 import time
 
 
@@ -55,7 +56,7 @@ class KCube:
 
     def Home(self):
         # Home device
-        print("Homing Device")
+        logging.info("Homing Device")
         homeStartTime = time.time()
         self.lib.BMC_Home(self.serialNumber)
 
@@ -90,7 +91,7 @@ class KCube:
         )
 
         # Send move command
-        print("Moving Device")
+        logging.info("Moving Device")
 
         moveStartTime = time.time()
         self.lib.BMC_MoveToPosition(self.serialNumber, deviceUnit)
@@ -118,7 +119,7 @@ class KCube:
 
         self.lib.BMC_Close(self.serialNumber)
 
-        print("K-cube connection closed.")
+        logging.info("K-cube connection closed.")
 
 
 if __name__ == "__main__":

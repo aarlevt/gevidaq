@@ -46,14 +46,14 @@ class LudlStage:
                     except Exception as exc:
                         logging.critical("caught exception", exc_info=exc)
                         failnumber += 1
-                        print(
+                        logging.info(
                             "Stage move failed, failnumber: {}".format(
                                 failnumber
                             )
                         )
                         time.sleep(0.2)
                 else:
-                    print("Fail for 8 times, give up - -")
+                    logging.info("Fail for 8 times, give up - -")
                     success = False
 
             return returnValue
@@ -227,7 +227,7 @@ if __name__ == "__main__":
 
     step = 1500
     for i in range(10):  # Repeat twice
-        print("start moving..")
+        logging.info("start moving..")
         ludlStage.moveAbs(i * step, i * step)
 
         time.sleep(1)

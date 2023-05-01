@@ -1101,11 +1101,11 @@ class ProcessImage:
                     if AccelerationGalvo < np.amax(
                         abs(contour_x_acceleration)
                     ):
-                        print(np.amax(abs(contour_x_acceleration)))
+                        logging.info(np.amax(abs(contour_x_acceleration)))
                     if AccelerationGalvo < np.amax(
                         abs(contour_y_acceleration)
                     ):
-                        print(np.amax(abs(contour_y_acceleration)))
+                        logging.info(np.amax(abs(contour_y_acceleration)))
 
                     X_interpolated = np.around(X_interpolated, decimals=3)
                     Y_interpolated = np.around(Y_interpolated, decimals=3)
@@ -1217,9 +1217,9 @@ class ProcessImage:
                     break
 
             if time.time() > timeout + 2:
-                print("timeout")
+                logging.info("timeout")
                 break
-        print(coordstorage)
+        logging.info(coordstorage)
         cclockwiselist.reverse()
         result = clockwiselist + cclockwiselist
 
@@ -1332,13 +1332,13 @@ class ProcessImage:
             )
 
             if AccelerationGalvo < np.amax(abs(contour_x_acceleration)):
-                print(
+                logging.info(
                     "Danger! Xmax: {}".format(
                         np.amax(abs(contour_x_acceleration))
                     )
                 )
             if AccelerationGalvo < np.amax(abs(contour_y_acceleration)):
-                print(
+                logging.info(
                     "Danger! Ymax: {}".format(
                         np.amax(abs(contour_y_acceleration))
                     )
@@ -1366,7 +1366,7 @@ class ProcessImage:
                 [(Y_interpolated, "galvos_Y_contour")], dtype=tp_analog
             )
         else:
-            print("Error: no contour found")
+            logging.info("Error: no contour found")
             return
 
         return ContourArray_forDaq
@@ -1657,7 +1657,7 @@ class ProcessImage:
                 list_of_rois_transformed.append(vertices_transformed)
             else:
                 list_of_rois_transformed.append(vertices_assemble)
-                print("Warning: not registered")
+                logging.info("Warning: not registered")
 
             mask_transformed[
                 laser
@@ -1667,7 +1667,7 @@ class ProcessImage:
                 contour_thickness=contour_thickness,
                 invert_mask=flag_invert_mode,
             )
-            print(mask_transformed[laser].shape)
+            logging.info(mask_transformed[laser].shape)
 
         return mask_transformed
 
@@ -1723,8 +1723,8 @@ class ProcessImage:
                 flag_invert_mode=False,
                 mask_resolution=(1024, 768),
             )
-            print(mask_transformed_final.shape)
-            print(mask_transformed[laser].shape)
+            logging.info(mask_transformed_final.shape)
+            logging.info(mask_transformed[laser].shape)
             mask_transformed_final += mask_transformed[laser]
 
         return mask_transformed_final
@@ -1771,7 +1771,7 @@ class ProcessImage:
 
             Qx = np.hstack((Qx, np.zeros(2 * order)))
         else:
-            print("Function takes only one point at a time")
+            logging.info("Function takes only one point at a time")
             return
 
         return np.vstack((Qx, Qy))
@@ -1946,27 +1946,27 @@ class ProcessImage:
 
                 if False:
                     # print("Membrane pixel number: {}".format(len(np.where(cell_contour_mask_dilated == 1)[0])))
-                    print(
+                    logging.info(
                         "Confidence score: {}".format(
                             MLresults["scores"][eachROI]
                         )
                     )
-                    print(
+                    logging.info(
                         "Cell pixel number: {}".format(
                             len(np.where(CellMask_roi == 1)[0])
                         )
                     )
-                    print(
+                    logging.info(
                         "Mean pixel value of contour {}".format(
                             cell_contour_meanIntensity
                         )
                     )
-                    print(
+                    logging.info(
                         "Mean pixel value of whole cell area {}".format(
                             cell_area_meanIntensity
                         )
                     )
-                    print(
+                    logging.info(
                         " contour/soma intensity ratio {}".format(
                             cell_contourSoma_ratio
                         )
@@ -2317,7 +2317,7 @@ class ProcessImage:
             cell_Data_2 = cell_Data_2.add_suffix("_Lib")
             cell_merged_num = 0
 
-            print("Start linking cells...")
+            logging.info("Start linking cells...")
 
             # Assume that cell_Data_1 is the tag protein dataframe, for each of the cell bounding box,
             # find the one with the most intersection from library dataframe.
@@ -2494,9 +2494,9 @@ class ProcessImage:
                         cell_merged_num += 1
 
             end_time = time.time()
-            print("Register takes {}".format(end_time - start_time))
+            logging.info("Register takes {}".format(end_time - start_time))
             Cell_DataFrame_Merged = Cell_DataFrame_Merged.T
-            print("Cell_DataFrame_Merged.")
+            logging.info("Cell_DataFrame_Merged.")
 
         elif method == "Kcl":
             """
@@ -2510,7 +2510,7 @@ class ProcessImage:
             cell_Data_2 = cell_Data_2.add_suffix("_KC")
             cell_merged_num = 0
 
-            print("Start linking cells...")
+            logging.info("Start linking cells...")
             start_time = time.time()
 
             for index_Data_1, row_Data_1 in cell_Data_1.iterrows():
@@ -2761,9 +2761,9 @@ class ProcessImage:
                         cell_merged_num += 1
 
             end_time = time.time()
-            print("Register takes {}".format(end_time - start_time))
+            logging.info("Register takes {}".format(end_time - start_time))
             Cell_DataFrame_Merged = Cell_DataFrame_Merged.T
-            print("Cell_DataFrame_Merged.")
+            logging.info("Cell_DataFrame_Merged.")
 
         return Cell_DataFrame_Merged
 
@@ -3917,7 +3917,7 @@ class ProcessImage:
 
         if operation == "mean":
             output = np.mean(image_stack, axis=0).astype(np.uint16)
-            print(output.dtype)
+            logging.info(output.dtype)
         elif operation == "max projection":
             output = np.max(image_stack, axis=0).astype(np.uint16)
 
@@ -4049,7 +4049,7 @@ class ProcessImage:
             index_highest_focus_degree,
         ) = ProcessImage.find_infocus_from_list(img_stack, method)
 
-        print(fileNameList[index_highest_focus_degree])
+        logging.info(fileNameList[index_highest_focus_degree])
 
         if save_image is True:
             # Save the file.
@@ -4092,7 +4092,7 @@ class ProcessImage:
                     )
                 )
 
-        print(focus_degree_list)
+        logging.info(focus_degree_list)
 
         index_highest_focus_degree = focus_degree_list.index(
             max(focus_degree_list)
@@ -4304,7 +4304,9 @@ class ProcessImage:
                 - imageinfo_DataFrame.iloc[0]["Stage column index"]
             )
 
-        print("scanning_coord_step set to {}!".format(scanning_coord_step))
+        logging.info(
+            "scanning_coord_step set to {}!".format(scanning_coord_step)
+        )
 
         # Assume that col and row coordinates numbers are the same.
         max_coord_value = imageinfo_DataFrame["Stage column index"].max()
@@ -4598,8 +4600,12 @@ class ProcessImage:
         laser_off_phase_current = sum(laser_off_phase_current) / len(
             laser_off_phase_current
         )
-        print("laser_on_phase_current: {}".format(laser_on_phase_current))
-        print("laser_off_phase_current: {}".format(laser_off_phase_current))
+        logging.info(
+            "laser_on_phase_current: {}".format(laser_on_phase_current)
+        )
+        logging.info(
+            "laser_off_phase_current: {}".format(laser_off_phase_current)
+        )
 
         photo_current = round(
             laser_on_phase_current - laser_off_phase_current, 3
@@ -4806,7 +4812,7 @@ class ProcessImage:
 
             # Calculate the mean value
             column_mean_value = sum(data) / len(data)
-            print("Mean value: {}".format(column_mean_value))
+            logging.info("Mean value: {}".format(column_mean_value))
 
         column_names = list(excel_data_.columns)
 
@@ -4821,15 +4827,15 @@ class ProcessImage:
 
         # =========================== Perform T-test =================================
         for i in range(len(listed_facts)):
-            print(
+            logging.info(
                 "Fixed item for ttest in this round: {}".format(
                     listed_facts[i]
                 )
             )
             for j in range(len(listed_facts)):
-                print("The other item: {}".format(listed_facts[j]))
+                logging.info("The other item: {}".format(listed_facts[j]))
                 # perform two sample t-test with unequal variances
-                print(
+                logging.info(
                     stats.ttest_ind(
                         a=data_to_list[i], b=data_to_list[j], equal_var=True
                     )
@@ -5208,10 +5214,12 @@ class PatchAnalysis:
         )
         if self.missing_frame_number != 0:
             self.missing_frame_flag = True
-            print("missing_frame_number: {}".format(self.missing_frame_number))
+            logging.info(
+                "missing_frame_number: {}".format(self.missing_frame_number)
+            )
         else:
             self.missing_frame_flag = False
-            print("No frame number")
+            logging.info("No frame number")
 
         # Check if waveform length is multiple of desired_frame_number
         self.waveform_binning_factor = (
@@ -5221,7 +5229,7 @@ class PatchAnalysis:
         if self.waveform_binning_factor.is_integer():
             pass
         else:
-            print("DAQ_waveform length doesn't fit")
+            logging.info("DAQ_waveform length doesn't fit")
 
         # Calculate how many frames should be assigned to each voltage period
         self.frame_number_per_voltage_step = (
@@ -5233,7 +5241,7 @@ class PatchAnalysis:
                 self.frame_number_per_voltage_step
             )
         else:
-            print("Error: frame_number_per_voltage_step")
+            logging.info("Error: frame_number_per_voltage_step")
 
     def Photobleach(self):
         """
@@ -5854,7 +5862,7 @@ class PatchAnalysis:
             + "---------------------------------------------------"
         )
 
-        print(self.statistics_test)
+        logging.info(self.statistics_test)
         if self.main_directory is not None:
             with open(
                 os.path.join(
@@ -6197,7 +6205,7 @@ class CurveFit:
 
         # Retrieve the voltage step frequency.
         self.V_Hz = int(round((self.counter + 1) / 2) / self.total_time)
-        print("Voltage step frequency is {}.".format(self.V_Hz))
+        logging.info("Voltage step frequency is {}.".format(self.V_Hz))
 
         # Overwrite first value for correction
         self.time_difference[0] = abs(
@@ -6401,8 +6409,8 @@ class CurveFit:
         # were used in the downstream bi-exponential fitting.
         # Here we have 5hz step, so first half will be 50 ms in time.
         array_length = len(self.avg_time_upswing)
-        print("array_length{}".format(array_length))
-        print(round(array_length / 2))
+        logging.info("array_length{}".format(array_length))
+        logging.info(round(array_length / 2))
         self.avg_fluorescence_upswing_half = self.avg_fluorescence_upswing[
             : round(array_length / 2)
         ]
@@ -7048,7 +7056,7 @@ class CurveFit:
             + "\n"
         )
 
-        print(self.statistics_test)
+        logging.info(self.statistics_test)
         if self.main_directory is not None:
             with open(
                 os.path.join(
@@ -7102,7 +7110,7 @@ class CurveFit:
             self.intensity_ratio[self.skip :], ddof=1
         )
 
-        print(self.avg_intensity_ratio)
+        logging.info(self.avg_intensity_ratio)
         return self.avg_intensity_ratio, self.std_intensity_ratio
 
 
@@ -7170,11 +7178,11 @@ if __name__ == "__main__":
         )
         data_2 = pd.read_excel(data_2_xlsx)
 
-        print("Start Cell_DataFrame_Merging.")
+        logging.info("Start Cell_DataFrame_Merging.")
         Cell_DataFrame_Merged = ProcessImage.MergeDataFrames(
             data_1, data_2, method="Kcl"
         )
-        print("Cell_DataFrame_Merged.")
+        logging.info("Cell_DataFrame_Merged.")
 
         DataFrames_filtered = ProcessImage.FilterDataFrames(
             Cell_DataFrame_Merged, 0.2, 1

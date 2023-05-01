@@ -282,14 +282,14 @@ class DMDWidget(QWidget):
         Check the shape of each frame mask, max project to 2d if it's 3d.
         """
         if len(mask.shape) == 3:
-            print("Image is stack; using max projection")
+            logging.info("Image is stack; using max projection")
             mask = np.max(mask, axis=2)
 
         if mask.shape[0] == 1024 and mask.shape[1] == 768:
             mask = mask.transpose()
 
         elif mask.shape[0] != 768 or mask.shape[1] != 1024:
-            print("Image has wrong resolution; should be 1024x768")
+            logging.info("Image has wrong resolution; should be 1024x768")
             return False, None
 
         return True, mask
@@ -316,11 +316,11 @@ class DMDWidget(QWidget):
 
             if check:
                 self.DMD_actuator.send_data_to_DMD(image_gray)
-                print("Image loaded")
+                logging.info("Image loaded")
                 self.load_mask_container_stack.setCurrentIndex(0)
         except Exception as exc:
             logging.critical("caught exception", exc_info=exc)
-            print("Fail to load.")
+            logging.info("Fail to load.")
 
     def load_mask_from_folder(self):
         """
@@ -355,7 +355,7 @@ class DMDWidget(QWidget):
             self.load_mask_container_stack.setCurrentIndex(0)
         except Exception as exc:
             logging.critical("caught exception", exc_info=exc)
-            print("Fail to load.")
+            logging.info("Fail to load.")
 
     def load_mask_from_widget(self):
         self.sig_request_mask_coordinates.emit()
@@ -370,7 +370,7 @@ class DMDWidget(QWidget):
                 and other parameters for transformation and mask generation.
         """
         for each_mask_key in sig_from_CoordinateWidget:
-            print(f"len {len(sig_from_CoordinateWidget)}")
+            logging.info(f"len {len(sig_from_CoordinateWidget)}")
             list_of_rois = sig_from_CoordinateWidget[each_mask_key][0]
             flag_fill_contour = sig_from_CoordinateWidget[each_mask_key][1]
             contour_thickness = sig_from_CoordinateWidget[each_mask_key][2]
@@ -392,7 +392,7 @@ class DMDWidget(QWidget):
             )
             fig, axs = plt.subplots(1, 1)
             axs.imshow(mask_single_frame)
-            print("each_mask_key {}".format(each_mask_key))
+            logging.info("each_mask_key {}".format(each_mask_key))
             # Here the self.mask is always a 3-dimentional np array with the 3rd axis being number of images.
             if each_mask_key == "mask_1":
                 self.mask = mask_single_frame[:, :, np.newaxis]
@@ -447,7 +447,7 @@ class DMDWidget(QWidget):
             # Set the settings first.
             self.set_settings()
 
-            print("Projecting")
+            logging.info("Projecting")
             self.DMD_actuator.start_projection()
             self.project_button.setText("Stop projecting")
         else:
@@ -488,7 +488,7 @@ class DMDWidget(QWidget):
         frame_time = int(self.Illumination_time_textbox.text())
         self.DMD_actuator.set_repeat(repeat)
         self.DMD_actuator.set_timing(frame_time)
-        print(f"DMD illumination time is set to {frame_time} μs.")
+        logging.info(f"DMD illumination time is set to {frame_time} μs.")
 
         # Set the clocking of DMD, ALP_DEFAULT = internal clock and ALP_EDGE_RISING = external clock.
         ALP_PROJ_STEP = 2329
@@ -497,12 +497,12 @@ class DMDWidget(QWidget):
             self.DMD_actuator.DMD.ProjControl(
                 controlType=ALP_PROJ_STEP, value=0
             )
-            print("ALP_PROJ_STEP set to ALP_DEFAULT")
+            logging.info("ALP_PROJ_STEP set to ALP_DEFAULT")
         elif self.ALP_PROJ_STEP_Combox.currentText() == "ALP_EDGE_RISING":
             self.DMD_actuator.DMD.ProjControl(
                 controlType=ALP_PROJ_STEP, value=2009
             )
-            print("ALP_PROJ_STEP set to ALP_EDGE_RISING")
+            logging.info("ALP_PROJ_STEP set to ALP_EDGE_RISING")
 
         # Set the binary mode of DMD.
         ALP_BIN_MODE = 2104  # Binary mode: select from ALP_BIN_NORMAL and ALP_BIN_UNINTERRUPTED (AlpSeqControl)
@@ -514,7 +514,7 @@ class DMDWidget(QWidget):
             self.DMD_actuator.DMD.SeqControl(
                 controlType=ALP_BIN_MODE, value=ALP_BIN_NORMAL
             )
-            print("set to ALP_BIN_NORMAL")
+            logging.info("set to ALP_BIN_NORMAL")
         elif (
             self.ALP_ALP_BIN_MODE_Combox.currentText()
             == "ALP_BIN_UNINTERRUPTED"
@@ -522,7 +522,7 @@ class DMDWidget(QWidget):
             self.DMD_actuator.DMD.SeqControl(
                 controlType=ALP_BIN_MODE, value=ALP_BIN_UNINTERRUPTED
             )
-            print("set to ALP_BIN_UNINTERRUPTED, no frame switching.")
+            logging.info("set to ALP_BIN_UNINTERRUPTED, no frame switching.")
 
     def clear(self):
         self.DMD_actuator.free_memory()
@@ -553,12 +553,12 @@ class DMDWidget(QWidget):
             except OSError as exc:
                 raise exc  # TODO logging
             else:
-                print(f"Transform for {laser} loaded.")
+                logging.info(f"Transform for {laser} loaded.")
                 self.transform[laser] = np.reshape(
                     transform, (transform.shape[1], -1, 2)
                 )
-                print(self.transform[laser][:, :, 0])
-                print(self.transform[laser][:, :, 1])
+                logging.info(self.transform[laser][:, :, 0])
+                logging.info(self.transform[laser][:, :, 1])
 
 
 if __name__ == "__main__":

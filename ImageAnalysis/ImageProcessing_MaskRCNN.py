@@ -274,7 +274,7 @@ class ProcessImageML:
             if os.path.exists(background_images_folder):
                 # If the background image is taken to substract out
                 background_substraction = True
-                print("Run background substraction.")
+                logging.info("Run background substraction.")
 
                 # Get all the background files names
                 background_fileNameList = []
@@ -304,7 +304,7 @@ class ProcessImageML:
 
                 for EachCoord in CoordinatesList:
                     # For fluorescence:
-                    print(EachCoord)
+                    logging.info(EachCoord)
                     # === readin image ===
                     for Eachfilename in enumerate(fileNameList):
                         if (
@@ -418,7 +418,7 @@ class ProcessImageML:
                     # Count in total how many flat and round cells are identified.
                     cells_counted_in_round += total_cells_counted_in_coord
 
-                print(
+                logging.info(
                     "Number of round/flat cells in this round: {}".format(
                         cells_counted_in_round
                     )
@@ -454,10 +454,10 @@ class ProcessImageML:
             Rawimage, MLresults, show_each_cell=show_each_cell
         )
 
-        print(
+        logging.info(
             "Number of cells counted so far: {}".format(cell_counted_inRound)
         )
-        print(
+        logging.info(
             "Number of cells counted in image: {}".format(
                 total_cells_counted_in_coord
             )
@@ -508,7 +508,7 @@ class ProcessImageML:
         if os.path.exists(os.path.join(root_folder, "background")):
             # If the background image is taken to substract out
             background_substraction = True
-            print("Run background substraction.")
+            logging.info("Run background substraction.")
 
             # Get all the background files names
             background_fileNameList = []
@@ -539,11 +539,11 @@ class ProcessImageML:
             if "tif" in file and "LED" not in file:
                 fileNameList.append(file)
 
-        print(fileNameList)
+        logging.info(fileNameList)
 
         # Analyse each image
         for image_file_name in fileNameList:
-            print(image_file_name)
+            logging.info(image_file_name)
             Rawimage = imread(os.path.join(folder, image_file_name))
 
             if background_substraction is True:
@@ -644,7 +644,7 @@ class ProcessImageML:
             # Load the spiking HEK cells weight
             self.config.WeigthPath = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Martijn\SpikingHek.h5"  # TODO hardcoded path
         self.Detector.LoadWeigths(self.config.WeigthPath, by_name=True)
-        print("Weight file: {}".format(self.config.WeigthPath))
+        logging.info("Weight file: {}".format(self.config.WeigthPath))
 
         if type(file) == str:
             # Load the image
@@ -801,7 +801,7 @@ if __name__ == "__main__":
     ProcessML = ProcessImageML(
         WeigthPath=r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\Data\Martijn\SpikingHek.h5"  # TODO hardcoded path
     )
-    print(ProcessML.config.WeigthPath)
+    logging.info(ProcessML.config.WeigthPath)
     # 5.6s for each detection
     img_name = r"M:\tnw\ist\do\projects\Neurophotonics\Brinkslab\People\Xin Meng\paperwork\Dissertation\Figures\Chapter 3\DMD ML application\FOV3\raw_2021-10-06_12-00-44.tif"  # TODO hardcoded path
     img = skimage.io.imread(img_name)

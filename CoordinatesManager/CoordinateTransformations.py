@@ -10,6 +10,7 @@ Modified based on Izak's code for higher level interface.
 """
 
 import importlib.resources
+import logging
 
 import numpy as np
 from scipy import optimize
@@ -325,4 +326,4 @@ if __name__ == "__main__":
         "PMT2Camera",
         scanning_config=[5, 500],
     )
-    print(new_list_of_coordinates[0])
+    logging.info(new_list_of_coordinates[0])

@@ -5,6 +5,7 @@ Created on Thu Jul 16 15:47:20 2020
 @author: xinmeng
 """
 
+import logging
 import math
 
 import numpy as np
@@ -47,7 +48,7 @@ class Servo:
             )
 
         else:
-            print("Rotation degree out of range!")
+            logging.info("Rotation degree out of range!")
 
     def blockWave(
         self, sampleRate, frequency, dutycycle, repeats, voltMin=0, voltMax=5

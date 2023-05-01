@@ -460,11 +460,11 @@ class PatchclampSealTestUI(QWidget):
         constant = self.HoldingList.value()
         self.executer = DAQmission()
         self.executer.sendSingleAnalog("patchAO", constant / 1000 * 10)
-        print(f"Holding vm at {constant} mV")
+        logging.info(f"Holding vm at {constant} mV")
 
     def stophold(self):
         self.executer.sendSingleAnalog("patchAO", 0)
-        print("Stop holding")
+        logging.info("Stop holding")
 
     def btnstate(self):
         # source = self.sender()

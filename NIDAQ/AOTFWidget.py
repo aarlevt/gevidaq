@@ -186,13 +186,13 @@ class AOTFWidgetUI(QWidget):
 
     def start_up_event(self):
         try:
-            print("Servo position initialization turned off.")
+            logging.info("Servo position initialization turned off.")
             # servo= Servo()
             # close the blue shutter
             # servo.rotate(target_servo = 'servo_modulation_1', degree = 0)
         except Exception as exc:
             logging.critical("caught exception", exc_info=exc)
-            print("Fail to initialize servo position.")
+            logging.info("Fail to initialize servo position.")
 
     def updatelinevalue(self, wavelength):
         if wavelength == 640:
@@ -283,22 +283,22 @@ class AOTFWidgetUI(QWidget):
             switch = True
 
         if wavelength == "640":
-            print(f"{wavelength}:{value}")
-            print(f"{switch}")
+            logging.info(f"{wavelength}:{value}")
+            logging.info(f"{switch}")
             daq.sendSingleAnalog("640AO", value)
 
             daq.sendSingleDigital("640blanking", switch)
 
         elif wavelength == "532":
-            print(f"{wavelength}:{value}")
-            print(f"{switch}")
+            logging.info(f"{wavelength}:{value}")
+            logging.info(f"{switch}")
             daq.sendSingleAnalog("532AO", value)
 
             daq.sendSingleDigital("640blanking", switch)
 
         else:
-            print(f"{wavelength}:{value}")
-            print(f"{switch}")
+            logging.info(f"{wavelength}:{value}")
+            logging.info(f"{switch}")
             daq.sendSingleAnalog("488AO", value)
 
             daq.sendSingleDigital("640blanking", switch)

@@ -4,6 +4,7 @@ Created on Sat Feb  6 18:34:44 2021
 
 @author: xinmeng
 """
+import logging
 import sys
 
 import numpy as np
@@ -85,7 +86,7 @@ class DMDminiWidgetUI(QWidget):
             self.DMD_actuator.DMD.SeqControl(
                 controlType=ALP_BIN_MODE, value=ALP_BIN_UNINTERRUPTED
             )
-            print("set to ALP_BIN_UNINTERRUPTED, no frame switching.")
+            logging.info("set to ALP_BIN_UNINTERRUPTED, no frame switching.")
 
             self.DMD_actuator.start_projection()
 

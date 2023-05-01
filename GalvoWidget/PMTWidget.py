@@ -567,7 +567,7 @@ Left drag + Shift + Ctrl scales the ROI with size snapping"
 
         except Exception as exc:
             logging.critical("caught exception", exc_info=exc)
-            print("NI-Daq not connected.")
+            logging.info("NI-Daq not connected.")
             self.update_pmt_Graphs(
                 data=np.zeros((Value_yPixels, Value_yPixels))
             )
@@ -730,7 +730,9 @@ Left drag + Shift + Ctrl scales the ROI with size snapping"
         first_point_x = self.final_stacked_voltage_signals[:, 0][0]
         first_point_y = self.final_stacked_voltage_signals[:, 0][1]
 
-        print("galvo move to: {}, {}".format(first_point_x, first_point_y))
+        logging.info(
+            "galvo move to: {}, {}".format(first_point_x, first_point_y)
+        )
 
         daq = DAQmission()
         daq.sendSingleAnalog("galvosx", first_point_x)
@@ -801,7 +803,7 @@ Left drag + Shift + Ctrl scales the ROI with size snapping"
                     self.handle_scene_coordinate_position_raw_list[i][1].y(),
                 ]
             )
-        print(self.handle_scene_coordinate_position_array)
+        logging.info(self.handle_scene_coordinate_position_array)
         if self.contour_strategy.currentText() == "Evenly between":
             # Interpolation
             self.point_num_per_line = int(
@@ -903,8 +905,8 @@ Left drag + Shift + Ctrl scales the ROI with size snapping"
                 self.total_distance / contour_point_number
             )
 
-            print(self.averaged_uniform_step)
-            print(self.handle_scene_coordinate_position_array)
+            logging.info(self.averaged_uniform_step)
+            logging.info(self.handle_scene_coordinate_position_array)
 
             for i in range(self.ROIhandles_nubmer):
                 if i == 0:
@@ -933,7 +935,7 @@ Left drag + Shift + Ctrl scales the ROI with size snapping"
                             )
                         )
                     )
-                    print(
+                    logging.info(
                         "Interpolation_remaining_fornextround: "
                         + str(self.Interpolation_remaining_fornextround)
                     )
@@ -1005,7 +1007,7 @@ Left drag + Shift + Ctrl scales the ROI with size snapping"
                         distance_vector
                         - self.Interpolation_remaining_fornextround
                     ) // self.averaged_uniform_step
-                    print(
+                    logging.info(
                         "Interpolation_remaining_fornextround: "
                         + str(self.Interpolation_remaining_fornextround)
                     )
@@ -1226,8 +1228,10 @@ Left drag + Shift + Ctrl scales the ROI with size snapping"
                         axis=0,
                     )
 
-            print(self.handle_scene_coordinate_position_array_expanded_uniform)
-            print(
+            logging.info(
+                self.handle_scene_coordinate_position_array_expanded_uniform
+            )
+            logging.info(
                 self.handle_scene_coordinate_position_array_expanded_uniform.shape
             )
             # %%
@@ -1280,7 +1284,7 @@ Left drag + Shift + Ctrl scales the ROI with size snapping"
             )
 
         resequenced_stacked_voltage_signals = current_stacked_voltage_signals
-        print(resequenced_stacked_voltage_signals)
+        logging.info(resequenced_stacked_voltage_signals)
 
         return resequenced_stacked_voltage_signals
 
@@ -1483,12 +1487,12 @@ Left drag + Shift + Ctrl scales the ROI with size snapping"
         speedGalvo = constants.maxGalvoSpeed  # Volt/s
         aGalvo = constants.maxGalvoAccel  # Acceleration galvo in volt/s^2
 
-        print(
+        logging.info(
             str(np.mean(abs(contour_x_speed)))
             + " and mean y speed:"
             + str(np.mean(abs(contour_y_speed)))
         )
-        print(
+        logging.info(
             str(np.mean(abs(contour_x_acceleration)))
             + " and mean y acceleration:"
             + str(np.mean(abs(contour_y_acceleration)))
@@ -1497,7 +1501,7 @@ Left drag + Shift + Ctrl scales the ROI with size snapping"
         if speedGalvo > np.amax(abs(contour_x_speed)) and speedGalvo > np.amax(
             abs(contour_y_speed)
         ):
-            print("Contour speed is OK")
+            logging.info("Contour speed is OK")
             self.MessageToMainGUI("Contour speed is OK" + "\n")
         else:
             QMessageBox.warning(
@@ -1506,7 +1510,7 @@ Left drag + Shift + Ctrl scales the ROI with size snapping"
         if aGalvo > np.amax(abs(contour_x_acceleration)) and aGalvo > np.amax(
             abs(contour_y_acceleration)
         ):
-            print("Contour acceleration is OK")
+            logging.info("Contour acceleration is OK")
             self.MessageToMainGUI("Contour acceleration is OK" + "\n")
         else:
             QMessageBox.warning(

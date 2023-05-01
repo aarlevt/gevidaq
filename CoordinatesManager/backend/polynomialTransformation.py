@@ -7,6 +7,8 @@ Created on Mon Feb 17 09:54:25 2020
 
 """
 
+import logging
+
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -71,7 +73,7 @@ class polynomialRegression:
 
             Qx = np.hstack((Qx, np.zeros(2 * self.order)))
         else:
-            print("Function takes only one point at a time")
+            logging.info("Function takes only one point at a time")
             return
 
         Q = np.vstack((Qx, Qy))
@@ -86,15 +88,15 @@ class polynomialRegression:
 
         if len(self.q.shape) != 1 and self.order == 0:
             num_input_points = self.q.shape[0]
-            print(f"Number of input points is {num_input_points}")
-            print("For zeroth order input one point only")
+            logging.info(f"Number of input points is {num_input_points}")
+            logging.info("For zeroth order input one point only")
             self.Q = None
             return
 
         if self.q.shape[0] != self.hsize and self.order != 0:
             num_input_points = self.q.shape[0]
-            print(f"Number of input points is {num_input_points}")
-            print("For N'th order input 1+2N points")
+            logging.info(f"Number of input points is {num_input_points}")
+            logging.info("For N'th order input 1+2N points")
             self.Q = None
             return
 
@@ -143,16 +145,16 @@ class polynomialRegression:
                 self.P,
             )
         except np.linalg.LinAlgError:
-            print(
+            logging.info(
                 "Matrix is singular. Try different set of input points. "
                 + "Points should not be colinear"
             )
             return
 
         self.t = self.A[0:2]
-        print("Translation vector =")
-        print(np.around(self.t, 5))
-        print()
+        logging.info("Translation vector =")
+        logging.info(np.around(self.t, 5))
+        logging.info()
 
         # Because of the order in the A vector, the a_n, b_n, c_n and d_n are not
         # in consequetive order in A. Therefore, a moveaxis() is performed.
@@ -167,9 +169,9 @@ class polynomialRegression:
         # self.T = np.moveaxis(np.reshape(self.A[2:], (2,2,-1)), 0, -2)
 
         for i in range(self.order):
-            print(f"{i + 1} 'th order transformation matrix =")
-            print(np.around(self.T[i, :, :], 5))
-            print()
+            logging.info(f"{i + 1} 'th order transformation matrix =")
+            logging.info(np.around(self.T[i, :, :], 5))
+            logging.info()
 
         self.flag_transformation_found = True
         return self.T, self.t

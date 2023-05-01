@@ -18,6 +18,7 @@ Xin Adapted for Brinks lab
 import ctypes
 import ctypes.util
 import importlib.resources
+import logging
 import sys
 import time
 
@@ -422,7 +423,7 @@ class HamamatsuCamera(object):
         Throw an error if not as expected?
         """
         if fn_return == DCAMERR_ERROR:
-            print("ERROR! {}".format(fn_name))
+            logging.info("ERROR! {}".format(fn_name))
 
         return fn_return
 
@@ -574,7 +575,7 @@ class HamamatsuCamera(object):
             "dcamprop_getattr",
         )
         if ret == 0:
-            print(
+            logging.info(
                 "property", property_name, "is not supported"
             )  # TODO logging
             return False
@@ -671,7 +672,7 @@ class HamamatsuCamera(object):
 
         # Check if the property exists.
         if not (property_name in self.properties):
-            print(f"unknown property name: {property_name}")
+            logging.info(f"unknown property name: {property_name}")
             return False
         prop_id = self.properties[property_name]
 
@@ -767,7 +768,7 @@ class HamamatsuCamera(object):
             cur_frame_number - self.last_frame_number
         )  # In the beginning,last_frame_number is 0.
         if backlog > self.number_image_buffers:
-            print(
+            logging.info(
                 ">> Warning! hamamatsu camera frame buffer overrun detected!"
             )
         if backlog > self.max_backlog:
@@ -790,7 +791,7 @@ class HamamatsuCamera(object):
         self.buffer_index = cur_buffer_index
 
         if self.debug:
-            print(new_frames)
+            logging.info(new_frames)
 
         return new_frames
 
@@ -801,7 +802,7 @@ class HamamatsuCamera(object):
 
         # Check if the property exists.
         if not (property_name in self.properties):
-            print(f"unknown property name: {property_name}")
+            logging.info(f"unknown property name: {property_name}")
             return False
 
         # If the value is text, figure out what the
@@ -811,7 +812,7 @@ class HamamatsuCamera(object):
             if property_value in text_values:
                 property_value = float(text_values[property_value])
             else:
-                print(
+                logging.info(
                     f"unknown property text value: {property_value} for {property_name}"
                 )
                 return False
@@ -819,12 +820,12 @@ class HamamatsuCamera(object):
         # Check that the property is within range.
         [pv_min, pv_max] = self.getPropertyRange(property_name)
         if property_value < pv_min:
-            print(
+            logging.info(
                 f"set property value {property_value} is less than minimum of {pv_min} {property_name} setting to minimum"
             )
             property_value = pv_min
         if property_value > pv_max:
-            print(
+            logging.info(
                 f"set property value {property_value} is greater than maximum of {pv_max} {property_name} setting to maximum"
             )
             property_value = pv_max
@@ -855,10 +856,10 @@ class HamamatsuCamera(object):
         # If the ROI is smaller than the entire frame turn on subarray mode
         if (roi_w == self.max_width) and (roi_h == self.max_height):
             self.setPropertyValue("subarray_mode", "OFF")
-            print("Set subarray_mode OFF.")
+            logging.info("Set subarray_mode OFF.")
         else:
             self.setPropertyValue("subarray_mode", "ON")
-            print("Set subarray_mode ON.")
+            logging.info("Set subarray_mode ON.")
 
     def setACQMode(self, mode, number_frames=None):
         """
@@ -929,7 +930,7 @@ class HamamatsuCamera(object):
         # Stop acquisition.
         self.checkStatus(dcam.dcamcap_stop(self.camera_handle), "dcamcap_stop")
 
-        print(
+        logging.info(
             f"max camera backlog was {self.max_backlog} of {self.number_image_buffers}"
         )
         self.max_backlog = 0
@@ -1030,14 +1031,16 @@ class HamamatsuCameraMR(HamamatsuCamera):
             n_buffers = min(
                 int((4.0 * 1024 * 1024 * 1024) / self.frame_bytes), 4000
             )
-            print("Frame size: {} MB.".format(self.frame_bytes / 1024 / 1024))
+            logging.info(
+                "Frame size: {} MB.".format(self.frame_bytes / 1024 / 1024)
+            )
             if self.acquisition_mode == "fixed_length":
                 self.number_image_buffers = self.number_frames
             else:
                 self.number_image_buffers = n_buffers
 
             # Allocate new image buffers.
-            print(
+            logging.info(
                 "Number of image buffers: {}".format(
                     int(self.number_image_buffers)
                 )
@@ -1064,7 +1067,7 @@ class HamamatsuCameraMR(HamamatsuCamera):
 
             self.old_frame_bytes = self.frame_bytes
 
-            print(
+            logging.info(
                 "Buffer assigned: {} Gigabybtes.".format(
                     self.number_image_buffers
                     * self.frame_bytes
@@ -1116,7 +1119,9 @@ class HamamatsuCameraMR(HamamatsuCamera):
                 "dcamcap_start",
             )
         self.AcquisitionStartTime = time.time()
-        print("Acquisition starts at {} s.".format(self.AcquisitionStartTime))
+        logging.info(
+            "Acquisition starts at {} s.".format(self.AcquisitionStartTime)
+        )
 
     def stopAcquisition(self):
         """
@@ -1135,7 +1140,7 @@ class HamamatsuCameraMR(HamamatsuCamera):
                 "dcambuf_release",
             )
 
-        print(f"max camera backlog was: {self.max_backlog}")
+        logging.info(f"max camera backlog was: {self.max_backlog}")
         self.max_backlog = 0
 
 
@@ -1217,7 +1222,7 @@ class HamamatsuCameraRE(HamamatsuCamera):
 
         for paramter in params:
             self.RecordParaDict[paramter] = self.getPropertyValue(paramter)[0]
-            print(self.RecordParaDict[paramter])
+            logging.info(self.RecordParaDict[paramter])
 
     def startAcquisition(self):
         """
@@ -1239,7 +1244,9 @@ class HamamatsuCameraRE(HamamatsuCamera):
             n_buffers = min(
                 int((2.0 * 1024 * 1024 * 1024) / self.frame_bytes), 2000
             )
-            print("Frame size: {} MB.".format(self.frame_bytes / 1024 / 1024))
+            logging.info(
+                "Frame size: {} MB.".format(self.frame_bytes / 1024 / 1024)
+            )
             if self.acquisition_mode == "fixed_length":
                 self.number_image_buffers = self.number_frames
             else:
@@ -1249,7 +1256,7 @@ class HamamatsuCameraRE(HamamatsuCamera):
                 2.0 * self.getPropertyValue("internal_frame_rate")[0]
             )
 
-        print(
+        logging.info(
             "Number of image buffers: {}".format(
                 int(self.number_image_buffers)
             )
@@ -1277,7 +1284,7 @@ class HamamatsuCameraRE(HamamatsuCamera):
                 )
 
                 self.AcquisitionStartTime = time.time()
-                print(
+                logging.info(
                     "Acquisition starts at {} s.".format(
                         self.AcquisitionStartTime
                     )
@@ -1299,19 +1306,19 @@ class HamamatsuCameraRE(HamamatsuCamera):
                     )
 
                     pararec_status = self.checkRecStatus()
-                    print(
+                    logging.info(
                         "latest index: {}".format(
                             pararec_status.currentframe_index
                         )
                     )
-                    print(pararec_status.flags)
-                    print(
+                    logging.info(pararec_status.flags)
+                    logging.info(
                         "missing frame count: {}".format(
                             pararec_status.missingframe_count
                         )
                     )
                     RecStatusCheckTime = time.time()
-                    print(
+                    logging.info(
                         "Total frame count in the file: {}; Time past: {}".format(
                             pararec_status.totalframecount,
                             (RecStatusCheckTime - self.AcquisitionStartTime),
@@ -1325,7 +1332,7 @@ class HamamatsuCameraRE(HamamatsuCamera):
         Stop data acquisition and release the memory associates with the frames.
         """
         self.AcquisitionStopTime = time.time()
-        print(
+        logging.info(
             "Capture for {} s.".format(
                 self.AcquisitionStopTime - self.AcquisitionStartTime
             )
@@ -1342,10 +1349,10 @@ class HamamatsuCameraRE(HamamatsuCamera):
         self.checkStatus(
             dcam.dcamrec_close(self.record_handle), "dcamrec_close"
         )
-        print("dcamrec_close.")
+        logging.info("dcamrec_close.")
 
         # Release image buffers.
-        print("dcambuf_release")
+        logging.info("dcambuf_release")
         self.checkStatus(
             dcam.dcambuf_release(
                 self.camera_handle,
@@ -1388,7 +1395,7 @@ if __name__ == "__main__":
 
     n_cameras = paraminit.iDeviceCount
 
-    print(f"found: {n_cameras} cameras")
+    logging.info(f"found: {n_cameras} cameras")
 
     Streaming_to_disk = (
         False  # False: Filling RAM first, Saving to hard disk afterwards.
@@ -1398,13 +1405,13 @@ if __name__ == "__main__":
     if n_cameras > 0:
         if Streaming_to_disk is False:
             hcam = HamamatsuCameraMR(camera_id=0)
-            print(hcam.setPropertyValue("defect_correct_mode", 1))
-            print(f"camera 0 model: {hcam.getModelInfo(0)}")
+            logging.info(hcam.setPropertyValue("defect_correct_mode", 1))
+            logging.info(f"camera 0 model: {hcam.getModelInfo(0)}")
 
             # List support properties.
             # Property names are converted. For example, internal_frame_rate = DCAM_IDPROP_INTERNALFRAMERATE in API reference.
             if True:
-                print("Supported properties:")
+                logging.info("Supported properties:")
                 props = hcam.getProperties()
                 for i, id_name in enumerate(sorted(props.keys())):
                     [p_value, p_type] = hcam.getPropertyValue(id_name)
@@ -1414,29 +1421,29 @@ if __name__ == "__main__":
                         read_write += "read"
                     if p_rw[1]:
                         read_write += ", write"
-                    print(
+                    logging.info(
                         f"{i}) {id_name} = {p_value} type is: {p_type}, {read_write}"
                     )
                     text_values = hcam.getPropertyText(id_name)
                     if len(text_values) > 0:
-                        print("          option / value")
+                        logging.info("          option / value")
                         for key in sorted(text_values, key=text_values.get):
-                            print(f"         {key}/{text_values[key]}")
+                            logging.info(f"         {key}/{text_values[key]}")
 
             # Test setting & getting some parameters.
             if True:
-                print(
+                logging.info(
                     hcam.setPropertyValue("subarray_vpos", 512)
                 )  # This property allows you to specify the top position of capturing area.
-                print(hcam.setPropertyValue("subarray_hsize", 2048))
-                print(hcam.setPropertyValue("subarray_vsize", 1024))
+                logging.info(hcam.setPropertyValue("subarray_hsize", 2048))
+                logging.info(hcam.setPropertyValue("subarray_vsize", 1024))
 
-                print(
+                logging.info(
                     hcam.setPropertyValue("exposure_time", 0.002)
                 )  # 0.0006/16
 
-                print(hcam.setPropertyValue("binning", "1x1"))
-                print(hcam.setPropertyValue("readout_speed", 2))
+                logging.info(hcam.setPropertyValue("binning", "1x1"))
+                logging.info(hcam.setPropertyValue("readout_speed", 2))
 
                 params = [
                     "internal_frame_rate",
@@ -1448,7 +1455,7 @@ if __name__ == "__main__":
                 ]
 
                 for param in params:
-                    print(f"{param} {hcam.getPropertyValue(param)[0]}")
+                    logging.info(f"{param} {hcam.getPropertyValue(param)[0]}")
                     if param == "subarray_hsize":
                         subarray_hsize = hcam.getPropertyValue(param)[0]
                     if param == "subarray_vsize":
@@ -1457,7 +1464,7 @@ if __name__ == "__main__":
                 frame_pixelsize = subarray_hsize * subarray_vsize
             # Test 'run_till_abort' acquisition.
             if True:
-                print("Testing run till abort acquisition")
+                logging.info("Testing run till abort acquisition")
                 hcam.startAcquisition()
 
                 video_list = []
@@ -1467,7 +1474,7 @@ if __name__ == "__main__":
                     frame_num
                 ):  # Record for range() number of images.
                     if i == 0:
-                        print(
+                        logging.info(
                             "Start getting frames at {} s...".format(
                                 time.time()
                             )
@@ -1482,13 +1489,13 @@ if __name__ == "__main__":
                         video_list.append(aframe.np_array)
                         cnt += 1
                 AcquisitionEndTime = time.time()
-                print(f"Frames acquired: {cnt}")
-                print(
+                logging.info(f"Frames acquired: {cnt}")
+                logging.info(
                     "Total time is: {} s.".format(
                         AcquisitionEndTime - hcam.AcquisitionStartTime
                     )
                 )
-                print(
+                logging.info(
                     "Estimated fps: {} hz.".format(
                         int(
                             cnt
@@ -1511,7 +1518,7 @@ if __name__ == "__main__":
                         )
 
                         tif.save(image, compress=0)
-                print(
+                logging.info(
                     "Done writing "
                     + str(frame_num)
                     + " frames, recorded for "
@@ -1524,7 +1531,7 @@ if __name__ == "__main__":
             # Test 'fixed_length' acquisition.
             if False:
                 for j in range(10000):
-                    print("Testing fixed length acquisition")
+                    logging.info("Testing fixed length acquisition")
                     hcam.setACQMode("fixed_length", number_frames=10)
                     hcam.startAcquisition()
                     cnt = 0
@@ -1534,17 +1541,17 @@ if __name__ == "__main__":
                         waitTime = random.random() * 0.03
                         time.sleep(waitTime)
                         iterations += 1
-                        print(f"Frames loaded: {len(frames)}")
-                        print(f"Wait time: {waitTime}")
+                        logging.info(f"Frames loaded: {len(frames)}")
+                        logging.info(f"Wait time: {waitTime}")
                         for aframe in frames:
-                            print(f"{cnt} {aframe[0:5]}")
+                            logging.info(f"{cnt} {aframe[0:5]}")
                             cnt += 1
                     if cnt < 10:
-                        print(
+                        logging.info(
                             "##############Error: Not all frames found#########"
                         )
                         input("Press enter to continue")
-                    print(f"Frames acquired: {cnt}")
+                    logging.info(f"Frames acquired: {cnt}")
                     hcam.stopAcquisition()
 
                     hcam.setACQMode("run_till_abort")
@@ -1565,7 +1572,7 @@ if __name__ == "__main__":
             # List support properties.
             # Property names are converted. For example, internal_frame_rate = DCAM_IDPROP_INTERNALFRAMERATE in API reference.
             if False:
-                print("Supported properties:")
+                logging.info("Supported properties:")
                 props = rcam.getProperties()
                 for i, id_name in enumerate(sorted(props.keys())):
                     [p_value, p_type] = rcam.getPropertyValue(id_name)
@@ -1575,14 +1582,14 @@ if __name__ == "__main__":
                         read_write += "read"
                     if p_rw[1]:
                         read_write += ", write"
-                    print(
+                    logging.info(
                         f"{i}) {id_name} = {p_value} type is: {p_type}, {read_write}"
                     )
                     text_values = rcam.getPropertyText(id_name)
                     if len(text_values) > 0:
-                        print("          option / value")
+                        logging.info("          option / value")
                         for key in sorted(text_values, key=text_values.get):
-                            print(f"         {key}/{text_values[key]}")
+                            logging.info(f"         {key}/{text_values[key]}")
 
             # Test setting & getting some parameters.
             if True:
@@ -1612,11 +1619,11 @@ if __name__ == "__main__":
 
             # Test 'run_till_abort' acquisition.
             if True:
-                print(
+                logging.info(
                     "----------------Testing fixed length acquisition-------------------"
                 )
                 rcam.setACQMode("fixed_length", number_frames=200 * 2)
-                print(f"Acquisition_mode is: {rcam.acquisition_mode}")
+                logging.info(f"Acquisition_mode is: {rcam.acquisition_mode}")
 
                 rcam.startAcquisition()
                 rcam.stopAcquisition()

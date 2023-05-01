@@ -57,7 +57,7 @@ class CameraThread(QThread):
 
     @pyqtSlot()
     def live(self):
-        print("camera thread started")
+        logging.info("camera thread started")
 
         self.camera.isLiving = True
         self.camera.hcam.acquisition_mode = "run_till_abort"
@@ -83,4 +83,4 @@ class CameraThread(QThread):
         self.camera.isLiving = False
         self.camera.Exit()
 
-        print("camera thread stopped")
+        logging.info("camera thread stopped")

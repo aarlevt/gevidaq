@@ -179,7 +179,7 @@ class ObjMotorWidgetUI(QWidget):
             self.ObjMotor_connect.setEnabled(True)
 
             self.pi_device_instance = self.device_instance.getInstance()
-            print("Objective motor connected.")
+            logging.info("Objective motor connected.")
             self.connect_status = True
 
             self.ObjCurrentPos = self.pi_device_instance.pidevice.qPOS(
@@ -191,7 +191,7 @@ class ObjMotorWidgetUI(QWidget):
             self.ObjMotor_target.setValue(self.ObjCurrentPos["1"])
 
             decimal_places = len(str(self.ObjCurrentPos["1"]).split(".")[1])
-            print(int(self.ObjCurrentPos["1"] * (10**decimal_places)))
+            logging.info(int(self.ObjCurrentPos["1"] * (10**decimal_places)))
             self.FocusSlider.setValue(int(self.ObjCurrentPos["1"] * (10**6)))
             self.ObjMotorcontrolContainer.setEnabled(True)
 
@@ -259,7 +259,7 @@ class ObjMotorWidgetUI(QWidget):
 
     def DisconnectMotor(self):
         self.pi_device_instance.CloseMotorConnection()
-        print("Disconnected")
+        logging.info("Disconnected")
         self.connect_status = False
 
     # self.normalOutputWritten('Objective motor disconnected.'+'\n')

@@ -1174,7 +1174,7 @@ class PatchClampUI(QWidget):
             x, y = self.liveView.addedItems[idx].state["pos"]
             self.liveView.addedItems[idx].setPos([x - dx, y - dy])
         else:
-            print(f"{label} is not a known draw-label")
+            logging.info(f"{label} is not a known draw-label")
 
     def closeEvent(self, event):
         """Close event

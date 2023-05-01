@@ -522,7 +522,7 @@ class CoordinatesWidgetUI(QWidget):
             )
         except Exception as exc:
             logging.critical("caught exception", exc_info=exc)
-            print("show_mask failed.")
+            logging.info("show_mask failed.")
 
     def delete_mask(self):
         """
@@ -580,7 +580,7 @@ class CoordinatesWidgetUI(QWidget):
 
         except Exception as exc:
             logging.critical("caught exception", exc_info=exc)
-            print("fail to load file.")
+            logging.info("fail to load file.")
 
     # MaskRCNN detection part
 
@@ -603,7 +603,7 @@ class CoordinatesWidgetUI(QWidget):
         self.Matdisplay_Figure_axis = self.Matdisplay_Figure.add_subplot(111)
 
         self.MLtargetedImg = self.selection_view.image
-        print(self.MLtargetedImg.shape)
+        logging.info(self.MLtargetedImg.shape)
 
         # Depends on show_mask or not, the returned figure will be input raw image with mask or not.
         self.MLresults = self.ProcessML.DetectionOnImage(

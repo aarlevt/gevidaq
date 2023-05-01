@@ -6,6 +6,7 @@ Created on Mon Dec  6 10:03:29 2021
 """
 
 
+import logging
 import time
 
 import numpy as np
@@ -99,7 +100,7 @@ class PressureThread(QThread):
 
     @pyqtSlot()
     def measure(self):
-        print("pressure thread started")
+        logging.info("pressure thread started")
 
         self.isrunning = True
         start = time.time()
@@ -139,10 +140,10 @@ class PressureThread(QThread):
         time.sleep(0.1)
         self.pressurecontroller.close()
 
-        print("pressure thread stopped")
+        logging.info("pressure thread stopped")
 
     def record(self, start):
-        print("pressure recording started")
+        logging.info("pressure recording started")
 
         save_directory = self._parent.save_directory
 
@@ -170,4 +171,4 @@ class PressureThread(QThread):
         np.save(save_directory + "pressure_recording_sensor1", PS1)
         np.save(save_directory + "pressure_recording_timing", timing)
 
-        print("pressure recording stopped")
+        logging.info("pressure recording stopped")

@@ -725,7 +725,7 @@ class Mainbody(QtWidgets.QWidget):
 
         from ImageAnalysis import EvolutionAnalysisWidget
 
-        print("Importing EvolutionAnalysisWidget")
+        logging.info("Importing EvolutionAnalysisWidget")
 
         self.ScreenAnalysisMLWindow = EvolutionAnalysisWidget.MainGUI()
         self.ScreenAnalysisMLWindow.show()
@@ -821,7 +821,7 @@ class Mainbody(QtWidgets.QWidget):
         self.normalOutputWritten(
             "Waveform{} added.\n".format(CurrentWaveformPackageSequence)
         )
-        print("Waveform added.")
+        logging.info("Waveform added.")
 
     def DeleteFreshWaveform(
         self,
@@ -945,7 +945,7 @@ class Mainbody(QtWidgets.QWidget):
         self.normalOutputWritten(
             "Round{} added.\n".format(CurrentRoundSequence)
         )
-        print("Round added.")
+        logging.info("Round added.")
 
     # === Configure filter event ===
     def AddFilterEvent(self):
@@ -965,7 +965,7 @@ class Mainbody(QtWidgets.QWidget):
                     CurrentRoundSequence, self.EmisfilterCombox.currentText()
                 )
             )
-            print(self.RoundQueueDict["FilterEvents"])
+            logging.info(self.RoundQueueDict["FilterEvents"])
             self.normalOutputWritten(
                 "FilterEvents"
                 + str(self.RoundQueueDict["FilterEvents"])
@@ -991,7 +991,7 @@ class Mainbody(QtWidgets.QWidget):
                     CurrentRoundSequence, self.EmisfilterCombox.currentText()
                 )
             )
-        print(self.RoundQueueDict["FilterEvents"])
+        logging.info(self.RoundQueueDict["FilterEvents"])
         self.normalOutputWritten(
             str(self.RoundQueueDict["FilterEvents"]) + "\n"
         )
@@ -1015,7 +1015,7 @@ class Mainbody(QtWidgets.QWidget):
                     )
                 )
 
-        print(self.RoundQueueDict["InsightEvents"])
+        logging.info(self.RoundQueueDict["InsightEvents"])
         self.normalOutputWritten(
             "InsightEvents" + str(self.RoundQueueDict["InsightEvents"]) + "\n"
         )
@@ -1038,7 +1038,7 @@ class Mainbody(QtWidgets.QWidget):
                     )
                 )
 
-        print(self.RoundQueueDict["InsightEvents"])
+        logging.info(self.RoundQueueDict["InsightEvents"])
         self.normalOutputWritten(
             str(self.RoundQueueDict["InsightEvents"]) + "\n"
         )
@@ -1173,7 +1173,7 @@ class Mainbody(QtWidgets.QWidget):
                     )
 
                     Coords_array = np.append(Coords_array, current_coord_array)
-        print(Coords_array)
+        logging.info(Coords_array)
         self.RoundCoordsDict[
             "CoordsPackage_{}".format(CurrentRoundSequence)
         ] = Coords_array
@@ -1187,7 +1187,7 @@ class Mainbody(QtWidgets.QWidget):
         del self.RoundQueueDict[
             "GalvoInforPackage_{}".format(CurrentRoundSequence)
         ]
-        print(self.RoundQueueDict.keys())
+        logging.info(self.RoundQueueDict.keys())
 
     def ClearRoundQueue(self):
         self.WaveformQueueDict = {}
@@ -1202,7 +1202,7 @@ class Mainbody(QtWidgets.QWidget):
         self.FocusStackInfoDict = {}
 
         self.normalOutputWritten("Rounds cleared.\n")
-        print("Rounds cleared.")
+        logging.info("Rounds cleared.")
 
     # %%
     """
@@ -1445,7 +1445,7 @@ class Mainbody(QtWidgets.QWidget):
         self.auto_saving_directory()
 
         self.normalOutputWritten("Pipeline loaded.\n")
-        print("Pipeline loaded.")
+        logging.info("Pipeline loaded.")
 
         self.show_pipline_infor()
 
@@ -1478,7 +1478,7 @@ class Mainbody(QtWidgets.QWidget):
                                 waveformPackage[eachwaveform][3],
                             )
                         )
-                        print(
+                        logging.info(
                             "Round {}, recording channels:{}.".format(
                                 eachround + 1, waveformPackage[eachwaveform][3]
                             )
@@ -1488,7 +1488,7 @@ class Mainbody(QtWidgets.QWidget):
                 except Exception as exc:
                     logging.critical("caught exception", exc_info=exc)
                     self.normalOutputWritten("No recording channel.\n")
-                    print("No recording channel.")
+                    logging.info("No recording channel.")
                 try:
                     self.normalOutputWritten(
                         "Round {}, Analog signals:{}.\n".format(
@@ -1496,7 +1496,7 @@ class Mainbody(QtWidgets.QWidget):
                             waveformPackage[eachwaveform][1]["Specification"],
                         )
                     )
-                    print(
+                    logging.info(
                         "Round {}, Analog signals:{}.".format(
                             eachround + 1,
                             waveformPackage[eachwaveform][1]["Specification"],
@@ -1505,7 +1505,7 @@ class Mainbody(QtWidgets.QWidget):
                 except Exception as exc:
                     logging.critical("caught exception", exc_info=exc)
                     self.normalOutputWritten("No Analog signals.\n")
-                    print("No Analog signals.")
+                    logging.info("No Analog signals.")
                 try:
                     if (
                         len(waveformPackage[eachwaveform][2]["Specification"])
@@ -1530,7 +1530,7 @@ class Mainbody(QtWidgets.QWidget):
                             )
                         )
 
-                        print(
+                        logging.info(
                             "Lasting time:{} s.\n".format(
                                 len(
                                     waveformPackage[eachwaveform][2][
@@ -1540,7 +1540,7 @@ class Mainbody(QtWidgets.QWidget):
                                 / waveformPackage[eachwaveform][0]
                             )
                         )
-                        print(
+                        logging.info(
                             "Round {}, Digital signals:{}.".format(
                                 eachround + 1,
                                 waveformPackage[eachwaveform][2][
@@ -1553,7 +1553,7 @@ class Mainbody(QtWidgets.QWidget):
                 except Exception as exc:
                     logging.critical("caught exception", exc_info=exc)
                     self.normalOutputWritten("No Digital signals.\n")
-                    print("No Digital signals.")
+                    logging.info("No Digital signals.")
                 waveform_sequence += 1
                 self.normalOutputWritten("\n")
 
@@ -1570,7 +1570,7 @@ class Mainbody(QtWidgets.QWidget):
                                 ],
                             )
                         )
-                        print(
+                        logging.info(
                             "Round {}, cam Buffer_number:{}.\n".format(
                                 eachround + 1,
                                 camOperationPackage[eachcamoperation][
@@ -1583,7 +1583,7 @@ class Mainbody(QtWidgets.QWidget):
                 except Exception as exc:
                     logging.critical("caught exception", exc_info=exc)
                     self.normalOutputWritten("No camera operations.\n")
-                    print("No camera operations.")
+                    logging.info("No camera operations.")
 
             self.normalOutputWritten("-----------end of round-----------\n")
         self.normalOutputWritten("----------------------------------------\n")
@@ -1606,7 +1606,7 @@ class Mainbody(QtWidgets.QWidget):
         self.auto_saving_directory()
 
         self.normalOutputWritten("Pipeline loaded.\n")
-        print("Pipeline loaded.")
+        logging.info("Pipeline loaded.")
 
         self.show_pipline_infor()
 

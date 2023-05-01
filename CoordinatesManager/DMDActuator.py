@@ -7,6 +7,7 @@ Created on Mon Jul  6 09:38:26 2020
 """
 
 import importlib.resources
+import logging
 import sys
 
 import numpy as np
@@ -32,12 +33,12 @@ class DMDActuator:
 
         # Initialize the device
         self.DMD.Initialize(13388)  # TODO magic number
-        print("DMD Initialized")
+        logging.info("DMD Initialized")
 
     def disconnect_DMD(self):
         # Clear onboard memory and disconnect
         self.DMD.Free()
-        print("DMD disconnected")
+        logging.info("DMD disconnected")
 
     def send_data_to_DMD(self, img_seq):
         """
@@ -80,7 +81,7 @@ class DMDActuator:
 
         # Send the image sequence as a 1D list/array/numpy array
         self.DMD.SeqPut(imgData=self.image)
-        print("Data loaded to DMD")
+        logging.info("Data loaded to DMD")
 
     def start_projection(self):
         """
@@ -91,7 +92,7 @@ class DMDActuator:
 
         self.DMD.Run(loop=self.repeat)
 
-        print("Projection started")
+        logging.info("Projection started")
 
     def inquire_status(self):
         PICTURE_TIME = self.DMD.SeqInquire(inquireType=ALP4.ALP_PICTURE_TIME)
@@ -106,30 +107,30 @@ class DMDActuator:
             inquireType=ALP4.ALP_MIN_PICTURE_TIME
         )
 
-        print("-------------DMD status-------------")
-        print("ALP_PICTURE_TIME: {} μs".format(PICTURE_TIME))
-        print("ALP_ILLUMINATE_TIME: {} μs".format(ILLUMINATE_TIME))
-        print(f"ALP_BITNUM: {BITNUM}.")
+        logging.info("-------------DMD status-------------")
+        logging.info("ALP_PICTURE_TIME: {} μs".format(PICTURE_TIME))
+        logging.info("ALP_ILLUMINATE_TIME: {} μs".format(ILLUMINATE_TIME))
+        logging.info(f"ALP_BITNUM: {BITNUM}.")
         if BIN_MODE == 2015:  # TODO magic number
-            print("ALP_BIN_MODE: with dark phase.")
+            logging.info("ALP_BIN_MODE: with dark phase.")
         elif BIN_MODE == 2016:  # TODO magic number
-            print("ALP_BIN_MODE: Operation without dark phase.")
-        print(
+            logging.info("ALP_BIN_MODE: Operation without dark phase.")
+        logging.info(
             "ALP_OFF_TIME: {} μs (total inactive projection time)".format(
                 OFF_TIME
             )
         )
-        print("Number of pictures in sequence: {}".format(PICNUM))
-        print(
+        logging.info("Number of pictures in sequence: {}".format(PICNUM))
+        logging.info(
             "minimum duration of the display of one picture in μs(MIN_PICTURE_TIME): {}".format(
                 MIN_PICTURE_TIME
             )
         )
-        print("------------------------------------")
+        logging.info("------------------------------------")
 
     def stop_projection(self):
         self.DMD.Halt()
-        print("Projection stopped")
+        logging.info("Projection stopped")
 
     def set_timing(self, frame_rate):
         """

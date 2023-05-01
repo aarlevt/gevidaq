@@ -262,7 +262,7 @@ class AnalysisWidgetUI(QWidget):
                 # For Labview generated data.
                 if file.endswith(".tif") or file.endswith(".TIF"):
                     self.fileName = self.main_directory + "/" + file
-                    print(self.fileName)
+                    logging.info(self.fileName)
 
             self.start_analysis()
 
@@ -291,7 +291,7 @@ class AnalysisWidgetUI(QWidget):
             # If the folder is not there, create the folder
             os.mkdir(os.path.join(self.main_directory, "Patch analysis"))
 
-        print("Loading data...")
+        logging.info("Loading data...")
         self.MessageToMainGUI("Loading data..." + "\n")
 
         t1 = threading.Thread(target=self.load_data_thread)
@@ -312,7 +312,7 @@ class AnalysisWidgetUI(QWidget):
         self.button_load.setEnabled(False)
         # Load tif video file.
         self.videostack = imread(self.fileName)
-        print(self.videostack.shape)
+        logging.info(self.videostack.shape)
         self.MessageToMainGUI(
             "Video size: " + str(self.videostack.shape) + "\n"
         )
@@ -322,7 +322,9 @@ class AnalysisWidgetUI(QWidget):
         self.roi_weighted.maxBounds = QRectF(
             0, 0, self.videostack.shape[2], self.videostack.shape[1]
         )
-        print("============ Loading complete, ready to fire ============ ")
+        logging.info(
+            "============ Loading complete, ready to fire ============ "
+        )
         self.MessageToMainGUI("=== Loading complete, ready to fire ===" + "\n")
 
         # Load wave files.
@@ -333,13 +335,13 @@ class AnalysisWidgetUI(QWidget):
             self.display_electrical_signals()
         except Exception as exc:
             logging.critical("caught exception", exc_info=exc)
-            print("No electrical recordings.")
+            logging.info("No electrical recordings.")
 
         time.sleep(0.5)
         # Calculate the mean intensity of video, for background substraction.
         self.video_mean()
 
-        print("=========== Ready for analyse. =============")
+        logging.info("=========== Ready for analyse. =============")
         self.button_load.setEnabled(False)
         self.run_analysis_button.setEnabled(True)
 
@@ -360,7 +362,7 @@ class AnalysisWidgetUI(QWidget):
         # Fit on weighted trace and sumarize the statistics.
         self.fit_on_trace()
 
-        print("============ Analysis done. ============")
+        logging.info("============ Analysis done. ============")
         self.MessageToMainGUI("=== Analysis done. ===" + "\n")
 
         self.button_load.setEnabled(True)
@@ -368,7 +370,7 @@ class AnalysisWidgetUI(QWidget):
 
     def ReceiveVideo(self, videosentin):
         self.videostack = videosentin
-        print(self.videostack.shape)
+        logging.info(self.videostack.shape)
         self.MessageToMainGUI(
             "Video size: " + str(self.videostack.shape) + "\n"
         )
@@ -378,7 +380,7 @@ class AnalysisWidgetUI(QWidget):
         self.roi_weighted.maxBounds = QRectF(
             0, 0, self.videostack.shape[2], self.videostack.shape[1]
         )
-        print("Loading complete, ready to fire")
+        logging.info("Loading complete, ready to fire")
         self.MessageToMainGUI("Loading complete, ready to fire" + "\n")
 
     def loadcurve(self):
@@ -436,7 +438,7 @@ class AnalysisWidgetUI(QWidget):
                         ]
                     )
                 )
-                print(
+                logging.info(
                     "Wavefroms_sampling rate: {}".format(
                         self.samplingrate_display_curve
                     )
@@ -447,7 +449,7 @@ class AnalysisWidgetUI(QWidget):
                     if each_waveform["Specification"] == "patchAO":
                         self.configured_Vp = each_waveform["Waveform"]
 
-                        print(
+                        logging.info(
                             "Length of configured_Vp: {}".format(
                                 len(self.configured_Vp)
                             )
@@ -463,7 +465,7 @@ class AnalysisWidgetUI(QWidget):
                                 self.configured_Vp[4:][0:-1] / 10
                             )
 
-                            print(
+                            logging.info(
                                 "Length of cut Vp: {}".format(
                                     len(self.configured_Vp)
                                 )
@@ -476,7 +478,7 @@ class AnalysisWidgetUI(QWidget):
                                 self.configured_Vp[1:][0:-1] / 10
                             )
 
-                            print(
+                            logging.info(
                                 "Length of cut Vp: {}".format(
                                     len(self.configured_Vp)
                                 )
@@ -529,10 +531,10 @@ class AnalysisWidgetUI(QWidget):
         None.
 
         """
-        print("Loading...")
+        logging.info("Loading...")
 
         self.background_rolling_average_number = int(self.samplingrate_cam / 5)
-        print(
+        logging.info(
             "background_rolling_average_number is : {}".format(
                 self.background_rolling_average_number
             )
@@ -542,7 +544,7 @@ class AnalysisWidgetUI(QWidget):
             self.averageimage_ROI_mask, return_counts=True
         )
         count_dict = dict(zip(unique, counts))
-        print(f"number of 1 and 0: {count_dict}")
+        logging.info(f"number of 1 and 0: {count_dict}")
 
         self.background_trace = []
 
@@ -654,7 +656,7 @@ class AnalysisWidgetUI(QWidget):
             container[i] = temp_diff
             self.videostack[i, :, :] = temp_diff
 
-        print("ROI background correction done.")
+        logging.info("ROI background correction done.")
 
         saveBgSubstractedVideop = False
         # Save the file.
@@ -859,9 +861,13 @@ class AnalysisWidgetUI(QWidget):
                 self.samplingrate_display_curve / self.samplingrate_cam
             )
 
-            print("Vp downsampling ratio: {}".format(self.downsample_ratio))
-            print("Sampling rate camera: {}".format(self.samplingrate_cam))
-            print(
+            logging.info(
+                "Vp downsampling ratio: {}".format(self.downsample_ratio)
+            )
+            logging.info(
+                "Sampling rate camera: {}".format(self.samplingrate_cam)
+            )
+            logging.info(
                 "Sampling rate DAQ: {}".format(self.samplingrate_display_curve)
             )
 
@@ -873,7 +879,7 @@ class AnalysisWidgetUI(QWidget):
                 # self.Vp_downsample = self.Vp_downsample[0 : len(self.videostack)]
             except Exception as exc:
                 logging.critical("caught exception", exc_info=exc)
-                print("Vp downsampling ratio is not an integer.")
+                logging.info("Vp downsampling ratio is not an integer.")
                 small_ratio = int(
                     np.floor(
                         self.samplingrate_display_curve / self.samplingrate_cam
@@ -897,7 +903,7 @@ class AnalysisWidgetUI(QWidget):
                 len(self.Vp_downsample) - len(self.videostack) :
             ]
 
-            print(f"{self.videostack.shape} {self.Vp_downsample.shape}")
+            logging.info(f"{self.videostack.shape} {self.Vp_downsample.shape}")
 
             (
                 self.corrimage,
@@ -1084,7 +1090,7 @@ class AnalysisWidgetUI(QWidget):
                 ax.set_ylabel("Membrane potential (mV)")
                 ax.set_xlabel("time(s)")
 
-                print(
+                logging.info(
                     "For Vp recored earlier than 22.12.2021, pls devided by 10 as the amplifier channel multipliesby 10 by default."
                 )
             elif "PMT" in self.single_waveform_fileName:
@@ -1306,7 +1312,7 @@ class PlotAnalysisGUI(QWidget):
             for region_number in range(len(self.region_file_name)):
                 if len(self.Checked_display_list) == 2:
                     figure, (ax1, ax2) = plt.subplots(2, 1)
-                    print(1111)
+                    logging.info(1111)
                 elif len(self.Checked_display_list) == 3:
                     figure, (ax1, ax2, ax3) = plt.subplots(3, 1)
 

@@ -60,14 +60,14 @@ class InsightX3:
                     except Exception as exc:
                         logging.critical("caught exception", exc_info=exc)
                         failnumber += 1
-                        print(
+                        logging.info(
                             "Laser action failed, failnumber: {}".format(
                                 failnumber
                             )
                         )
                         time.sleep(0.2)
                 else:
-                    print("Fail for 8 times, give up - -")
+                    logging.info("Fail for 8 times, give up - -")
                     success = False
 
             return returnValue
@@ -86,7 +86,7 @@ class InsightX3:
             LaserID_byte = Insight.readline()  # Reads an '\n' terminated line
             LaserID = LaserID_byte.decode("utf-8", errors="replace")
 
-            print(LaserID)
+            logging.info(LaserID)
 
     @Try_until_Success
     def QueryStatus(self):
@@ -150,7 +150,7 @@ class InsightX3:
         if 61 <= Laser_state <= 69:
             Status_list.append("Laser state:Exiting Align mode")
 
-        print(Status_list)
+        logging.info(Status_list)
         return Status_list
 
     @Try_until_Success
@@ -168,7 +168,7 @@ class InsightX3:
             )  # Reads an '\n' terminated line
             warmupstatus = warmupstatus_byte.decode("utf-8")
 
-            print(
+            logging.info(
                 "Warming up: {}%".format(
                     warmupstatus[0 : len(warmupstatus) - 1]
                 )
@@ -202,7 +202,7 @@ class InsightX3:
             Insight.write(command.encode("ascii"))
             LaserWavelength = (Insight.readline()).decode("utf-8")
 
-            print(
+            logging.info(
                 "LaserWavelength is {} nm.".format(
                     LaserWavelength[0 : len(LaserWavelength) - 1]
                 )
@@ -221,7 +221,9 @@ class InsightX3:
 
         with serial.Serial(self.address, self.baudrate) as Insight:
             Insight.write(command.encode("ascii"))
-            print("LaserWavelength going to {} nm...".format(Wavelength))
+            logging.info(
+                "LaserWavelength going to {} nm...".format(Wavelength)
+            )
 
     @Try_until_Success
     def SetWatchdogTimer(self, timeout):
@@ -234,7 +236,7 @@ class InsightX3:
 
         with serial.Serial(self.address, self.baudrate) as Insight:
             Insight.write(command.encode("ascii"))
-            print("TIMer:WATChdog set to {} s.".format(timeout))
+            logging.info("TIMer:WATChdog set to {} s.".format(timeout))
 
     @Try_until_Success
     def SetOperatingMode(self, mode):
@@ -250,7 +252,7 @@ class InsightX3:
 
         with serial.Serial(self.address, self.baudrate) as Insight:
             Insight.write(command.encode("ascii"))
-            print("Setting: {}".format(mode))
+            logging.info("Setting: {}".format(mode))
 
     @Try_until_Success
     def Turn_On_PumpLaser(self):
@@ -282,7 +284,7 @@ class InsightX3:
         with serial.Serial(self.address, self.baudrate) as Insight:
             Insight.write(command.encode("ascii"))
 
-            print("Pump diode laser turned down.")
+            logging.info("Pump diode laser turned down.")
 
     @Try_until_Success
     def Open_TunableBeamShutter(self):
@@ -316,7 +318,7 @@ class InsightX3:
             Insight.write(command.encode("ascii"))
             SAVeresponse = (Insight.readline()).decode("utf-8")
 
-            print(SAVeresponse)
+            logging.info(SAVeresponse)
 
 
 class QueryLaserStatusThread(QThread):
@@ -350,12 +352,12 @@ class QueryLaserStatusThread(QThread):
                 self.Thread_Status_list.emit(self.Status_list)
             except Exception as exc:
                 logging.critical("caught exception", exc_info=exc)
-                print("Query status failed.")
+                logging.info("Query status failed.")
             time.sleep(((1 / self.queryfreq)))
         if self.stopflag is True:
             self.quit()
             self.wait()
-            print("WatchDog stopped.")
+            logging.info("WatchDog stopped.")
 
 
 if __name__ == "__main__":
@@ -392,7 +394,7 @@ if __name__ == "__main__":
                     warmupstatus = Laserinstance.QueryWarmupTime()
                     time.sleep(0.5)
                 if int(warmupstatus) == 100:
-                    print("try to turn on pump laser...")
+                    logging.info("try to turn on pump laser...")
                     Laserinstance.Turn_On_PumpLaser()
 
                     # Wait for the laser to be in running state.
@@ -400,23 +402,23 @@ if __name__ == "__main__":
                     while "Laser state:RUN" not in Status_list:
                         Status_list = Laserinstance.QueryStatus()
                         time.sleep(1)
-                    print("Laser state:RUN")
+                    logging.info("Laser state:RUN")
 
                     # Open the shutter.
                     Status_list = Laserinstance.QueryStatus()
                     if "Tubable beam shutter closed" in Status_list:
                         Laserinstance.Open_TunableBeamShutter()
-                    print("Laser shutter open.")
+                    logging.info("Laser shutter open.")
                     time.sleep(2)
 
                     Status_list = Laserinstance.QueryStatus()
                     if "Tubable beam shutter open" in Status_list:
                         Laserinstance.Close_TunableBeamShutter()
-                    print("Laser shutter closed.")
+                    logging.info("Laser shutter closed.")
 
                     Status_list = Laserinstance.QueryStatus()
                     Laserinstance.SaveVariables()
 
                     Status_list = Laserinstance.QueryStatus()
                     Laserinstance.Turn_Off_PumpLaser()
-                    print("Turn_Off_PumpLaser.")
+                    logging.info("Turn_Off_PumpLaser.")

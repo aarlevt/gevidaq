@@ -5,6 +5,7 @@ Created on Thu Jul  9 23:23:58 2020
 @author: ideheer
 """
 
+import logging
 import os
 import sys
 
@@ -103,7 +104,7 @@ class StageWidget(QWidget):
                 self.save_image(filename, image)
 
                 cnt += 1
-                print(
+                logging.info(
                     str(cnt)
                     + "/"
                     + str(len(local_pos_name) * len(global_pos_name))
