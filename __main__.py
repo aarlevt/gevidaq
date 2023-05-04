@@ -1,5 +1,7 @@
 import logging
 import pathlib
+import sys
+import threading
 
 # set up logging first
 logfile = pathlib.Path(f"./{__package__}.log")
@@ -16,6 +18,21 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s:%(levelname)s:%(name)s:%(message)s",
 )
+
+
+def excepthook(*exc_info):
+    logging.critical("uncaught exception!", exc_info=exc_info)
+
+
+def threading_excepthook(exc_info):
+    thread = exc_info.thread.name
+    logging.critical(
+        f"uncaught exception in thread {thread}!", exc_info=exc_info
+    )
+
+
+sys.excepthook = excepthook
+threading.excepthook = threading_excepthook
 
 
 def run():
