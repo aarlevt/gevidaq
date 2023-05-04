@@ -4,7 +4,7 @@ import pathlib
 # set up logging first
 logfile = pathlib.Path(f"./{__package__}.log")
 try:
-    logfile.rename(f"{logfile}.previous")
+    logfile.replace(f"{logfile}.previous")
 except FileNotFoundError:
     pass
 
