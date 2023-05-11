@@ -40,6 +40,7 @@ from scipy.optimize import curve_fit
 from skimage.io import imread
 
 from .. import StylishQT
+from ..NIDAQ import waveform_specification
 from .ImageProcessing import PatchAnalysis, ProcessImage
 
 
@@ -395,6 +396,7 @@ class AnalysisWidgetUI(QWidget):
         None.
 
         """
+        found_correct_waveform_spelling = False
         for file in os.listdir(self.main_directory):
             # For Labview generated data.
             if file.endswith(".Ip"):
@@ -422,20 +424,24 @@ class AnalysisWidgetUI(QWidget):
                 ]  # Here -2 because there are two extra recording points in the recording file.
 
             # === Load configured waveform ===
-            elif "Waveforms_sr_" in file and "npy" in file:
+            elif waveform_specification.is_waveform(file):
+                if found_correct_waveform_spelling:
+                    if waveform_specification.is_misspelled_wavefrom(file):
+                        continue
+                elif not waveform_specification.is_misspelled_wavefrom(file):
+                    found_correct_waveform_spelling = True
+
                 self.Waveform_filename_npy = self.main_directory + "/" + file
                 # Read in configured waveforms
                 configwave_wavenpfileName = self.Waveform_filename_npy
-                self.configured_waveforms_container = np.load(
-                    configwave_wavenpfileName, allow_pickle=True
+                self.configured_waveforms_container = (
+                    waveform_specification.load(configwave_wavenpfileName)
                 )
 
                 # Get the sampling rate
-                self.samplingrate_display_curve = int(
-                    float(
-                        configwave_wavenpfileName[
-                            configwave_wavenpfileName.find("sr_") + 3 : -4
-                        ]
+                self.samplingrate_display_curve = (
+                    waveform_specification.get_sample_rate(
+                        configwave_wavenpfileName
                     )
                 )
                 logging.info(
@@ -1192,8 +1198,15 @@ class PlotAnalysisGUI(QWidget):
         self.cam_trace_fluorescence_filename_dictionary = {}
         self.region_file_name = []
 
+        found_correct_waveform_spelling = False
         for file in os.listdir(self.Nest_data_directory):
-            if "Waveforms_sr_" in file:
+            if waveform_specification.is_waveform(file):
+                if found_correct_waveform_spelling:
+                    if waveform_specification.is_misspelled_wavefrom(file):
+                        continue
+                elif not waveform_specification.is_misspelled_wavefrom(file):
+                    found_correct_waveform_spelling = True
+
                 self.wave_fileName = os.path.join(
                     self.Nest_data_directory, file
                 )
@@ -1234,16 +1247,12 @@ class PlotAnalysisGUI(QWidget):
 
         # Read in configured waveforms
         configwave_wavenpfileName = self.wave_fileName
-        temp_loaded_container = np.load(
-            configwave_wavenpfileName, allow_pickle=True
+        temp_loaded_container = waveform_specification.load(
+            configwave_wavenpfileName
         )
 
-        Daq_sample_rate = int(
-            float(
-                configwave_wavenpfileName[
-                    configwave_wavenpfileName.find("sr_") + 3 : -4
-                ]
-            )
+        Daq_sample_rate = waveform_specification.get_sample_rate(
+            configwave_wavenpfileName
         )
 
         self.Checked_display_list = ["Waveform"]

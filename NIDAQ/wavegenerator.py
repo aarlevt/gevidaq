@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy import signal
 
+from . import waveform_specification
 from .constants import HardwareConstants
 
 
@@ -659,11 +660,9 @@ def dark_probe(
     # plt.plot(x,camera_signal)
     # plt.show()
 
-    dataType_analog = np.dtype(
-        [("Waveform", float, (len(sig),)), ("Specification", "U20")]
-    )
-    dataType_digital = np.dtype(
-        [("Waveform", bool, (len(camera_signal),)), ("Specification", "U20")]
+    dataType_analog = waveform_specification.make_dtype(len(sig), float)
+    dataType_digital = waveform_specification.make_dtype(
+        len(camera_signal), bool
     )
     analog_array = np.zeros(1, dtype=dataType_analog)
     digital_array = np.zeros(1, dtype=dataType_digital)

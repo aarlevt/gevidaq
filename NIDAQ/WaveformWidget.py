@@ -44,6 +44,7 @@ from pyqtgraph import PlotDataItem
 
 from .. import StylishQT
 from ..ThorlabsFilterSlider.filterpyserial import ELL9Filter
+from . import waveform_specification
 from .DAQoperator import DAQmission
 from .wavegenerator import (
     generate_AO,
@@ -900,27 +901,13 @@ class WaveformGenerator(QWidget):
         )
 
         try:
-            temp_loaded_container = np.load(
-                self.wavenpfileName, allow_pickle=True
+            temp_loaded_container = waveform_specification.load(
+                self.wavenpfileName
             )
 
-            try:
-                self.uiDaq_sample_rate = int(
-                    os.path.split(self.wavenpfileName)[1][20:-4]
-                )
-            except Exception as exc:
-                logging.critical("caught exception", exc_info=exc)
-                try:
-                    self.uiDaq_sample_rate = int(
-                        float(
-                            self.wavenpfileName[
-                                self.wavenpfileName.find("sr_") + 3 : -4
-                            ]
-                        )
-                    )  # Locate sr_ in the file name to get sampling rate.
-                except Exception as exc:
-                    logging.critical("caught exception", exc_info=exc)
-                    self.uiDaq_sample_rate = 50000
+            self.uiDaq_sample_rate = waveform_specification.get_sample_rate(
+                self.wavenpfileName
+            )
 
             if self.uiDaq_sample_rate != int(self.SamplingRateTextbox.value()):
                 logging.info("ERROR: Sampling rates is different!")
@@ -928,12 +915,9 @@ class WaveformGenerator(QWidget):
             self.PlotDataItem_dict = {}
             self.waveform_data_dict = {}
 
-            for i in range(len(temp_loaded_container)):
-                channel_keyword = temp_loaded_container[i]["Specification"]
-
-                self.waveform_data_dict[
-                    channel_keyword
-                ] = temp_loaded_container[i]["Waveform"]
+            for item in temp_loaded_container:
+                channel_keyword = item["Specification"]
+                self.waveform_data_dict[channel_keyword] = item["Waveform"]
                 self.generate_graphy(
                     channel_keyword, self.waveform_data_dict[channel_keyword]
                 )
@@ -2086,17 +2070,11 @@ class WaveformGenerator(QWidget):
         # Structured array to contain
         # https://stackoverflow.com/questions/39622533/numpy-array-as-datatype-in-a-structured-array
 
-        dataType_analog = np.dtype(
-            [
-                ("Waveform", float, (self.reference_length,)),
-                ("Specification", "U20"),
-            ]
+        dataType_analog = waveform_specification.make_dtype(
+            self.reference_length, float
         )
-        dataType_digital = np.dtype(
-            [
-                ("Waveform", bool, (self.reference_length,)),
-                ("Specification", "U20"),
-            ]
+        dataType_digital = waveform_specification.make_dtype(
+            self.reference_length, bool
         )
 
         # === Reset the PlotDataItem ===
@@ -2196,16 +2174,11 @@ class WaveformGenerator(QWidget):
             for i in range(len(self.digital_array["Specification"])):
                 ciao.append(self.digital_array[i])
 
+            filename = waveform_specification.create_filename(
+                self.saving_prefix, self.SamplingRateTextbox.value()
+            )
             np.save(
-                os.path.join(
-                    self.savedirectory,
-                    datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-                    + "_"
-                    + self.saving_prefix
-                    + "_"
-                    + "Waveforms_sr_"
-                    + str(int(self.SamplingRateTextbox.value())),
-                ),
+                os.path.join(self.savedirectory, filename),
                 ciao,
             )
 
@@ -2261,18 +2234,11 @@ class WaveformGenerator(QWidget):
         ] = 1000  # (note this also affects height parameter)
 
         # save to file
-        exporter.export(
-            os.path.join(
-                self.savedirectory,
-                datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-                + "_"
-                + self.saving_prefix
-                + "_"
-                + "Waveforms_sr_"
-                + str(int(self.SamplingRateTextbox.value())),
-            )
-            + ".png"
+        filename = waveform_specification.create_filename(
+            self.saving_prefix, self.SamplingRateTextbox.value()
         )
+        filename += ".png"
+        exporter.export(os.path.join(self.savedirectory, filename))
 
     def execute_tread(self):
         """

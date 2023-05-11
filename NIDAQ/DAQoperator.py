@@ -25,7 +25,6 @@ class DAQmission(
 ):  # For all-purpose Nidaq tasks, use "Dev1/ai22" as reference channel.
     """
     # For all-purpose Nidaq tasks. Use "Dev1/ai22" as reference channel.
-    # 'Specification' is the wrong spelling of 'Specification'.
     """
 
     collected_data = pyqtSignal(np.ndarray)

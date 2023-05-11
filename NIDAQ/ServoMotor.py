@@ -10,6 +10,7 @@ import math
 
 import numpy as np
 
+from . import waveform_specification
 from .DAQoperator import DAQmission
 
 
@@ -33,10 +34,7 @@ class Servo:
             PWM_wave = np.where(PWM_wave == 0, False, True)
             PWM_wave_organized = np.array(
                 [(target_servo, PWM_wave)],
-                dtype=[
-                    ("Specification", "U20"),
-                    ("Waveform", bool, (len(PWM_wave),)),
-                ],
+                dtype=waveform_specification.make_dtype(len(PWM_wave)),
             )
 
             self.mission.runWaveforms(

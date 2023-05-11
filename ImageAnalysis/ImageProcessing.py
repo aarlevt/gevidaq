@@ -48,6 +48,8 @@ from skimage.restoration import denoise_tv_chambolle
 from skimage.segmentation import clear_border
 from skimage.transform import resize
 
+from ..NIDAQ import waveform_specification
+
 # import plotly.express as px
 
 
@@ -1352,11 +1354,8 @@ class ProcessImage:
             )
 
             # Pure numerical np arrays need to be converted to structured array, with 'Specification' field being the channel name.
-            tp_analog = np.dtype(
-                [
-                    ("Waveform", float, (len(X_interpolated),)),
-                    ("Specification", "U20"),
-                ]
+            tp_analog = waveform_specification.make_dtype(
+                len(X_interpolated), float
             )
             ContourArray_forDaq = np.zeros(2, dtype=tp_analog)
             ContourArray_forDaq[0] = np.array(
@@ -4537,13 +4536,21 @@ class ProcessImage:
         """
         main_directory = main_directory
 
+        found_correct_waveform_spelling = False
         for file in os.listdir(main_directory):
-            if "Waveforms_sr_" in file and "npy" in file:
-                wave_fileName = os.path.join(main_directory, file)
-                temp_wave_container = np.load(wave_fileName, allow_pickle=True)
+            if waveform_specification.is_waveform(file):
+                if found_correct_waveform_spelling:
+                    if waveform_specification.is_misspelled_wavefrom(file):
+                        continue
+                elif not waveform_specification.is_misspelled_wavefrom(file):
+                    found_correct_waveform_spelling = True
 
-                wave_file_sampling_rate = int(
-                    file[file.index("sr_") + 3 : file.index(".npy")]
+                wave_fileName = os.path.join(main_directory, file)
+                temp_wave_container = waveform_specification.load(
+                    wave_fileName
+                )
+                wave_file_sampling_rate = (
+                    waveform_specification.get_sample_rate(wave_fileName)
                 )
 
             if "Ip" in file and "npy" in file:
