@@ -38,7 +38,7 @@ class KCube:
 
     def initialize(self):
         # Load the dll file.
-        self.lib = ctypes.cdll.LoadLibrary(
+        self.lib = ctypes.cdll.LoadLibrary(  # TODO external path
             r"C:\Labsoftware\Thorlabs\Thorlabs.MotionControl.KCube.BrushlessMotor.dll"
         )
 

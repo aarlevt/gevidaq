@@ -4538,7 +4538,7 @@ class ProcessImage:
         main_directory = main_directory
 
         for file in os.listdir(main_directory):
-            if "Wavefroms_sr_" in file and "npy" in file:
+            if "Waveforms_sr_" in file and "npy" in file:
                 wave_fileName = os.path.join(main_directory, file)
                 temp_wave_container = np.load(wave_fileName, allow_pickle=True)
 

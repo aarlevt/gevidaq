@@ -388,7 +388,7 @@ class AnalysisWidgetUI(QWidget):
         Load the 1D array files, like voltage, current recordings or waveform information.
 
         By default the waveforms configured contain 4 extra samples at the front
-        and 1 in the end, while the recored waveforms contain 8 extra samples at
+        and 1 in the end, while the recorded waveforms contain 8 extra samples at
         the front and 1 in the end.
 
         Returns
@@ -422,7 +422,7 @@ class AnalysisWidgetUI(QWidget):
                 ]  # Here -2 because there are two extra recording points in the recording file.
 
             # === Load configured waveform ===
-            elif "Wavefroms_sr_" in file and "npy" in file:
+            elif "Waveforms_sr_" in file and "npy" in file:
                 self.Waveform_filename_npy = self.main_directory + "/" + file
                 # Read in configured waveforms
                 configwave_wavenpfileName = self.Waveform_filename_npy
@@ -439,7 +439,7 @@ class AnalysisWidgetUI(QWidget):
                     )
                 )
                 logging.info(
-                    "Wavefroms_sampling rate: {}".format(
+                    "Waveforms_sampling rate: {}".format(
                         self.samplingrate_display_curve
                     )
                 )
@@ -1193,7 +1193,7 @@ class PlotAnalysisGUI(QWidget):
         self.region_file_name = []
 
         for file in os.listdir(self.Nest_data_directory):
-            if "Wavefroms_sr_" in file:
+            if "Waveforms_sr_" in file:
                 self.wave_fileName = os.path.join(
                     self.Nest_data_directory, file
                 )

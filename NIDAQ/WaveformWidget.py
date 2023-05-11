@@ -282,7 +282,7 @@ class WaveformGenerator(QWidget):
         executionContainerLayout = QGridLayout()  # self.AnalogLayout manager
 
         # Checkbox for saving waveforms
-        self.checkbox_saveWaveforms = QCheckBox("Save wavefroms")
+        self.checkbox_saveWaveforms = QCheckBox("Save waveforms")
         # self.checkbox_saveWaveforms.setChecked(True)
         self.checkbox_saveWaveforms.setStyleSheet(
             'color:CadetBlue;font:bold "Times New Roman"'
@@ -2203,7 +2203,7 @@ class WaveformGenerator(QWidget):
                     + "_"
                     + self.saving_prefix
                     + "_"
-                    + "Wavefroms_sr_"
+                    + "Waveforms_sr_"
                     + str(int(self.SamplingRateTextbox.value())),
                 ),
                 ciao,
@@ -2268,7 +2268,7 @@ class WaveformGenerator(QWidget):
                 + "_"
                 + self.saving_prefix
                 + "_"
-                + "Wavefroms_sr_"
+                + "Waveforms_sr_"
                 + str(int(self.SamplingRateTextbox.value())),
             )
             + ".png"
