@@ -35,7 +35,7 @@ class FocusFinder:
         camera_handle=None,
         twophoton_handle=None,
         *args,
-        **kwargs
+        **kwargs,
     ):
         """
 

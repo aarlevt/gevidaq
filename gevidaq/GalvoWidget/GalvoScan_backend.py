@@ -191,7 +191,7 @@ class PMT_zscan:
         motor_handle=None,
         twophoton_handle=None,
         *args,
-        **kwargs
+        **kwargs,
     ):
         """
         Object to run Z-stack scanning.

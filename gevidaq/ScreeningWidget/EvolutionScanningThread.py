@@ -38,7 +38,7 @@ class ScanningExecutionThread(QThread):
         RoundCoordsDict,
         GeneralSettingDict,
         *args,
-        **kwargs
+        **kwargs,
     ):
         super().__init__(*args, **kwargs)
         self.RoundQueueDict = RoundQueueDict

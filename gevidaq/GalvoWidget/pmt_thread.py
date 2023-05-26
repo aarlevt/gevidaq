@@ -33,7 +33,7 @@ class pmtimaging_continuous_Thread(QThread):
         averagenumber,
         ScanArrayXnum,
         *args,
-        **kwargs
+        **kwargs,
     ):
         """
         wave is the output data
@@ -218,7 +218,7 @@ class pmtimaging_continuous_Thread_contour(QThread):
         averagenumber,
         ScanArrayXnum,
         *args,
-        **kwargs
+        **kwargs,
     ):
         """
         wave is the output data

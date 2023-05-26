@@ -1,0 +1,55 @@
+[project]
+name = "gevidaq"
+version = "0.0.1"
+authors = [
+  { name="Xin Meng", email="X.Meng-4@tudelft.nl" },
+]
+keywords = [
+  "voltage imaging",
+  "patch clamp",
+  "electrophysiology",
+  "cellular biology",
+  "microscopy",
+  "optogenetics",
+  "optopatch",
+  "optical",
+  "genetic",
+  "voltage indicator",
+  "multimodal",
+  "PyQt5"
+]
+description = "A comprehensive and intelligent software for voltage imaging. Developed in the Brinks lab."
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+  "Development Status :: 4 - Beta",
+  "Intended Audience :: Science/Research",
+  "Environment :: X11 Applications :: Qt",
+  "License :: OSI Approved :: MIT License",
+  "Operating System :: Microsoft :: Windows",
+  "Programming Language :: Python :: 3",
+  "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
+dependencies= [
+  "PyQt5",
+  "matplotlib",
+  "nidaqmx",
+  "numpy",
+  "opencv-python",
+  "pillow",
+  "pipython",
+  "plotly",
+  "pyqtgraph",
+  "pyserial",
+  "scikit-image",
+  "scipy",
+  "seaborn",
+  "tifffile",
+]
+
+[project.urls]
+"Homepage" = "https://github.com/Brinkslab/gevidaq"
+"Bug Tracker" = "https://github.com/Brinkslab/gevidaq/issues"
+
+[project.gui-scripts]
+gevidaq = "gevidaq:main"
