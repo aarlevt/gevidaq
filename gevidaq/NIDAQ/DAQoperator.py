@@ -185,27 +185,15 @@ class DAQmission(
             if len(analog_signals["Waveform"]) != 0:
                 num_rows, num_cols = analog_signals["Waveform"].shape
                 for i in range(int(num_rows)):
-                    if (
-                        "Dev1"
-                        in self.channel_LUT[analog_signals["Specification"][i]]
-                    ):
-                        self.Dev1_analog_channel_list.append(
-                            self.channel_LUT[
-                                analog_signals["Specification"][i]
-                            ]
-                        )
-                        Dev1_analog_waveforms_list.append(
-                            analog_signals["Waveform"][i]
-                        )
+                    specification = analog_signals["Specification"][i]
+                    channel = self.channel_LUT[specification]
+                    waveform = analog_signals["Waveform"][i]
+                    if "Dev1" in channel:
+                        self.Dev1_analog_channel_list.append(channel)
+                        Dev1_analog_waveforms_list.append(waveform)
                     else:
-                        self.Dev2_analog_channel_list.append(
-                            self.channel_LUT[
-                                analog_signals["Specification"][i]
-                            ]
-                        )
-                        Dev2_analog_waveforms_list.append(
-                            analog_signals["Waveform"][i]
-                        )
+                        self.Dev2_analog_channel_list.append(channel)
+                        Dev2_analog_waveforms_list.append(waveform)
 
         Dev1_analog_channel_number = len(self.Dev1_analog_channel_list)
         Dev2_analog_channel_number = len(self.Dev2_analog_channel_list)
@@ -287,21 +275,16 @@ class DAQmission(
         )
 
         for i in range(Digital_channel_number):
-            convernum = int(
-                self.channel_LUT[digital_signals["Specification"][i]][
-                    self.channel_LUT[
-                        digital_signals["Specification"][i]
-                    ].index("line")
-                    + 4 : len(
-                        self.channel_LUT[digital_signals["Specification"][i]]
-                    )
-                ]
-            )
+            specification = digital_signals["Specification"][i]
+            channel = self.channel_LUT[specification]
+            lineindex = channel.index("line")
+            convernum = int(channel[lineindex + 4 : len(channel)])
             Digital_samples_to_write[i] = Digital_samples_to_write[i] * (
                 2 ** (convernum)
             )
 
-        # For example, to send commands to line 0 and line 3, you hava to write 1001 to digital port, convert to uint32 that is 9.
+        # For example, to send commands to line 0 and line 3, you hava to write
+        # 1001 to digital port, convert to uint32 that is 9.
         if Digital_channel_number > 1:
             Digital_samples_to_write = np.sum(
                 Digital_samples_to_write, axis=0
@@ -954,6 +937,7 @@ class DAQmission(
 
     def save_as_binary(self, directory):
         # print(self.ai_dev_scaling_coeff_vp)
+        timestamp = datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
         if self.has_recording_channel is True:
             if "Vp" in self.readin_channels:
                 if "PMT" not in self.readin_channels:
@@ -967,8 +951,7 @@ class DAQmission(
                     np.save(
                         os.path.join(
                             directory,
-                            "Vp"
-                            + datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
+                            "Vp" + timestamp,
                         ),
                         self.binaryfile_vp_data,
                     )
@@ -984,8 +967,7 @@ class DAQmission(
                         np.save(
                             os.path.join(
                                 directory,
-                                "Ip"
-                                + datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
+                                "Ip" + timestamp,
                             ),
                             self.binaryfile_Ip_data,
                         )
@@ -1000,8 +982,7 @@ class DAQmission(
                     np.save(
                         os.path.join(
                             directory,
-                            "Vp"
-                            + datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
+                            "Vp" + timestamp,
                         ),
                         self.binaryfile_vp_data,
                     )
@@ -1017,8 +998,7 @@ class DAQmission(
                         np.save(
                             os.path.join(
                                 directory,
-                                "Ip"
-                                + datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
+                                "Ip" + timestamp,
                             ),
                             self.binaryfile_Ip_data,
                         )
@@ -1034,7 +1014,7 @@ class DAQmission(
                 np.save(
                     os.path.join(
                         directory,
-                        "Ip" + datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
+                        "Ip" + timestamp,
                     ),
                     self.binaryfile_Ip_data,
                 )
@@ -1044,8 +1024,7 @@ class DAQmission(
                 np.save(
                     os.path.join(
                         directory,
-                        "PMT_array_"
-                        + datetime.now().strftime("%Y-%m-%d_%H-%M-%S"),
+                        "PMT_array_" + timestamp,
                     ),
                     self.data_PMT,
                 )

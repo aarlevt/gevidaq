@@ -54,6 +54,7 @@ class DMDWidget(QWidget):
             importlib.resources.files(Registration)
         )
 
+        self.dmd_mask = None
         self.init_gui()
 
     def init_gui(self):
@@ -393,15 +394,18 @@ class DMDWidget(QWidget):
             fig, axs = plt.subplots(1, 1)
             axs.imshow(mask_single_frame)
             logging.info("each_mask_key {}".format(each_mask_key))
-            # Here the self.mask is always a 3-dimentional np array with the 3rd axis being number of images.
+            # Here the self.dmd_mask is always a 3-dimentional np array with the 3rd axis being number of images.
             if each_mask_key == "mask_1":
-                self.mask = mask_single_frame[:, :, np.newaxis]
+                self.dmd_mask = mask_single_frame[:, :, np.newaxis]
             else:
-                self.mask = np.concatenate(
-                    (self.mask, mask_single_frame[:, :, np.newaxis]), axis=2
+                self.dmd_mask = np.concatenate(
+                    (self.dmd_mask, mask_single_frame[:, :, np.newaxis]), axis=2
                 )
 
-        self.DMD_actuator.send_data_to_DMD(self.mask)
+        if self.dmd_mask is None:
+            logging.warn("no dmd mask has been added")
+        else:
+            self.DMD_actuator.send_data_to_DMD(self.dmd_mask)
 
     def project_full_white(self):
         self.DMD_actuator.send_data_to_DMD(np.ones((1024, 768)))
@@ -425,7 +429,7 @@ class DMDWidget(QWidget):
         self.DMD_actuator.free_memory()
 
         if self.project_button.text() == "Stop projecting":
-            self.DMD_actuator.send_data_to_DMD(self.mask)
+            self.DMD_actuator.send_data_to_DMD(self.dmd_mask)
             self.DMD_actuator.start_projection()
 
     def transform_coordinates(self, list_of_rois, for_which_laser):
@@ -526,7 +530,7 @@ class DMDWidget(QWidget):
 
     def clear(self):
         self.DMD_actuator.free_memory()
-        self.mask = None
+        self.dmd_mask = None
 
     def set_transformation_saving_location(self, traversable):
         self.transformation_location = traversable
