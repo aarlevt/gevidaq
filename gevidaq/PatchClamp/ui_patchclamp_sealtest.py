@@ -77,11 +77,13 @@ class SlidingWindow(pg.PlotWidget):
 
         self.pen = QPen()
         self.pen.setColor(QColor(145, 255, 244))
-        self.pen.setWidthF(0.7)
+        # a pen with width 0 will always be drawn 1px wide
+        self.pen.setWidth(0)
         self.pen.setStyle(Qt.DashLine)
-        self.plotData = self.plot(
-            pen=self.pen
-        )  # call plot, so it is not needed to calll this in the UI. However, you can still change the pen variables in the UI.
+
+        # call plot, so it is not needed to call this in the UI.
+        # However, you can still change the pen variables in the UI.
+        self.plotData = self.plot(pen=self.pen)
 
     def append_(self, values):
         """Append new values to the sliding window."""
@@ -330,9 +332,9 @@ class PatchclampSealTestUI(QWidget):
         # and http://enki-editor.org/2014/08/23/Pyqt_mem_mgmt.html
 
         # self.outVolPlotWidget = SlidingWindow(200, title = "Voltage", unit = "V") #Should be bigger than the readvalue
-        self.outCurPlotWidget = SlidingWindow(
-            200, title="Current", unit="A"
-        )  # Should be bigger than the readvalue
+
+        # Should be bigger than the readvalue
+        self.outCurPlotWidget = SlidingWindow(200, title="Current", unit="A")
 
         self.display_tab_widget = QTabWidget()
 
@@ -497,12 +499,12 @@ class PatchclampSealTestUI(QWidget):
 
     def startUpdatingGUI(self):
         while self.is_sealtesting is True:
+            time.sleep(0.05)
             try:
                 # self.outVolPlotWidget.append_(self.voltOut)
                 self.outCurPlotWidget.append_(self.curOut)
                 self.updateGraphs()
                 self.updateLabels(self.curOut, self.voltOut)
-                time.sleep(0.05)
             except Exception as exc:
                 logging.critical("caught exception", exc_info=exc)
 
@@ -535,22 +537,24 @@ class PatchclampSealTestUI(QWidget):
             dV = np.mean(voltData[voltData > tres]) - np.mean(
                 voltData[voltData < tres]
             )  # Computing the voltage difference
-            dIss = np.mean(
-                curData[
-                    math.floor(0.15 * sampPerCyc) : math.floor(sampPerCyc / 2)
-                    - 2
-                ]
-            ) - np.mean(
-                curData[math.floor(0.65 * sampPerCyc) : sampPerCyc - 2]
-            )  # Computing the current distance
+
+            start_selection_a = math.floor(0.15 * sampPerCyc)
+            end_selection_a = math.floor(0.5 * sampPerCyc) - 2
+            start_selection_b = math.floor(0.65 * sampPerCyc)
+            end_selection_b = sampPerCyc - 2
+            avg_a = np.mean(curData[start_selection_a:end_selection_a])
+            avg_b = np.mean(curData[start_selection_b:end_selection_b])
+            dIss = avg_a - avg_b  # Computing the current distance
+
             membraneResistance = dV / (dIss * 1000000)  # Ohms law (MegaOhm)
             self.resistanceLabel.setText(
                 "Resistance:  %.4f M\u03A9" % membraneResistance
             )
 
+            # The resistance of a typical patch of membrane, RM is 10000 Omega/{cm}^2
             self.estimated_size_resistance = 10000 / (
                 membraneResistance * 1000000
-            )  # The resistance of a typical patch of membrane, RM is 10000 Omega/{cm}^2
+            )
         except Exception as exc:
             logging.critical("caught exception", exc_info=exc)
             self.resistanceLabel.setText("Resistance:  %s" % "NaN")
@@ -562,36 +566,24 @@ class PatchclampSealTestUI(QWidget):
         except Exception as exc:
             logging.critical("caught exception", exc_info=exc)
             self.membraneVoltLabel.setText("Vm:  %s" % "NaN")
+
         try:
             # Computing capacitance
-            points = 10
+            points = 10 - 1
             maxCur = np.amax(curData)
-            maxCurIndex = np.where(curData == maxCur)[0][0]
-            curFit = curData[
-                int(maxCurIndex + 1) : int(maxCurIndex + 1 + points - 1)
-            ] - 0.5 * (
-                np.mean(
-                    curData[
-                        math.floor(0.15 * sampPerCyc) : math.floor(
-                            sampPerCyc / 2
-                        )
-                        - 2
-                    ]
-                )
-                + np.mean(
-                    curData[math.floor(0.65 * sampPerCyc) : sampPerCyc - 2]
-                )
-            )
-            timepoints = (
-                1000
-                * np.arange(3, points - 1 + 3)
-                / constants.patchSealSampRate
-            )
+            maxCurIndex = round(np.where(curData == maxCur)[0][0]) + 1
+            last_index = maxCurIndex + points
+            data_selection = curData[maxCurIndex:last_index]
+            curFit = data_selection - 0.5 * dIss
+
+            points_start = 3
+            points_range = np.arange(points_start, points + points_start)
+            timepoints = 1000 * points_range / constants.patchSealSampRate
+
             # Fitting the data to an exponential of the form y=a*exp(-b*x) where b = 1/tau and tau = RC
             # I(t)=I0*e^−t/τ, y=a*exp(-b*x), get log of both sides:log y = -bx + log a
-            fit = np.polyfit(
-                timepoints, curFit, 1
-            )  # Converting the exponential to a linear function and fitting it
+            # Converting the exponential to a linear function and fitting it
+            fit = np.polyfit(timepoints, curFit, 1)
             # Extracting data
             current = fit[0]
             resistance = dV * 1000 / current / 2  # Getting the resistance
