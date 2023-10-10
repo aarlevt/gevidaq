@@ -20,9 +20,7 @@ from PyQt5.QtCore import QThread, pyqtSignal
 from .constants import NiDaqChannels
 
 
-class DAQmission(
-    QThread
-):  # For all-purpose Nidaq tasks, use "Dev1/ai22" as reference channel.
+class DAQmission(QThread):
     """
     # For all-purpose Nidaq tasks. Use "Dev1/ai22" as reference channel.
     """

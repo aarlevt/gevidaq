@@ -11,7 +11,7 @@ import threading
 import pyqtgraph as pg
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtGui import QFont
+from PyQt5.QtGui import QFont, QPalette, QColor
 from PyQt5.QtWidgets import (
     QGridLayout,
     QLabel,
@@ -69,6 +69,9 @@ class AOTFWidgetUI(QWidget):
         self.slider640.setTickPosition(QSlider.TicksBothSides)
         self.slider640.setTickInterval(100)
         self.slider640.setSingleStep(1)
+        red_palette = QPalette(QColor("indian red"))
+        red_palette.setColor(QPalette.Highlight, QColor("red"))
+        self.slider640.setPalette(red_palette)
         self.line640 = QLineEdit(self)
         self.line640.setFixedWidth(46)
         self.slider640.sliderReleased.connect(
@@ -104,6 +107,9 @@ class AOTFWidgetUI(QWidget):
         self.slider532.setTickPosition(QSlider.TicksBothSides)
         self.slider532.setTickInterval(100)
         self.slider532.setSingleStep(1)
+        green_palette = QPalette(QColor("lime green"))
+        green_palette.setColor(QPalette.Highlight, QColor("green"))
+        self.slider532.setPalette(green_palette)
         self.line532 = QLineEdit(self)
         self.line532.setFixedWidth(46)
         self.slider532.sliderReleased.connect(
@@ -128,6 +134,9 @@ class AOTFWidgetUI(QWidget):
         self.slider488.setTickPosition(QSlider.TicksBothSides)
         self.slider488.setTickInterval(100)
         self.slider488.setSingleStep(1)
+        blue_palette = QPalette(QColor("corn flower blue"))
+        blue_palette.setColor(QPalette.Highlight, QColor("blue"))
+        self.slider488.setPalette(blue_palette)
         self.line488 = QLineEdit(self)
         self.line488.setFixedWidth(46)
         self.slider488.sliderReleased.connect(
