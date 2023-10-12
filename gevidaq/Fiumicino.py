@@ -428,6 +428,11 @@ class Mainbody(QtWidgets.QWidget):
         self.open_Insight_UIWindow.show()
 
     def open_screening(self):
+        try:
+            self.open_screening_UIWindow.deleteLater()
+        except AttributeError:
+            pass
+
         self.open_screening_UIWindow = (
             ScreeningWidget.Evolution_GUI_v7.Mainbody()
         )

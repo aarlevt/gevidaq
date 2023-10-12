@@ -150,7 +150,7 @@ class ScanningExecutionThread(QThread):
                         ):
                             self._use_ML = True
         if self._use_ML:
-            from ImageAnalysis.ImageProcessing_MaskRCNN import ProcessImageML
+            from ..ImageAnalysis.ImageProcessing_MaskRCNN import ProcessImageML
 
             self.Predictor = ProcessImageML()
             logging.info("ML loaded.")

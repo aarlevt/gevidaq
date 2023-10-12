@@ -19,6 +19,7 @@ from PyQt5.QtGui import QFont, QIcon, QTextCursor
 
 from .. import NIDAQ, Icons, StylishQT
 from .EvolutionScanningThread import ScanningExecutionThread
+from ..ImageAnalysis import EvolutionAnalysisWidget
 
 
 class Mainbody(QtWidgets.QWidget):
@@ -722,10 +723,6 @@ class Mainbody(QtWidgets.QWidget):
         self.setLayout(self.layout)
 
         self.showPipelineConfigWidget()
-
-        from ImageAnalysis import EvolutionAnalysisWidget
-
-        logging.info("Importing EvolutionAnalysisWidget")
 
         self.ScreenAnalysisMLWindow = EvolutionAnalysisWidget.MainGUI()
         self.ScreenAnalysisMLWindow.show()
@@ -1624,8 +1621,7 @@ class Mainbody(QtWidgets.QWidget):
         self.ConsoleTextDisplay.ensureCursorVisible()
 
     def openScreenAnalysisMLWidget(self):
-        from ImageAnalysis import EvolutionAnalysisWidget
-
+        self.ScreenAnalysisMLWindow.deleteLater()
         self.ScreenAnalysisMLWindow = EvolutionAnalysisWidget.MainGUI()
         self.ScreenAnalysisMLWindow.show()
 
