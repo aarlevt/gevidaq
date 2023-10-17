@@ -309,10 +309,9 @@ class CoordinatesWidgetUI(QWidget):
         self.DMDWidget = DMDWidget.DMDWidget()
         self.layout.addWidget(self.DMDWidget, 1, 8, 1, 3)
 
-        """--------------------------------------------------------------------
-        # Singal sent out from DMDWidget to ask for mask generated here.
-        # And then the generated roi list is sent back to function:receive_mask_coordinates in DMDWidget.
-        """
+        # Signal sent out from DMDWidget to ask for mask generated here.
+        # And then the generated roi list is sent back to
+        # function:receive_mask_coordinates in DMDWidget.
         self.DMDWidget.sig_request_mask_coordinates.connect(
             lambda: self.cast_mask_coordinates("dmd")
         )
@@ -378,7 +377,7 @@ class CoordinatesWidgetUI(QWidget):
     def cast_camera_image(self):
         """Send out the image in the image view to ManualRegistration"""
         image = self.selection_view.image
-        if type(image) == np.ndarray:
+        if image is not None:
             self.sig_cast_camera_image.emit(image)
 
     def receive_image_from_camera(self, snap_from_camera):

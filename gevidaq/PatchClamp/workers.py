@@ -123,8 +123,8 @@ class Worker(QObject):
         camera = self._parent.camerathread
         account4rotation = self._parent.account4rotation
         mode = self._parent.operation_mode
-        D = self._parent.pipette_diameter
-        O = self._parent.pipette_orientation
+        diameter = self._parent.pipette_diameter
+        orientation = self._parent.pipette_orientation
 
         # algorithm variables
         stepsize = 25  # in microns
@@ -161,12 +161,15 @@ class Worker(QObject):
 
                 # pipette tip detection algorithm
                 x1, y1 = ia.detectPipettetip(
-                    image_left, image_right, diameter=D, orientation=O
+                    image_left,
+                    image_right,
+                    diameter=diameter,
+                    orientation=orientation,
                 )
                 self.draw.emit(["cross", x1, y1])
                 # W = ia.makeGaussian(size=image_left.shape, mu=(x1,y1), sigma=(image_left.shape[0]//12,image_left.shape[1]//12))
                 # self.draw.emit(['image',np.multiply(image_right,W)])
-                # x2, y2 = ia.detectPipettetip(np.multiply(image_left,W), np.multiply(image_right,W), diameter=(5/4)*D, orientation=O)
+                # x2, y2 = ia.detectPipettetip(np.multiply(image_left,W), np.multiply(image_right,W), diameter=(5/4)*diameter, orientation=orientation)
                 # self.draw.emit(['cross',x2,y2])
 
                 # save tip coordinates
@@ -419,8 +422,8 @@ class Worker(QObject):
         pos = np.zeros(3)
         for i in range(0, 3):
             micromanipulator.moveRel(dz=+STEPSIZE)
-            I = camera.snap()
-            pen[i] = ia.comp_variance_of_Laplacian(I)
+            img = camera.snap()
+            pen[i] = ia.comp_variance_of_Laplacian(img)
             pos[i] = reference[2] + (i + 1) * STEPSIZE
         penaltyhistory = np.append(penaltyhistory, pen)
         positionhistory = np.append(positionhistory, pos)
@@ -464,8 +467,8 @@ class Worker(QObject):
                     for i in range(2, MIN_TAILLENGTH):
                         if monotonicity_condition:
                             micromanipulator.moveRel(dz=+STEPSIZE)
-                            I = camera.snap()
-                            penalty = ia.comp_variance_of_Laplacian(I)
+                            img = camera.snap()
+                            penalty = ia.comp_variance_of_Laplacian(img)
                             penaltytail = np.append(penaltytail, penalty)
                             monotonicity_condition = np.all(
                                 np.diff(penaltytail) <= 0
@@ -499,8 +502,8 @@ class Worker(QObject):
                     for i in range(2, MIN_TAILLENGTH):
                         if monotonicity_condition:
                             micromanipulator.moveRel(dz=+STEPSIZE)
-                            I = camera.snap()
-                            penalty = ia.comp_variance_of_Laplacian(I)
+                            img = camera.snap()
+                            penalty = ia.comp_variance_of_Laplacian(img)
                             penaltytail = np.append(penaltytail, penalty)
                             monotonicity_condition = np.all(
                                 np.diff(penaltytail) <= 0
@@ -529,8 +532,8 @@ class Worker(QObject):
                     for i in range(taillength, MIN_TAILLENGTH):
                         if monotonicity_condition:
                             micromanipulator.moveRel(dz=+STEPSIZE)
-                            I = camera.snap()
-                            penalty = ia.comp_variance_of_Laplacian(I)
+                            img = camera.snap()
+                            penalty = ia.comp_variance_of_Laplacian(img)
                             penaltytail = np.append(penaltytail, penalty)
                             monotonicity_condition = np.all(
                                 np.diff(penaltytail) <= 0
@@ -553,15 +556,15 @@ class Worker(QObject):
             if move == "step up":
                 pos = positionhistory[-1] + STEPSIZE
                 micromanipulator.moveAbs(x=reference[0], y=reference[1], z=pos)
-                I = camera.snap()
-                pen = ia.comp_variance_of_Laplacian(I)
+                img = camera.snap()
+                pen = ia.comp_variance_of_Laplacian(img)
                 penaltyhistory = np.append(penaltyhistory, pen)
                 positionhistory = np.append(positionhistory, pos)
             elif move == "step down":
                 pos = positionhistory[0] - STEPSIZE
                 micromanipulator.moveAbs(x=reference[0], y=reference[1], z=pos)
-                I = camera.snap()
-                pen = ia.comp_variance_of_Laplacian(I)
+                img = camera.snap()
+                pen = ia.comp_variance_of_Laplacian(img)
                 penaltyhistory = np.append(pen, penaltyhistory)
                 positionhistory = np.append(pos, positionhistory)
 
@@ -583,8 +586,8 @@ class Worker(QObject):
                 if self.STOP:
                     break
                 micromanipulator.moveAbs(x=reference[0], y=reference[1], z=pos)
-                I = camera.snap()
-                penalties[idx] = ia.comp_variance_of_Laplacian(I)
+                img = camera.snap()
+                penalties[idx] = ia.comp_variance_of_Laplacian(img)
                 positionhistory = np.append(positionhistory, pos)
                 penaltyhistory = np.append(penaltyhistory, penalties[idx])
 
@@ -601,8 +604,8 @@ class Worker(QObject):
         micromanipulator.moveAbs(x=reference[0], y=reference[1], z=foundfocus)
         self.progress.emit("Pipette in focus")
 
-        # I = camera.snap()                                                                   #FLAG: relevant for MSc thesis
-        # io.imsave(save_directory+'autofocus_'+timestamp+'.tif', I, check_contrast=False)    #FLAG: relevant for MSc thesis
+        # img = camera.snap()                                                                   #FLAG: relevant for MSc thesis
+        # io.imsave(save_directory+'autofocus_'+timestamp+'.tif', img, check_contrast=False)    #FLAG: relevant for MSc thesis
         # np.save(save_directory+'autofocus_positionhistory_'+timestamp, positionhistory)     #FLAG: relevant for MSc thesis
         # np.save(save_directory+'autofocus_penaltyhistory_'+timestamp, penaltyhistory)       #FLAG: relevant for MSc thesis
 
@@ -633,8 +636,8 @@ class Worker(QObject):
         focus_offset = self._parent.focus_offset
         account4rotation = self._parent.account4rotation
         _, _, ztarget = self._parent.target_coordinates
-        D = self._parent.pipette_diameter
-        O = self._parent.pipette_orientation
+        diameter = self._parent.pipette_diameter
+        orientation = self._parent.pipette_orientation
 
         # algorithm variables
         CALIBRATION_HEIGHT = (
@@ -662,7 +665,10 @@ class Worker(QObject):
 
             # pipette tip detection algorithm
             x1, y1 = ia.detectPipettetip(
-                image_left, image_right, diameter=D, orientation=O
+                image_left,
+                image_right,
+                diameter=diameter,
+                orientation=orientation,
             )
             self.draw.emit(["cross", x1, y1])
             W = ia.makeGaussian(
@@ -674,8 +680,8 @@ class Worker(QObject):
             x2, y2 = ia.detectPipettetip(
                 np.multiply(image_left, W),
                 np.multiply(image_right, W),
-                diameter=(5 / 4) * D,
-                orientation=O,
+                diameter=(5 / 4) * diameter,
+                orientation=orientation,
             )
             self.draw.emit(["cross", x2, y2])
 
@@ -720,9 +726,9 @@ class Worker(QObject):
             # calculate final tip coordinates
             tipcoord = np.mean(tipcoords2, axis=0)
             self.draw.emit(["cross", tipcoord[0], tipcoord[1]])
-            I = camera.snap()
+            img = camera.snap()
             # timestamp = str(datetime.now().strftime('%Y-%m-%d_%H-%M-%S'))                                                                       #FLAG: relevant for MSc thesis
-            # io.imsave(save_directory+'softcalibration_X'+str(tipcoord[0])+'_Y'+str(tipcoord[1])+'_'+timestamp+'.tif', I, check_contrast=False)  #FLAG: relevant for MSc thesis
+            # io.imsave(save_directory+'softcalibration_X'+str(tipcoord[0])+'_Y'+str(tipcoord[1])+'_'+timestamp+'.tif', img, check_contrast=False)  #FLAG: relevant for MSc thesis
             # np.save(save_directory+'softcalibration_'+timestamp, tipcoords2)
 
             # set micromanipulator and camera coordinate pair of pipette tip

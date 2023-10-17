@@ -35,34 +35,34 @@ class PatchClampImageProcessing:
         return window / np.sum(window)
 
     @staticmethod
-    def detectPipettetip(Ia, Ib, diameter, orientation, plotflag=False):
+    def detectPipettetip(img_a, img_b, diameter, orientation, plotflag=False):
         """
         Tip detection algorithm
         input parameters:
-            Ia          = previous image of pipette tip
-            Ib          = current image of pipette tip
+            img_a       = previous image of pipette tip
+            img_b       = current image of pipette tip
             diameter    = diameter of pipette tip in pixels
-            orientation = pipette orientation in degree, clockwise calculated from
-                          the horizontal pointing to the right (= 0 degree)
+            orientation = pipette orientation in degrees, clockwise calculated
+                          from the horizontal pointing to the right (0 degrees)
             plotflag    = if True it will generate figures
         output parameters:
             xpos        = x position of the pipette tip
             ypos        = y position of the pipette tip
         """
         # Image normalization
-        Ia = Ia / np.sum(Ia)
-        Ib = Ib / np.sum(Ib)
+        img_a = img_a / np.sum(img_a)
+        img_b = img_b / np.sum(img_b)
 
         # Gaussian blur
-        LB = filters.gaussian(Ia, 1)
-        RB = filters.gaussian(Ib, 1)
+        left_blurred = filters.gaussian(img_a, 1)
+        right_blurred = filters.gaussian(img_b, 1)
 
         # Image subtraction
-        IB = LB - RB
+        img_blurred = left_blurred - right_blurred
 
         # Canny edge detection
-        BW = feature.canny(
-            IB,
+        edges = feature.canny(
+            img_blurred,
             sigma=3,
             low_threshold=0.99,
             high_threshold=0,
@@ -71,11 +71,11 @@ class PatchClampImageProcessing:
 
         # Hough transform
         angle_range = np.linspace(0, np.pi, 500) + np.deg2rad(orientation)
-        H, T, R = transform.hough_line(BW, angle_range)
+        hspace, angles, distances = transform.hough_line(edges, angle_range)
 
         # Find Hough peaks
         _, Tpeaks, Rpeaks = transform.hough_line_peaks(
-            H, T, R, num_peaks=10, threshold=0
+            hspace, angles, distances, num_peaks=10, threshold=0
         )
 
         # Cluster peaks
@@ -93,13 +93,15 @@ class PatchClampImageProcessing:
         )
         centroid1, centroid2 = centroids
 
-        # Find intersection between X1*cos(T1)+Y1*sin(T1)=R1 and X2*cos(T2)+Y2*sin(T2)=R2
+        # Find intersection between
+        # X1*cos(T1)+Y1*sin(T1)=R1 and X2*cos(T2)+Y2*sin(T2)=R2
         if centroid1[0] > centroid2[0]:
             angle1, dist1 = centroid1
             angle2, dist2 = centroid2
         else:
             angle1, dist1 = centroid2
             angle2, dist2 = centroid1
+
         LHS = np.array(
             [
                 [np.cos(angle1), np.sin(angle1)],
@@ -118,17 +120,17 @@ class PatchClampImageProcessing:
         return xpos, ypos
 
     @staticmethod
-    def comp_variance_of_Laplacian(I):
+    def comp_variance_of_Laplacian(img):
         """
         Computes a sharpness score that is minimal for sharp images.
         """
         # average images
-        I_average = filters.gaussian(I, 4)
+        img_average = filters.gaussian(img, 4)
 
         # calculate laplacian
-        I_laplace = filters.laplace(I_average, 3)
+        img_laplace = filters.laplace(img_average, 3)
 
         # calculate variance
-        score = np.var(I_laplace)
+        score = np.var(img_laplace)
 
         return score

@@ -54,6 +54,10 @@ from .wavegenerator import (
     waveRecPic,
 )
 
+CAMERA_TRIGGER_INSERT_ARRAY = np.array(
+    [False] * 25 + [True] * 25 + [False] * 25 + [True] * 25 + [False] * 15
+)
+
 
 class WaveformGenerator(QWidget):
     WaveformPackage = pyqtSignal(object)
@@ -85,9 +89,7 @@ class WaveformGenerator(QWidget):
         self.Auto_padding_flag = True
 
         # These contour scanning signals will be set from main panel.
-        self.handle_viewbox_coordinate_position_array_expanded_forDaq_waveform = (
-            None
-        )
+        self.handle_viewbox_coordinate_position_array_expanded = None
         self.time_per_contour = None
         self.handle_viewbox_coordinate_position_array_expanded_x = None
         self.handle_viewbox_coordinate_position_array_expanded_y = None
@@ -147,36 +149,24 @@ class WaveformGenerator(QWidget):
         self.setMinimumSize(1000, 650)
         self.setWindowTitle("Buon appetito!")
 
-        self.Galvo_samples = (
-            self.finalwave_640
-        ) = (
-            self.finalwave_488
-        ) = (
-            self.finalwave_532
-        ) = (
-            self.finalwave_patch
-        ) = (
-            self.handle_viewbox_coordinate_position_array_expanded_forDaq_waveform
-        ) = None
-        self.finalwave_cameratrigger = (
-            self.final_galvotrigger
-        ) = (
-            self.finalwave_blankingall
-        ) = (
-            self.finalwave_640blanking
-        ) = (
-            self.finalwave_532blanking
-        ) = (
-            self.finalwave_488blanking
-        ) = (
-            self.finalwave_Perfusion_8
-        ) = (
-            self.finalwave_Perfusion_7
-        ) = (
-            self.finalwave_Perfusion_6
-        ) = (
-            self.finalwave_Perfusion_2
-        ) = self.finalwave_2Pshutter = self.finalwave_DMD_trigger = None
+        self.Galvo_samples = None
+        self.finalwave_640 = None
+        self.finalwave_488 = None
+        self.finalwave_532 = None
+        self.finalwave_patch = None
+        self.handle_viewbox_coordinate_position_array_expanded = None
+        self.finalwave_cameratrigger = None
+        self.final_galvotrigger = None
+        self.finalwave_blankingall = None
+        self.finalwave_640blanking = None
+        self.finalwave_532blanking = None
+        self.finalwave_488blanking = None
+        self.finalwave_Perfusion_8 = None
+        self.finalwave_Perfusion_7 = None
+        self.finalwave_Perfusion_6 = None
+        self.finalwave_Perfusion_2 = None
+        self.finalwave_2Pshutter = None
+        self.finalwave_DMD_trigger = None
 
         # self.current_Analog_channel.currentIndexChanged.connect(self.chosen_wave)
         self.wavetablayout = QGridLayout()
@@ -325,8 +315,19 @@ class WaveformGenerator(QWidget):
         self.waveform_progressbar.setMinimumWidth(200)
         self.waveform_progressbar.setMaximum(100)
         self.waveform_progressbar.setStyleSheet(
-            "QProgressBar {color: black;border: 2px solid grey; border-radius:8px;text-align: center;}"
-            "QProgressBar::chunk {background-color: #CD96CD; width: 10px; margin: 0.5px;}"
+            """
+            QProgressBar {
+                color: black;
+                border: 2px solid grey;
+                border-radius:8px;
+                text-align: center;
+            }
+            QProgressBar::chunk {
+                background-color: #CD96CD;
+                width: 10px;
+                margin: 0.5px;
+            }
+            """
         )
         executionContainerLayout.addWidget(self.waveform_progressbar, 0, 3)
 
@@ -755,7 +756,8 @@ class WaveformGenerator(QWidget):
         )
         self.switchAutoPadding.clicked.connect(lambda: self.setAutoPadding())
         self.switchAutoPadding.setToolTip(
-            "Add one extra camera trigger at the start or not--Camera lossing first frame"
+            "Add one extra camera trigger at the start or not--"
+            "Camera losing first frame"
         )
 
         self.switchAutoPadding.setChecked(False)
@@ -773,7 +775,8 @@ class WaveformGenerator(QWidget):
             lambda: self.setExtraTriggerFlag()
         )
         self.switchExtraTrigger.setToolTip(
-            "Add one extra camera trigger at the start or not--Camera lossing first frame"
+            "Add one extra camera trigger at the start or not--"
+            "Camera losing first frame"
         )
 
         self.switchExtraTrigger.setChecked(True)
@@ -1070,7 +1073,8 @@ class WaveformGenerator(QWidget):
                 self.waveform_data_dict[channel_keyword] = waveform_to_add
 
         if channel_keyword == "cameratrigger":
-            # For camera triggers, set to zeros so that it does not block canvas.
+            # For camera triggers,
+            # set to zeros so that it does not block canvas.
             rectified_waveform = np.zeros(
                 len(self.waveform_data_dict[channel_keyword]), dtype=bool
             )
@@ -1111,8 +1115,8 @@ class WaveformGenerator(QWidget):
     # %%
     def generate_contour_for_waveform(self):
         """
-        Variables related to contour scanning are set from main GUI, which comes
-        from PMT widget.
+        Variables related to contour scanning are set from main GUI,
+        which comes from PMT widget.
 
         Returns
         TYPE
@@ -1149,13 +1153,11 @@ class WaveformGenerator(QWidget):
         # repeated_contoursamples_2 = np.append(repeated_contoursamples_2,
         # 0)
 
-        handle_viewbox_coordinate_position_array_expanded_forDaq_waveform = (
-            np.vstack((repeated_contoursamples_1, repeated_contoursamples_2))
+        handle_viewbox_coordinate_position_array_expanded = np.vstack(
+            (repeated_contoursamples_1, repeated_contoursamples_2)
         )
 
-        return (
-            handle_viewbox_coordinate_position_array_expanded_forDaq_waveform
-        )
+        return handle_viewbox_coordinate_position_array_expanded
 
     def generate_galvos(self):
         self.uiDaq_sample_rate = int(self.SamplingRateTextbox.value())
@@ -1176,9 +1178,11 @@ class WaveformGenerator(QWidget):
         else:
             self.Galvo_samples_offset = int(self.GalvoOffsetTextbox.text())
 
+            # By default one 0 is added so that we have a rising edge at the
+            # beginning.
             self.offsetsamples_number_galvo = int(
                 (self.Galvo_samples_offset / 1000) * self.uiDaq_sample_rate
-            )  # By default one 0 is added so that we have a rising edge at the beginning.
+            )
             self.offsetsamples_galvo = np.zeros(
                 self.offsetsamples_number_galvo
             )  # Be default offsetsamples_number is an integer.
@@ -1195,7 +1199,8 @@ class WaveformGenerator(QWidget):
             sawtooth=True,
         )
         # Totalscansamples = len(self.samples_1)*self.averagenum
-        # Calculate number of samples to feed to scanner, by default it's one frame
+        # Calculate number of samples to feed to scanner,
+        # by default it's one frame
         self.ScanArrayXnum = int(
             len(self.samples_1) / Value_yPixels
         )  # number of samples of each individual line of x scanning
@@ -1209,16 +1214,13 @@ class WaveformGenerator(QWidget):
                 (gap_sample / 1000) * self.uiDaq_sample_rate
             )
 
-        # print(self.Digital_container_feeder[:, 0])
-
         self.repeated_samples_1 = np.tile(self.samples_1, self.averagenum)
         self.repeated_samples_2_yaxis = np.tile(
             self.samples_2, self.averagenum
         )
 
-        self.PMT_data_index_array = np.ones(
-            len(self.repeated_samples_1)
-        )  # In index array, indexes where there's the first image are 1.
+        # In index array, indexes where there's the first image are 1.
+        self.PMT_data_index_array = np.ones(len(self.repeated_samples_1))
         # Adding gap between scans
         self.gap_samples_1 = self.repeated_samples_1[-1] * np.ones(
             self.gapsamples_number_galvo
@@ -1244,7 +1246,8 @@ class WaveformGenerator(QWidget):
             self.repeated_samples_2_yaxis, self.repeatnum
         )
 
-        # self.PMT_data_index_array_repeated is created to help locate pmt data at different pre-set average or repeat scanning scheme.
+        # self.PMT_data_index_array_repeated is created to help locate pmt data
+        # at different pre-set average or repeat scanning scheme.
         for i in range(
             self.repeatnum
         ):  # Array value where sits the second PMT image will be 2, etc.
@@ -1300,9 +1303,11 @@ class WaveformGenerator(QWidget):
         else:
             self.Galvo_samples_offset = int(self.GalvoOffsetTextbox.text())
 
+            # By default one 0 is added so that we have a rising edge at the
+            # beginning.
             self.offsetsamples_number_galvo = int(
                 (self.Galvo_samples_offset / 1000) * self.uiDaq_sample_rate
-            )  # By default one 0 is added so that we have a rising edge at the beginning.
+            )
             self.offsetsamples_galvo = np.zeros(
                 self.offsetsamples_number_galvo
             )  # Be default offsetsamples_number is an integer.
@@ -1686,7 +1691,8 @@ class WaveformGenerator(QWidget):
 
         try:
             if "galvos_X_contour" in self.waveform_data_dict.keys():
-                # In case of loading contour waveforms when keys are not "galvos_contour"
+                # In case of loading contour waveforms when keys are not
+                # "galvos_contour"
                 reference_wave = self.waveform_data_dict["galvos_X_contour"]
             else:
                 reference_wave = self.waveform_data_dict[
@@ -1710,181 +1716,55 @@ class WaveformGenerator(QWidget):
 
             if self.Adding_extra_camera_trigger_flag is True:
                 for waveform_key in self.waveform_data_dict:
-                    if waveform_key != "cameratrigger":
-                        if waveform_key in self.AnalogChannelList:
-                            # === Padding at the end ===
-                            if waveform_key != "patchAO":
-                                # For analog channels,
-                                insert_array = np.zeros(self.padding_number)
+                    if waveform_key == "cameratrigger":
+                        # In case of cameratrigger, add a trigger composed of
+                        # 4 values
+                        insert_array = CAMERA_TRIGGER_INSERT_ARRAY
 
-                                # Add 0 in the end
-                                self.waveform_data_dict[
-                                    waveform_key
-                                ] = np.append(
-                                    self.waveform_data_dict[waveform_key], 0
-                                )
+                        # Add False in the end
+                        self.waveform_data_dict[waveform_key] = np.append(
+                            self.waveform_data_dict[waveform_key], False
+                        )
+                    elif waveform_key in self.AnalogChannelList:
+                        # === Padding at the end ===
+                        if waveform_key != "patchAO":
+                            # For analog channels,
+                            insert_array = np.zeros(self.padding_number)
 
-                            else:
-                                if np.amax(
-                                    self.waveform_data_dict[waveform_key]
-                                ) == np.amin(
-                                    self.waveform_data_dict[waveform_key]
-                                ):
-                                    # In case of holding potential
-                                    # For patch channels, add 4 same float values
-                                    insert_array = (
-                                        np.ones([self.padding_number])
-                                        * self.waveform_data_dict[
-                                            waveform_key
-                                        ][0]
-                                    )
-                                else:
-                                    # In case of step waves,
-                                    # append baseline values
-                                    insert_array = np.ones(
-                                        [self.padding_number]
-                                    ) * np.amin(
-                                        self.waveform_data_dict[waveform_key]
-                                    )
-
-                                # In case of patch clamp, append same last value
-                                self.waveform_data_dict[
-                                    waveform_key
-                                ] = np.append(
-                                    self.waveform_data_dict[waveform_key],
-                                    self.waveform_data_dict[waveform_key][-1],
-                                )
-
-                        else:
-                            # For digital boolen signals
-                            insert_array = np.zeros(
-                                [self.padding_number], dtype=bool
-                            )
-
-                            # Add False in the end
+                            # Add 0 in the end
                             self.waveform_data_dict[waveform_key] = np.append(
-                                self.waveform_data_dict[waveform_key], False
+                                self.waveform_data_dict[waveform_key], 0
+                            )
+                        else:
+                            if np.amax(
+                                self.waveform_data_dict[waveform_key]
+                            ) == np.amin(
+                                self.waveform_data_dict[waveform_key]
+                            ):
+                                # In case of holding potential
+                                # For patch channels, add 4 same float values
+                                insert_array = (
+                                    np.ones([self.padding_number])
+                                    * self.waveform_data_dict[waveform_key][0]
+                                )
+                            else:
+                                # In case of step waves,
+                                # append baseline values
+                                insert_array = np.ones(
+                                    [self.padding_number]
+                                ) * np.amin(
+                                    self.waveform_data_dict[waveform_key]
+                                )
+
+                            # In case of patch clamp, append same last value
+                            self.waveform_data_dict[waveform_key] = np.append(
+                                self.waveform_data_dict[waveform_key],
+                                self.waveform_data_dict[waveform_key][-1],
                             )
                     else:
-                        # In case of cameratrigger, add a trigger composed of 4 values
-                        insert_array = np.array(
-                            [
-                                False,
-                                False,
-                                False,
-                                False,
-                                False,  # TODO magic number
-                                False,
-                                False,
-                                False,
-                                False,
-                                False,
-                                False,
-                                False,
-                                False,
-                                False,
-                                False,
-                                False,
-                                False,
-                                False,
-                                False,
-                                False,
-                                False,
-                                False,
-                                False,
-                                False,
-                                False,
-                                True,
-                                True,
-                                True,
-                                True,
-                                True,
-                                True,
-                                True,
-                                True,
-                                True,
-                                True,
-                                True,
-                                True,
-                                True,
-                                True,
-                                True,
-                                True,
-                                True,
-                                True,
-                                True,
-                                True,
-                                True,
-                                True,
-                                True,
-                                True,
-                                True,
-                                False,
-                                False,
-                                False,
-                                False,
-                                False,
-                                False,
-                                False,
-                                False,
-                                False,
-                                False,
-                                False,
-                                False,
-                                False,
-                                False,
-                                False,
-                                False,
-                                False,
-                                False,
-                                False,
-                                False,
-                                False,
-                                False,
-                                False,
-                                False,
-                                False,
-                                True,
-                                True,
-                                True,
-                                True,
-                                True,
-                                True,
-                                True,
-                                True,
-                                True,
-                                True,
-                                True,
-                                True,
-                                True,
-                                True,
-                                True,
-                                True,
-                                True,
-                                True,
-                                True,
-                                True,
-                                True,
-                                True,
-                                True,
-                                True,
-                                True,
-                                False,
-                                False,
-                                False,
-                                False,
-                                False,
-                                False,
-                                False,
-                                False,
-                                False,
-                                False,
-                                False,
-                                False,
-                                False,
-                                False,
-                                False,
-                            ]
+                        # For digital boolean signals
+                        insert_array = np.zeros(
+                            [self.padding_number], dtype=bool
                         )
 
                         # Add False in the end
@@ -1896,8 +1776,6 @@ class WaveformGenerator(QWidget):
                     self.waveform_data_dict[waveform_key] = np.insert(
                         self.waveform_data_dict[waveform_key], 0, insert_array
                     )
-
-                    # print(self.waveform_data_dict[waveform_key])
             else:
                 for waveform_key in self.waveform_data_dict:
                     if waveform_key in self.AnalogChannelList:
@@ -1933,8 +1811,6 @@ class WaveformGenerator(QWidget):
                     self.waveform_data_dict[waveform_key] = np.insert(
                         self.waveform_data_dict[waveform_key], 0, insert_array
                     )
-
-                    # print(self.waveform_data_dict[waveform_key])
         else:
             logging.info("No Auto-padding to reset channels.")
 
@@ -1944,7 +1820,8 @@ class WaveformGenerator(QWidget):
 
         elif ReferenceWaveform_menu_text == "galvos_contour":
             if "galvos_X_contour" in self.waveform_data_dict.keys():
-                # In case of loading contour waveforms when keys are not "galvos_contour"
+                # In case of loading contour waveforms when keys are not
+                # "galvos_contour"
                 self.reference_length = len(reference_wave)
             else:
                 self.reference_length = len(reference_wave[0, :])
@@ -1953,14 +1830,17 @@ class WaveformGenerator(QWidget):
 
         if self.Auto_padding_flag is True:
             if self.Adding_extra_camera_trigger_flag is True:
-                # In case of adding extra camera trigger, 4 values are added to all channels at the start
+                # In case of adding extra camera trigger, 4 values are added to
+                # all channels at the start
                 self.reference_length += len(insert_array) + 1
             else:
-                # No extra camera trigger, 1 each extra in the beginning and at the end
+                # No extra camera trigger, 1 each extra in the beginning and at
+                # the end
                 self.reference_length += 2
             logging.info(f"reference_length: {self.reference_length}")
         else:
-            # Without auto padding, reference length is the same as original waveform.
+            # Without auto padding, reference length is the same as original
+            # waveform.
             logging.info(f"reference_length: {self.reference_length}")
 
         # === Get all waveforms the same length. ===
@@ -1968,37 +1848,31 @@ class WaveformGenerator(QWidget):
         for waveform_key in self.waveform_data_dict:
             if self.waveform_data_dict[waveform_key].ndim == 1:
                 # Cut or append 0 to the data for non-reference waveforms.
-                if (
-                    len(self.waveform_data_dict[waveform_key])
-                    >= self.reference_length
-                ):
+                len_waveform_data = len(self.waveform_data_dict[waveform_key])
+                if len_waveform_data >= self.reference_length:
                     self.waveform_data_dict[
                         waveform_key
                     ] = self.waveform_data_dict[waveform_key][
                         0 : self.reference_length
                     ]
-
                 else:
                     if (
                         self.waveform_data_dict[waveform_key].dtype
                         == "float64"
                     ):
                         append_waveforms = np.zeros(
-                            self.reference_length
-                            - len(self.waveform_data_dict[waveform_key])
+                            self.reference_length - len_waveform_data
                         )
                     else:
                         append_waveforms = np.zeros(
-                            self.reference_length
-                            - len(self.waveform_data_dict[waveform_key]),
+                            self.reference_length - len_waveform_data,
                             dtype=bool,
                         )
 
                     self.waveform_data_dict[waveform_key] = np.append(
                         self.waveform_data_dict[waveform_key], append_waveforms
                     )
-
-            else:  # In case of galvos which has dimention 2.
+            else:  # In case of galvos which has dimension 2.
                 # Cut or append 0 to the data for non-reference waveforms.
                 if (
                     len(self.waveform_data_dict[waveform_key][0, :])
@@ -2041,7 +1915,8 @@ class WaveformGenerator(QWidget):
                     # )
 
         # === Set galvos sampele stack apart ===
-        # Keys for contour scanning in waveform_data_dict change to "galvos_X_contour" and "galvos_Y_contour"
+        # Keys for contour scanning in waveform_data_dict change to
+        # "galvos_X_contour" and "galvos_Y_contour"
         if (
             "galvos" in self.waveform_data_dict
             and "galvos_contour" not in self.waveform_data_dict
@@ -2110,14 +1985,16 @@ class WaveformGenerator(QWidget):
                     )
             else:
                 if waveform_key != "cameratrigger":
-                    # In case of digital boolen signals, convert to int before ploting.
+                    # In case of digital boolean signals, convert to int before
+                    # plotting.
                     self.PlotDataItem_dict[waveform_key].setData(
                         x_label,
                         self.waveform_data_dict[waveform_key].astype(int),
                         name=waveform_key,
                     )
                 else:
-                    # For camera triggers, set to zeros so that it does not block canvas.
+                    # For camera triggers, set to zeros so that it does not
+                    # block canvas.
                     rectified_waveform = np.zeros(
                         len(self.waveform_data_dict[waveform_key]), dtype=bool
                     )
@@ -2328,7 +2205,8 @@ class WaveformGenerator(QWidget):
                 self.PlotDataItem_patch_voltage = PlotDataItem(
                     self.xlabelhere_all, self.data_collected_0
                 )
-                # use the same color as before, taking advantages of employing same keys in dictionary
+                # use the same color as before, taking advantages of employing
+                # same keys in dictionary
                 self.PlotDataItem_patch_voltage.setPen("w")
                 self.pw_data.addItem(self.PlotDataItem_patch_voltage)
 
@@ -2343,7 +2221,8 @@ class WaveformGenerator(QWidget):
                 self.PlotDataItem_patch_current = PlotDataItem(
                     self.xlabelhere_all, self.data_collected_0
                 )
-                # use the same color as before, taking advantages of employing same keys in dictionary
+                # use the same color as before, taking advantages of employing
+                # same keys in dictionary
                 self.PlotDataItem_patch_current.setPen("c")
                 self.pw_data.addItem(self.PlotDataItem_patch_current)
 
@@ -2360,7 +2239,8 @@ class WaveformGenerator(QWidget):
                     0 : len(self.data_collected_0) - 1
                 ]
 
-                # pmt data could come from raster scanning mode or from contour scanning mode.
+                # pmt data could come from raster scanning mode or from contour
+                # scanning mode.
                 try:
                     for i in range(self.repeatnum):
                         self.PMT_image_reconstructed_array = (
@@ -2400,20 +2280,20 @@ class WaveformGenerator(QWidget):
                                 )
                             )
 
+                        # generate an image object
                         Localimg = Image.fromarray(
                             self.PMT_image_reconstructed
-                        )  # generate an image object
+                        )
+                        timestamp = datetime.now().strftime(
+                            "%Y-%m-%d_%H-%M-%S"
+                        )
+                        filename = (
+                            f"{timestamp}_PMT_{self.saving_prefix}_{i}.tif"
+                        )
+                        # save as tif
                         Localimg.save(
-                            os.path.join(
-                                self.savedirectory,
-                                datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-                                + "_PMT_"
-                                + self.saving_prefix
-                                + "_"
-                                + str(i)
-                                + ".tif",
-                            )
-                        )  # save as tif
+                            os.path.join(self.savedirectory, filename)
+                        )
 
                         plt.figure()
                         plt.imshow(
@@ -2441,7 +2321,8 @@ class WaveformGenerator(QWidget):
                 self.PlotDataItem_patch_voltage = PlotDataItem(
                     self.xlabelhere_all, self.data_collected_0
                 )
-                # use the same color as before, taking advantages of employing same keys in dictionary
+                # use the same color as before, taking advantage of employing
+                # same keys in dictionary
                 self.PlotDataItem_patch_voltage.setPen("w")
                 self.pw_data.addItem(self.PlotDataItem_patch_voltage)
 
@@ -2456,7 +2337,8 @@ class WaveformGenerator(QWidget):
                 self.PlotDataItem_patch_current = PlotDataItem(
                     self.xlabelhere_all, self.data_collected_1
                 )
-                # use the same color as before, taking advantages of employing same keys in dictionary
+                # use the same color as before, taking advantage of employing
+                # same keys in dictionary
                 self.PlotDataItem_patch_current.setPen("c")
                 self.pw_data.addItem(self.PlotDataItem_patch_current)
 
@@ -2510,20 +2392,20 @@ class WaveformGenerator(QWidget):
                                 )
                             )
 
+                        # generate an image object
                         Localimg = Image.fromarray(
                             self.PMT_image_reconstructed
-                        )  # generate an image object
+                        )
+                        timestamp = datetime.now().strftime(
+                            "%Y-%m-%d_%H-%M-%S"
+                        )
+                        filename = (
+                            f"{timestamp}_PMT_{self.saving_prefix}_{i}.tif"
+                        )
+                        # save as tif
                         Localimg.save(
-                            os.path.join(
-                                self.savedirectory,
-                                datetime.now().strftime("%Y-%m-%d_%H-%M-%S")
-                                + "_PMT_"
-                                + self.saving_prefix
-                                + "_"
-                                + str(i)
-                                + ".tif",
-                            )
-                        )  # save as tif
+                            os.path.join(self.savedirectory, filename)
+                        )
 
                         plt.figure()
                         plt.imshow(
@@ -2550,7 +2432,8 @@ class WaveformGenerator(QWidget):
                     self.PlotDataItem_patch_voltage = PlotDataItem(
                         self.xlabelhere_all, self.data_collected_1
                     )
-                    # use the same color as before, taking advantages of employing same keys in dictionary
+                    # use the same color as before, taking advantage of
+                    # employing same keys in dictionary
                     self.PlotDataItem_patch_voltage.setPen("w")
                     self.pw_data.addItem(self.PlotDataItem_patch_voltage)
 
@@ -2565,7 +2448,8 @@ class WaveformGenerator(QWidget):
                     self.PlotDataItem_patch_current = PlotDataItem(
                         self.xlabelhere_all, self.data_collected_1
                     )
-                    # use the same color as before, taking advantages of employing same keys in dictionary
+                    # use the same color as before, taking advantage of
+                    # employing same keys in dictionary
                     self.PlotDataItem_patch_current.setPen("c")
                     self.pw_data.addItem(self.PlotDataItem_patch_current)
 
@@ -2574,8 +2458,6 @@ class WaveformGenerator(QWidget):
                     )
                     self.textitem_patch_current.setPos(0, 1)
                     self.pw_data.addItem(self.textitem_patch_current)
-
-    #
 
     def startProgressBar(self):
         self.DaqProgressBar_thread = DaqProgressBar()

@@ -399,7 +399,8 @@ class DMDWidget(QWidget):
                 self.dmd_mask = mask_single_frame[:, :, np.newaxis]
             else:
                 self.dmd_mask = np.concatenate(
-                    (self.dmd_mask, mask_single_frame[:, :, np.newaxis]), axis=2
+                    (self.dmd_mask, mask_single_frame[:, :, np.newaxis]),
+                    axis=2,
                 )
 
         if self.dmd_mask is None:

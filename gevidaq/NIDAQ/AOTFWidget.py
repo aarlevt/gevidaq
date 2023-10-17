@@ -11,7 +11,7 @@ import threading
 import pyqtgraph as pg
 from PyQt5 import QtWidgets
 from PyQt5.QtCore import Qt, pyqtSignal
-from PyQt5.QtGui import QFont, QPalette, QColor
+from PyQt5.QtGui import QColor, QFont, QPalette
 from PyQt5.QtWidgets import (
     QGridLayout,
     QLabel,

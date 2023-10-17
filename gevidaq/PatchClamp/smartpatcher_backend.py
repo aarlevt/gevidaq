@@ -467,11 +467,15 @@ class SmartPatcher(QObject):
 
     @pixel_size.setter
     def pixel_size(self, size):
-        if isinstance(size, float) or isinstance(size, int):
-            self._pixel_size = size
-            self.write_constants_to_JSON()
-        else:
-            raise ValueError("pixelsize should be a float or integer")
+        try:
+            width, height = size
+            self._pixel_size = float(size)
+        except (ValueError, TypeError):
+            raise ValueError(
+                f"pixelsize should be two numbers not '{size}'"
+            ) from None
+
+        self.write_constants_to_JSON()
 
     @pixel_size.deleter
     def pixel_size(self):
@@ -483,14 +487,15 @@ class SmartPatcher(QObject):
 
     @image_size.setter
     def image_size(self, size):
-        width, height = size
-        if type(width) and type(height) == float or int:
-            self._image_size = [width, height]
-            self.write_constants_to_JSON()
-        else:
+        try:
+            width, height = size
+            self._image_size = map(float, size)
+        except (ValueError, TypeError):
             raise ValueError(
-                "Image size should have width and height of type float or integer"
-            )
+                f"Image size should be two numbers not '{size}'"
+            ) from None
+
+        self.write_constants_to_JSON()
 
     @image_size.deleter
     def image_size(self):
@@ -538,20 +543,18 @@ class SmartPatcher(QObject):
 
     @rotation_angles.setter
     def rotation_angles(self, alphabetagamma):
-        if len(alphabetagamma) == 3:
+        try:
             alpha, beta, gamma = alphabetagamma
-            if type(alpha) and type(beta) and type(gamma) == float or int:
-                self._rotation_angles = [alpha, beta, gamma]
-                self.R = (alpha, beta, gamma)
-                self.write_constants_to_JSON()
-            else:
-                raise ValueError(
-                    "rotation angles should be integers or floats"
-                )
-        else:
+            map(float, alphabetagamma)
+        except (ValueError, TypeError):
             raise ValueError(
-                "rotation angles should be a 3 element array or tuple"
-            )
+                f"rotation angles should be three numbers not "
+                f"'{alphabetagamma}'"
+            ) from None
+
+        self._rotation_angles = [alpha, beta, gamma]
+        self.R = (alpha, beta, gamma)
+        self.write_constants_to_JSON()
 
     @rotation_angles.deleter
     def rotation_angles(self):

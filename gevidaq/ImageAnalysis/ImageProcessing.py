@@ -3811,16 +3811,13 @@ class ProcessImage:
         image = cv2.GaussianBlur(image, (3, 3), 0)
 
         # convolution of 3 x 3 kernel, according to different datatype.
-        if type(image[0, 0]) == np.float32:
-            sharpness = cv2.Laplacian(image, cv2.CV_32F).var()
-        elif type(image[0, 0]) == np.float64:
-            sharpness = cv2.Laplacian(image, cv2.CV_64F).var()
-        elif type(image[0, 0]) == np.float64:
-            sharpness = cv2.Laplacian(image, cv2.CV_64F).var()
-        elif type(image[0, 0]) == np.uint8:
-            sharpness = cv2.Laplacian(image, cv2.CV_8U).var()
-        elif type(image[0, 0]) == np.uint16:
-            sharpness = cv2.Laplacian(image, cv2.CV_16U).var()
+        dtype_to_cv = {
+            np.float32: cv2.CV_32F,
+            np.float64: cv2.CV_64F,
+            np.uint8: cv2.CV_8U,
+            np.uint16: cv2.CV_16U,
+        }
+        sharpness = cv2.Laplacian(image, dtype_to_cv[image.dtype]).var()
 
         return sharpness
 
@@ -5032,13 +5029,15 @@ class ProcessImage:
 
                 # Data type check
                 delete_index = []
-                for each_content_index in range(len(column_values)):
+                for each_content_index, value in enumerate(column_values):
                     # if not a float number, delete it.
-                    if (
-                        type(column_values[each_content_index]) != np.float64
-                        and type(column_values[each_content_index]) != float
-                    ):
-                        delete_index.append(each_content_index)
+                    try:
+                        if value.dtype == np.float64:
+                            continue
+                    except AttributeError:
+                        pass
+
+                    delete_index.append(each_content_index)
 
                 column_values = np.delete(column_values, delete_index)
 

@@ -18,8 +18,8 @@ from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QFont, QIcon, QTextCursor
 
 from .. import NIDAQ, Icons, StylishQT
-from .EvolutionScanningThread import ScanningExecutionThread
 from ..ImageAnalysis import EvolutionAnalysisWidget
+from .EvolutionScanningThread import ScanningExecutionThread
 
 
 class Mainbody(QtWidgets.QWidget):

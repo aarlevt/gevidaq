@@ -157,12 +157,14 @@ class PatchClampUI(QWidget):
             clicked=self.request_calibrate_pixelsize,
         )
         request_calibrate_xy_button.setToolTip(
-            "Aligns the micromanipulator axes with the pixel rows and columns on screen.\n"
-            + "Performs best with the pipette tip ~10μm below focus"
+            "Aligns the micromanipulator axes with the pixel rows and columns "
+            "on screen.\n"
+            "Performs best with the pipette tip ~10μm below focus"
         )
         request_calibrate_pixelsize_button.setToolTip(
             "Calibrates the pixelsize. Use this if 'Target to center' and"
-            + " 'Start target approach' miss their target. \nPerforms best with the pipette tip ~10μm below focus"
+            " 'Start target approach' miss their target.\n"
+            "Performs best with the pipette tip ~10μm below focus"
         )
 
         # Calibration statistics
@@ -751,10 +753,10 @@ class PatchClampUI(QWidget):
 
     def request_snap(self):
         if self.backend.camerathread is not None:
-            I = self.backend.camerathread.snap()
-            io.imsave("snapshot.tif", I, check_contrast=False)
+            img = self.backend.camerathread.snap()
+            io.imsave("snapshot.tif", img, check_contrast=False)
             self.toggle_pauselive()
-            self.update_live(I)
+            self.update_live(img)
         else:
             raise AttributeError("no camera connected")
 
@@ -825,8 +827,8 @@ class PatchClampUI(QWidget):
         """
         The user drags a circular ROI from the detected tip to the real tip.The
         ROI center is the tip location. We first check if a roi already exists,
-        if so, we recycle it. If the tip ROI got removed then we place it back to its
-        last known position.
+        if so, we recycle it. If the tip ROI got removed then we place it back
+        to its last known position.
         """
         self.request_pause_button.setChecked(True)
         self.toggle_pauselive()
@@ -1013,9 +1015,9 @@ class PatchClampUI(QWidget):
             )
             R_to_append = membraneResistance * 1e6
 
-            estimated_size_resistance = 10000 / (
-                membraneResistance * 1000000
-            )  # The resistance of a typical patch of membrane, RM is 10000 Omega/{cm}^2
+            # The resistance of a typical patch of membrane,
+            # RM is 10000 Omega/{cm}^2
+            estimated_size_resistance = 10000 / (membraneResistance * 1000000)
         except Exception as exc:
             logging.critical("caught exception", exc_info=exc)
             self.resistance_value_label.setText("NaN")
@@ -1055,11 +1057,14 @@ class PatchClampUI(QWidget):
                 / constants.patchSealSampRate
             )
 
-            # Fitting the data to an exponential of the form y=a*exp(-b*x) where b = 1/tau and tau = RC
-            # I(t)=I0*e^−t/τ, y=a*exp(-b*x), get log of both sides:log y = -bx + log a
-            fit = np.polyfit(
-                timepoints, curFit, 1
-            )  # Converting the exponential to a linear function and fitting it
+            # Fitting the data to an exponential of the form y=a*exp(-b*x)
+            # where b = 1/tau and tau = RC
+
+            # I(t)=I0*e^−t/τ, y=a*exp(-b*x), get log of both sides:
+            # log y = -bx + log a
+
+            # Converting the exponential to a linear function and fitting it
+            fit = np.polyfit(timepoints, curFit, 1)
 
             # Extracting data
             current = fit[0]
@@ -1241,31 +1246,35 @@ class ROIManagerGUI:
             self.ROIdictionary[name] = [self.ROInumber]
             self.ROInumber += 1
 
-    def removeROI(self, name, args=None):
+    def removeROI(self, name, args):
         if args == "all":
             self.ROInumber -= len(self.ROIdictionary[name])
             del self.ROIdictionary[name]
-        elif type(args) == int:
+        else:
+            try:
+                index = int(args)
+            except (ValueError, TypeError):
+                raise ValueError(
+                    f"args should be and index or 'all' not '{args}'"
+                ) from None
+
             entries = len(self.ROIdictionary[name])
-            if entries > args:
-                self.ROInumber -= args
-                self.ROIdictionary[name] = self.ROIdictionary[name][:-args]
-            elif entries == args:
-                self.ROInumber -= entries
+            if entries > index:
+                self.ROInumber -= index
+                self.ROIdictionary[name] = self.ROIdictionary[name][:-index]
+            elif entries == index:
+                self.ROInumber -= index
                 del self.ROIdictionary[name]
             else:
-                raise ValueError("list out of range")
+                raise ValueError(f"index out of range ({index} > {entries})")
 
     def removeallROIs(self):
-        name = list(self.ROIdictionary)
-        for name in name:
+        names = list(self.ROIdictionary)
+        for name in names:
             self.removeROI(name, args="all")
 
     def contains(self, name):
-        if name in self.ROIdictionary:
-            return True
-        else:
-            return False
+        return name in self.ROIdictionary
 
 
 if __name__ == "__main__":

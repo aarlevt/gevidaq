@@ -17,6 +17,7 @@ import tifffile as skimtiff
 from MaskRCNN.Configurations.ConfigFileInferenceOld import cellConfig
 from MaskRCNN.Engine.MaskRCNN import MaskRCNN as modellib
 from skimage.io import imread
+from skimage.morphology import binary_dilation
 
 from .ImageProcessing import ProcessImage
 
@@ -633,11 +634,15 @@ class ProcessImageML:
         return cell_Data
 
     def Generate_connection_map(self, file):
-        # Return mini mask (all mask are 28 by 28 pixels). One can use CreateFullMask
-        # from the utils to resize the mask to the same shape as the image. This is not
-        # recommended as it is time consuming and many operations can be done using the
-        # small mask and it bounding box coordinates and the ReshapeMask2BBox function
-        # from the utils.
+        """
+        Return mini mask (all mask are 28 by 28 pixels).
+
+        One can use CreateFullMask from the utils to resize the mask to the
+        same shape as the image. This is not recommended as it is time
+        consuming and many operations can be done using the small mask and it
+        bounding box coordinates and the ReshapeMask2BBox function from the
+        utils.
+        """
         self.config.RETURN_MINI_MASK = False
 
         if True:
@@ -646,11 +651,13 @@ class ProcessImageML:
         self.Detector.LoadWeigths(self.config.WeigthPath, by_name=True)
         logging.info("Weight file: {}".format(self.config.WeigthPath))
 
-        if type(file) == str:
-            # Load the image
-            Image = skimage.io.imread(file)
-        else:
+        try:
+            filename = os.path.join(file)
+        except TypeError:
             Image = file
+        else:
+            # Load the image
+            Image = skimage.io.imread(filename)
 
         R = self.Detector.detect([Image])
         Result = R[0]
@@ -658,7 +665,8 @@ class ProcessImageML:
 
         # Total number of HEK cells present, equal to N in Brian2
         num_cells = len(Result["rois"])
-        # What now if you try to do this? does this give the mask as an array for ever cell in the form of mask[:,:,ii]?
+        # What now if you try to do this? does this give the mask as an array
+        # for every cell in the form of mask[:,:,ii]?
         # Mask = ReshapeMask2BBox(Result['masks'][:,:,:],Result['rois'][:,:])
 
         # Defining some arrays
@@ -704,7 +712,7 @@ class ProcessImageML:
                 jj = Sub_Selec[ii][pp]
                 Maskt = Result["masks"][:, :, jj]
                 # Dilate ii mask once
-                Mask_dilate = ndimage.binary_dilation(  # TODO undefined
+                Mask_dilate = binary_dilation(
                     Mask, iterations=1
                 )  # Check if this works with lists as I think mask is a list, and ndimage works on numpy.
                 # Now check for overlap
