@@ -62,6 +62,7 @@ CAMERA_TRIGGER_INSERT_ARRAY = np.array(
 class WaveformGenerator(QWidget):
     WaveformPackage = pyqtSignal(object)
     GalvoScanInfor = pyqtSignal(object)
+    waveform_started = pyqtSignal()
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -2151,6 +2152,7 @@ class WaveformGenerator(QWidget):
             target=self.run_DAQ_Waveforms, daemon=False
         )
         run_DAQ_Waveforms_thread.start()
+        self.waveform_started.emit()
 
     def filter_move_towards(self, COMport, pos):
         # Filter move command.

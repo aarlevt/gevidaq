@@ -237,6 +237,14 @@ class AOTFWidgetUI(QWidget):
 
         self.sig_lasers_status_changed.emit(self.lasers_status)
 
+    def reset_sliders(self):
+        self.slider640.setValue(0)
+        self.slider532.setValue(0)
+        self.slider488.setValue(0)
+        self.line640.setText("")
+        self.line532.setText("")
+        self.line488.setText("")
+
     def setChannelSwitch(self, channel):
         daq = DAQmission()
         if channel == "640blanking":

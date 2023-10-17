@@ -318,6 +318,9 @@ class Mainbody(QtWidgets.QWidget):
         self.Coordinate_WidgetInstance.MessageBack.connect(
             self.normalOutputWritten
         )
+        self.Waveformer_WidgetInstance.waveform_started.connect(
+            self.AOTFWidgetInstance.reset_sliders
+        )
 
         self.Analysis_WidgetInstance.MessageBack.connect(
             self.normalOutputWritten
