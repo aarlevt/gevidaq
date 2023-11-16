@@ -76,7 +76,7 @@ class AOTFLaserUI(QWidget):
         self.connect_signals()
 
         self.layout = QGridLayout(self)
-        self.layout.setContentsMargins(0, 0, 0, 0)
+        self.layout.setContentsMargins(2, 2, 2, 2)
         self.layout.addWidget(self.slider, 0, 0)
         self.layout.addWidget(self.box, 0, 1)
         self.layout.addWidget(self.shutterButton, 0, 2)
@@ -144,6 +144,8 @@ class AOTFWidgetUI(QWidget):
 
         self.AOTFcontrolWidget = QWidget()
         self.AOTFcontrolLayout = QGridLayout()
+        self.AOTFcontrolLayout.setSpacing(2)
+        self.AOTFcontrolLayout.setContentsMargins(6, 12, 6, 6)
         self.AOTFcontrolWidget.setLayout(self.AOTFcontrolLayout)
 
         self.switchbutton_blankingAll = StylishQT.MySwitch(
