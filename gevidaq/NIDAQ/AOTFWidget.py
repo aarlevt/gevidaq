@@ -15,7 +15,7 @@ from PyQt5.QtGui import QColor, QFont, QPalette
 from PyQt5.QtWidgets import (
     QGridLayout,
     QLabel,
-    QLineEdit,
+    QDoubleSpinBox,
     QSlider,
     QStackedLayout,
     QWidget,
@@ -26,10 +26,98 @@ from .DAQoperator import DAQmission
 from .ServoMotor import Servo
 
 
+class AOTFLaserUI(QWidget):
+    def __init__(
+        self,
+        wavelength,
+        colors,
+        signal,
+        lasers_status,
+        *args,
+        **kwargs,
+    ):
+        """ui widget for a single laser control"""
+        super().__init__(*args, **kwargs)
+        self.wavelength = f"{wavelength}"
+        self.channel = f"{wavelength}AO"
+        self.blanking_channel = f"{wavelength}blanking"
+        self.signal = signal
+        self.lasers_status = lasers_status
+
+        with Icons.Path("shutter.png") as path:
+            self.shutterButton = StylishQT.checkableButton(
+                Icon_path=path, background_color=colors[-1]
+            )
+
+        self.slider = QSlider(Qt.Horizontal)
+        self.slider.setMinimum(0)
+        self.slider.setMaximum(500)
+        self.slider.setTickPosition(QSlider.TicksBothSides)
+        self.slider.setTickInterval(100)
+        self.slider.setSingleStep(1)
+        self.slider.setTracking(False)
+        palette = QPalette(QColor(colors[1]))
+        palette.setColor(QPalette.Highlight, QColor(colors[0]))
+        self.slider.setPalette(palette)
+
+        self.box = QDoubleSpinBox(self)
+        self.box.setDecimals(2)
+        self.box.setRange(0, 5)
+        self.box.setSingleStep(0.2)
+        self.box.setButtonSymbols(QDoubleSpinBox.NoButtons)
+
+        self.box.editingFinished.connect(
+            lambda: self.slider.setValue(int(self.box.value() * 100))
+        )
+        self.slider.valueChanged.connect(
+            lambda value: self.box.setValue(value / 100)
+        )
+        self.shutterButton.clicked.connect(self.shutter_CW_action)
+        self.connect_signals()
+
+        self.layout = QGridLayout(self)
+        self.layout.setContentsMargins(0, 0, 0, 0)
+        self.layout.addWidget(self.slider, 0, 0)
+        self.layout.addWidget(self.box, 0, 1)
+        self.layout.addWidget(self.shutterButton, 0, 2)
+
+    def connect_signals(self):
+        self.slider.valueChanged.connect(self.setChannelValue)
+
+    def disconnect_signals(self):
+        self.slider.valueChanged.disconnect(self.setChannelValue)
+
+    def setChannelValue(self, value):
+        daq = DAQmission()
+        self.lasers_status[self.wavelength][1] = value
+
+        daq.sendSingleAnalog(self.channel, value / 100)
+        self.signal.emit(self.lasers_status)
+
+    def reset_sliders(self):
+        self.disconnect_signals()
+        self.slider.setValue(0)
+        self.connect_signals()
+
+    def setChannelSwitch(self, value):
+        daq = DAQmission()
+        self.lasers_status[self.wavelength][0] = value
+
+        daq.sendSingleDigital(self.blanking_channel, value)
+        self.sig_lasers_status_changed.emit(self.lasers_status)
+
+    def shutter_CW_action(self):
+        if self.wavelength == "488":  # only servo for blue laser is set up
+            servo = Servo()
+            if self.shutterButton.isChecked():
+                servo.rotate(target_servo="servo_modulation_1", degree=180)
+            else:
+                servo.rotate(target_servo="servo_modulation_1", degree=0)
+        else:
+            logging.info(f"shutter for {self.wavelength} laser is not set up")
+
+
 class AOTFWidgetUI(QWidget):
-    # waveforms_generated = pyqtSignal(object, object, list, int)
-    # SignalForContourScanning = pyqtSignal(int, int, int, np.ndarray, np.ndarray)
-    # MessageBack = pyqtSignal(str)
     sig_lasers_status_changed = pyqtSignal(dict)
 
     def __init__(self, *args, **kwargs):
@@ -58,30 +146,6 @@ class AOTFWidgetUI(QWidget):
         self.AOTFcontrolLayout = QGridLayout()
         self.AOTFcontrolWidget.setLayout(self.AOTFcontrolLayout)
 
-        with Icons.Path("shutter.png") as path:
-            self.shutter640Button = StylishQT.checkableButton(
-                Icon_path=path, background_color="#DEC8C4"
-            )
-
-        self.slider640 = QSlider(Qt.Horizontal)
-        self.slider640.setMinimum(0)
-        self.slider640.setMaximum(500)
-        self.slider640.setTickPosition(QSlider.TicksBothSides)
-        self.slider640.setTickInterval(100)
-        self.slider640.setSingleStep(1)
-        red_palette = QPalette(QColor("indian red"))
-        red_palette.setColor(QPalette.Highlight, QColor("red"))
-        self.slider640.setPalette(red_palette)
-        self.line640 = QLineEdit(self)
-        self.line640.setFixedWidth(46)
-        self.slider640.sliderReleased.connect(
-            lambda: self.updatelinevalue(640)
-        )
-        self.slider640.sliderReleased.connect(
-            lambda: self.setChannelValue("640AO")
-        )
-        self.line640.returnPressed.connect(lambda: self.updateslider(640))
-
         self.switchbutton_blankingAll = StylishQT.MySwitch(
             "Blanking ON",
             "spring green",
@@ -89,91 +153,39 @@ class AOTFWidgetUI(QWidget):
             "indian red",
             width=60,
         )
-        self.switchbutton_blankingAll.clicked.connect(
-            lambda: self.setChannelSwitch("640blanking")
-        )
         self.AOTFcontrolLayout.addWidget(
-            self.switchbutton_blankingAll, 0, 2, 1, 2
+            self.switchbutton_blankingAll, 0, 0, 1, 2
         )
 
-        with Icons.Path("shutter.png") as path:
-            self.shutter532Button = StylishQT.checkableButton(
-                Icon_path=path, background_color="#CDDEC4"
-            )
+        self.lasers_status = {
+            wavelength: [False, 0] for wavelength in ("488", "532", "640")
+        }
 
-        self.slider532 = QSlider(Qt.Horizontal)
-        self.slider532.setMinimum(0)
-        self.slider532.setMaximum(500)
-        self.slider532.setTickPosition(QSlider.TicksBothSides)
-        self.slider532.setTickInterval(100)
-        self.slider532.setSingleStep(1)
-        green_palette = QPalette(QColor("lime green"))
-        green_palette.setColor(QPalette.Highlight, QColor("green"))
-        self.slider532.setPalette(green_palette)
-        self.line532 = QLineEdit(self)
-        self.line532.setFixedWidth(46)
-        self.slider532.sliderReleased.connect(
-            lambda: self.updatelinevalue(532)
+        self.laser640 = AOTFLaserUI(
+            640,
+            ("red", "indian red", "#DEC8C4"),
+            self.sig_lasers_status_changed,
+            self.lasers_status,
         )
-        self.slider532.sliderReleased.connect(
-            lambda: self.setChannelValue("532AO")
-        )
-        self.line532.returnPressed.connect(lambda: self.updatesider(532))
+        self.AOTFcontrolLayout.addWidget(self.laser640, 1, 0)
 
-        self.switchbutton_532 = StylishQT.MySwitch(
-            "ON", "green", "OFF", "lime green", width=32
+        self.laser532 = AOTFLaserUI(
+            532,
+            ("green", "lime green", "#CDDEC4"),
+            self.sig_lasers_status_changed,
+            self.lasers_status,
         )
-        self.switchbutton_532.clicked.connect(
-            lambda: self.setChannelSwitch("532blanking")
-        )
-        # self.AOTFcontrolLayout.addWidget(self.switchbutton_532, 1, 1)
+        self.AOTFcontrolLayout.addWidget(self.laser532, 2, 0)
 
-        self.slider488 = QSlider(Qt.Horizontal)
-        self.slider488.setMinimum(0)
-        self.slider488.setMaximum(500)
-        self.slider488.setTickPosition(QSlider.TicksBothSides)
-        self.slider488.setTickInterval(100)
-        self.slider488.setSingleStep(1)
-        blue_palette = QPalette(QColor("corn flower blue"))
-        blue_palette.setColor(QPalette.Highlight, QColor("blue"))
-        self.slider488.setPalette(blue_palette)
-        self.line488 = QLineEdit(self)
-        self.line488.setFixedWidth(46)
-        self.slider488.sliderReleased.connect(
-            lambda: self.updatelinevalue(488)
+        self.laser488 = AOTFLaserUI(
+            488,
+            ("blue", "corn flower blue", "#C4DDDE"),
+            self.sig_lasers_status_changed,
+            self.lasers_status,
         )
-        self.slider488.sliderReleased.connect(
-            lambda: self.setChannelValue("488AO")
-        )
-        self.line488.returnPressed.connect(lambda: self.updatesider(488))
+        self.AOTFcontrolLayout.addWidget(self.laser488, 3, 0)
 
-        self.switchbutton_488 = StylishQT.MySwitch(
-            "ON", "blue", "OFF", "corn flower blue", width=32
-        )
-        self.switchbutton_488.clicked.connect(
-            lambda: self.setChannelSwitch("488blanking")
-        )
-        # self.AOTFcontrolLayout.addWidget(self.switchbutton_488, 2, 1)
-
-        with Icons.Path("shutter.png") as path:
-            self.shutter488Button = StylishQT.checkableButton(
-                Icon_path=path, background_color="#C4DDDE"
-            )
-        self.shutter488Button.clicked.connect(
-            lambda: self.shutter_CW_action("488")
-        )
-
-        self.AOTFcontrolLayout.addWidget(self.shutter640Button, 1, 4)
-        self.AOTFcontrolLayout.addWidget(self.slider640, 1, 2)
-        self.AOTFcontrolLayout.addWidget(self.line640, 1, 3)
-
-        self.AOTFcontrolLayout.addWidget(self.shutter532Button, 2, 4)
-        self.AOTFcontrolLayout.addWidget(self.slider532, 2, 2)
-        self.AOTFcontrolLayout.addWidget(self.line532, 2, 3)
-
-        self.AOTFcontrolLayout.addWidget(self.shutter488Button, 3, 4)
-        self.AOTFcontrolLayout.addWidget(self.slider488, 3, 2)
-        self.AOTFcontrolLayout.addWidget(self.line488, 3, 3)
+        self.laserwidgets = self.laser640, self.laser532, self.laser488
 
         self.AOTFstackedLayout.addWidget(self.AOTFcontrolWidget)
         self.AOTFstackedLayout.addWidget(self.AOTFdisabledWidget)
@@ -183,15 +195,18 @@ class AOTFWidgetUI(QWidget):
         AOTFcontrolContainer.setMaximumHeight(170)
         self.layout.addWidget(AOTFcontrolContainer, 1, 0)
 
-        self.lasers_status = {}
-        self.lasers_status["488"] = [False, 0]
-        self.lasers_status["532"] = [False, 0]
-        self.lasers_status["640"] = [False, 0]
+        # blanking switch for red laser is blanks all lasers
+        # other blanking switches are not connected
+        self.switchbutton_blankingAll.clicked.connect(
+            self.laser640.setChannelSwitch
+        )
 
         thread = threading.Thread(target=self.start_up_event)
         thread.start()
-        self.shutter488Button.setChecked(False)
-        # === Fuc for AOTF ===
+
+    def reset_sliders(self):
+        for widget in self.laserwidgets:
+            widget.reset_sliders()
 
     def start_up_event(self):
         try:
@@ -202,87 +217,6 @@ class AOTFWidgetUI(QWidget):
         except Exception as exc:
             logging.critical("caught exception", exc_info=exc)
             logging.info("Fail to initialize servo position.")
-
-    def updatelinevalue(self, wavelength):
-        if wavelength == 640:
-            self.line640.setText(str(self.slider640.value() / 100))
-        if wavelength == 532:
-            self.line532.setText(str(self.slider532.value() / 100))
-        if wavelength == 488:
-            self.line488.setText(str(self.slider488.value() / 100))
-
-    def updateslider(self, wavelength):
-        # self.slider640.setSliderPosition(int(float((self.line640.text())*100)))
-        if wavelength == 640:
-            self.slider640.setValue(int(float(self.line640.text()) * 100))
-        if wavelength == 532:
-            self.slider532.setValue(int(float(self.line532.text()) * 100))
-        if wavelength == 488:
-            self.slider488.setValue(int(float(self.line488.text()) * 100))
-
-    def setChannelValue(self, channel):
-        daq = DAQmission()
-        if channel == "640AO":
-            self.lasers_status["640"][1] = self.slider640.value()
-
-            daq.sendSingleAnalog(channel, self.slider640.value() / 100)
-
-        elif channel == "532AO":
-            self.lasers_status["532"][1] = self.slider532.value()
-            daq.sendSingleAnalog(channel, self.slider532.value() / 100)
-
-        elif channel == "488AO":
-            self.lasers_status["488"][1] = self.slider488.value()
-            daq.sendSingleAnalog(channel, self.slider488.value() / 100)
-
-        self.sig_lasers_status_changed.emit(self.lasers_status)
-
-    def reset_sliders(self):
-        self.slider640.setValue(0)
-        self.slider532.setValue(0)
-        self.slider488.setValue(0)
-        self.line640.setText("")
-        self.line532.setText("")
-        self.line488.setText("")
-
-    def setChannelSwitch(self, channel):
-        daq = DAQmission()
-        if channel == "640blanking":
-            if self.switchbutton_blankingAll.isChecked():
-                self.lasers_status["640"][0] = True
-                daq.sendSingleDigital(channel, True)
-
-            else:
-                self.lasers_status["640"][0] = False
-                daq.sendSingleDigital(channel, False)
-
-        elif channel == "532blanking":
-            if self.switchbutton_532.isChecked():
-                self.lasers_status["532"][0] = True
-                daq.sendSingleDigital(channel, True)
-
-            else:
-                self.lasers_status["532"][0] = False
-                daq.sendSingleDigital(channel, False)
-
-        elif channel == "488blanking":
-            if self.switchbutton_488.isChecked():
-                self.lasers_status["488"][0] = True
-                daq.sendSingleDigital(channel, True)
-            else:
-                self.lasers_status["488"][0] = False
-                daq.sendSingleDigital(channel, False)
-
-        self.sig_lasers_status_changed.emit(self.lasers_status)
-
-    def shutter_CW_action(self, laser):
-        if laser == "488":
-            if self.shutter488Button.isChecked():
-                servo = Servo()
-                servo.rotate(target_servo="servo_modulation_1", degree=180)
-            else:
-                servo = Servo()
-                servo.rotate(target_servo="servo_modulation_1", degree=0)
 
     def set_registration_mode(self, flag_registration_mode):
         if flag_registration_mode:
