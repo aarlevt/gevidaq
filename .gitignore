@@ -10,7 +10,7 @@ Deprecated
 # Large files:
 *.tif
 *.png
-!Icons/*.png
+!gevidaq/Icons/*.png
 *.json
 *.log
 Thumbs.db

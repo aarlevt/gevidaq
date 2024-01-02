@@ -1,4 +1,4 @@
-# Project Name
+# gevidaq
 A comprehensive and intelligent software for voltage imaging. Developed in the Brinks lab.
 
 ## Table of Contents
@@ -11,9 +11,9 @@ A comprehensive and intelligent software for voltage imaging. Developed in the B
 * [Usage](#usage)
 * [Project Status](#project-status)
 * [To do](#to do)
+* [Funding](#funding)
 * [Acknowledgements](#acknowledgements)
 * [Contact](#contact)
-<!-- * [License](#license) -->
 
 
 ## General Information
@@ -72,6 +72,9 @@ One key feature to be added is the network analysis ability in typical all-optic
 Another potential feature is to adapt the illumination according to the sample and minimize the photobleaching and heating. By analysing the dynamics of live video, the algorithm will be able to determine cell of interest and shape the illumination accordingly to minimize the amount of photons pumped into the sample. This would happen in an automated fashion, much faster than human decision and operation. 
 
 
+## Funding
+We acknowledge support by an NWO Start-up Grant (740.018.018) and ERC Starting Grant (850818-MULTIVIsion) in the creation of this software.
+
 ## Acknowledgements
 Give credit here.
 - This project was inspired by...
@@ -81,8 +84,3 @@ Give credit here.
 
 ## Contact
 X.Meng-4@tudelft.nl
-
-
-<!-- Optional -->
-<!-- ## License -->
-<!-- This project is open source and available under the [... License](). -->
